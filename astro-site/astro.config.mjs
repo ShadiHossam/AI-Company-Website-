@@ -1,0 +1,37 @@
+import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
+
+export default defineConfig({
+  site: 'https://aegisai.ae',
+  trailingSlash: 'never',
+  integrations: [sitemap()],
+  redirects: {
+    '/pages/about':                             '/about',
+    '/pages/about.html':                        '/about',
+    '/pages/blog':                              '/blog',
+    '/pages/blog.html':                         '/blog',
+    '/pages/contact':                           '/contact',
+    '/pages/contact.html':                      '/contact',
+    '/pages/faq':                               '/faq',
+    '/pages/faq.html':                          '/faq',
+    '/pages/pricing':                           '/pricing',
+    '/pages/pricing.html':                      '/pricing',
+    '/pages/privacy':                           '/privacy',
+    '/pages/privacy.html':                      '/privacy',
+    '/pages/products':                          '/products',
+    '/pages/products.html':                     '/products',
+    '/pages/results':                           '/results',
+    '/pages/results.html':                      '/results',
+    '/pages/services':                          '/services',
+    '/pages/services.html':                     '/services',
+    '/pages/terms':                             '/terms',
+    '/pages/terms.html':                        '/terms',
+    '/services/custom-ai-development.html':     '/services/custom-ai-development',
+    '/services/ai-training.html':               '/services/ai-training',
+    '/services/ai-strategy.html':               '/services/ai-strategy',
+    '/industries/real-estate.html':             '/industries/real-estate',
+    '/industries/retail.html':                  '/industries/retail',
+    '/industries/hospitality.html':             '/industries/hospitality',
+    '/industries/logistics.html':               '/industries/logistics',
+  },
+});

@@ -1,0 +1,181 @@
+/* Behavioral JS only — no DOM injection, no placeholder hydration */
+
+function toggleServicesDropdown() {
+  const btn = document.getElementById('services-btn');
+  const menu = document.getElementById('services-menu');
+  if (!btn || !menu) return;
+  const isOpen = menu.classList.contains('open');
+  menu.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+  btn.setAttribute('aria-expanded', String(!isOpen));
+}
+
+function toggleIndustriesDropdown() {
+  const btn = document.getElementById('industries-btn');
+  const menu = document.getElementById('industries-menu');
+  if (!btn || !menu) return;
+  const isOpen = menu.classList.contains('open');
+  menu.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+  btn.setAttribute('aria-expanded', String(!isOpen));
+}
+
+document.addEventListener('click', function(e) {
+  const sBtn = document.getElementById('services-btn');
+  const sMenu = document.getElementById('services-menu');
+  if (sBtn && sMenu && !sBtn.contains(e.target as Node) && !sMenu.contains(e.target as Node)) {
+    sMenu.classList.remove('open');
+    sBtn.classList.remove('open');
+    sBtn.setAttribute('aria-expanded', 'false');
+  }
+  const iBtn = document.getElementById('industries-btn');
+  const iMenu = document.getElementById('industries-menu');
+  if (iBtn && iMenu && !iBtn.contains(e.target as Node) && !iMenu.contains(e.target as Node)) {
+    iMenu.classList.remove('open');
+    iBtn.classList.remove('open');
+    iBtn.setAttribute('aria-expanded', 'false');
+  }
+});
+
+function toggleMenu() {
+  const m = document.getElementById('mobile-menu');
+  const btn = document.getElementById('hamburger');
+  if (!m || !btn) return;
+  const isOpen = m.classList.contains('open');
+  m.classList.toggle('open', !isOpen);
+  btn.setAttribute('aria-expanded', String(!isOpen));
+  document.getElementById('ham-icon')?.classList.toggle('hidden', !isOpen);
+  document.getElementById('close-icon')?.classList.toggle('hidden', isOpen);
+}
+
+let isArabic = false;
+function toggleLang() {
+  isArabic = !isArabic;
+  document.body.classList.toggle('rtl', isArabic);
+  document.documentElement.setAttribute('lang', isArabic ? 'ar' : 'en');
+  document.documentElement.setAttribute('dir', isArabic ? 'rtl' : 'ltr');
+}
+
+function openModal() {
+  const modal = document.getElementById('modal');
+  if (!modal) return;
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  const today = new Date().toISOString().split('T')[0];
+  const dateEl = document.getElementById('pref-date') as HTMLInputElement | null;
+  if (dateEl) dateEl.min = today;
+}
+
+function closeModal() {
+  const modal = document.getElementById('modal');
+  if (!modal) return;
+  modal.classList.remove('open');
+  document.body.style.overflow = '';
+  goToStep(1);
+}
+
+function handleOverlayClick(e: MouseEvent) {
+  if (e.target === document.getElementById('modal')) closeModal();
+}
+
+document.addEventListener('keydown', (e: KeyboardEvent) => { if (e.key === 'Escape') closeModal(); });
+
+let currentStep = 1;
+function goToStep(n: number) {
+  document.getElementById('step-' + currentStep)?.classList.add('hidden');
+  [1, 2, 3].forEach(i => {
+    const dot = document.getElementById('dot-' + i);
+    if (!dot) return;
+    dot.classList.remove('active', 'done', 'inactive');
+    if (i < n) dot.classList.add('done');
+    else if (i === n) dot.classList.add('active');
+    else dot.classList.add('inactive');
+  });
+  [1, 2].forEach(i => document.getElementById('line-' + i)?.classList.toggle('done', i < n));
+  currentStep = n;
+  document.getElementById('step-' + n)?.classList.remove('hidden');
+}
+
+function submitForm() {
+  document.getElementById('step-3')?.classList.add('hidden');
+  document.getElementById('step-success')?.classList.remove('hidden');
+  const ind = document.getElementById('step-indicator');
+  if (ind) ind.style.display = 'none';
+}
+
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar')?.classList.toggle('scrolled', window.scrollY > 20);
+});
+
+if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  document.querySelectorAll('[data-aos]').forEach(el => el.removeAttribute('data-aos'));
+}
+
+function subscribeToMailchimp(email: string, onSuccess: () => void) {
+  // TODO: Replace with your Mailchimp audience POST URL from Audience > Signup forms > Embedded forms
+  const mailchimpURL = 'YOUR_MAILCHIMP_AUDIENCE_POST_URL';
+  const data = new FormData();
+  data.append('EMAIL', email);
+  fetch(mailchimpURL, { method: 'POST', body: data, mode: 'no-cors' }).catch(() => {});
+  onSuccess();
+}
+
+function handleNewsletterSubmit(event: Event) {
+  event.preventDefault();
+  const email = (document.getElementById('newsletter-email') as HTMLInputElement)?.value;
+  subscribeToMailchimp(email, () => {
+    document.getElementById('newsletter-form-wrap')?.classList.add('hidden');
+    document.getElementById('newsletter-success')?.classList.remove('hidden');
+  });
+}
+
+function handleFooterNewsletterSubmit(event: Event) {
+  event.preventDefault();
+  const email = (document.getElementById('footer-newsletter-email') as HTMLInputElement)?.value;
+  subscribeToMailchimp(email, () => {
+    document.getElementById('footer-newsletter-form')?.classList.add('hidden');
+    document.getElementById('footer-newsletter-success')?.classList.remove('hidden');
+  });
+}
+
+function toggleFaq(btn: HTMLElement) {
+  const body = btn.nextElementSibling as HTMLElement | null;
+  const icon = btn.querySelector('.faq-icon');
+  if (!body) return;
+  const open = body.classList.toggle('open');
+  icon?.classList.toggle('open', open);
+  btn.setAttribute('aria-expanded', String(open));
+}
+
+/* Expose to inline onclick handlers */
+declare global {
+  interface Window {
+    toggleServicesDropdown: typeof toggleServicesDropdown;
+    toggleIndustriesDropdown: typeof toggleIndustriesDropdown;
+    toggleMenu: typeof toggleMenu;
+    toggleLang: typeof toggleLang;
+    openModal: typeof openModal;
+    closeModal: typeof closeModal;
+    handleOverlayClick: typeof handleOverlayClick;
+    goToStep: typeof goToStep;
+    submitForm: typeof submitForm;
+    handleNewsletterSubmit: typeof handleNewsletterSubmit;
+    handleFooterNewsletterSubmit: typeof handleFooterNewsletterSubmit;
+    toggleFaq: typeof toggleFaq;
+  }
+}
+
+Object.assign(window, {
+  toggleServicesDropdown,
+  toggleIndustriesDropdown,
+  toggleMenu,
+  toggleLang,
+  openModal,
+  closeModal,
+  handleOverlayClick,
+  goToStep,
+  submitForm,
+  handleNewsletterSubmit,
+  handleFooterNewsletterSubmit,
+  toggleFaq,
+});

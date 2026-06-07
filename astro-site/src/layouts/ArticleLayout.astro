@@ -1,0 +1,84 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  pubDate: Date;
+  category: string;
+  slug: string;
+  ogImage?: string;
+}
+
+const { title, description, pubDate, category, slug, ogImage } = Astro.props;
+
+const dateStr = pubDate.toLocaleDateString('en-AE', { year: 'numeric', month: 'long', day: 'numeric' });
+
+const ldJson = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": title,
+  "description": description,
+  "datePublished": pubDate.toISOString(),
+  "publisher": {
+    "@type": "Organization",
+    "name": "Aegis AI",
+    "url": "https://aegisai.ae"
+  }
+};
+---
+
+<BaseLayout
+  title={`${title} | Aegis AI Blog`}
+  description={description}
+  canonicalPath={`/blog/${slug}`}
+  ogType="article"
+  ogImage={ogImage ?? '/assets/og-blog.jpg'}
+  ldJson={ldJson}
+>
+  <article>
+    <header class="article-hero">
+      <div class="article-wrap">
+        <nav class="page-breadcrumb mb-6" aria-label="Breadcrumb">
+          <a href="/">Home</a>
+          <span class="sep">/</span>
+          <a href="/blog">Blog</a>
+          <span class="sep">/</span>
+          <span class="current">{title}</span>
+        </nav>
+        <div style="margin-bottom:1rem;">
+          <span class="tag tag-teal">{category}</span>
+        </div>
+        <h1 style="font-size:clamp(1.75rem,4vw,2.75rem); font-weight:800; color:#00253b; letter-spacing:-0.03em; margin-bottom:1rem;">{title}</h1>
+        <p style="color:#42474e; font-size:1.0625rem; max-width:640px;">{description}</p>
+        <p style="font-size:.875rem; color:#72787e; margin-top:1rem;">{dateStr}</p>
+      </div>
+    </header>
+    <div class="article-wrap" style="padding-top:3rem; padding-bottom:4rem;">
+      <div class="article-body prose">
+        <slot />
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .article-hero {
+    padding: 140px 0 64px;
+    background: linear-gradient(135deg, rgba(0,37,59,0.04) 0%, rgba(0,227,253,0.03) 100%);
+    border-bottom: 1px solid rgba(0,37,59,0.08);
+  }
+  .article-wrap {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+  .tag { display:inline-flex; align-items:center; padding:3px 12px; border-radius:100px; font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; }
+  .tag-teal { background:rgba(0,104,117,0.10); color:#004f58; border:1px solid rgba(0,104,117,0.20); }
+  .article-body h2 { margin-top: 2rem; margin-bottom: .75rem; }
+  .article-body h3 { margin-top: 1.5rem; margin-bottom: .5rem; }
+  .article-body p { color: #42474e; line-height: 1.8; margin-bottom: 1.25rem; }
+  .article-body ul, .article-body ol { color: #42474e; line-height: 1.8; margin-bottom: 1.25rem; padding-left: 1.5rem; }
+  .article-body li { margin-bottom: .5rem; }
+  .article-body a { color: #006875; text-decoration: underline; }
+</style>
