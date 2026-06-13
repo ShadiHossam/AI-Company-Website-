@@ -1,0 +1,180 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+
+const { data: configRows } = await supabase
+  .from('site_config')
+  .select('*')
+  .in('key', ['system.maintenance_mode', 'system.maintenance_message', 'system.maintenance_allowed_ips']);
+
+const { count: unreadNotifs } = await supabase
+  .from('notifications')
+  .select('*', { count: 'exact', head: true })
+  .eq('read', false);
+
+const config: Record<string, string> = {};
+(configRows ?? []).forEach(row => { config[row.key] = row.value ?? ''; });
+
+const isMaintenanceOn = config['system.maintenance_mode'] === 'true';
+const maintenanceMsg = config['system.maintenance_message'] ?? "We're performing scheduled maintenance. We'll be back shortly.";
+const allowedIps = config['system.maintenance_allowed_ips'] ?? '';
+// Convert comma-separated to newline-separated for textarea
+const allowedIpsDisplay = allowedIps.split(',').map((s: string) => s.trim()).filter(Boolean).join('\n');
+---
+
+<AdminLayout title="Maintenance Mode" user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="flex items-center gap-3 mb-6">
+    <a href="/admin/settings" class="btn btn-ghost btn-sm">← Back</a>
+    <div>
+      <h1 class="text-xl font-bold">Maintenance Mode</h1>
+      <p class="text-muted text-sm">Temporarily make the site inaccessible while you work on it.</p>
+    </div>
+  </div>
+
+  {isMaintenanceOn && (
+    <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:0.75rem;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" style="width:20px;height:20px;flex-shrink:0;"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span style="color:#ef4444;font-weight:600;font-size:0.875rem;">Maintenance mode is currently ACTIVE. The site is inaccessible to regular visitors.</span>
+    </div>
+  )}
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;">
+    <!-- Settings Form -->
+    <div>
+      <!-- Warning banner -->
+      <div style="background:rgba(251,146,60,0.08);border:1px solid rgba(251,146,60,0.3);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1.25rem;">
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span style="color:#fb923c;font-weight:700;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;">Warning</span>
+        </div>
+        <p class="text-sm text-muted" style="margin:0;">Enabling maintenance mode will make the site inaccessible to all visitors except allowed IPs. Ensure your IP is in the allowed list before enabling.</p>
+      </div>
+
+      <div class="card">
+        <div style="padding:1.5rem;">
+          <form id="maintenance-form">
+            <div class="form-group mb-5">
+              <label style="display:flex;align-items:center;gap:0.75rem;cursor:pointer;padding:1rem;background:var(--bg-input);border-radius:8px;border:1px solid var(--border);">
+                <input
+                  type="checkbox"
+                  name="system.maintenance_mode"
+                  id="maintenance-toggle"
+                  style="width:20px;height:20px;accent-color:#ef4444;cursor:pointer;"
+                  checked={isMaintenanceOn}
+                />
+                <div>
+                  <div style="font-weight:700;font-size:0.9rem;" class={isMaintenanceOn ? '' : ''}>Enable Maintenance Mode</div>
+                  <div class="text-xs text-muted">When enabled, all visitors except allowed IPs see the maintenance page.</div>
+                </div>
+              </label>
+            </div>
+
+            <div class="form-group mb-4">
+              <label class="form-label" for="maint-msg">Maintenance Message</label>
+              <textarea
+                id="maint-msg"
+                name="system.maintenance_message"
+                class="form-textarea"
+                rows="4"
+                placeholder="We're performing scheduled maintenance. We'll be back shortly."
+              >{maintenanceMsg}</textarea>
+              <p class="text-xs text-muted" style="margin-top:4px;">Displayed on the maintenance page.</p>
+            </div>
+
+            <div class="form-group mb-5">
+              <label class="form-label" for="allowed-ips">Allowed IPs</label>
+              <textarea
+                id="allowed-ips"
+                name="system.maintenance_allowed_ips_raw"
+                class="form-textarea"
+                rows="4"
+                placeholder="127.0.0.1&#10;192.168.1.1&#10;your.office.ip"
+              >{allowedIpsDisplay}</textarea>
+              <p class="text-xs text-muted" style="margin-top:4px;">One IP per line. These IPs will bypass maintenance mode. Add your current IP to avoid locking yourself out.</p>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span id="save-msg" style="font-size:0.875rem;display:none;"></span>
+              <button type="submit" class="btn btn-primary" id="save-btn" style="margin-left:auto;">
+                Save Settings
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Maintenance Page Preview -->
+    <div>
+      <div class="text-xs text-muted mb-2" style="font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Maintenance Page Preview</div>
+      <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#0a0f1a;">
+        <div style="padding:3rem 2rem;text-align:center;min-height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;">
+          <div style="width:64px;height:64px;border-radius:16px;background:rgba(0,227,253,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#00e3fd" stroke-width="2" style="width:32px;height:32px;"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+          </div>
+          <div style="font-size:1.5rem;font-weight:800;color:#e2e8f0;">Aegis AI</div>
+          <div style="font-size:0.9rem;color:#94a3b8;max-width:280px;" id="preview-msg">{maintenanceMsg}</div>
+          <div style="font-size:0.75rem;color:#475569;margin-top:0.5rem;">We'll be back soon.</div>
+        </div>
+      </div>
+      <p class="text-xs text-muted" style="margin-top:8px;">Preview updates as you type the maintenance message.</p>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  const form = document.getElementById('maintenance-form') as HTMLFormElement;
+  const saveBtn = document.getElementById('save-btn') as HTMLButtonElement;
+  const saveMsg = document.getElementById('save-msg') as HTMLElement;
+  const msgTextarea = document.getElementById('maint-msg') as HTMLTextAreaElement;
+  const previewMsg = document.getElementById('preview-msg') as HTMLElement;
+
+  // Live preview
+  msgTextarea.addEventListener('input', () => {
+    previewMsg.textContent = msgTextarea.value || "We're performing scheduled maintenance. We'll be back shortly.";
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+
+    // Convert newline-separated IPs to comma-separated
+    const rawIps = (fd.get('system.maintenance_allowed_ips_raw') as string) ?? '';
+    const commaSeparated = rawIps.split('\n').map(s => s.trim()).filter(Boolean).join(',');
+
+    const updates = [
+      { key: 'system.maintenance_mode', value: fd.get('system.maintenance_mode') === 'on' ? 'true' : 'false' },
+      { key: 'system.maintenance_message', value: fd.get('system.maintenance_message') as string },
+      { key: 'system.maintenance_allowed_ips', value: commaSeparated },
+    ];
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving…';
+
+    try {
+      const res = await fetch('/api/admin/config', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ updates }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      saveMsg.textContent = '✓ Settings saved';
+      saveMsg.style.color = '#4ade80';
+      saveMsg.style.display = 'inline';
+
+      // Refresh page to show/hide warning banner
+      setTimeout(() => { window.location.reload(); }, 1000);
+    } catch {
+      saveMsg.textContent = '✗ Error saving settings';
+      saveMsg.style.color = '#f87171';
+      saveMsg.style.display = 'inline';
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save Settings';
+    }
+  });
+</script>

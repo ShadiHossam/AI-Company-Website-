@@ -1,0 +1,116 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+const { count: unreadNotifs } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false);
+
+const { data: members } = await supabase
+  .from('team_members')
+  .select('id, name, title, active, sort_order')
+  .order('sort_order', { ascending: true });
+---
+
+<AdminLayout title="Team Members" user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <a href="/admin/content" class="text-muted text-sm" style="text-decoration:none;">← Content</a>
+      <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-top:0.25rem;">Team Members</h1>
+    </div>
+    <a href="/admin/content/team/new" class="btn btn-primary btn-sm">+ Add Member</a>
+  </div>
+
+  <div id="msg" style="display:none;padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem;"></div>
+
+  {(!members || members.length === 0) ? (
+    <div class="card" style="text-align:center;padding:3rem;">
+      <p class="text-muted">No team members yet.</p>
+      <a href="/admin/content/team/new" class="btn btn-primary btn-sm" style="margin-top:1rem;">+ Add Member</a>
+    </div>
+  ) : (
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div class="table-wrap">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);">
+              <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Name</th>
+              <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Title</th>
+              <th style="padding:0.75rem 1rem;text-align:center;font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Active</th>
+              <th style="padding:0.75rem 1rem;text-align:center;font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Order</th>
+              <th style="padding:0.75rem 1rem;text-align:right;font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {members.map(m => (
+              <tr class="team-row" style="border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s;" data-href={`/admin/content/team/${m.id}`}>
+                <td style="padding:0.875rem 1rem;">
+                  <a href={`/admin/content/team/${m.id}`} style="font-weight:600;color:var(--text-primary);text-decoration:none;">{m.name}</a>
+                </td>
+                <td style="padding:0.875rem 1rem;color:var(--text-muted);">{m.title}</td>
+                <td style="padding:0.875rem 1rem;text-align:center;">
+                  {m.active
+                    ? <span class="badge" style="background:var(--success-dim);color:var(--success);">Active</span>
+                    : <span class="badge" style="background:var(--bg-hover);color:var(--text-dim);">Inactive</span>
+                  }
+                </td>
+                <td style="padding:0.875rem 1rem;text-align:center;color:var(--text-muted);">{m.sort_order}</td>
+                <td style="padding:0.875rem 1rem;text-align:right;">
+                  <div class="flex items-center gap-2" style="justify-content:flex-end;" onclick="event.stopPropagation()">
+                    <a href={`/admin/content/team/${m.id}`} class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">Edit</a>
+                    <button class="btn btn-sm delete-member" data-id={m.id} data-name={m.name} style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);">Delete</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )}
+</AdminLayout>
+
+<script>
+  function showMsg(msg: string, type: 'success' | 'error' = 'success') {
+    const el = document.getElementById('msg') as HTMLElement;
+    el.textContent = msg;
+    el.style.display = 'block';
+    if (type === 'success') {
+      el.style.background = 'var(--success-dim)'; el.style.color = 'var(--success)'; el.style.border = '1px solid rgba(34,197,94,0.3)';
+    } else {
+      el.style.background = 'var(--danger-dim)'; el.style.color = 'var(--danger)'; el.style.border = '1px solid var(--danger)';
+    }
+    setTimeout(() => { el.style.display = 'none'; }, 3000);
+  }
+
+  // Row click to edit
+  document.querySelectorAll('.team-row').forEach(row => {
+    row.addEventListener('mouseenter', () => (row as HTMLElement).style.background = 'var(--bg-hover)');
+    row.addEventListener('mouseleave', () => (row as HTMLElement).style.background = '');
+    row.addEventListener('click', (e) => {
+      const href = (row as HTMLElement).dataset.href;
+      if (href && !(e.target as HTMLElement).closest('button')) {
+        window.location.href = href;
+      }
+    });
+  });
+
+  // Delete
+  document.querySelectorAll('.delete-member').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const el = btn as HTMLButtonElement;
+      const id = el.dataset.id!;
+      const name = el.dataset.name ?? 'this member';
+      if (!confirm(`Delete "${name}"?`)) return;
+      const res = await fetch(`/api/admin/content/team/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        el.closest('tr')?.remove();
+        showMsg('Member deleted.');
+      } else {
+        showMsg('Delete failed.', 'error');
+      }
+    });
+  });
+</script>

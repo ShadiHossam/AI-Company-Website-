@@ -1,0 +1,281 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+
+const { data: banners } = await supabase
+  .from('announcement_banner')
+  .select('*')
+  .limit(1);
+
+const { count: unreadNotifs } = await supabase
+  .from('notifications')
+  .select('*', { count: 'exact', head: true })
+  .eq('read', false);
+
+const banner = banners?.[0] ?? null;
+
+function toLocalDatetime(iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+---
+
+<AdminLayout title="Announcement Banner" user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="flex items-center gap-3 mb-6">
+    <a href="/admin/settings" class="btn btn-ghost btn-sm">← Back</a>
+    <div>
+      <h1 class="text-xl font-bold">Announcement Banner</h1>
+      <p class="text-muted text-sm">Site-wide top banner with optional CTA and schedule.</p>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;">
+    <!-- Form -->
+    <div class="card">
+      <div style="padding:1.5rem;">
+        <form id="banner-form">
+          {banner?.id && <input type="hidden" name="id" value={banner.id} />}
+
+          <div class="form-group mb-4">
+            <label style="display:flex;align-items:center;gap:0.75rem;cursor:pointer;">
+              <input
+                type="checkbox"
+                name="active"
+                id="banner-active"
+                style="width:18px;height:18px;accent-color:var(--accent);"
+                checked={banner?.active ?? false}
+              />
+              <span class="form-label" style="margin:0;">Active (show banner)</span>
+            </label>
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label" for="banner-msg">Message <span style="color:#f87171;">*</span></label>
+            <input
+              type="text"
+              id="banner-msg"
+              name="message"
+              class="form-input"
+              placeholder="Introductory offer: Free AI audit for UAE businesses"
+              value={banner?.message ?? ''}
+              required
+            />
+          </div>
+
+          <div class="grid-2 gap-3 mb-4">
+            <div class="form-group">
+              <label class="form-label" for="cta-text">CTA Text</label>
+              <input
+                type="text"
+                id="cta-text"
+                name="cta_text"
+                class="form-input"
+                placeholder="Book Now"
+                value={banner?.cta_text ?? ''}
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="cta-url">CTA URL</label>
+              <input
+                type="text"
+                id="cta-url"
+                name="cta_url"
+                class="form-input"
+                placeholder="/contact"
+                value={banner?.cta_url ?? ''}
+              />
+            </div>
+          </div>
+
+          <div class="grid-2 gap-3 mb-4">
+            <div class="form-group">
+              <label class="form-label" for="bg-color">Background Color</label>
+              <div style="display:flex;gap:0.5rem;align-items:center;">
+                <input
+                  type="color"
+                  id="bg-color"
+                  name="bg_color"
+                  style="width:44px;height:40px;border:none;background:none;cursor:pointer;border-radius:6px;padding:2px;"
+                  value={banner?.bg_color ?? '#00e3fd'}
+                />
+                <input
+                  type="text"
+                  id="bg-color-text"
+                  class="form-input"
+                  placeholder="#00e3fd"
+                  value={banner?.bg_color ?? '#00e3fd'}
+                  style="flex:1;"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="text-color">Text Color</label>
+              <div style="display:flex;gap:0.5rem;align-items:center;">
+                <input
+                  type="color"
+                  id="text-color"
+                  name="text_color"
+                  style="width:44px;height:40px;border:none;background:none;cursor:pointer;border-radius:6px;padding:2px;"
+                  value={banner?.text_color ?? '#0a0f1a'}
+                />
+                <input
+                  type="text"
+                  id="text-color-text"
+                  class="form-input"
+                  placeholder="#0a0f1a"
+                  value={banner?.text_color ?? '#0a0f1a'}
+                  style="flex:1;"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2 gap-3 mb-4">
+            <div class="form-group">
+              <label class="form-label" for="starts-at">Starts At (optional)</label>
+              <input
+                type="datetime-local"
+                id="starts-at"
+                name="starts_at"
+                class="form-input"
+                value={toLocalDatetime(banner?.starts_at ?? null)}
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ends-at">Ends At (optional)</label>
+              <input
+                type="datetime-local"
+                id="ends-at"
+                name="ends_at"
+                class="form-input"
+                value={toLocalDatetime(banner?.ends_at ?? null)}
+              />
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between" style="margin-top:1rem;">
+            <span id="save-msg" style="font-size:0.875rem;display:none;"></span>
+            <button type="submit" class="btn btn-primary" id="save-btn" style="margin-left:auto;">
+              Save Banner
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Live Preview -->
+    <div>
+      <div class="text-xs text-muted mb-2" style="font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Live Preview</div>
+      <div id="banner-preview" style="border-radius:8px;overflow:hidden;border:1px solid var(--border);">
+        <div
+          id="preview-bar"
+          style="padding:10px 1rem;font-size:0.875rem;font-weight:600;text-align:center;"
+        >
+          Banner preview will appear here
+        </div>
+      </div>
+      <p class="text-xs text-muted" style="margin-top:8px;">Preview updates as you type.</p>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  const form = document.getElementById('banner-form') as HTMLFormElement;
+  const saveBtn = document.getElementById('save-btn') as HTMLButtonElement;
+  const saveMsg = document.getElementById('save-msg') as HTMLElement;
+  const previewBar = document.getElementById('preview-bar') as HTMLElement;
+
+  const bgColorPicker = document.getElementById('bg-color') as HTMLInputElement;
+  const bgColorText = document.getElementById('bg-color-text') as HTMLInputElement;
+  const textColorPicker = document.getElementById('text-color') as HTMLInputElement;
+  const textColorText = document.getElementById('text-color-text') as HTMLInputElement;
+  const msgInput = document.getElementById('banner-msg') as HTMLInputElement;
+  const ctaTextInput = document.getElementById('cta-text') as HTMLInputElement;
+  const ctaUrlInput = document.getElementById('cta-url') as HTMLInputElement;
+
+  // Sync color picker ↔ text inputs
+  bgColorPicker.addEventListener('input', () => { bgColorText.value = bgColorPicker.value; updatePreview(); });
+  bgColorText.addEventListener('input', () => { bgColorPicker.value = bgColorText.value; updatePreview(); });
+  textColorPicker.addEventListener('input', () => { textColorText.value = textColorPicker.value; updatePreview(); });
+  textColorText.addEventListener('input', () => { textColorPicker.value = textColorText.value; updatePreview(); });
+
+  // Live preview
+  function updatePreview() {
+    const bg = bgColorPicker.value || '#00e3fd';
+    const tc = textColorPicker.value || '#0a0f1a';
+    const msg = msgInput.value || 'Your announcement message here';
+    const ctaText = ctaTextInput.value;
+    const ctaUrl = ctaUrlInput.value;
+
+    previewBar.style.background = bg;
+    previewBar.style.color = tc;
+    let html = msg;
+    if (ctaText && ctaUrl) {
+      html += ` <a href="${ctaUrl}" style="color:inherit;text-decoration:underline;margin-left:8px;">${ctaText} →</a>`;
+    } else if (ctaText) {
+      html += ` <span style="text-decoration:underline;margin-left:8px;">${ctaText} →</span>`;
+    }
+    previewBar.innerHTML = html;
+  }
+
+  [msgInput, ctaTextInput, ctaUrlInput].forEach(el => el.addEventListener('input', updatePreview));
+  updatePreview();
+
+  // Form submit
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+
+    const payload: Record<string, unknown> = {
+      message: fd.get('message') as string,
+      cta_text: (fd.get('cta_text') as string) || null,
+      cta_url: (fd.get('cta_url') as string) || null,
+      bg_color: bgColorPicker.value || '#00e3fd',
+      text_color: textColorPicker.value || '#0a0f1a',
+      active: fd.get('active') === 'on',
+      starts_at: (fd.get('starts_at') as string) ? new Date(fd.get('starts_at') as string).toISOString() : null,
+      ends_at: (fd.get('ends_at') as string) ? new Date(fd.get('ends_at') as string).toISOString() : null,
+    };
+
+    const idField = fd.get('id') as string;
+    if (idField) payload.id = idField;
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving…';
+
+    try {
+      const res = await fetch('/api/admin/banner', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('Failed');
+      const result = await res.json();
+      // Update hidden id if new record
+      if (result.data?.id && !idField) {
+        const hiddenId = document.createElement('input');
+        hiddenId.type = 'hidden';
+        hiddenId.name = 'id';
+        hiddenId.value = result.data.id;
+        form.appendChild(hiddenId);
+      }
+      saveMsg.textContent = '✓ Banner saved successfully';
+      saveMsg.style.color = '#4ade80';
+      saveMsg.style.display = 'inline';
+      setTimeout(() => { saveMsg.style.display = 'none'; }, 4000);
+    } catch {
+      saveMsg.textContent = '✗ Error saving banner';
+      saveMsg.style.color = '#f87171';
+      saveMsg.style.display = 'inline';
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save Banner';
+    }
+  });
+</script>

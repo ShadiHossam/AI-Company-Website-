@@ -1,0 +1,453 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+const { id } = Astro.params;
+
+const { count: unreadNotifs } = await supabase
+  .from('notifications')
+  .select('*', { count: 'exact', head: true })
+  .eq('read', false);
+
+const { data: post, error } = await supabase
+  .from('blog_posts')
+  .select('*')
+  .eq('id', id!)
+  .single();
+
+if (!post) {
+  return Astro.redirect('/admin/blog');
+}
+
+const createdAt = new Date(post.created_at).toLocaleString('en-AE', { dateStyle: 'medium', timeStyle: 'short' });
+const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle: 'medium', timeStyle: 'short' });
+---
+
+<AdminLayout title="Edit Post" user={user} unreadCount={unreadNotifs ?? 0}>
+
+  <div class="flex items-center gap-3 mb-6">
+    <a href="/admin/blog" class="btn btn-ghost btn-sm">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </a>
+    <h1 style="font-size:1.375rem; font-weight:800; color:var(--text-primary); flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">{post.title}</h1>
+    <span class={`badge ${post.status === 'published' ? 'badge-published' : post.status === 'draft' ? 'badge-draft' : ''}`}
+      style={post.status === 'archived' ? 'background:rgba(245,158,11,0.12);color:#fbbf24;' : ''}
+    >
+      {post.status}
+    </span>
+  </div>
+
+  <!-- Auto-save indicator -->
+  <div id="save-indicator" style="display:none; position:fixed; bottom:1.5rem; right:1.5rem; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:0.5rem 1rem; font-size:0.8125rem; color:var(--text-muted); z-index:200; box-shadow:0 8px 24px rgba(0,0,0,0.3);">
+    Saving…
+  </div>
+
+  <div id="error-banner" style="display:none;" class="card mb-4"></div>
+  <div id="success-banner" style="display:none;" class="card mb-4"></div>
+
+  <form id="post-form" data-post-id={post.id}>
+    <div style="display:grid; grid-template-columns:1fr 280px; gap:1.5rem; align-items:start;">
+
+      <!-- Main column -->
+      <div>
+        <div class="card mb-4">
+          <div class="form-group mb-4">
+            <label class="form-label" for="title">Title</label>
+            <input id="title" name="title" type="text" class="form-input" required value={post.title} />
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label" for="slug">Slug</label>
+            <input id="slug" name="slug" type="text" class="form-input" required value={post.slug} pattern="[a-z0-9-]+" />
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label" for="description">Description</label>
+            <textarea id="description" name="description" class="form-textarea" required style="min-height:80px;">{post.description}</textarea>
+          </div>
+
+          <div class="grid-2" style="gap:1rem;">
+            <div class="form-group">
+              <label class="form-label" for="category">Category</label>
+              <input id="category" name="category" type="text" class="form-input" required value={post.category} list="category-suggestions" />
+              <datalist id="category-suggestions">
+                <option value="AI Automation" />
+                <option value="AI Training" />
+                <option value="Case Studies" />
+                <option value="Industry Insights" />
+                <option value="Product Updates" />
+              </datalist>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="author_name">Author</label>
+              <input id="author_name" name="author_name" type="text" class="form-input" value={post.author_name ?? 'Aegis AI'} />
+            </div>
+          </div>
+        </div>
+
+        <!-- SEO / Meta -->
+        <div class="card mb-4">
+          <div class="card-header mb-4" style="margin-bottom:1rem;">
+            <span class="card-title">SEO & Meta</span>
+          </div>
+          <div class="form-group mb-4">
+            <label class="form-label" for="og_image">OG Image URL</label>
+            <input id="og_image" name="og_image" type="text" class="form-input" value={post.og_image ?? ''} placeholder="/assets/og-blog.jpg" />
+          </div>
+          <div class="form-group mb-4">
+            <label class="form-label" for="meta_title">Meta Title</label>
+            <input id="meta_title" name="meta_title" type="text" class="form-input" value={post.meta_title ?? ''} placeholder="Defaults to post title" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="meta_description">Meta Description</label>
+            <textarea id="meta_description" name="meta_description" class="form-textarea" style="min-height:70px;" placeholder="Defaults to description">{post.meta_description ?? ''}</textarea>
+          </div>
+        </div>
+
+        <!-- Body / Preview -->
+        <div class="card">
+          <div class="flex items-center justify-between mb-4">
+            <label class="form-label" style="margin:0;">Body (Markdown)</label>
+            <div class="flex gap-2">
+              <button type="button" id="tab-write" class="btn btn-sm btn-primary">Write</button>
+              <button type="button" id="tab-preview" class="btn btn-sm btn-secondary">Preview</button>
+            </div>
+          </div>
+
+          <div id="write-panel">
+            <textarea
+              id="body_markdown"
+              name="body_markdown"
+              class="form-textarea"
+              required
+              style="min-height:500px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size:0.875rem; line-height:1.7;"
+            >{post.body_markdown}</textarea>
+          </div>
+
+          <div id="preview-panel" style="display:none;">
+            <div
+              id="preview-content"
+              class="prose"
+              style="min-height:500px; padding:1rem; background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-primary); line-height:1.8;"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div style="position:sticky; top:calc(var(--topbar-h) + 1.5rem);">
+
+        <!-- Actions card -->
+        <div class="card mb-4">
+          <div class="card-title mb-4" style="margin-bottom:1rem;">Actions</div>
+
+          <div class="form-group mb-4">
+            <label class="form-label" for="status">Status</label>
+            <select id="status" name="status" class="form-select">
+              <option value="draft" selected={post.status === 'draft'}>Draft</option>
+              <option value="published" selected={post.status === 'published'}>Published</option>
+              <option value="archived" selected={post.status === 'archived'}>Archived</option>
+            </select>
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label" for="pub_date">Publish Date</label>
+            <input id="pub_date" name="pub_date" type="date" class="form-input" value={post.pub_date ?? ''} />
+          </div>
+
+          <button type="submit" id="submit-btn" class="btn btn-primary" style="width:100%; justify-content:center; margin-bottom:0.5rem;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="20 6 9 17 4 12"/></svg>
+            Save Changes
+          </button>
+
+          {post.status === 'draft' && (
+            <button type="button" id="publish-btn" class="btn btn-secondary" style="width:100%; justify-content:center; margin-bottom:0.5rem;">
+              Publish Now
+            </button>
+          )}
+
+          {post.status === 'published' && (
+            <button type="button" id="archive-btn" class="btn btn-secondary" style="width:100%; justify-content:center; margin-bottom:0.5rem;">
+              Archive
+            </button>
+          )}
+
+          {post.status === 'published' && (
+            <a href={`/blog/${post.slug}`} target="_blank" rel="noopener" class="btn btn-ghost" style="width:100%; justify-content:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              View Live Post
+            </a>
+          )}
+        </div>
+
+        <!-- Info card -->
+        <div class="card mb-4">
+          <div class="card-title mb-4" style="margin-bottom:0.75rem; font-size:0.8125rem;">Post Info</div>
+          <div style="display:flex; flex-direction:column; gap:0.5rem;">
+            <div>
+              <div class="text-xs text-muted">Created</div>
+              <div class="text-sm" style="color:var(--text-primary);">{createdAt}</div>
+            </div>
+            <div>
+              <div class="text-xs text-muted">Last Updated</div>
+              <div class="text-sm" style="color:var(--text-primary);">{updatedAt}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="card" style="border-color:rgba(239,68,68,0.2);">
+          <div class="card-title mb-4" style="margin-bottom:0.75rem; font-size:0.8125rem; color:var(--danger);">Danger Zone</div>
+          <button type="button" id="delete-btn" class="btn btn-danger btn-sm" style="width:100%; justify-content:center;">
+            Delete Post
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </form>
+
+</AdminLayout>
+
+<script>
+  import { marked } from 'marked';
+
+  const postId = (document.getElementById('post-form') as HTMLFormElement).dataset.postId!;
+
+  // Tab switching
+  const tabWrite = document.getElementById('tab-write')!;
+  const tabPreview = document.getElementById('tab-preview')!;
+  const writePanel = document.getElementById('write-panel')!;
+  const previewPanel = document.getElementById('preview-panel')!;
+  const previewContent = document.getElementById('preview-content')!;
+  const bodyEl = document.getElementById('body_markdown') as HTMLTextAreaElement;
+
+  tabWrite.addEventListener('click', () => {
+    writePanel.style.display = 'block';
+    previewPanel.style.display = 'none';
+    tabWrite.className = 'btn btn-sm btn-primary';
+    tabPreview.className = 'btn btn-sm btn-secondary';
+  });
+
+  tabPreview.addEventListener('click', async () => {
+    writePanel.style.display = 'none';
+    previewPanel.style.display = 'block';
+    tabWrite.className = 'btn btn-sm btn-secondary';
+    tabPreview.className = 'btn btn-sm btn-primary';
+    previewContent.innerHTML = await marked(bodyEl.value || '_No content yet_');
+  });
+
+  // Auto-save
+  const saveIndicator = document.getElementById('save-indicator')!;
+  let autoSaveTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const formFields = document.querySelectorAll('#post-form input, #post-form textarea, #post-form select');
+
+  async function doSave(silent = false) {
+    if (!silent) {
+      saveIndicator.textContent = 'Saving…';
+      saveIndicator.style.display = 'block';
+    }
+
+    const payload = buildPayload();
+    try {
+      const res = await fetch(`/api/admin/blog/${postId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        if (!silent) {
+          saveIndicator.textContent = 'Saved';
+          saveIndicator.style.color = 'var(--success)';
+          setTimeout(() => {
+            saveIndicator.style.display = 'none';
+            saveIndicator.style.color = '';
+          }, 2000);
+        }
+      } else {
+        if (!silent) {
+          saveIndicator.textContent = 'Save failed';
+          saveIndicator.style.color = 'var(--danger)';
+          setTimeout(() => { saveIndicator.style.display = 'none'; saveIndicator.style.color = ''; }, 3000);
+        }
+      }
+    } catch {
+      if (!silent) {
+        saveIndicator.style.display = 'none';
+      }
+    }
+  }
+
+  formFields.forEach(field => {
+    field.addEventListener('input', () => {
+      if (autoSaveTimer) clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(() => doSave(false), 2000);
+    });
+  });
+
+  function buildPayload() {
+    return {
+      title: (document.getElementById('title') as HTMLInputElement).value.trim(),
+      slug: (document.getElementById('slug') as HTMLInputElement).value.trim(),
+      description: (document.getElementById('description') as HTMLTextAreaElement).value.trim(),
+      category: (document.getElementById('category') as HTMLInputElement).value.trim(),
+      author_name: (document.getElementById('author_name') as HTMLInputElement).value.trim(),
+      og_image: (document.getElementById('og_image') as HTMLInputElement).value.trim() || '/assets/og-blog.jpg',
+      meta_title: (document.getElementById('meta_title') as HTMLInputElement).value.trim() || null,
+      meta_description: (document.getElementById('meta_description') as HTMLTextAreaElement).value.trim() || null,
+      status: (document.getElementById('status') as HTMLSelectElement).value,
+      pub_date: (document.getElementById('pub_date') as HTMLInputElement).value || null,
+      body_markdown: bodyEl.value,
+    };
+  }
+
+  // Manual save (form submit)
+  const form = document.getElementById('post-form') as HTMLFormElement;
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+  const errorBanner = document.getElementById('error-banner')!;
+  const successBanner = document.getElementById('success-banner')!;
+
+  function showError(msg: string) {
+    errorBanner.textContent = msg;
+    errorBanner.style.background = 'var(--danger-dim)';
+    errorBanner.style.borderColor = 'rgba(239,68,68,0.3)';
+    errorBanner.style.color = 'var(--danger)';
+    errorBanner.style.padding = '0.75rem 1rem';
+    errorBanner.style.display = 'block';
+    successBanner.style.display = 'none';
+  }
+
+  function showSuccess(msg: string) {
+    successBanner.textContent = msg;
+    successBanner.style.background = 'var(--success-dim)';
+    successBanner.style.borderColor = 'rgba(34,197,94,0.3)';
+    successBanner.style.color = 'var(--success)';
+    successBanner.style.padding = '0.75rem 1rem';
+    successBanner.style.display = 'block';
+    errorBanner.style.display = 'none';
+    setTimeout(() => { successBanner.style.display = 'none'; }, 3000);
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving…';
+
+    try {
+      const res = await fetch(`/api/admin/blog/${postId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildPayload()),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        showSuccess('Post saved successfully.');
+      } else {
+        showError(json.error ?? 'Failed to save post.');
+      }
+    } catch {
+      showError('Network error. Please try again.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="20 6 9 17 4 12"/></svg> Save Changes';
+    }
+  });
+
+  // Publish button
+  const publishBtn = document.getElementById('publish-btn') as HTMLButtonElement | null;
+  if (publishBtn) {
+    publishBtn.addEventListener('click', async () => {
+      publishBtn.disabled = true;
+      publishBtn.textContent = 'Publishing…';
+      const today = new Date().toISOString().split('T')[0];
+      try {
+        const res = await fetch(`/api/admin/blog/${postId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'published', pub_date: today }),
+        });
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          const { error } = await res.json();
+          showError(error ?? 'Failed to publish.');
+          publishBtn.disabled = false;
+          publishBtn.textContent = 'Publish Now';
+        }
+      } catch {
+        showError('Network error.');
+        publishBtn.disabled = false;
+        publishBtn.textContent = 'Publish Now';
+      }
+    });
+  }
+
+  // Archive button
+  const archiveBtn = document.getElementById('archive-btn') as HTMLButtonElement | null;
+  if (archiveBtn) {
+    archiveBtn.addEventListener('click', async () => {
+      if (!confirm('Archive this post? It will be hidden from the public blog.')) return;
+      archiveBtn.disabled = true;
+      archiveBtn.textContent = 'Archiving…';
+      try {
+        const res = await fetch(`/api/admin/blog/${postId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'archived' }),
+        });
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          const { error } = await res.json();
+          showError(error ?? 'Failed to archive.');
+          archiveBtn.disabled = false;
+          archiveBtn.textContent = 'Archive';
+        }
+      } catch {
+        showError('Network error.');
+        archiveBtn.disabled = false;
+        archiveBtn.textContent = 'Archive';
+      }
+    });
+  }
+
+  // Delete button
+  const deleteBtn = document.getElementById('delete-btn') as HTMLButtonElement;
+  deleteBtn.addEventListener('click', async () => {
+    const title = (document.getElementById('title') as HTMLInputElement).value;
+    if (!confirm(`Permanently delete "${title}"? This cannot be undone.`)) return;
+    deleteBtn.disabled = true;
+    deleteBtn.textContent = 'Deleting…';
+    try {
+      const res = await fetch(`/api/admin/blog/${postId}`, { method: 'DELETE' });
+      if (res.ok) {
+        window.location.href = '/admin/blog';
+      } else {
+        const { error } = await res.json();
+        showError(error ?? 'Delete failed.');
+        deleteBtn.disabled = false;
+        deleteBtn.textContent = 'Delete Post';
+      }
+    } catch {
+      showError('Network error.');
+      deleteBtn.disabled = false;
+      deleteBtn.textContent = 'Delete Post';
+    }
+  });
+</script>
+
+<style>
+  .prose h1, .prose h2, .prose h3 { color: var(--text-primary); margin-top:1.5rem; margin-bottom:0.5rem; }
+  .prose p { margin-bottom: 1rem; }
+  .prose ul, .prose ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+  .prose code { background: var(--bg-hover); padding: 2px 6px; border-radius: 4px; font-size: 0.85em; }
+  .prose pre { background: var(--bg-hover); padding: 1rem; border-radius: 8px; overflow-x: auto; margin-bottom: 1rem; }
+  .prose blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--text-muted); margin-bottom: 1rem; }
+  .prose a { color: var(--accent); }
+</style>

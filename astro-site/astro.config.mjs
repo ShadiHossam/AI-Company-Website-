@@ -1,10 +1,12 @@
 import { defineConfig } from 'astro/config';
-import sitemap from '@astrojs/sitemap';
+import vercel from '@astrojs/vercel';
 
 export default defineConfig({
   site: 'https://aegisai.ae',
+  output: 'server',
+  adapter: vercel(),
   trailingSlash: 'never',
-  integrations: [sitemap()],
+  integrations: [],
   redirects: {
     '/pages/about':                             '/about',
     '/pages/about.html':                        '/about',

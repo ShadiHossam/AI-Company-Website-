@@ -1,0 +1,227 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+const { count: unreadNotifs } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false);
+
+const { id } = Astro.params;
+const { data: cs, error } = await supabase.from('case_studies').select('*').eq('id', id!).single();
+
+if (error || !cs) {
+  return Astro.redirect('/admin/content/case-studies');
+}
+
+const timelineItems = (cs.timeline_items as { step: string; description: string }[]) ?? [];
+const results = (cs.results as { value: string; label: string }[]) ?? [];
+---
+
+<AdminLayout title={`Edit: ${cs.title}`} user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <a href="/admin/content/case-studies" class="text-muted text-sm" style="text-decoration:none;">← Case Studies</a>
+      <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-top:0.25rem;">Edit Case Study</h1>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href={`/results#${cs.slug}`} target="_blank" rel="noopener" class="btn btn-ghost btn-sm">View ↗</a>
+    </div>
+  </div>
+
+  <div id="save-banner" style="display:none;background:var(--success-dim);border:1px solid rgba(34,197,94,0.3);color:var(--success);padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem;">
+    Saved successfully.
+  </div>
+  <div id="error-banner" style="display:none;background:var(--danger-dim);border:1px solid var(--danger);color:var(--danger);padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem;"></div>
+
+  <form id="edit-form">
+    <!-- Core fields -->
+    <div class="card mb-4">
+      <div style="font-weight:600;margin-bottom:1rem;color:var(--text-primary);">Basic Info</div>
+      <div class="grid-2 gap-4 mb-4">
+        <div class="form-group">
+          <label class="form-label">Title *</label>
+          <input class="form-input" name="title" type="text" required value={cs.title} />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Slug *</label>
+          <input class="form-input" name="slug" type="text" required value={cs.slug} />
+        </div>
+      </div>
+      <div class="grid-2 gap-4 mb-4">
+        <div class="form-group">
+          <label class="form-label">Industry</label>
+          <select class="form-select" name="industry">
+            <option value="">Select industry...</option>
+            {['Real Estate','Retail','Hospitality','Logistics','Healthcare','Finance','Other'].map(ind => (
+              <option value={ind} selected={cs.industry === ind}>{ind}</option>
+            ))}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Delivery Time</label>
+          <input class="form-input" name="delivery_time" type="text" value={cs.delivery_time ?? ''} placeholder="6 weeks" />
+        </div>
+      </div>
+      <div class="form-group mb-4">
+        <label class="form-label">Challenge</label>
+        <textarea class="form-textarea" name="challenge" rows="4">{cs.challenge ?? ''}</textarea>
+      </div>
+      <div class="form-group mb-4">
+        <label class="form-label">Solution</label>
+        <textarea class="form-textarea" name="solution" rows="4">{cs.solution ?? ''}</textarea>
+      </div>
+      <div class="flex items-center gap-4">
+        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+          <input type="checkbox" name="featured" checked={cs.featured} style="width:16px;height:16px;accent-color:var(--accent);" />
+          <span class="text-sm">Featured</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+          <input type="checkbox" name="published" checked={cs.published} style="width:16px;height:16px;accent-color:var(--accent);" />
+          <span class="text-sm">Published</span>
+        </label>
+        <div class="form-group" style="margin:0;flex:1;max-width:120px;">
+          <label class="form-label text-xs">Sort Order</label>
+          <input class="form-input" name="sort_order" type="number" value={cs.sort_order ?? 0} />
+        </div>
+      </div>
+    </div>
+
+    <!-- Results editor -->
+    <div class="card mb-4">
+      <div class="flex items-center justify-between mb-4">
+        <div style="font-weight:600;color:var(--text-primary);">Results</div>
+        <button type="button" id="add-result" class="btn btn-ghost btn-sm">+ Add Result</button>
+      </div>
+      <div id="results-list">
+        {results.map((r, i) => (
+          <div class="result-row flex items-center gap-3 mb-3">
+            <input class="form-input" style="flex:0 0 120px;" placeholder="Value" name={`result_value_${i}`} value={r.value} data-result-value />
+            <input class="form-input" style="flex:1;" placeholder="Label (e.g. Revenue Increase)" name={`result_label_${i}`} value={r.label} data-result-label />
+            <button type="button" class="btn btn-sm remove-result" style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);flex-shrink:0;">✕</button>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Timeline editor -->
+    <div class="card mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <div style="font-weight:600;color:var(--text-primary);">Timeline</div>
+        <button type="button" id="add-timeline" class="btn btn-ghost btn-sm">+ Add Step</button>
+      </div>
+      <div id="timeline-list">
+        {timelineItems.map((t, i) => (
+          <div class="timeline-row flex items-center gap-3 mb-3">
+            <input class="form-input" style="flex:0 0 160px;" placeholder="Step (e.g. Week 1)" name={`timeline_step_${i}`} value={t.step} data-timeline-step />
+            <input class="form-input" style="flex:1;" placeholder="Description" name={`timeline_desc_${i}`} value={t.description} data-timeline-desc />
+            <button type="button" class="btn btn-sm remove-timeline" style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);flex-shrink:0;">✕</button>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button type="submit" class="btn btn-primary" id="save-btn">Save Changes</button>
+      <a href="/admin/content/case-studies" class="btn btn-ghost">Back</a>
+    </div>
+  </form>
+</AdminLayout>
+
+<script>
+  const csId = window.location.pathname.split('/').at(-1)!;
+
+  // Add result row
+  document.getElementById('add-result')!.addEventListener('click', () => {
+    const list = document.getElementById('results-list')!;
+    const idx = list.querySelectorAll('.result-row').length;
+    const div = document.createElement('div');
+    div.className = 'result-row flex items-center gap-3 mb-3';
+    div.innerHTML = `
+      <input class="form-input" style="flex:0 0 120px;" placeholder="Value" name="result_value_${idx}" data-result-value />
+      <input class="form-input" style="flex:1;" placeholder="Label" name="result_label_${idx}" data-result-label />
+      <button type="button" class="btn btn-sm remove-result" style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);flex-shrink:0;">✕</button>
+    `;
+    list.appendChild(div);
+    attachRemove(div.querySelector('.remove-result')!, 'result-row');
+  });
+
+  // Add timeline row
+  document.getElementById('add-timeline')!.addEventListener('click', () => {
+    const list = document.getElementById('timeline-list')!;
+    const idx = list.querySelectorAll('.timeline-row').length;
+    const div = document.createElement('div');
+    div.className = 'timeline-row flex items-center gap-3 mb-3';
+    div.innerHTML = `
+      <input class="form-input" style="flex:0 0 160px;" placeholder="Step" name="timeline_step_${idx}" data-timeline-step />
+      <input class="form-input" style="flex:1;" placeholder="Description" name="timeline_desc_${idx}" data-timeline-desc />
+      <button type="button" class="btn btn-sm remove-timeline" style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);flex-shrink:0;">✕</button>
+    `;
+    list.appendChild(div);
+    attachRemove(div.querySelector('.remove-timeline')!, 'timeline-row');
+  });
+
+  function attachRemove(btn: HTMLButtonElement, rowClass: string) {
+    btn.addEventListener('click', () => btn.closest(`.${rowClass}`)?.remove());
+  }
+
+  // Attach remove handlers to existing rows
+  document.querySelectorAll('.remove-result').forEach(btn => attachRemove(btn as HTMLButtonElement, 'result-row'));
+  document.querySelectorAll('.remove-timeline').forEach(btn => attachRemove(btn as HTMLButtonElement, 'timeline-row'));
+
+  // Form submit
+  document.getElementById('edit-form')!.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const saveBtn = document.getElementById('save-btn') as HTMLButtonElement;
+    const saveBanner = document.getElementById('save-banner') as HTMLElement;
+    const errorBanner = document.getElementById('error-banner') as HTMLElement;
+    saveBtn.textContent = 'Saving...';
+    saveBtn.disabled = true;
+    saveBanner.style.display = 'none';
+    errorBanner.style.display = 'none';
+
+    const form = e.target as HTMLFormElement;
+    const fd = new FormData(form);
+
+    // Collect results
+    const resultValues = Array.from(document.querySelectorAll('[data-result-value]')) as HTMLInputElement[];
+    const resultLabels = Array.from(document.querySelectorAll('[data-result-label]')) as HTMLInputElement[];
+    const results = resultValues.map((v, i) => ({ value: v.value, label: resultLabels[i]?.value ?? '' })).filter(r => r.value || r.label);
+
+    // Collect timeline
+    const timelineSteps = Array.from(document.querySelectorAll('[data-timeline-step]')) as HTMLInputElement[];
+    const timelineDescs = Array.from(document.querySelectorAll('[data-timeline-desc]')) as HTMLInputElement[];
+    const timeline_items = timelineSteps.map((s, i) => ({ step: s.value, description: timelineDescs[i]?.value ?? '' })).filter(t => t.step || t.description);
+
+    const payload = {
+      title: fd.get('title') as string,
+      slug: fd.get('slug') as string,
+      industry: fd.get('industry') as string || null,
+      delivery_time: fd.get('delivery_time') as string || null,
+      challenge: fd.get('challenge') as string || null,
+      solution: fd.get('solution') as string || null,
+      featured: (form.querySelector('[name="featured"]') as HTMLInputElement).checked,
+      published: (form.querySelector('[name="published"]') as HTMLInputElement).checked,
+      sort_order: parseInt(fd.get('sort_order') as string ?? '0', 10),
+      results,
+      timeline_items,
+    };
+
+    const res = await fetch(`/api/admin/content/case-studies/${csId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      saveBanner.style.display = 'block';
+      setTimeout(() => { saveBanner.style.display = 'none'; }, 3000);
+    } else {
+      const err = await res.json();
+      errorBanner.textContent = err.error ?? 'Save failed';
+      errorBanner.style.display = 'block';
+    }
+    saveBtn.textContent = 'Save Changes';
+    saveBtn.disabled = false;
+  });
+</script>

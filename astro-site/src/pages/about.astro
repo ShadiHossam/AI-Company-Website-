@@ -1,5 +1,48 @@
 ---
+export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../lib/supabase";
+
+// Hardcoded fallback team members
+const fallbackTeam = [
+  {
+    name: "Faris Al-Hashemi",
+    title: "Founder & CEO",
+    bio: "Faris spent 12 years watching AI projects fail across the GCC — usually because the system didn't fit the business, or the team wasn't trained to use it. He started Aegis AI to fix that.",
+    image_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80&auto=format&fit=crop&crop=face",
+  },
+  {
+    name: "Dr. Elena Rostova",
+    title: "Head of Engineering",
+    bio: "Elena has a PhD in Machine Learning and leads our engineering team. She's the reason our AI systems work in production, not just in demos — rigorous about testing before anything goes live.",
+    image_url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80&auto=format&fit=crop&crop=face",
+  },
+  {
+    name: "Tareq Al-Mansoori",
+    title: "Head of Training",
+    bio: "Tareq has trained over 1,500 professionals across the UAE in Arabic and English. He knows that most training fails not because of content, but because it doesn't connect to the job people actually do.",
+    image_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80&auto=format&fit=crop&crop=face",
+  },
+];
+
+let teamMembers = fallbackTeam;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('team_members')
+    .select('name, title, bio, image_url, sort_order')
+    .eq('active', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    teamMembers = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
 
 <BaseLayout
@@ -29,14 +72,14 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 <!-- HERO IMAGE -->
 <div style="position:relative; overflow:hidden; height:280px;">
-  <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1400&q=80&auto=format&fit=crop" alt="Dubai skyline representing our home market" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:center 60%;" />
+  <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1400&q=80&auto=format&fit=crop" alt="Dubai skyline representing our home market" loading="eager" fetchpriority="high" width="1400" height="280" style="width:100%;height:100%;object-fit:cover;object-position:center 60%;" />
   <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(249,249,255,0.50) 0%,rgba(249,249,255,0.05) 100%);"></div>
 </div>
 
 <!-- MISSION STATS -->
 <section class="section" style="padding:5rem 0; background:#e7eeff;">
   <div class="container">
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px; max-width:760px; margin:0 auto; text-align:center;">
+    <div class="about-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px; max-width:760px; margin:0 auto; text-align:center;">
       <div>
         <p class="stat-number">94%</p>
         <p style="color:#42474e; font-size:0.875rem; margin:0; line-height:1.6;">of UAE businesses are SMEs — most AI companies ignore them</p>
@@ -56,7 +99,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 <!-- OUR STORY -->
 <section class="section" aria-labelledby="story-heading">
   <div class="container" style="max-width:960px;">
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center;">
+    <div class="about-story-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center;">
       <div>
         <div class="section-eyebrow" style="text-align:left; margin-bottom:1rem;">Our Story</div>
         <h2 id="story-heading" style="text-align:left; font-size:2rem; margin-bottom:1.25rem;">Built After Watching AI Projects Fail</h2>
@@ -114,7 +157,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       <div class="section-eyebrow">What We Stand For</div>
       <h2 id="values-heading">Our Values</h2>
     </div>
-    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:24px;">
+    <div class="about-values-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:24px;">
       <div class="value-card">
         <div class="value-icon"><span class="material-symbols-outlined">trending_up</span></div>
         <h3 style="font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem;">Results Before Revenue</h3>
@@ -146,7 +189,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       <div class="section-eyebrow">Context</div>
       <h2 id="why-heading">Why Dubai. Why Now.</h2>
     </div>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+    <div class="about-why-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
       <div class="stat-pill">
         <div style="width:40px;height:40px;border-radius:12px;background:rgba(0,227,253,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;"><span class="material-symbols-outlined" style="color:#006875; font-size:20px;">shield</span></div>
         <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">UAE National AI Strategy 2031</p>
@@ -179,25 +222,15 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       <h2 id="team-heading">The People Behind the Work</h2>
       <p>UAE-based AI specialists, engineers, and business consultants who have seen firsthand how AI transforms operations — and how it fails when done wrong.</p>
     </div>
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px; max-width:860px; margin:0 auto;">
-      <div class="team-card">
-        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80&auto=format&fit=crop&crop=face" alt="Faris Al-Hashemi, Founder and CEO" class="team-avatar" loading="lazy" />
-        <h3 style="font-weight:700; color:#00253b; margin-bottom:3px;">Faris Al-Hashemi</h3>
-        <p style="color:#006875; font-size:0.875rem; font-weight:600; margin-bottom:0.75rem;">Founder &amp; CEO</p>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6; margin:0;">Faris spent 12 years watching AI projects fail across the GCC — usually because the system didn't fit the business, or the team wasn't trained to use it. He started Aegis AI to fix that.</p>
-      </div>
-      <div class="team-card">
-        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80&auto=format&fit=crop&crop=face" alt="Dr. Elena Rostova, Head of Engineering" class="team-avatar" loading="lazy" />
-        <h3 style="font-weight:700; color:#00253b; margin-bottom:3px;">Dr. Elena Rostova</h3>
-        <p style="color:#006875; font-size:0.875rem; font-weight:600; margin-bottom:0.75rem;">Head of Engineering</p>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6; margin:0;">Elena has a PhD in Machine Learning and leads our engineering team. She's the reason our AI systems work in production, not just in demos — rigorous about testing before anything goes live.</p>
-      </div>
-      <div class="team-card">
-        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80&auto=format&fit=crop&crop=face" alt="Tareq Al-Mansoori, Head of Training" class="team-avatar" loading="lazy" />
-        <h3 style="font-weight:700; color:#00253b; margin-bottom:3px;">Tareq Al-Mansoori</h3>
-        <p style="color:#006875; font-size:0.875rem; font-weight:600; margin-bottom:0.75rem;">Head of Training</p>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6; margin:0;">Tareq has trained over 1,500 professionals across the UAE in Arabic and English. He knows that most training fails not because of content, but because it doesn't connect to the job people actually do.</p>
-      </div>
+    <div class="about-team-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px; max-width:860px; margin:0 auto;">
+      {teamMembers.map((member) => (
+        <div class="team-card">
+          <img src={member.image_url} alt={`${member.name}, ${member.title}`} class="team-avatar" loading="lazy" />
+          <h3 style="font-weight:700; color:#00253b; margin-bottom:3px;">{member.name}</h3>
+          <p style="color:#006875; font-size:0.875rem; font-weight:600; margin-bottom:0.75rem;" set:html={member.title}></p>
+          <p style="color:#42474e; font-size:0.8125rem; line-height:1.6; margin:0;">{member.bio}</p>
+        </div>
+      ))}
     </div>
   </div>
 </section>
@@ -210,19 +243,19 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       <h2 id="partners-heading">The Tools We Build With</h2>
       <p>We use the best AI models and platforms — selected based on your requirements and budget.</p>
     </div>
-    <div style="display:grid; grid-template-columns:repeat(6,1fr); gap:12px; max-width:860px; margin:0 auto;">
-      <div class="partner-logo">OpenAI</div>
-      <div class="partner-logo">Anthropic</div>
-      <div class="partner-logo">Azure AI</div>
-      <div class="partner-logo">Google AI</div>
-      <div class="partner-logo">Make.com</div>
-      <div class="partner-logo">n8n</div>
-      <div class="partner-logo">LangChain</div>
-      <div class="partner-logo">HubSpot</div>
-      <div class="partner-logo">Zapier</div>
-      <div class="partner-logo">Python</div>
-      <div class="partner-logo">FastAPI</div>
-      <div class="partner-logo">WhatsApp API</div>
+    <div class="about-partners-grid" style="display:grid; grid-template-columns:repeat(6,1fr); gap:12px; max-width:860px; margin:0 auto;">
+      <div class="partner-logo"><img src="https://cdn.simpleicons.org/openai/00253b" alt="" loading="lazy">OpenAI</div>
+      <div class="partner-logo"><img src="https://cdn.simpleicons.org/anthropic/CC785C" alt="" loading="lazy">Anthropic</div>
+      <div class="partner-logo"><img src="https://cdn.simpleicons.org/microsoftazure/0078D4" alt="" loading="lazy">Azure AI</div>
+      <div class="partner-logo"><img src="https://cdn.simpleicons.org/google/4285F4" alt="" loading="lazy">Google AI</div>
+      <div class="partner-logo"><img src="https://cdn.simpleicons.org/make/6D00CC" alt="" loading="lazy">Make.com</div>
+      <div class="partner-logo"><img src="https://cdn.simpleicons.org/n8n/EA4B71" alt="" loading="lazy">n8n</div>
+      <div class="partner-logo"><img src="https://cdn.simpleicons.org/langchain/1C3C3C" alt="" loading="lazy">LangChain</div>
+      <div class="partner-logo"><img src="https://cdn.simpleicons.org/hubspot/FF7A59" alt="" loading="lazy">HubSpot</div>
+      <div class="partner-logo"><img src="https://cdn.simpleicons.org/zapier/FF4A00" alt="" loading="lazy">Zapier</div>
+      <div class="partner-logo"><img src="https://cdn.simpleicons.org/python/3776AB" alt="" loading="lazy">Python</div>
+      <div class="partner-logo"><img src="https://cdn.simpleicons.org/fastapi/009688" alt="" loading="lazy">FastAPI</div>
+      <div class="partner-logo"><img src="https://cdn.simpleicons.org/whatsapp/25D366" alt="" loading="lazy">WhatsApp API</div>
     </div>
   </div>
 </section>
@@ -233,7 +266,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     <div class="cta-band" style="text-align:center; max-width:680px; margin:0 auto;">
       <h2 style="color:#fff; font-size:clamp(1.5rem,3vw,2.25rem); font-weight:800; margin-bottom:1.25rem;">Let's Build Something Together.</h2>
       <p style="color:rgba(255,255,255,0.65); font-size:1.0625rem; margin-bottom:2.5rem;">Book a free strategy call. Tell us about your business. We'll tell you honestly if and how AI can help.</p>
-      <button onclick="openModal()" class="btn-primary" style="font-size:1.0625rem; padding:0.9375rem 2.5rem;">Book a Free Consultation</button>
+      <button onclick="openModal(this)" data-source="about_cta" class="btn-primary" style="font-size:1.0625rem; padding:0.9375rem 2.5rem;">Book a Free Consultation</button>
       <p style="color:rgba(255,255,255,0.40); font-size:0.8125rem; margin-top:1rem;">Free · No commitment · Available in Arabic &amp; English</p>
     </div>
   </div>
@@ -250,8 +283,24 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     .team-card { background:#fff; border:1px solid rgba(0,37,59,0.08); border-radius:20px; padding:2rem; text-align:center; box-shadow:0 20px 40px rgba(0,59,92,0.04); transition:transform .25s, box-shadow .25s; }
     .team-card:hover { transform:translateY(-4px); box-shadow:0 24px 56px rgba(0,59,92,0.10); }
     .team-avatar { width:88px; height:88px; border-radius:50%; object-fit:cover; margin:0 auto 1rem; border:3px solid rgba(0,37,59,0.12); }
-    .partner-logo { display:flex; align-items:center; justify-content:center; padding:0.75rem 1.5rem; background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:12px; font-weight:700; font-size:0.85rem; color:#42474e; letter-spacing:0.02em; transition:all .2s; }
+    .partner-logo { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.5rem; padding:1rem 1rem; background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:12px; font-weight:700; font-size:0.8rem; color:#42474e; letter-spacing:0.02em; transition:all .2s; }
     .partner-logo:hover { border-color:rgba(0,104,117,0.35); background:rgba(0,104,117,0.04); color:#006875; }
+    .partner-logo img { width:28px; height:28px; object-fit:contain; }
     .timeline-item { display:grid; grid-template-columns:48px 1fr; gap:1.25rem; align-items:flex-start; margin-bottom:1.5rem; }
     .timeline-dot { width:48px; height:48px; border-radius:50%; background:#00e3fd; display:flex; align-items:center; justify-content:center; color:#00253b; font-weight:800; font-size:0.9rem; flex-shrink:0; }
+    @media(max-width:900px) {
+      .about-values-grid { grid-template-columns: repeat(2, 1fr) !important; }
+      .about-story-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
+    }
+    @media(max-width:640px) {
+      .about-stats-grid { grid-template-columns: 1fr !important; }
+      .about-why-grid { grid-template-columns: 1fr !important; }
+      .about-team-grid { grid-template-columns: repeat(2, 1fr) !important; }
+      .about-partners-grid { grid-template-columns: repeat(3, 1fr) !important; }
+    }
+    @media(max-width:480px) {
+      .about-values-grid { grid-template-columns: 1fr !important; }
+      .about-team-grid { grid-template-columns: 1fr !important; }
+      .about-partners-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    }
 </style>

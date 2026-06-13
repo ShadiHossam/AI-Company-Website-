@@ -1,0 +1,70 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+const { count: unreadNotifs } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false);
+
+const { data: pages } = await supabase
+  .from('legal_pages')
+  .select('slug, title, last_updated')
+  .in('slug', ['privacy', 'terms']);
+
+const pageMap = Object.fromEntries((pages ?? []).map(p => [p.slug, p]));
+const privacy = pageMap['privacy'];
+const terms = pageMap['terms'];
+
+function formatDate(d: string | null | undefined) {
+  if (!d) return 'Not set';
+  return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+---
+
+<AdminLayout title="Legal Pages" user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <a href="/admin/content" class="text-muted text-sm" style="text-decoration:none;">← Content</a>
+      <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-top:0.25rem;">Legal Pages</h1>
+    </div>
+  </div>
+
+  <div class="grid-2 gap-4">
+    <!-- Privacy Policy -->
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
+        <div style="width:40px;height:40px;border-radius:var(--radius-sm);background:var(--accent-dim);display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div>
+          <div style="font-weight:600;color:var(--text-primary);">{privacy?.title ?? 'Privacy Policy'}</div>
+          <div class="text-xs text-muted">Last updated: {formatDate(privacy?.last_updated)}</div>
+        </div>
+      </div>
+      <p class="text-muted text-sm" style="margin-bottom:1rem;">Manage your privacy policy sections, data handling disclosures, and last updated date.</p>
+      <div class="flex items-center gap-2">
+        <a href="/admin/content/legal/privacy" class="btn btn-secondary btn-sm">Edit →</a>
+        <a href="/privacy" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Preview ↗</a>
+      </div>
+    </div>
+
+    <!-- Terms of Service -->
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
+        <div style="width:40px;height:40px;border-radius:var(--radius-sm);background:var(--accent-dim);display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div>
+          <div style="font-weight:600;color:var(--text-primary);">{terms?.title ?? 'Terms of Service'}</div>
+          <div class="text-xs text-muted">Last updated: {formatDate(terms?.last_updated)}</div>
+        </div>
+      </div>
+      <p class="text-muted text-sm" style="margin-bottom:1rem;">Manage your terms of service sections, usage restrictions, and governing clauses.</p>
+      <div class="flex items-center gap-2">
+        <a href="/admin/content/legal/terms" class="btn btn-secondary btn-sm">Edit →</a>
+        <a href="/terms" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Preview ↗</a>
+      </div>
+    </div>
+  </div>
+</AdminLayout>

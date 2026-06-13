@@ -1,11 +1,65 @@
 ---
+export const prerender = false;
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+
+// Hardcoded fallback FAQ items
+const fallbackFaqs = [
+  { question: "How much historical data does AI forecasting need to work well?", answer: "Most demand forecasting models perform well with 1–2 years of clean sales history. Less than that and the model can't learn meaningful seasonal patterns. Quality matters more than volume — 18 months of clean, complete transaction data outperforms 5 years of fragmented, inconsistent records." },
+  { question: "What's the difference between a recommendation engine and basic \"related products\"?", answer: "Traditional \"related products\" are rule-based — manually curated or based on category matching. A true recommendation engine uses collaborative filtering or deep learning to identify non-obvious patterns. It's the difference between showing everyone who buys running shoes the same socks, versus showing each customer the specific items that people with their particular history actually converted on. The latter is substantially more effective." },
+  { question: "Can dynamic pricing damage customer trust?", answer: "It can, if implemented carelessly. Time-based pricing (higher prices during peak demand) is widely accepted — airlines and hotels normalized it. But individual-based pricing (different prices for different customers based on their data profile) creates backlash when discovered. Most retailers use demand-based dynamic pricing with floor and ceiling guardrails, which balances margin optimization with consistency customers can trust." },
+  { question: "How do AI chatbots handle complex or unusual customer requests?", answer: "Modern LLM-based retail agents handle a much wider range than older rule-based bots — they understand context, handle follow-ups, and deal with unusual phrasing. The typical design is tiered: the AI handles routine queries (order status, returns, FAQs, availability) autonomously, and escalates edge cases to human agents with full conversation context. The goal isn't 100% automation — it's handling the 70–80% of routine queries so humans focus on the 20–30% that genuinely need judgment." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'retail')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI for Retail & E-commerce Dubai",
+    "url": "https://aegisai.ae/industries/retail",
+    "description": "Custom AI systems for Dubai retailers: demand forecasting dashboards, WhatsApp commerce chatbots, dynamic pricing tools, and inventory automation.",
+    "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://aegisai.ae" },
+    "areaServed": "Dubai",
+    "serviceType": "AI Development for Retail"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://aegisai.ae/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://aegisai.ae/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Retail & E-commerce AI", "item": "https://aegisai.ae/industries/retail" }
+    ]
+  }
+];
 ---
 
 <BaseLayout
-  title="AI in Retail & E-commerce — Trends, Applications & Insights | Aegis AI"
-  description="How AI is transforming retail: demand forecasting, personalization engines, dynamic pricing, and conversational commerce. Key trends and real-world data."
+  title="AI for Retail & E-commerce Dubai — Inventory Forecasting, Chatbots & Personalization | Aegis AI"
+  description="Aegis AI builds custom AI systems for Dubai retailers: demand forecasting dashboards, WhatsApp commerce chatbots, dynamic pricing tools, and inventory automation."
   canonicalPath="/industries/retail"
+  ogImage="/assets/og-retail.jpg"
+  ldJson={ldJson}
 >
 
 <header class="hero-section">
@@ -17,8 +71,12 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <span class="material-symbols-outlined" style="font-size:18px;">shopping_bag</span>
       Retail &amp; E-commerce AI
     </div>
-    <h1>How AI Is Reshaping<br><span class="gradient-text">Retail &amp; E-commerce</span></h1>
-    <p style="color:#42474e; font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">From demand forecasting and personalization to conversational commerce and visual search — AI is becoming the operating layer behind modern retail. Here's what's happening, what the data shows, and what it means for the industry.</p>
+    <h1>AI for Dubai<br><span class="gradient-text">Retail &amp; E-commerce</span></h1>
+    <p style="color:#42474e; font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Aegis AI builds custom AI systems for Dubai retailers and e-commerce brands — demand forecasting, WhatsApp commerce chatbots, personalization engines, and inventory automation. Integrated with your POS, CRM, and e-commerce platform.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2rem;">
+      <button onclick="openModal(this)" data-source="retail_hero" class="btn-primary">Book Free Retail AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
     <div class="stat-grid">
       <div style="text-align:center;">
         <p class="stat-number" style="font-size:2rem;">$31B</p>
@@ -38,18 +96,66 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 <!-- HERO IMAGE -->
 <div style="position:relative; overflow:hidden; height:240px;">
-  <img src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1400&q=80&auto=format&fit=crop" alt="Modern retail store with AI-powered technology" loading="lazy" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <img src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1400&q=80&auto=format&fit=crop" alt="Modern retail store with AI-powered technology" loading="eager" fetchpriority="high" width="1400" height="240" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
   <div style="position:absolute; inset:0; background:linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
 </div>
 
-<!-- THE AI SHIFT -->
-<section class="section" aria-labelledby="shift-heading">
+<!-- WHAT AEGIS BUILDS -->
+<section id="what-we-build" class="section" aria-labelledby="build-heading">
   <div class="container">
     <div class="section-header">
-      <div class="section-eyebrow">The AI Shift</div>
+      <div class="section-eyebrow">What We Build</div>
+      <h2 id="build-heading">AI Systems Built for Dubai Retailers</h2>
+      <p>Five specific systems we deploy for retail and e-commerce businesses across the UAE — integrated with your POS, CRM, and existing platforms.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">inventory</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Demand Forecasting Dashboard</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Predicts what to stock and when — factoring in your sales history, Ramadan seasonality, tourist demand cycles, and promotional spikes. Live dashboard your buyers and ops team can act on daily.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Trained on UAE and regional retail seasonality, not global averages</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">forum</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">WhatsApp Commerce Chatbot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Handles order inquiries, product questions, returns, and recommendations 24/7 via WhatsApp — in Arabic and English. Resolves routine queries automatically, escalates complex cases to staff with full context.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Typically resolves 60–80% of customer queries without human involvement</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">recommend</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Personalization Engine</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Surfaces the right products to the right customer — in your e-commerce site, email campaigns, and WhatsApp follow-ups — based on purchase history and browsing behavior. Works across Shopify, WooCommerce, and custom platforms.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">McKinsey: personalization delivers 5–15% revenue uplift</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">reviews</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Review & Sentiment Intelligence</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">NLP tools process customer reviews across your platforms and marketplaces (Noon, Amazon.ae, Google) weekly — surfacing what customers love, what's driving returns, and which products need attention.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Structured weekly summaries instead of reading thousands of reviews manually</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">bolt</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Operations Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Automates your high-volume repetitive tasks — purchase order generation, reorder alerts, supplier communication, daily sales reporting, and inventory sync across locations.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Integrates with your POS, ERP, and e-commerce platforms</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#e7eeff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Typical project timeline: 8–12 weeks · Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems UAE-compliant (PDPL, DESC), bilingual Arabic & English, integrated with your existing tools.</p>
+      <button onclick="openModal(this)" data-source="retail_mid" class="btn-primary">Book Free Retail AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- THE AI SHIFT -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">Industry Context</div>
       <h2 id="shift-heading">Three forces driving AI adoption in retail</h2>
     </div>
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem;">
+    <div class="ind-context-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem;">
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:22px;">bar_chart</span></div>
         <h3 style="font-weight:700; font-size:1rem; color:#00253b; margin-bottom:0.5rem;">Data volume outpaced human analysis</h3>
@@ -157,7 +263,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <div class="section-eyebrow">Industry Research</div>
       <h2 id="research-heading">What the data shows about AI in retail</h2>
     </div>
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
       <div class="card" style="text-align:center;">
         <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">35%</p>
         <p style="color:#42474e; font-size:0.875rem;">of Amazon's revenue attributed to its recommendation engine (McKinsey)</p>
@@ -172,7 +278,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       </div>
     </div>
     <div class="research-panel">
-      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
         <div>
           <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Inventory Optimization</p>
           <p style="color:#42474e; line-height:1.7;">McKinsey (2023) found retailers using AI-based demand forecasting reduced inventory costs by 20–50% while simultaneously cutting stockout frequency. The dual improvement is what makes this uniquely valuable — traditional approaches usually trade one off against the other.</p>
@@ -198,44 +304,25 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <h2 id="faq-heading">Questions about AI in retail</h2>
     </div>
     <div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          How much historical data does AI forecasting need to work well?
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-body">Most demand forecasting models perform well with 1–2 years of clean sales history. Less than that and the model can't learn meaningful seasonal patterns. Quality matters more than volume — 18 months of clean, complete transaction data outperforms 5 years of fragmented, inconsistent records.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          What's the difference between a recommendation engine and basic "related products"?
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-body">Traditional "related products" are rule-based — manually curated or based on category matching. A true recommendation engine uses collaborative filtering or deep learning to identify non-obvious patterns. It's the difference between showing everyone who buys running shoes the same socks, versus showing each customer the specific items that people with their particular history actually converted on. The latter is substantially more effective.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          Can dynamic pricing damage customer trust?
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-body">It can, if implemented carelessly. Time-based pricing (higher prices during peak demand) is widely accepted — airlines and hotels normalized it. But individual-based pricing (different prices for different customers based on their data profile) creates backlash when discovered. Most retailers use demand-based dynamic pricing with floor and ceiling guardrails, which balances margin optimization with consistency customers can trust.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          How do AI chatbots handle complex or unusual customer requests?
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-body">Modern LLM-based retail agents handle a much wider range than older rule-based bots — they understand context, handle follow-ups, and deal with unusual phrasing. The typical design is tiered: the AI handles routine queries (order status, returns, FAQs, availability) autonomously, and escalates edge cases to human agents with full conversation context. The goal isn't 100% automation — it's handling the 70–80% of routine queries so humans focus on the 20–30% that genuinely need judgment.</div>
-      </div>
+      {faqItems.map((item) => (
+        <div class="faq-item">
+          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+            {item.question}
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">{item.answer}</div>
+        </div>
+      ))}
     </div>
   </div>
 </section>
 
 <!-- CTA -->
 <div class="cta-band">
-  <h2>Want to understand what AI could do for your retail operation?</h2>
-  <p>We work with retail and e-commerce businesses across the UAE. If you'd like to explore how these applications apply to your specific situation, we're happy to talk it through.</p>
-  <button onclick="openModal()" class="btn-primary" style="font-size:1.0625rem; padding:0.9375rem 2.5rem;">Start a Conversation</button>
-  <p style="color:rgba(255,255,255,0.55); font-size:0.875rem; margin-top:1rem;">Free · No commitment · No sales pitch</p>
+  <h2>Book a Free Retail AI Audit</h2>
+  <p>We'll map your biggest operational pain points, identify where AI delivers the fastest ROI in your specific business, and show you exactly what we'd build — in 30 minutes, no obligation.</p>
+  <button onclick="openModal(this)" data-source="retail_cta" class="btn-primary" style="font-size:1.0625rem; padding:0.9375rem 2.5rem;">Book Free Retail AI Audit</button>
+  <p style="color:rgba(255,255,255,0.55); font-size:0.875rem; margin-top:1rem;">Free · Dubai-based team · Covered by our 100% refund guarantee</p>
 </div>
 
 </BaseLayout>

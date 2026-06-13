@@ -1,0 +1,120 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+
+const year  = parseInt(Astro.url.searchParams.get('year')  ?? String(new Date().getFullYear()), 10);
+const month = parseInt(Astro.url.searchParams.get('month') ?? String(new Date().getMonth() + 1), 10);
+
+// Fetch leads that have a preferred_date in this month
+const startDate = `${year}-${String(month).padStart(2,'0')}-01`;
+const lastDay   = new Date(year, month, 0).getDate();
+const endDate   = `${year}-${String(month).padStart(2,'0')}-${lastDay}`;
+
+const { data: leads, count: unreadNotifs } = await Promise.all([
+  supabase.from('leads')
+    .select('id, full_name, company_name, preferred_date, status, meeting_format')
+    .gte('preferred_date', startDate)
+    .lte('preferred_date', endDate)
+    .order('preferred_date'),
+  supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false),
+]).then(([l, n]) => ({ data: l.data ?? [], count: n.count ?? 0 }));
+
+// Group leads by date
+const byDate: Record<string, typeof leads> = {};
+for (const lead of leads) {
+  if (!lead.preferred_date) continue;
+  const d = lead.preferred_date;
+  if (!byDate[d]) byDate[d] = [];
+  byDate[d].push(lead);
+}
+
+// Build calendar grid
+const firstDayOfWeek = new Date(year, month - 1, 1).getDay(); // 0=Sun
+const daysInMonth = new Date(year, month, 0).getDate();
+const calCells: (number | null)[] = Array(firstDayOfWeek).fill(null);
+for (let d = 1; d <= daysInMonth; d++) calCells.push(d);
+while (calCells.length % 7 !== 0) calCells.push(null);
+
+const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const today = new Date().toISOString().split('T')[0];
+
+const prevMonth = month === 1 ? `?year=${year-1}&month=12` : `?year=${year}&month=${month-1}`;
+const nextMonth = month === 12 ? `?year=${year+1}&month=1` : `?year=${year}&month=${month+1}`;
+
+const statusBadge: Record<string, string> = {
+  new: '#00e3fd', contacted: '#60a5fa', qualified: '#fbbf24',
+  proposal_sent: '#a78bfa', closed_won: '#4ade80', closed_lost: '#f87171',
+};
+---
+
+<AdminLayout title="Lead Calendar" user={user} unreadCount={unreadNotifs ?? 0}>
+
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 style="font-size:1.25rem; font-weight:800;">Lead Calendar</h1>
+      <p class="text-muted text-sm">Leads by preferred meeting date</p>
+    </div>
+    <div class="flex gap-2 items-center">
+      <a href={`/admin/leads/calendar${prevMonth}`} class="btn btn-secondary btn-sm">← Prev</a>
+      <span style="font-weight:700; min-width:140px; text-align:center;">{monthNames[month-1]} {year}</span>
+      <a href={`/admin/leads/calendar${nextMonth}`} class="btn btn-secondary btn-sm">Next →</a>
+    </div>
+  </div>
+
+  <div class="card" style="padding:0; overflow:hidden;">
+    <!-- Day headers -->
+    <div style="display:grid; grid-template-columns:repeat(7,1fr); border-bottom:1px solid var(--border);">
+      {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
+        <div style="padding:0.625rem; text-align:center; font-size:0.75rem; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.04em;">{d}</div>
+      ))}
+    </div>
+
+    <!-- Calendar cells -->
+    <div style="display:grid; grid-template-columns:repeat(7,1fr);">
+      {calCells.map((day, i) => {
+        const dateStr = day ? `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}` : '';
+        const dayLeads = day ? (byDate[dateStr] ?? []) : [];
+        const isToday = dateStr === today;
+        return (
+          <div style={`min-height:100px; padding:0.5rem; border-bottom:1px solid var(--border); border-right:${(i+1)%7===0?'none':'1px solid var(--border)'}; ${isToday ? 'background:var(--accent-dim);' : ''} ${!day ? 'background:rgba(0,0,0,0.1);' : ''}`}>
+            {day && (
+              <>
+                <div style={`font-size:0.8125rem; font-weight:${isToday ? '800' : '600'}; color:${isToday ? 'var(--accent)' : 'var(--text-muted)'}; margin-bottom:4px;`}>{day}</div>
+                {dayLeads.map(lead => (
+                  <a href={`/admin/leads/${lead.id}`} style={`display:block; padding:2px 6px; border-radius:4px; font-size:0.6875rem; margin-bottom:3px; text-decoration:none; color:#0a0f1a; background:${statusBadge[lead.status] ?? '#00e3fd'}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;`} title={`${lead.full_name} · ${lead.company_name} · ${lead.meeting_format ?? 'Video call'}`}>
+                    {lead.full_name}
+                  </a>
+                ))}
+              </>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  </div>
+
+  <!-- Today's calls -->
+  {byDate[today] && (
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="card-title" style="margin-bottom:1rem;">Today's Scheduled Calls</div>
+      <div style="display:flex; flex-direction:column; gap:0.75rem;">
+        {byDate[today].map(lead => (
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem; background:var(--bg-hover); border-radius:var(--radius); gap:1rem;">
+            <div>
+              <a href={`/admin/leads/${lead.id}`} style="font-weight:600; color:var(--text-primary); text-decoration:none;">{lead.full_name}</a>
+              <div class="text-xs text-muted">{lead.company_name} · {lead.meeting_format ?? 'Video call'}</div>
+            </div>
+            <div class="flex gap-2">
+              <span style={`padding:2px 8px; border-radius:100px; font-size:0.6875rem; font-weight:700; background:${statusBadge[lead.status] ?? '#00e3fd'}20; color:${statusBadge[lead.status] ?? '#00e3fd'};`}>{lead.status}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+
+</AdminLayout>

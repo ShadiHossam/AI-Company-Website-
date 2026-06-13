@@ -1,5 +1,55 @@
 ---
+export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../lib/supabase";
+
+// Set caching headers
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+interface DbPost {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  category: string;
+  pub_date: string;
+  author_name: string;
+  og_image: string;
+}
+
+let dbPosts: DbPost[] = [];
+let dbError = false;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('id, title, slug, description, category, pub_date, author_name, og_image')
+    .eq('status', 'published')
+    .order('pub_date', { ascending: false });
+
+  if (!error && data) {
+    dbPosts = data as DbPost[];
+  } else {
+    dbError = true;
+  }
+} catch {
+  dbError = true;
+}
+
+// Fall back to content collection if DB fails or has no posts
+let collectionPosts: Array<{ slug: string; data: { title: string; description: string; category: string; pubDate: Date; ogImage?: string } }> = [];
+if (dbError || dbPosts.length === 0) {
+  try {
+    const { getCollection } = await import('astro:content');
+    const allPosts = await getCollection('blog');
+    collectionPosts = allPosts.sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+  } catch {
+    // No content collection — show placeholder cards below
+  }
+}
+
+const useDb = !dbError && dbPosts.length > 0;
 ---
 
 <BaseLayout
@@ -29,32 +79,98 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 <!-- ALL POSTS -->
 <section class="section" style="padding-top:3rem;">
   <div class="container">
-    <div class="section-eyebrow" style="margin-bottom:2rem;">Coming Soon</div>
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px;">
 
-      <article class="blog-card" style="opacity:0.60;">
-        <div class="blog-card-placeholder">
-          <span class="material-symbols-outlined" style="font-size:40px; color:#c2c7ce;">edit_note</span>
+    {useDb ? (
+      <div>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px;">
+          {dbPosts.map(post => (
+            <article class="blog-card">
+              {post.og_image ? (
+                <img src={post.og_image} alt={post.title} class="blog-card-img" loading="lazy" />
+              ) : (
+                <div class="blog-card-placeholder">
+                  <span class="material-symbols-outlined" style="font-size:40px; color:#c2c7ce;">edit_note</span>
+                </div>
+              )}
+              <div class="blog-card-body">
+                <div style="margin-bottom:0.875rem; display:flex; align-items:center; gap:8px; justify-content:space-between;">
+                  <span class="tag tag-teal">{post.category}</span>
+                  {post.pub_date && (
+                    <span style="font-size:0.75rem; color:#72787e;">
+                      {new Date(post.pub_date).toLocaleDateString('en-AE', { year: 'numeric', month: 'short', day: 'numeric' })}
+                    </span>
+                  )}
+                </div>
+                <h3 style="font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem; line-height:1.4;">
+                  <a href={`/blog/${post.slug}`} style="color:inherit; text-decoration:none;">{post.title}</a>
+                </h3>
+                <p style="color:#72787e; font-size:0.875rem; line-height:1.6; margin:0 0 1rem;">{post.description}</p>
+                <a href={`/blog/${post.slug}`} style="font-size:0.8125rem; font-weight:600; color:#006875; text-decoration:none; margin-top:auto;">
+                  Read more →
+                </a>
+              </div>
+            </article>
+          ))}
         </div>
-        <div class="blog-card-body">
-          <div style="margin-bottom:0.875rem;"><span class="tag tag-coming">Coming Soon</span></div>
-          <h3 style="font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem; line-height:1.4;">UAE AI Strategy 2031: What It Means for Your Business</h3>
-          <p style="color:#72787e; font-size:0.875rem; line-height:1.6; margin:0;">A practical breakdown of the UAE National AI Strategy and how SMEs can align their AI investments with national priorities.</p>
-        </div>
-      </article>
+      </div>
+    ) : collectionPosts.length > 0 ? (
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px;">
+        {collectionPosts.map(post => (
+          <article class="blog-card">
+            {post.data.ogImage ? (
+              <img src={post.data.ogImage} alt={post.data.title} class="blog-card-img" loading="lazy" />
+            ) : (
+              <div class="blog-card-placeholder">
+                <span class="material-symbols-outlined" style="font-size:40px; color:#c2c7ce;">edit_note</span>
+              </div>
+            )}
+            <div class="blog-card-body">
+              <div style="margin-bottom:0.875rem; display:flex; align-items:center; gap:8px; justify-content:space-between;">
+                <span class="tag tag-teal">{post.data.category}</span>
+                <span style="font-size:0.75rem; color:#72787e;">
+                  {post.data.pubDate.toLocaleDateString('en-AE', { year: 'numeric', month: 'short', day: 'numeric' })}
+                </span>
+              </div>
+              <h3 style="font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem; line-height:1.4;">
+                <a href={`/blog/${post.slug}`} style="color:inherit; text-decoration:none;">{post.data.title}</a>
+              </h3>
+              <p style="color:#72787e; font-size:0.875rem; line-height:1.6; margin:0 0 1rem;">{post.data.description}</p>
+              <a href={`/blog/${post.slug}`} style="font-size:0.8125rem; font-weight:600; color:#006875; text-decoration:none; margin-top:auto;">
+                Read more →
+              </a>
+            </div>
+          </article>
+        ))}
+      </div>
+    ) : (
+      <div>
+        <div class="section-eyebrow" style="margin-bottom:2rem;">Coming Soon</div>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px;">
+          <article class="blog-card" style="opacity:0.60;">
+            <div class="blog-card-placeholder">
+              <span class="material-symbols-outlined" style="font-size:40px; color:#c2c7ce;">edit_note</span>
+            </div>
+            <div class="blog-card-body">
+              <div style="margin-bottom:0.875rem;"><span class="tag tag-coming">Coming Soon</span></div>
+              <h3 style="font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem; line-height:1.4;">UAE AI Strategy 2031: What It Means for Your Business</h3>
+              <p style="color:#72787e; font-size:0.875rem; line-height:1.6; margin:0;">A practical breakdown of the UAE National AI Strategy and how SMEs can align their AI investments with national priorities.</p>
+            </div>
+          </article>
 
-      <article class="blog-card" style="opacity:0.60;">
-        <div class="blog-card-placeholder">
-          <span class="material-symbols-outlined" style="font-size:40px; color:#c2c7ce;">edit_note</span>
+          <article class="blog-card" style="opacity:0.60;">
+            <div class="blog-card-placeholder">
+              <span class="material-symbols-outlined" style="font-size:40px; color:#c2c7ce;">edit_note</span>
+            </div>
+            <div class="blog-card-body">
+              <div style="margin-bottom:0.875rem;"><span class="tag tag-coming">Coming Soon</span></div>
+              <h3 style="font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem; line-height:1.4;">Arabic AI Chatbots: A Complete Guide for UAE Businesses</h3>
+              <p style="color:#72787e; font-size:0.875rem; line-height:1.6; margin:0;">Everything you need to know about deploying Arabic-language AI — accuracy, dialect handling, and integration with UAE customer channels.</p>
+            </div>
+          </article>
         </div>
-        <div class="blog-card-body">
-          <div style="margin-bottom:0.875rem;"><span class="tag tag-coming">Coming Soon</span></div>
-          <h3 style="font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem; line-height:1.4;">Arabic AI Chatbots: A Complete Guide for UAE Businesses</h3>
-          <p style="color:#72787e; font-size:0.875rem; line-height:1.6; margin:0;">Everything you need to know about deploying Arabic-language AI — accuracy, dialect handling, and integration with UAE customer channels.</p>
-        </div>
-      </article>
+      </div>
+    )}
 
-    </div>
   </div>
 </section>
 

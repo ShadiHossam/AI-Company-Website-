@@ -1,5 +1,79 @@
 ---
+export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../lib/supabase";
+
+// Hardcoded fallback products
+const fallbackProducts = [
+  {
+    slug: "whatsapp-ai-agent",
+    name: "WhatsApp AI Agent",
+    tagline: "A 24/7 bilingual AI assistant that qualifies leads, books appointments, and handles FAQs — directly in WhatsApp. Works in Arabic and English with zero manual effort.",
+    status_badge: "Available Now",
+    feature_tags: ["Lead qualification", "Appointment booking", "FAQ automation", "Arabic + English", "CRM integration"],
+    features: [
+      "Deployed in your WhatsApp Business account in under 2 weeks",
+      "Trained on your products, services, and pricing",
+      "Hands off to a human agent when a question needs one",
+      "Full analytics dashboard — conversations, conversion rates, drop-off points",
+      "Integrates with Salesforce, HubSpot, Zoho, and more",
+    ],
+  },
+  {
+    slug: "operations-dashboard",
+    name: "Operations Dashboard",
+    tagline: "Real-time AI analytics and workflow automation dashboards — connected to your existing tools. Turn raw data into clear decisions without needing a data team.",
+    status_badge: "Available Now",
+    feature_tags: ["Real-time analytics", "Workflow automation", "Custom KPIs", "Multi-source data", "AI insights"],
+    features: [
+      "Connects to 50+ tools including Excel, Google Sheets, ERPs, and POS systems",
+      "AI-generated daily summaries and anomaly alerts sent via WhatsApp or email",
+      "Role-based views for management, operations, and frontline teams",
+      "Automated approval workflows, task routing, and escalation rules",
+      "Mobile-first — works on any device, optimised for managers on the go",
+    ],
+  },
+  {
+    slug: "team-ai-trainer",
+    name: "Team AI Trainer",
+    tagline: "An AI-powered training platform with bilingual content — measurable upskilling for every department. Track progress, certify employees, and prove ROI on training spend.",
+    status_badge: "Coming Soon",
+    feature_tags: ["Bilingual content", "Progress tracking", "Certifications", "Department-specific", "ROI reporting"],
+    features: [
+      "Courses built around your specific tools, processes, and team roles",
+      "Arabic and English UI with auto-translated content",
+      "AI tutor available 24/7 to answer questions in natural language",
+      "Certification program with verifiable credentials per department",
+      "Manager dashboard showing team adoption, quiz scores, and time-to-proficiency",
+    ],
+  },
+];
+
+let products = fallbackProducts;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('products')
+    .select('slug, name, tagline, description, status_badge, feature_tags, features, sort_order')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    products = data.map((p) => ({
+      slug: p.slug,
+      name: p.name,
+      tagline: p.tagline || p.description || '',
+      status_badge: p.status_badge || 'Available Now',
+      feature_tags: Array.isArray(p.feature_tags) ? p.feature_tags : [],
+      features: Array.isArray(p.features) ? p.features : [],
+    }));
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
 
 <BaseLayout
@@ -30,149 +104,76 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 <section class="section-sm">
   <div class="container">
 
-    <!-- Product 1: WhatsApp AI Agent -->
-    <div class="product-panel">
-      <div class="product-glow"></div>
-      <div class="product-inner" style="position: relative; z-index: 1;">
-        <div>
-          <div class="product-icon">
-            <svg viewBox="0 0 24 24" fill="none" class="w-7 h-7" stroke="#006875" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-          </div>
-          <div style="display: inline-flex; align-items: center; gap: .375rem; background: rgba(34,197,94,0.10); border: 1px solid rgba(34,197,94,0.30); border-radius: 100px; padding: .25rem .875rem; margin-bottom: 1rem;">
-            <span style="width: 6px; height: 6px; border-radius: 50%; background: #22c55e;"></span>
-            <span style="font-size: .75rem; font-weight: 700; color: #166534; font-family: 'Inter', sans-serif; letter-spacing: .04em; text-transform: uppercase;">Available Now</span>
-          </div>
-          <h2 style="margin-bottom: 1rem;">WhatsApp AI Agent</h2>
-          <p style="color: #42474e; line-height: 1.75; margin-bottom: 1.75rem;">A 24/7 bilingual AI assistant that qualifies leads, books appointments, and handles FAQs — directly in WhatsApp. Works in Arabic and English with zero manual effort.</p>
-          <div style="margin-bottom: 2rem;">
-            <span class="feature-tag">Lead qualification</span>
-            <span class="feature-tag">Appointment booking</span>
-            <span class="feature-tag">FAQ automation</span>
-            <span class="feature-tag">Arabic + English</span>
-            <span class="feature-tag">CRM integration</span>
-          </div>
-          <button onclick="openModal()" class="btn-primary">Get Started →</button>
-        </div>
-        <div class="feature-list-panel">
-          <div class="feature-list-item">
-            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 flex-shrink-0 mt-0.5" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            <span style="color: #42474e; font-size: .9rem; line-height: 1.6;">Deployed in your WhatsApp Business account in under 2 weeks</span>
-          </div>
-          <div class="feature-list-item">
-            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 flex-shrink-0 mt-0.5" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            <span style="color: #42474e; font-size: .9rem; line-height: 1.6;">Trained on your products, services, and pricing</span>
-          </div>
-          <div class="feature-list-item">
-            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 flex-shrink-0 mt-0.5" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            <span style="color: #42474e; font-size: .9rem; line-height: 1.6;">Hands off to a human agent when a question needs one</span>
-          </div>
-          <div class="feature-list-item">
-            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 flex-shrink-0 mt-0.5" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            <span style="color: #42474e; font-size: .9rem; line-height: 1.6;">Full analytics dashboard — conversations, conversion rates, drop-off points</span>
-          </div>
-          <div class="feature-list-item" style="margin-bottom: 0;">
-            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 flex-shrink-0 mt-0.5" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            <span style="color: #42474e; font-size: .9rem; line-height: 1.6;">Integrates with Salesforce, HubSpot, Zoho, and more</span>
-          </div>
-        </div>
-      </div>
-    </div>
+    {products.map((product, index) => {
+      const isAvailable = product.status_badge?.toLowerCase().includes('available');
+      const badgeStyle = isAvailable
+        ? "background: rgba(34,197,94,0.10); border: 1px solid rgba(34,197,94,0.30);"
+        : "background: rgba(0,37,59,0.08); border: 1px solid rgba(0,37,59,0.18);";
+      const dotColor = isAvailable ? "#22c55e" : "#00253b";
+      const textColor = isAvailable ? "#166534" : "#00253b";
+      const ctaLabel = isAvailable ? "Get Started →" : "Join Waitlist →";
+      const dataSource = product.slug === 'whatsapp-ai-agent' ? 'products_whatsapp_agent'
+        : product.slug === 'operations-dashboard' ? 'products_ops_dashboard'
+        : product.slug === 'team-ai-trainer' ? 'products_team_trainer'
+        : `products_${product.slug}`;
+      const isAltLayout = index === 1;
 
-    <!-- Product 2: Operations Dashboard -->
-    <div class="product-panel" style="--glow-color: rgba(0,104,117,0.12);">
-      <div class="product-glow" style="background: rgba(0,104,117,0.12);"></div>
-      <div class="product-inner" style="position: relative; z-index: 1;">
-        <div class="feature-list-panel" style="order: 0;">
-          <div class="feature-list-item">
-            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 flex-shrink-0 mt-0.5" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            <span style="color: #42474e; font-size: .9rem; line-height: 1.6;">Connects to 50+ tools including Excel, Google Sheets, ERPs, and POS systems</span>
-          </div>
-          <div class="feature-list-item">
-            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 flex-shrink-0 mt-0.5" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            <span style="color: #42474e; font-size: .9rem; line-height: 1.6;">AI-generated daily summaries and anomaly alerts sent via WhatsApp or email</span>
-          </div>
-          <div class="feature-list-item">
-            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 flex-shrink-0 mt-0.5" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            <span style="color: #42474e; font-size: .9rem; line-height: 1.6;">Role-based views for management, operations, and frontline teams</span>
-          </div>
-          <div class="feature-list-item">
-            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 flex-shrink-0 mt-0.5" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            <span style="color: #42474e; font-size: .9rem; line-height: 1.6;">Automated approval workflows, task routing, and escalation rules</span>
-          </div>
-          <div class="feature-list-item" style="margin-bottom: 0;">
-            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 flex-shrink-0 mt-0.5" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            <span style="color: #42474e; font-size: .9rem; line-height: 1.6;">Mobile-first — works on any device, optimised for managers on the go</span>
-          </div>
-        </div>
-        <div style="order: 1;">
-          <div class="product-icon" style="background: rgba(0,104,117,0.10);">
-            <svg viewBox="0 0 24 24" fill="none" class="w-7 h-7" stroke="#006875" stroke-width="1.8"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-          </div>
-          <div style="display: inline-flex; align-items: center; gap: .375rem; background: rgba(34,197,94,0.10); border: 1px solid rgba(34,197,94,0.30); border-radius: 100px; padding: .25rem .875rem; margin-bottom: 1rem;">
-            <span style="width: 6px; height: 6px; border-radius: 50%; background: #22c55e;"></span>
-            <span style="font-size: .75rem; font-weight: 700; color: #166534; font-family: 'Inter', sans-serif; letter-spacing: .04em; text-transform: uppercase;">Available Now</span>
-          </div>
-          <h2 style="margin-bottom: 1rem;">Operations Dashboard</h2>
-          <p style="color: #42474e; line-height: 1.75; margin-bottom: 1.75rem;">Real-time AI analytics and workflow automation dashboards — connected to your existing tools. Turn raw data into clear decisions without needing a data team.</p>
-          <div style="margin-bottom: 2rem;">
-            <span class="feature-tag">Real-time analytics</span>
-            <span class="feature-tag">Workflow automation</span>
-            <span class="feature-tag">Custom KPIs</span>
-            <span class="feature-tag">Multi-source data</span>
-            <span class="feature-tag">AI insights</span>
-          </div>
-          <button onclick="openModal()" class="btn-primary">Get Started →</button>
-        </div>
-      </div>
-    </div>
+      const iconBg = product.slug === 'whatsapp-ai-agent' ? '' : product.slug === 'operations-dashboard' ? 'background: rgba(0,104,117,0.10);' : 'background: #e7eeff;';
+      const glowBg = product.slug === 'operations-dashboard' ? 'background: rgba(0,104,117,0.12);' : product.slug === 'team-ai-trainer' ? 'background: rgba(0,37,59,0.10);' : '';
 
-    <!-- Product 3: Team AI Trainer -->
-    <div class="product-panel">
-      <div class="product-glow" style="background: rgba(0,37,59,0.10);"></div>
-      <div class="product-inner" style="position: relative; z-index: 1;">
-        <div>
-          <div class="product-icon" style="background: #e7eeff;">
-            <svg viewBox="0 0 24 24" fill="none" class="w-7 h-7" stroke="#00253b" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      return (
+        <div class="product-panel" style={index === 1 ? "--glow-color: rgba(0,104,117,0.12);" : ""}>
+          <div class="product-glow" style={glowBg}></div>
+          <div class="product-inner" style="position: relative; z-index: 1;">
+            {isAltLayout && (
+              <div class="feature-list-panel" style="order: 0;">
+                {product.features.map((feature: string, fi: number) => (
+                  <div class="feature-list-item" style={fi === product.features.length - 1 ? "margin-bottom: 0;" : ""}>
+                    <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 flex-shrink-0 mt-0.5" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                    <span style="color: #42474e; font-size: .9rem; line-height: 1.6;">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div style={isAltLayout ? "order: 1;" : ""}>
+              <div class="product-icon" style={iconBg}>
+                {product.slug === 'whatsapp-ai-agent' && (
+                  <svg viewBox="0 0 24 24" fill="none" class="w-7 h-7" stroke="#006875" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                )}
+                {product.slug === 'operations-dashboard' && (
+                  <svg viewBox="0 0 24 24" fill="none" class="w-7 h-7" stroke="#006875" stroke-width="1.8"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                )}
+                {product.slug !== 'whatsapp-ai-agent' && product.slug !== 'operations-dashboard' && (
+                  <svg viewBox="0 0 24 24" fill="none" class="w-7 h-7" stroke="#00253b" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                )}
+              </div>
+              <div style={`display: inline-flex; align-items: center; gap: .375rem; ${badgeStyle} border-radius: 100px; padding: .25rem .875rem; margin-bottom: 1rem;`}>
+                <span style={`width: 6px; height: 6px; border-radius: 50%; background: ${dotColor};`}></span>
+                <span style={`font-size: .75rem; font-weight: 700; color: ${textColor}; font-family: 'Inter', sans-serif; letter-spacing: .04em; text-transform: uppercase;`}>{product.status_badge}</span>
+              </div>
+              <h2 style="margin-bottom: 1rem;">{product.name}</h2>
+              <p style="color: #42474e; line-height: 1.75; margin-bottom: 1.75rem;">{product.tagline}</p>
+              <div style="margin-bottom: 2rem;">
+                {product.feature_tags.map((tag: string) => (
+                  <span class="feature-tag">{tag}</span>
+                ))}
+              </div>
+              <button onclick="openModal(this)" data-source={dataSource} class="btn-primary">{ctaLabel}</button>
+            </div>
+            {!isAltLayout && (
+              <div class="feature-list-panel">
+                {product.features.map((feature: string, fi: number) => (
+                  <div class="feature-list-item" style={fi === product.features.length - 1 ? "margin-bottom: 0;" : ""}>
+                    <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 flex-shrink-0 mt-0.5" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                    <span style="color: #42474e; font-size: .9rem; line-height: 1.6;">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          <div style="display: inline-flex; align-items: center; gap: .375rem; background: rgba(0,37,59,0.08); border: 1px solid rgba(0,37,59,0.18); border-radius: 100px; padding: .25rem .875rem; margin-bottom: 1rem;">
-            <span style="width: 6px; height: 6px; border-radius: 50%; background: #00253b;"></span>
-            <span style="font-size: .75rem; font-weight: 700; color: #00253b; font-family: 'Inter', sans-serif; letter-spacing: .04em; text-transform: uppercase;">Coming Soon</span>
-          </div>
-          <h2 style="margin-bottom: 1rem;">Team AI Trainer</h2>
-          <p style="color: #42474e; line-height: 1.75; margin-bottom: 1.75rem;">An AI-powered training platform with bilingual content — measurable upskilling for every department. Track progress, certify employees, and prove ROI on training spend.</p>
-          <div style="margin-bottom: 2rem;">
-            <span class="feature-tag">Bilingual content</span>
-            <span class="feature-tag">Progress tracking</span>
-            <span class="feature-tag">Certifications</span>
-            <span class="feature-tag">Department-specific</span>
-            <span class="feature-tag">ROI reporting</span>
-          </div>
-          <button onclick="openModal()" class="btn-primary">Join Waitlist →</button>
         </div>
-        <div class="feature-list-panel">
-          <div class="feature-list-item">
-            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 flex-shrink-0 mt-0.5" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            <span style="color: #42474e; font-size: .9rem; line-height: 1.6;">Courses built around your specific tools, processes, and team roles</span>
-          </div>
-          <div class="feature-list-item">
-            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 flex-shrink-0 mt-0.5" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            <span style="color: #42474e; font-size: .9rem; line-height: 1.6;">Arabic and English UI with auto-translated content</span>
-          </div>
-          <div class="feature-list-item">
-            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 flex-shrink-0 mt-0.5" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            <span style="color: #42474e; font-size: .9rem; line-height: 1.6;">AI tutor available 24/7 to answer questions in natural language</span>
-          </div>
-          <div class="feature-list-item">
-            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 flex-shrink-0 mt-0.5" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            <span style="color: #42474e; font-size: .9rem; line-height: 1.6;">Certification program with verifiable credentials per department</span>
-          </div>
-          <div class="feature-list-item" style="margin-bottom: 0;">
-            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 flex-shrink-0 mt-0.5" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-            <span style="color: #42474e; font-size: .9rem; line-height: 1.6;">Manager dashboard showing team adoption, quiz scores, and time-to-proficiency</span>
-          </div>
-        </div>
-      </div>
-    </div>
+      );
+    })}
 
   </div>
 </section>
@@ -184,7 +185,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       <div style="position: relative; z-index: 1;">
         <h2 style="color: #ffffff; font-size: clamp(1.75rem, 3vw, 2.5rem); margin-bottom: 1rem;">Ready to See These in Action?</h2>
         <p style="color: rgba(255,255,255,0.55); font-size: 1.125rem; max-width: 36rem; margin: 0 auto 2.5rem; line-height: 1.7;">Book a free demo and we'll show you exactly how each product fits your business — customised to your industry and workflows.</p>
-        <button onclick="openModal()" class="btn-primary" style="font-size: 1.125rem; padding: 1.125rem 2.75rem;">Book a Free Demo →</button>
+        <button onclick="openModal(this)" data-source="products_cta" class="btn-primary" style="font-size: 1.125rem; padding: 1.125rem 2.75rem;">Book a Free Demo →</button>
       </div>
     </div>
   </div>

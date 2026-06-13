@@ -1,0 +1,102 @@
+---
+import '../styles/admin.css';
+import AdminNav from '../components/admin/AdminNav.astro';
+import NotificationBell from '../components/admin/NotificationBell.astro';
+
+interface Props {
+  title: string;
+  user: { id: string; email: string; role: string };
+  unreadCount?: number;
+}
+
+const { title, user, unreadCount = 0 } = Astro.props;
+const initials = user.email.slice(0, 2).toUpperCase();
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title} — Aegis AI Admin</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <slot name="head" />
+</head>
+<body class="admin-body">
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" id="admin-sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">A</div>
+      <div>
+        <div class="sidebar-logo-text">Aegis AI</div>
+        <div class="sidebar-logo-sub">Admin Panel</div>
+      </div>
+    </div>
+
+    <AdminNav role={user.role} currentPath={Astro.url.pathname} />
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">{initials}</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-email">{user.email}</div>
+          <div class="sidebar-user-role">{user.role.replace('_', ' ')}</div>
+        </div>
+      </div>
+      <form action="/api/admin/auth/logout" method="POST" style="margin-top:0.5rem;">
+        <button type="submit" class="btn btn-ghost btn-sm" style="width:100%; justify-content:center;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Sign Out
+        </button>
+      </form>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <div class="flex items-center gap-3">
+        <button class="btn btn-ghost btn-sm" id="sidebar-toggle" aria-label="Toggle sidebar" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <span class="topbar-title">{title}</span>
+      </div>
+      <div class="topbar-actions">
+        <NotificationBell unreadCount={unreadCount} />
+        <a href="/" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          View Site
+        </a>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <slot />
+    </div>
+  </div>
+
+</body>
+</html>
+
+<script>
+  // Mobile sidebar toggle
+  const toggle = document.getElementById('sidebar-toggle');
+  const sidebar = document.getElementById('admin-sidebar');
+  if (toggle && sidebar) {
+    // Show toggle on mobile
+    if (window.innerWidth <= 768) toggle.style.display = 'flex';
+    window.addEventListener('resize', () => {
+      toggle.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+    });
+    toggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+    document.addEventListener('click', (e) => {
+      if (window.innerWidth <= 768 && sidebar.classList.contains('open') &&
+          !sidebar.contains(e.target as Node) && e.target !== toggle) {
+        sidebar.classList.remove('open');
+      }
+    });
+  }
+</script>

@@ -1,0 +1,191 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+
+const url      = Astro.url;
+const jobId    = url.searchParams.get('job_id') ?? '';
+const statusF  = url.searchParams.get('status')  ?? '';
+
+let appsQuery = supabase
+  .from('job_applications')
+  .select('*, jobs(title, department)', { count: 'exact' })
+  .order('created_at', { ascending: false });
+
+if (jobId)  appsQuery = appsQuery.eq('job_id', jobId);
+if (statusF) appsQuery = appsQuery.eq('status', statusF);
+
+interface AppRow {
+  id: string; created_at: string; job_id: string; job_title: string;
+  full_name: string; email: string; phone: string | null;
+  linkedin_url: string | null; cv_url: string; status: string;
+  jobs: { title: string; department: string | null } | null;
+}
+
+const [
+  { data: rawApps, count },
+  { data: jobs },
+  { count: unreadNotifs },
+] = await Promise.all([
+  appsQuery,
+  supabase.from('jobs').select('id, title').order('sort_order', { ascending: true }),
+  supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false),
+]);
+const applications = (rawApps ?? []) as unknown as AppRow[];
+
+const statusLabels: Record<string, string> = {
+  new: 'New', reviewing: 'Reviewing', shortlisted: 'Shortlisted', rejected: 'Rejected', hired: 'Hired',
+};
+const statusBadge: Record<string, string> = {
+  new: 'badge-new', reviewing: 'badge-contacted', shortlisted: 'badge-qualified', rejected: 'badge-lost', hired: 'badge-won',
+};
+
+function buildUrl(params: Record<string, string>) {
+  const p = new URLSearchParams(url.searchParams);
+  for (const [k, v] of Object.entries(params)) {
+    if (v) p.set(k, v); else p.delete(k);
+  }
+  return '/admin/applications?' + p.toString();
+}
+---
+
+<AdminLayout title="Applications" user={user} unreadCount={unreadNotifs ?? 0}>
+
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h1 style="font-size:1.25rem;font-weight:800;">Job Applications</h1>
+      <p class="text-muted text-sm">{count ?? 0} total</p>
+    </div>
+    <a href="/admin/jobs" class="btn btn-secondary btn-sm">Manage Jobs</a>
+  </div>
+
+  <!-- Filters -->
+  <form method="GET" action="/admin/applications" class="flex gap-2 mb-4" style="flex-wrap:wrap;">
+    <select name="job_id" class="form-select" style="max-width:240px;" onchange="this.form.submit()">
+      <option value="">All Jobs</option>
+      {(jobs ?? []).map(j => (
+        <option value={j.id} selected={jobId === j.id}>{j.title}</option>
+      ))}
+    </select>
+    <select name="status" class="form-select" style="max-width:160px;" onchange="this.form.submit()">
+      <option value="">All Statuses</option>
+      {Object.entries(statusLabels).map(([k, v]) => (
+        <option value={k} selected={statusF === k}>{v}</option>
+      ))}
+    </select>
+    {(jobId || statusF) && <a href="/admin/applications" class="btn btn-ghost">Clear</a>}
+  </form>
+
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Applicant</th>
+            <th>Role</th>
+            <th>Contact</th>
+            <th>Applied</th>
+            <th>Status</th>
+            <th>CV</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {applications.map(app => {
+            const job = app.jobs;
+            return (
+              <tr>
+                <td>
+                  <div style="font-weight:600;">{app.full_name}</div>
+                  <div class="text-xs text-muted">{app.email}</div>
+                  {app.linkedin_url && (
+                    <a href={app.linkedin_url} target="_blank" class="text-xs" style="color:#006875;">LinkedIn ↗</a>
+                  )}
+                </td>
+                <td>
+                  <div class="text-sm">{job?.title ?? app.job_title}</div>
+                  {job?.department && <div class="text-xs text-muted">{job.department}</div>}
+                </td>
+                <td>
+                  <a href={`mailto:${app.email}`} class="text-sm" style="color:#006875;">{app.email}</a>
+                  {app.phone && <div class="text-xs text-muted">{app.phone}</div>}
+                </td>
+                <td class="text-xs text-muted">{new Date(app.created_at).toLocaleDateString('en-GB')}</td>
+                <td>
+                  <select
+                    class="form-select"
+                    style="padding:2px 6px;font-size:.75rem;background:transparent;"
+                    data-app-id={app.id}
+                    onchange="updateStatus(this)"
+                  >
+                    {Object.entries(statusLabels).map(([k, v]) => (
+                      <option value={k} selected={app.status === k}>{v}</option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <a href={app.cv_url} target="_blank" class="btn btn-ghost btn-sm" title="Download CV">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    CV
+                  </a>
+                </td>
+                <td>
+                  <button
+                    class="btn btn-ghost btn-sm"
+                    style="color:var(--error);"
+                    data-app-id={app.id}
+                    onclick="deleteApp(this.dataset.appId)"
+                  >Delete</button>
+                </td>
+              </tr>
+            );
+          })}
+          {(applications ?? []).length === 0 && (
+            <tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:3rem;">No applications found</td></tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Cover Letter Modal -->
+  <dialog id="cover-modal" style="max-width:560px;width:90%;border-radius:16px;border:1px solid var(--border);padding:1.5rem;box-shadow:0 24px 60px rgba(0,0,0,0.15);">
+    <div class="flex items-center justify-between mb-3">
+      <h2 style="font-size:1.125rem;font-weight:700;" id="cover-modal-title">Cover Letter</h2>
+      <button onclick="document.getElementById('cover-modal').close()" style="background:none;border:none;cursor:pointer;font-size:1.5rem;line-height:1;color:var(--text-dim);">×</button>
+    </div>
+    <pre id="cover-modal-body" style="white-space:pre-wrap;font-family:inherit;font-size:.9375rem;color:#42474e;line-height:1.7;margin:0;max-height:400px;overflow-y:auto;"></pre>
+  </dialog>
+
+</AdminLayout>
+
+<script>
+  async function updateStatus(sel: HTMLSelectElement) {
+    const id     = sel.dataset.appId!;
+    const status = sel.value;
+    await fetch(`/api/admin/applications/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+  }
+
+  async function deleteApp(id: string) {
+    if (!confirm('Delete this application permanently?')) return;
+    const res = await fetch(`/api/admin/applications/${id}`, { method: 'DELETE' });
+    if (res.ok) location.reload();
+    else alert('Delete failed');
+  }
+
+  function showCover(name: string, body: string) {
+    const modal = document.getElementById('cover-modal') as HTMLDialogElement;
+    (document.getElementById('cover-modal-title') as HTMLElement).textContent = `Cover Letter — ${name}`;
+    (document.getElementById('cover-modal-body') as HTMLElement).textContent  = body;
+    modal.showModal();
+  }
+
+  Object.assign(window, { updateStatus, deleteApp, showCover });
+</script>

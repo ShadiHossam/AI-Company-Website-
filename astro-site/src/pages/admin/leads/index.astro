@@ -1,0 +1,365 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+
+const url = Astro.url;
+const status   = url.searchParams.get('status')   ?? '';
+const industry = url.searchParams.get('industry') ?? '';
+const search   = url.searchParams.get('search')   ?? '';
+const dateFrom = url.searchParams.get('date_from') ?? '';
+const dateTo   = url.searchParams.get('date_to')   ?? '';
+const page     = parseInt(url.searchParams.get('page') ?? '1', 10);
+const view     = url.searchParams.get('view') ?? 'table'; // 'table' | 'kanban'
+const pageSize = 50;
+
+let query = supabase
+  .from('leads')
+  .select('*', { count: 'exact' })
+  .order('created_at', { ascending: false });
+
+if (status)   query = query.eq('status', status);
+if (industry) query = query.eq('industry', industry);
+if (search)   query = query.or(`full_name.ilike.%${search}%,company_name.ilike.%${search}%,work_email.ilike.%${search}%`);
+if (dateFrom) query = query.gte('created_at', dateFrom);
+if (dateTo)   query = query.lte('created_at', dateTo + 'T23:59:59Z');
+
+const from = (page - 1) * pageSize;
+const { data: leads, count } = await query.range(from, from + pageSize - 1);
+const totalPages = Math.ceil((count ?? 0) / pageSize);
+
+// For kanban — fetch all (capped at 500)
+let kanbanLeads: Record<string, unknown>[] = [];
+if (view === 'kanban') {
+  const { data } = await supabase
+    .from('leads')
+    .select('id, full_name, company_name, industry, budget_range, status, estimated_value_aed, created_at')
+    .order('created_at', { ascending: false })
+    .limit(500);
+  kanbanLeads = data ?? [];
+}
+
+const { count: unreadNotifs } = await supabase
+  .from('notifications').select('*', { count: 'exact', head: true }).eq('read', false);
+
+const statusLabels: Record<string, string> = {
+  new: 'New', contacted: 'Contacted', qualified: 'Qualified',
+  proposal_sent: 'Proposal Sent', closed_won: 'Closed Won', closed_lost: 'Closed Lost',
+};
+const statusBadge: Record<string, string> = {
+  new: 'badge-new', contacted: 'badge-contacted', qualified: 'badge-qualified',
+  proposal_sent: 'badge-proposal', closed_won: 'badge-won', closed_lost: 'badge-lost',
+};
+
+function buildUrl(params: Record<string, string>) {
+  const p = new URLSearchParams(url.searchParams);
+  for (const [k, v] of Object.entries(params)) {
+    if (v) p.set(k, v); else p.delete(k);
+  }
+  return '/admin/leads?' + p.toString();
+}
+
+const kanbanColumns = [
+  { key: 'new', label: 'New', colorClass: 'badge-new' },
+  { key: 'contacted', label: 'Contacted', colorClass: 'badge-contacted' },
+  { key: 'qualified', label: 'Qualified', colorClass: 'badge-qualified' },
+  { key: 'proposal_sent', label: 'Proposal Sent', colorClass: 'badge-proposal' },
+  { key: 'closed_won', label: 'Closed Won', colorClass: 'badge-won' },
+  { key: 'closed_lost', label: 'Closed Lost', colorClass: 'badge-lost' },
+];
+---
+
+<AdminLayout title="Leads" user={user} unreadCount={unreadNotifs ?? 0}>
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h1 style="font-size:1.25rem; font-weight:800;">All Leads</h1>
+      <p class="text-muted text-sm">{count ?? 0} total</p>
+    </div>
+    <div class="flex gap-2">
+      <a href={buildUrl({ view: 'table' })} class={`btn btn-sm ${view === 'table' ? 'btn-primary' : 'btn-secondary'}`}>Table</a>
+      <a href={buildUrl({ view: 'kanban' })} class={`btn btn-sm ${view === 'kanban' ? 'btn-primary' : 'btn-secondary'}`}>Kanban</a>
+      <a href="/admin/leads/calendar" class="btn btn-secondary btn-sm">Calendar</a>
+      <a href="/api/admin/leads?format=csv" class="btn btn-secondary btn-sm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        CSV
+      </a>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  {view === 'table' && (
+    <form method="GET" action="/admin/leads" class="flex gap-2 mb-4" style="flex-wrap:wrap;">
+      <input type="hidden" name="view" value="table" />
+      <input
+        type="search"
+        name="search"
+        placeholder="Search name, company, email…"
+        value={search}
+        class="form-input"
+        style="max-width:280px;"
+      />
+      <select name="status" class="form-select" style="max-width:160px;">
+        <option value="">All Statuses</option>
+        {Object.entries(statusLabels).map(([k, v]) => (
+          <option value={k} selected={status === k}>{v}</option>
+        ))}
+      </select>
+      <select name="industry" class="form-select" style="max-width:200px;">
+        <option value="">All Industries</option>
+        {['Real Estate','Retail & E-commerce','Hospitality & Tourism','Logistics & Supply Chain','Healthcare','Finance & Banking','Other'].map(ind => (
+          <option value={ind} selected={industry === ind}>{ind}</option>
+        ))}
+      </select>
+      <input type="date" name="date_from" value={dateFrom} class="form-input" style="max-width:150px;" title="From date" />
+      <input type="date" name="date_to" value={dateTo} class="form-input" style="max-width:150px;" title="To date" />
+      <button type="submit" class="btn btn-secondary">Filter</button>
+      {(status || industry || search || dateFrom || dateTo) && <a href="/admin/leads" class="btn btn-ghost">Clear</a>}
+    </form>
+  )}
+
+  <!-- Table view -->
+  {view === 'table' && (
+    <div id="bulk-bar" style="display:none;align-items:center;gap:0.75rem;padding:0.75rem 1rem;background:var(--accent-dim);border:1px solid var(--border-accent);border-radius:var(--radius);margin-bottom:0.75rem;flex-wrap:wrap;">
+      <span id="bulk-count" class="text-sm" style="font-weight:600;color:var(--accent);">0 selected</span>
+      <select id="bulk-status" class="form-select" style="max-width:160px;padding:4px 8px;font-size:0.8rem;">
+        <option value="">Change status to…</option>
+        {Object.entries(statusLabels).map(([k, v]) => (
+          <option value={k}>{v}</option>
+        ))}
+      </select>
+      <button id="bulk-apply" class="btn btn-primary btn-sm">Apply</button>
+      <button id="bulk-clear" class="btn btn-ghost btn-sm">Deselect All</button>
+    </div>
+
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:36px;padding:0.75rem 0.5rem 0.75rem 1rem;">
+                <input type="checkbox" id="select-all" title="Select all" style="width:15px;height:15px;cursor:pointer;" />
+              </th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>WhatsApp</th>
+              <th>Source</th>
+              <th>Industry</th>
+              <th>Budget</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {(leads ?? []).map(lead => (
+              <tr>
+                <td style="padding:0.75rem 0.5rem 0.75rem 1rem;">
+                  <input type="checkbox" class="row-check" data-lead-id={lead.id} style="width:15px;height:15px;cursor:pointer;" />
+                </td>
+                <td>
+                  <a href={`/admin/leads/${lead.id}`} style="font-weight:600; color:var(--text-primary); text-decoration:none;">
+                    {lead.full_name}
+                    {lead.duplicate_email && <span class="badge badge-lost" style="margin-left:6px;font-size:0.6rem;" title="Duplicate email">DUP</span>}
+                  </a>
+                  <div class="text-xs text-muted">{lead.company_name}</div>
+                </td>
+                <td class="text-sm">{lead.work_email}</td>
+                <td>
+                  <a href={`https://wa.me/${String(lead.whatsapp ?? '').replace(/\D/g,'')}`} target="_blank" rel="noopener" class="text-sm" style="color:#25d366;">{lead.whatsapp}</a>
+                </td>
+                <td class="text-xs text-muted">{String(lead.page_source ?? 'unknown').replace(/_/g,' ')}</td>
+                <td class="text-sm">{lead.industry ?? '—'}</td>
+                <td class="text-sm text-muted">{lead.budget_range ?? '—'}</td>
+                <td>
+                  <select
+                    class="form-select"
+                    style="padding:2px 6px; font-size:0.75rem; background:transparent;"
+                    data-lead-id={lead.id}
+                    onchange="updateLeadStatus(this)"
+                  >
+                    {Object.entries(statusLabels).map(([k, v]) => (
+                      <option value={k} selected={lead.status === k}>{v}</option>
+                    ))}
+                  </select>
+                </td>
+                <td class="text-xs text-muted">{new Date(lead.created_at).toLocaleDateString('en-GB')}</td>
+                <td>
+                  <a href={`/admin/leads/${lead.id}`} class="btn btn-ghost btn-sm">View</a>
+                </td>
+              </tr>
+            ))}
+            {(leads ?? []).length === 0 && (
+              <tr><td colspan="10" style="text-align:center; color:var(--text-dim); padding:3rem;">No leads found</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div class="flex items-center justify-between" style="padding:1rem 1.25rem; border-top:1px solid var(--border);">
+          <span class="text-sm text-muted">Page {page} of {totalPages}</span>
+          <div class="flex gap-2">
+            {page > 1 && <a href={buildUrl({ page: String(page - 1) })} class="btn btn-secondary btn-sm">← Prev</a>}
+            {page < totalPages && <a href={buildUrl({ page: String(page + 1) })} class="btn btn-secondary btn-sm">Next →</a>}
+          </div>
+        </div>
+      )}
+    </div>
+  )}
+
+  <!-- Kanban view -->
+  {view === 'kanban' && (
+    <div class="kanban-board" id="kanban-board">
+      {kanbanColumns.map(col => {
+        const colLeads = kanbanLeads.filter(l => l.status === col.key);
+        const totalAED = colLeads.reduce((s, l) => s + ((l.estimated_value_aed as number) ?? 0), 0);
+        return (
+          <div class="kanban-col" data-status={col.key} ondragover="kanbanDragOver(event)" ondrop="kanbanDrop(event)">
+            <div class="kanban-col-header">
+              <span class={`badge ${col.colorClass}`}>{col.label}</span>
+              <div style="display:flex; gap:6px; align-items:center;">
+                <span class="kanban-col-count">{colLeads.length}</span>
+                {totalAED > 0 && <span class="text-xs text-muted">AED {totalAED.toLocaleString()}</span>}
+              </div>
+            </div>
+            <div class="kanban-cards">
+              {colLeads.map(lead => (
+                <div
+                  class="kanban-card"
+                  draggable="true"
+                  data-lead-id={String(lead.id)}
+                  data-status={String(lead.status)}
+                  ondragstart="kanbanDragStart(event)"
+                >
+                  <a href={`/admin/leads/${lead.id}`} style="font-weight:600; color:var(--text-primary); text-decoration:none; display:block; margin-bottom:4px;">{String(lead.full_name)}</a>
+                  <div class="text-xs text-muted">{String(lead.company_name)}</div>
+                  {lead.industry && <div class="text-xs text-muted" style="margin-top:4px;">{String(lead.industry)}</div>}
+                  {(lead.estimated_value_aed as number) > 0 && (
+                    <div class="text-xs" style="color:var(--success); margin-top:4px;">AED {Number(lead.estimated_value_aed).toLocaleString()}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  )}
+
+</AdminLayout>
+
+<script>
+  // Bulk action bar
+  const bulkBar = document.getElementById('bulk-bar') as HTMLElement | null;
+  const bulkCount = document.getElementById('bulk-count') as HTMLElement | null;
+  const selectAll = document.getElementById('select-all') as HTMLInputElement | null;
+
+  function updateBulkBar() {
+    const checked = document.querySelectorAll('.row-check:checked');
+    if (bulkCount) bulkCount.textContent = `${checked.length} selected`;
+    if (bulkBar) bulkBar.style.display = checked.length > 0 ? 'flex' : 'none';
+  }
+
+  selectAll?.addEventListener('change', function () {
+    document.querySelectorAll<HTMLInputElement>('.row-check').forEach(cb => { cb.checked = this.checked; });
+    updateBulkBar();
+  });
+
+  document.querySelectorAll('.row-check').forEach(cb =>
+    cb.addEventListener('change', updateBulkBar)
+  );
+
+  document.getElementById('bulk-apply')?.addEventListener('click', async () => {
+    const ids = Array.from(document.querySelectorAll<HTMLInputElement>('.row-check:checked'))
+      .map(cb => cb.dataset.leadId).filter(Boolean) as string[];
+    const newStatus = (document.getElementById('bulk-status') as HTMLSelectElement).value;
+    if (!ids.length || !newStatus) return;
+    const btn = document.getElementById('bulk-apply') as HTMLButtonElement;
+    btn.textContent = 'Applying…';
+    btn.disabled = true;
+    const res = await fetch('/api/admin/leads', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids, status: newStatus }),
+    });
+    if (res.ok) {
+      window.location.reload();
+    } else {
+      alert('Bulk update failed. Please try again.');
+      btn.textContent = 'Apply';
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('bulk-clear')?.addEventListener('click', () => {
+    document.querySelectorAll<HTMLInputElement>('.row-check').forEach(cb => { cb.checked = false; });
+    if (selectAll) selectAll.checked = false;
+    updateBulkBar();
+  });
+
+  // Inline status change in table view
+  async function updateLeadStatus(sel: HTMLSelectElement) {
+    const id = sel.dataset.leadId;
+    const status = sel.value;
+    await fetch(`/api/admin/leads/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+  }
+
+  // Kanban drag-and-drop
+  let draggedId: string | null = null;
+  let draggedEl: HTMLElement | null = null;
+
+  function kanbanDragStart(e: DragEvent) {
+    draggedEl = e.currentTarget as HTMLElement;
+    draggedId = draggedEl.dataset.leadId ?? null;
+    draggedEl.classList.add('dragging');
+  }
+
+  function kanbanDragOver(e: DragEvent) {
+    e.preventDefault();
+    const col = (e.currentTarget as HTMLElement);
+    document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
+    col.classList.add('drag-over');
+  }
+
+  async function kanbanDrop(e: DragEvent) {
+    e.preventDefault();
+    const col = (e.currentTarget as HTMLElement);
+    col.classList.remove('drag-over');
+    if (!draggedId || !draggedEl) return;
+
+    const newStatus = col.dataset.status!;
+    const oldStatus = draggedEl.dataset.status;
+    if (oldStatus === newStatus) { draggedEl.classList.remove('dragging'); return; }
+
+    // Move card in DOM
+    const cardsEl = col.querySelector('.kanban-cards');
+    if (cardsEl) cardsEl.prepend(draggedEl);
+    draggedEl.dataset.status = newStatus;
+    draggedEl.classList.remove('dragging');
+
+    // Persist
+    await fetch(`/api/admin/leads/${draggedId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus }),
+    });
+  }
+
+  document.addEventListener('dragend', () => {
+    draggedEl?.classList.remove('dragging');
+    document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
+  });
+
+  // Make functions global for inline handlers
+  Object.assign(window, { updateLeadStatus, kanbanDragStart, kanbanDragOver, kanbanDrop });
+</script>

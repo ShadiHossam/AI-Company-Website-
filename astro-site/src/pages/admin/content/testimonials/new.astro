@@ -1,0 +1,128 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+const { count: unreadNotifs } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false);
+---
+
+<AdminLayout title="New Testimonial" user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <a href="/admin/content/testimonials" class="text-muted text-sm" style="text-decoration:none;">← Testimonials</a>
+      <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-top:0.25rem;">New Testimonial</h1>
+    </div>
+  </div>
+
+  <div class="card" style="max-width:720px;">
+    <div id="form-error" style="display:none;background:var(--danger-dim);border:1px solid var(--danger);color:var(--danger);padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem;"></div>
+
+    <form id="new-t-form">
+      <div class="grid-2 gap-4 mb-4">
+        <div class="form-group">
+          <label class="form-label" for="client_name">Client Name *</label>
+          <input class="form-input" id="client_name" name="client_name" type="text" required placeholder="Ahmed Al Rashidi" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="client_title">Job Title</label>
+          <input class="form-input" id="client_title" name="client_title" type="text" placeholder="CEO" />
+        </div>
+      </div>
+
+      <div class="grid-2 gap-4 mb-4">
+        <div class="form-group">
+          <label class="form-label" for="client_company">Company</label>
+          <input class="form-input" id="client_company" name="client_company" type="text" placeholder="Emaar Properties" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="industry">Industry</label>
+          <select class="form-select" id="industry" name="industry">
+            <option value="">Select industry...</option>
+            <option value="Real Estate">Real Estate</option>
+            <option value="Retail">Retail</option>
+            <option value="Hospitality">Hospitality</option>
+            <option value="Logistics">Logistics</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Finance">Finance</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group mb-4">
+        <label class="form-label" for="client_image_url">Client Photo URL</label>
+        <input class="form-input" id="client_image_url" name="client_image_url" type="url" placeholder="https://..." />
+      </div>
+
+      <div class="form-group mb-4">
+        <label class="form-label" for="quote">Quote *</label>
+        <textarea class="form-textarea" id="quote" name="quote" rows="4" required placeholder="Aegis AI transformed our operations..."></textarea>
+      </div>
+
+      <div class="grid-2 gap-4 mb-6">
+        <div class="form-group">
+          <label class="form-label" for="sort_order">Sort Order</label>
+          <input class="form-input" id="sort_order" name="sort_order" type="number" value="0" min="0" />
+        </div>
+        <div class="form-group" style="display:flex;align-items:flex-end;gap:1rem;padding-bottom:0.25rem;">
+          <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+            <input type="checkbox" id="featured" name="featured" style="width:16px;height:16px;accent-color:var(--accent);" />
+            <span class="text-sm">Featured</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+            <input type="checkbox" id="published" name="published" style="width:16px;height:16px;accent-color:var(--accent);" />
+            <span class="text-sm">Published</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button type="submit" class="btn btn-primary" id="submit-btn">Create Testimonial</button>
+        <a href="/admin/content/testimonials" class="btn btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </div>
+</AdminLayout>
+
+<script>
+  document.getElementById('new-t-form')!.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+    const errorEl = document.getElementById('form-error') as HTMLElement;
+    submitBtn.textContent = 'Creating...';
+    submitBtn.disabled = true;
+    errorEl.style.display = 'none';
+
+    const form = e.target as HTMLFormElement;
+    const payload = {
+      client_name: (form.querySelector('#client_name') as HTMLInputElement).value,
+      client_title: (form.querySelector('#client_title') as HTMLInputElement).value || null,
+      client_company: (form.querySelector('#client_company') as HTMLInputElement).value || null,
+      client_image_url: (form.querySelector('#client_image_url') as HTMLInputElement).value || null,
+      industry: (form.querySelector('#industry') as HTMLSelectElement).value || null,
+      quote: (form.querySelector('#quote') as HTMLTextAreaElement).value,
+      sort_order: parseInt((form.querySelector('#sort_order') as HTMLInputElement).value) || 0,
+      featured: (form.querySelector('#featured') as HTMLInputElement).checked,
+      published: (form.querySelector('#published') as HTMLInputElement).checked,
+    };
+
+    const res = await fetch('/api/admin/content/testimonials', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      window.location.href = `/admin/content/testimonials/${data.id}`;
+    } else {
+      const err = await res.json();
+      errorEl.textContent = err.error ?? 'An error occurred';
+      errorEl.style.display = 'block';
+      submitBtn.textContent = 'Create Testimonial';
+      submitBtn.disabled = false;
+    }
+  });
+</script>

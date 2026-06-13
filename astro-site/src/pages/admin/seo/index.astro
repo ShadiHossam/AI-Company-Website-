@@ -1,0 +1,199 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+
+const { data: seoRows } = await supabase
+  .from('page_seo')
+  .select('*')
+  .order('page_slug');
+
+const { count: unreadNotifs } = await supabase
+  .from('notifications')
+  .select('*', { count: 'exact', head: true })
+  .eq('read', false);
+
+// Default pages to always show
+const defaultPages = ['/', '/about', '/services', '/pricing', '/contact', '/results', '/faq', '/blog', '/privacy', '/terms'];
+
+// Build a map from DB rows
+const seoMap: Record<string, any> = {};
+(seoRows ?? []).forEach(row => { seoMap[row.page_slug] = row; });
+
+// Collect all pages (defaults + any extra from DB)
+const extraPages = (seoRows ?? [])
+  .map(r => r.page_slug)
+  .filter(slug => !defaultPages.includes(slug));
+const allPages = [...defaultPages, ...extraPages];
+---
+
+<AdminLayout title="SEO Manager" user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="mb-6">
+    <h1 class="text-xl font-bold">SEO Manager</h1>
+    <p class="text-muted text-sm">Manage meta titles, descriptions, and open graph settings per page.</p>
+  </div>
+
+  <div id="accordion-container">
+    {allPages.map((slug, idx) => {
+      const row = seoMap[slug] ?? {};
+      const safeSlug = slug.replace(/\//g, '_').replace(/^_/, '') || 'home';
+      return (
+        <div class="card mb-3 accordion-item" data-slug={slug}>
+          <button
+            class="accordion-trigger"
+            aria-expanded={idx === 0 ? 'true' : 'false'}
+            data-target={`panel-${safeSlug}`}
+            style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;background:none;border:none;color:var(--text-primary);cursor:pointer;font-size:0.9rem;font-weight:600;"
+          >
+            <span style="display:flex;align-items:center;gap:0.75rem;">
+              <code style="background:var(--bg-input);padding:2px 8px;border-radius:4px;font-size:0.8rem;color:var(--accent);">{slug}</code>
+              {row.meta_title && <span class="text-muted text-sm" style="font-weight:400;">{row.meta_title}</span>}
+            </span>
+            <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style={`width:16px;height:16px;transition:transform 0.2s;${idx === 0 ? '' : 'transform:rotate(-90deg);'}`}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+
+          <div
+            id={`panel-${safeSlug}`}
+            class="accordion-panel"
+            style={`padding:0 1.25rem 1.25rem;${idx !== 0 ? 'display:none;' : ''}`}
+          >
+            <form class="seo-form" data-slug={slug}>
+              <div class="grid-2 gap-3 mb-3">
+                <div class="form-group">
+                  <label class="form-label">Meta Title</label>
+                  <input
+                    type="text"
+                    name="meta_title"
+                    class="form-input"
+                    placeholder="Page title for search engines"
+                    value={row.meta_title ?? ''}
+                    maxlength="70"
+                  />
+                  <span class="text-xs text-muted char-count" data-max="70">0/70 chars</span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">OG Image URL</label>
+                  <input
+                    type="text"
+                    name="og_image_url"
+                    class="form-input"
+                    placeholder="/assets/og-image.jpg"
+                    value={row.og_image_url ?? ''}
+                  />
+                </div>
+              </div>
+
+              <div class="form-group mb-3">
+                <label class="form-label">Meta Description</label>
+                <textarea
+                  name="meta_description"
+                  class="form-textarea"
+                  rows="3"
+                  placeholder="Brief description of this page for search engines (150–160 chars recommended)"
+                  maxlength="200"
+                >{row.meta_description ?? ''}</textarea>
+                <span class="text-xs text-muted char-count" data-max="160">0/160 chars</span>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.875rem;">
+                  <input
+                    type="checkbox"
+                    name="noindex"
+                    style="width:16px;height:16px;accent-color:var(--accent);"
+                    checked={row.noindex ?? false}
+                  />
+                  <span>noindex (hide from search engines)</span>
+                </label>
+                <div style="display:flex;align-items:center;gap:0.75rem;">
+                  <span class="save-msg text-xs" style="display:none;"></span>
+                  <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+</AdminLayout>
+
+<script>
+  // Accordion logic
+  document.querySelectorAll<HTMLButtonElement>('.accordion-trigger').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const panelId = btn.dataset.target!;
+      const panel = document.getElementById(panelId);
+      const chevron = btn.querySelector<SVGElement>('.accordion-chevron');
+      const isOpen = btn.getAttribute('aria-expanded') === 'true';
+
+      if (isOpen) {
+        panel!.style.display = 'none';
+        btn.setAttribute('aria-expanded', 'false');
+        if (chevron) chevron.style.transform = 'rotate(-90deg)';
+      } else {
+        panel!.style.display = 'block';
+        btn.setAttribute('aria-expanded', 'true');
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
+      }
+    });
+  });
+
+  // Char counters
+  document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input[maxlength], textarea[maxlength]').forEach(el => {
+    const countEl = el.parentElement?.querySelector<HTMLElement>('.char-count');
+    if (!countEl) return;
+    const max = parseInt(el.getAttribute('maxlength') ?? '200', 10);
+    const update = () => {
+      const len = el.value.length;
+      countEl.textContent = `${len}/${max} chars`;
+      countEl.style.color = len > max * 0.9 ? '#fb923c' : '';
+    };
+    update();
+    el.addEventListener('input', update);
+  });
+
+  // SEO form submit
+  document.querySelectorAll<HTMLFormElement>('.seo-form').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const slug = form.dataset.slug!;
+      const fd = new FormData(form);
+      const payload = {
+        page_slug: slug,
+        meta_title: (fd.get('meta_title') as string) || null,
+        meta_description: (fd.get('meta_description') as string) || null,
+        og_image_url: (fd.get('og_image_url') as string) || null,
+        noindex: fd.get('noindex') === 'on',
+      };
+
+      const saveBtn = form.querySelector<HTMLButtonElement>('[type="submit"]')!;
+      const saveMsg = form.querySelector<HTMLElement>('.save-msg')!;
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving…';
+
+      try {
+        const res = await fetch('/api/admin/seo', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error('Failed');
+        saveMsg.textContent = 'Saved!';
+        saveMsg.style.color = '#4ade80';
+        saveMsg.style.display = 'inline';
+        setTimeout(() => { saveMsg.style.display = 'none'; }, 3000);
+      } catch {
+        saveMsg.textContent = 'Error saving';
+        saveMsg.style.color = '#f87171';
+        saveMsg.style.display = 'inline';
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save';
+      }
+    });
+  });
+</script>

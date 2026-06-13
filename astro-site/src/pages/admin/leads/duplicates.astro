@@ -1,0 +1,190 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+const { count: unreadNotifs } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false);
+
+const { data: dupLeads } = await supabase
+  .from('leads')
+  .select('id, full_name, company_name, work_email, status, created_at, duplicate_email, whatsapp')
+  .eq('duplicate_email', true)
+  .order('work_email')
+  .order('created_at');
+
+type Lead = NonNullable<typeof dupLeads>[number];
+
+// Group by email
+const groups: Record<string, Lead[]> = {};
+for (const lead of dupLeads ?? []) {
+  const key = lead.work_email ?? 'unknown';
+  if (!groups[key]) groups[key] = [];
+  groups[key].push(lead);
+}
+const dupGroups = Object.entries(groups);
+
+const statusLabels: Record<string, string> = {
+  new: 'New', contacted: 'Contacted', qualified: 'Qualified',
+  proposal_sent: 'Proposal Sent', closed_won: 'Closed Won', closed_lost: 'Closed Lost',
+};
+const statusBadge: Record<string, string> = {
+  new: 'badge-new', contacted: 'badge-contacted', qualified: 'badge-qualified',
+  proposal_sent: 'badge-proposal', closed_won: 'badge-won', closed_lost: 'badge-lost',
+};
+---
+
+<AdminLayout title="Duplicate Leads" user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <a href="/admin/leads" class="text-muted text-sm" style="text-decoration:none;">← All Leads</a>
+      <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-top:0.25rem;">Duplicate Leads</h1>
+    </div>
+    <span class="badge" style="background:var(--danger-dim);color:var(--danger);border:1px solid var(--danger-dim);">
+      {dupGroups.length} group{dupGroups.length !== 1 ? 's' : ''}
+    </span>
+  </div>
+
+  {dupGroups.length === 0 ? (
+    <div class="card" style="text-align:center;padding:3rem;">
+      <div style="font-size:2rem;margin-bottom:0.75rem;">✓</div>
+      <p style="font-weight:600;color:var(--text-primary);margin-bottom:0.25rem;">No duplicates found</p>
+      <p class="text-muted text-sm">All leads have unique email addresses.</p>
+    </div>
+  ) : (
+    <div style="display:flex;flex-direction:column;gap:1.5rem;">
+      {dupGroups.map(([email, leads]) => (
+        <div class="card dup-group" data-email={email}>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+            <div>
+              <div style="font-weight:700;color:var(--text-primary);">{email}</div>
+              <div class="text-xs text-muted">{leads.length} submissions with this email</div>
+            </div>
+            <button
+              class="btn btn-ghost btn-sm dismiss-all"
+              data-ids={leads.map(l => l.id).join(',')}
+            >
+              Dismiss All (keep as-is)
+            </button>
+          </div>
+
+          <div class="table-wrap" style="margin-bottom:1rem;">
+            <table style="width:100%;border-collapse:collapse;">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border);">
+                  <th style="padding:0.5rem 0.75rem;text-align:left;font-size:0.7rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">
+                    <input type="radio" disabled style="opacity:0;" /> Primary
+                  </th>
+                  <th style="padding:0.5rem 0.75rem;text-align:left;font-size:0.7rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Name</th>
+                  <th style="padding:0.5rem 0.75rem;text-align:left;font-size:0.7rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Company</th>
+                  <th style="padding:0.5rem 0.75rem;text-align:left;font-size:0.7rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Status</th>
+                  <th style="padding:0.5rem 0.75rem;text-align:left;font-size:0.7rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Submitted</th>
+                  <th style="padding:0.5rem 0.75rem;text-align:right;font-size:0.7rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">View</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leads.map((lead, i) => (
+                  <tr style="border-bottom:1px solid var(--border);">
+                    <td style="padding:0.625rem 0.75rem;">
+                      <input
+                        type="radio"
+                        name={`primary-${email.replace(/[@.]/g,'-')}`}
+                        value={lead.id}
+                        class="primary-radio"
+                        checked={i === 0}
+                        style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent);"
+                      />
+                    </td>
+                    <td style="padding:0.625rem 0.75rem;font-weight:600;color:var(--text-primary);">{lead.full_name}</td>
+                    <td style="padding:0.625rem 0.75rem;color:var(--text-muted);">{lead.company_name ?? '—'}</td>
+                    <td style="padding:0.625rem 0.75rem;">
+                      <span class={`badge ${statusBadge[lead.status] ?? 'badge-new'}`}>{statusLabels[lead.status] ?? lead.status}</span>
+                    </td>
+                    <td style="padding:0.625rem 0.75rem;" class="text-xs text-muted">{new Date(lead.created_at).toLocaleDateString('en-GB')}</td>
+                    <td style="padding:0.625rem 0.75rem;text-align:right;">
+                      <a href={`/admin/leads/${lead.id}`} class="btn btn-ghost btn-sm">View</a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              class="btn btn-primary btn-sm mark-primary"
+              data-ids={leads.map(l => l.id).join(',')}
+              data-group={email.replace(/[@.]/g,'-')}
+            >
+              Mark Selected as Primary & Close Duplicates
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</AdminLayout>
+
+<script>
+  async function patchLead(id: string, payload: Record<string, unknown>) {
+    return fetch(`/api/admin/leads/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // Mark Primary & Close Duplicates
+  document.querySelectorAll('.mark-primary').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const el = btn as HTMLButtonElement;
+      const ids = el.dataset.ids!.split(',');
+      const group = el.dataset.group!;
+      const primaryInput = document.querySelector<HTMLInputElement>(`.primary-radio[name="primary-${group}"]:checked`);
+      const primaryId = primaryInput?.value;
+      if (!primaryId) return alert('Please select a primary lead first.');
+
+      if (!confirm(`Keep "${primaryId.slice(0,8)}…" as primary and close the other ${ids.length - 1} as lost?`)) return;
+
+      el.textContent = 'Processing…';
+      el.disabled = true;
+
+      const promises = ids.map(id =>
+        patchLead(id, id === primaryId
+          ? { duplicate_email: false }
+          : { duplicate_email: false, status: 'closed_lost' }
+        )
+      );
+
+      await Promise.all(promises);
+      el.closest('.dup-group')?.remove();
+
+      const remaining = document.querySelectorAll('.dup-group');
+      if (remaining.length === 0) {
+        document.querySelector('[style*="flex-direction:column;gap:1.5rem"]')!.innerHTML =
+          '<div class="card" style="text-align:center;padding:3rem;"><div style="font-size:2rem;margin-bottom:0.75rem;">✓</div><p style="font-weight:600;color:var(--text-primary);">All duplicates resolved</p></div>';
+      }
+    });
+  });
+
+  // Dismiss All — clear duplicate_email flag without changing status
+  document.querySelectorAll('.dismiss-all').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const el = btn as HTMLButtonElement;
+      const ids = el.dataset.ids!.split(',');
+      if (!confirm(`Dismiss all ${ids.length} duplicates without changing their status?`)) return;
+      el.textContent = 'Dismissing…';
+      el.disabled = true;
+
+      await Promise.all(ids.map(id => patchLead(id, { duplicate_email: false })));
+      el.closest('.dup-group')?.remove();
+
+      const remaining = document.querySelectorAll('.dup-group');
+      if (remaining.length === 0) {
+        document.querySelector('[style*="flex-direction:column;gap:1.5rem"]')!.innerHTML =
+          '<div class="card" style="text-align:center;padding:3rem;"><div style="font-size:2rem;margin-bottom:0.75rem;">✓</div><p style="font-weight:600;color:var(--text-primary);">All duplicates resolved</p></div>';
+      }
+    });
+  });
+</script>

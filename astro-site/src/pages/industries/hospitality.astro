@@ -1,11 +1,65 @@
 ---
+export const prerender = false;
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+
+// Hardcoded fallback FAQ items
+const fallbackFaqs = [
+  { question: "Does AI concierge feel impersonal to guests?", answer: "Modern LLM-based concierge systems can be tuned to match the hotel's brand voice closely — warm and personable or formal and precise, depending on the property. Guest research (Oracle, 2024) shows that 65% of guests prefer messaging-based communication over phone calls for routine requests, regardless of whether it's AI or human. What guests care about is that responses are fast, accurate, and in their language." },
+  { question: "How does AI revenue management work differently from traditional RMS?", answer: "Traditional revenue management systems use rules and historical demand curves to suggest prices. AI systems use machine learning to find patterns across far more variables — not just historical bookings, but competitor rate movements, local event data, search trend signals, and macro factors. They also adjust in real time (sometimes hourly) rather than in nightly batch updates. The result is more frequent, more precise rate changes that capture demand exactly when it peaks." },
+  { question: "What guest data does AI personalization actually use?", answer: "The foundation is PMS data — room type preferences, prior stay history, special requests, F&B charges. This is supplemented with explicit preferences captured during booking or pre-arrival communication, and inferred preferences from in-stay behavior. Importantly, guest data must be handled in compliance with GDPR, UAE data protection laws, and the hotel's own privacy policy. Transparency about data use is increasingly a guest expectation, not just a legal requirement." },
+  { question: "How quickly can AI guest communication be deployed?", answer: "A well-scoped AI concierge deployment typically takes 4–8 weeks from initiation to live operation. The timeline is driven primarily by PMS integration complexity, content creation (hotel-specific knowledge base, F&B menus, local recommendations), and testing in the target languages. The AI itself is fast to configure — the bottleneck is ensuring the knowledge base is accurate and the brand voice is correctly calibrated before going live with guests." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'hospitality')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI for Hospitality & Hotels Dubai",
+    "url": "https://aegisai.ae/industries/hospitality",
+    "description": "Custom AI systems for Dubai hotels and hospitality groups: bilingual AI concierge, dynamic pricing tools, revenue management, and guest communication automation.",
+    "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://aegisai.ae" },
+    "areaServed": "Dubai",
+    "serviceType": "AI Development for Hospitality"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://aegisai.ae/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://aegisai.ae/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Hospitality AI", "item": "https://aegisai.ae/industries/hospitality" }
+    ]
+  }
+];
 ---
 
 <BaseLayout
-  title="AI in Hospitality & Hotels — Trends, Applications & Insights | Aegis AI"
-  description="How AI is transforming hospitality: guest personalization, dynamic pricing, predictive maintenance, and revenue management. Industry data and trends."
+  title="AI for Hotels & Hospitality Dubai — AI Concierge, Dynamic Pricing & Guest Automation | Aegis AI"
+  description="Aegis AI builds custom AI systems for Dubai hotels: bilingual AI concierge, dynamic pricing, revenue management, and guest communication automation."
   canonicalPath="/industries/hospitality"
+  ogImage="/assets/og-hospitality.jpg"
+  ldJson={ldJson}
 >
 
 <header class="hero-section">
@@ -17,8 +71,12 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <span class="material-symbols-outlined" style="font-size:18px;">hotel</span>
       Hospitality AI
     </div>
-    <h1>How AI Is Redefining<br><span class="gradient-text">Hospitality</span></h1>
-    <p style="color:#42474e; font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">From AI concierge and revenue management to predictive maintenance and multilingual guest communication — hospitality is one of the industries where AI creates the most immediate, visible impact. Here's what's happening across hotels, resorts, and hospitality groups globally.</p>
+    <h1>AI for Dubai Hotels<br>&amp; <span class="gradient-text">Hospitality Groups</span></h1>
+    <p style="color:#42474e; font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Aegis AI builds custom AI systems for Dubai hotels and hospitality groups — bilingual AI concierge, dynamic pricing engines, guest personalization, and revenue intelligence. PMS-integrated, multilingual (Arabic & English), and backed by our 100% refund guarantee.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2rem;">
+      <button onclick="openModal(this)" data-source="hospitality_hero" class="btn-primary">Book Free Hospitality AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
     <div class="stat-grid">
       <div style="text-align:center;">
         <p class="stat-number" style="font-size:2rem;">$12.8B</p>
@@ -38,18 +96,72 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 <!-- HERO IMAGE -->
 <div style="position:relative; overflow:hidden; height:240px;">
-  <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400&q=80&auto=format&fit=crop" alt="Luxury hotel lobby representing AI-powered hospitality" loading="lazy" style="width:100%; height:100%; object-fit:cover; object-position:center 30%;" />
+  <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400&q=80&auto=format&fit=crop" alt="Luxury hotel lobby representing AI-powered hospitality" loading="eager" fetchpriority="high" width="1400" height="240" style="width:100%; height:100%; object-fit:cover; object-position:center 30%;" />
   <div style="position:absolute; inset:0; background:linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
 </div>
 
-<!-- THE AI SHIFT -->
-<section class="section" aria-labelledby="shift-heading">
+<!-- WHAT AEGIS BUILDS -->
+<section id="what-we-build" class="section" aria-labelledby="build-heading">
   <div class="container">
     <div class="section-header">
-      <div class="section-eyebrow">The AI Shift</div>
+      <div class="section-eyebrow">What We Build</div>
+      <h2 id="build-heading">AI Systems Built for Dubai Hotels & Hospitality Groups</h2>
+      <p>Six specific systems we deploy for hotels and hospitality groups across the UAE — each integrated with your PMS, WhatsApp, and guest communication channels.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">support_agent</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Bilingual AI Concierge</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Handles guest requests via WhatsApp, your hotel app, or web chat — before arrival, during the stay, and after checkout. Dining reservations, room service, local recommendations, and complaints handled in Arabic, English, Russian, Chinese, and more.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">74% of routine guest inquiries automatable without staff involvement (Oracle)</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">price_change</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Dynamic Pricing Engine</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Real-time rate optimization that processes competitor pricing, booking pace, local event calendars, and OTA channel data to adjust room rates automatically. Connects to your PMS and channel manager — no manual rate updates.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Average 10–18% RevPAR uplift over manual rate-setting</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">person_pin</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Guest Personalization System</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Builds persistent guest profiles from PMS data, preferences, and stay history. Room preferences, dietary requirements, and special occasion flags are applied automatically at check-in and throughout the stay — without staff needing to remember or look anything up.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Personalized guests spend 23% more on F&B and ancillaries (Hyatt)</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">monitoring</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Revenue Intelligence Dashboard</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Aggregates your PMS data, OTA performance, competitor rate movements, and demand signals into a live dashboard your revenue team and management can act on daily. Demand forecasts, booking pace alerts, and channel mix recommendations in one view.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Built on your actual property data, not generic benchmarks</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">reviews</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Review Analytics Tool</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">NLP model processes your reviews across TripAdvisor, Booking.com, Google, and Expedia to surface recurring themes, sentiment trends, and specific operational issues. GMs receive a structured weekly briefing — actionable findings, not raw data.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">1-point TripAdvisor improvement correlates with 11% ADR increase</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">restaurant</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">F&B Demand Forecasting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Forecasts restaurant covers, room service volume, and event catering demand using your occupancy data, reservation patterns, and seasonal trends. Reduces F&B waste, prevents overstaffing, and improves food cost percentage — automatically updated each week.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">AI reduces hotel F&B waste by 20–35% (Winnow Solutions)</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#e7eeff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Typical project timeline: 6–10 weeks · Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9375rem;margin-bottom:1.25rem;">Every system is built for your property, integrated with your PMS, and trained in your brand voice.</p>
+      <button onclick="openModal(this)" data-source="hospitality_mid" class="btn-primary">Book Free Hospitality AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY CONTEXT -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">Industry Context</div>
       <h2 id="shift-heading">Why hospitality and AI are a natural fit</h2>
     </div>
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem;">
+    <div class="ind-context-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem;">
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:22px;">person</span></div>
         <h3 style="font-weight:700; font-size:1rem; color:#00253b; margin-bottom:0.5rem;">Guest expectations are hyper-personal</h3>
@@ -69,7 +181,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   </div>
 </section>
 
-<!-- KEY AI APPLICATIONS -->
+<!-- KEY AI APPLICATIONS (RENAMED) -->
 <section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
   <div class="container">
     <div class="section-header">
@@ -156,7 +268,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <div class="section-eyebrow">Industry Research</div>
       <h2 id="research-heading">What the data shows about AI in hospitality</h2>
     </div>
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
       <div class="card" style="text-align:center;">
         <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">+18%</p>
         <p style="color:#42474e; font-size:0.875rem;">RevPAR improvement at IDeaS clients using AI revenue management</p>
@@ -171,7 +283,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       </div>
     </div>
     <div class="research-panel">
-      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
         <div>
           <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Revenue Management</p>
           <p style="color:#42474e; line-height:1.7;">A 2024 Skift Research study found hotels using AI revenue management outperform competitive sets by 10–18% on RevPAR consistently. The advantage compounds over time as the model learns the property's specific demand patterns. AI RMS tools now manage pricing for over 30,000 hotels globally.</p>
@@ -197,44 +309,25 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <h2 id="faq-heading">Questions about AI in hospitality</h2>
     </div>
     <div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          Does AI concierge feel impersonal to guests?
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-body">Modern LLM-based concierge systems can be tuned to match the hotel's brand voice closely — warm and personable or formal and precise, depending on the property. Guest research (Oracle, 2024) shows that 65% of guests prefer messaging-based communication over phone calls for routine requests, regardless of whether it's AI or human. What guests care about is that responses are fast, accurate, and in their language.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          How does AI revenue management work differently from traditional RMS?
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-body">Traditional revenue management systems use rules and historical demand curves to suggest prices. AI systems use machine learning to find patterns across far more variables — not just historical bookings, but competitor rate movements, local event data, search trend signals, and macro factors. They also adjust in real time (sometimes hourly) rather than in nightly batch updates. The result is more frequent, more precise rate changes that capture demand exactly when it peaks.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          What guest data does AI personalization actually use?
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-body">The foundation is PMS data — room type preferences, prior stay history, special requests, F&amp;B charges. This is supplemented with explicit preferences captured during booking or pre-arrival communication, and inferred preferences from in-stay behavior. Importantly, guest data must be handled in compliance with GDPR, UAE data protection laws, and the hotel's own privacy policy. Transparency about data use is increasingly a guest expectation, not just a legal requirement.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          How quickly can AI guest communication be deployed?
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-body">A well-scoped AI concierge deployment typically takes 4–8 weeks from initiation to live operation. The timeline is driven primarily by PMS integration complexity, content creation (hotel-specific knowledge base, F&amp;B menus, local recommendations), and testing in the target languages. The AI itself is fast to configure — the bottleneck is ensuring the knowledge base is accurate and the brand voice is correctly calibrated before going live with guests.</div>
-      </div>
+      {faqItems.map((item) => (
+        <div class="faq-item">
+          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+            {item.question}
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">{item.answer}</div>
+        </div>
+      ))}
     </div>
   </div>
 </section>
 
 <!-- CTA -->
 <div class="cta-band">
-  <h2>Want to understand what AI could do for your hotel or hospitality group?</h2>
-  <p>We work with hotels, resorts, and hospitality groups across the UAE. If you'd like to explore how AI applies to your specific property type, guest mix, and operational structure, we're happy to talk it through.</p>
-  <button onclick="openModal()" class="btn-primary" style="font-size:1.0625rem; padding:0.9375rem 2.5rem;">Start a Conversation</button>
-  <p style="color:rgba(255,255,255,0.55); font-size:0.875rem; margin-top:1rem;">Free · No commitment · No sales pitch</p>
+  <h2>Ready to see what AI can do for your hotel or hospitality group?</h2>
+  <p>Book a free audit call. We'll map out which AI systems make the most sense for your property, guest mix, and current operations — then give you a clear scope and timeline, no commitment required.</p>
+  <button onclick="openModal(this)" data-source="hospitality_cta" class="btn-primary" style="font-size:1.0625rem; padding:0.9375rem 2.5rem;">Book Free Hospitality AI Audit</button>
+  <p style="color:rgba(255,255,255,0.55); font-size:0.875rem; margin-top:1rem;">Free · No commitment · Covered by our 100% refund guarantee</p>
 </div>
 
 </BaseLayout>

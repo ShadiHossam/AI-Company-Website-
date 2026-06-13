@@ -1,0 +1,158 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+const { count: unreadNotifs } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false);
+
+const { data: testimonials } = await supabase
+  .from('testimonials')
+  .select('id, client_name, client_title, client_company, industry, published, featured, sort_order')
+  .order('sort_order', { ascending: true });
+---
+
+<AdminLayout title="Testimonials" user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <a href="/admin/content" class="text-muted text-sm" style="text-decoration:none;">← Content</a>
+      <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-top:0.25rem;">Testimonials</h1>
+    </div>
+    <a href="/admin/content/testimonials/new" class="btn btn-primary btn-sm">+ New Testimonial</a>
+  </div>
+
+  {(!testimonials || testimonials.length === 0) ? (
+    <div class="card" style="text-align:center;padding:3rem;">
+      <p class="text-muted">No testimonials yet. Add your first client testimonial.</p>
+      <a href="/admin/content/testimonials/new" class="btn btn-primary btn-sm" style="margin-top:1rem;">+ New Testimonial</a>
+    </div>
+  ) : (
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div class="table-wrap">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);">
+              <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Client</th>
+              <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Industry</th>
+              <th style="padding:0.75rem 1rem;text-align:center;font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Featured</th>
+              <th style="padding:0.75rem 1rem;text-align:center;font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Published</th>
+              <th style="padding:0.75rem 1rem;text-align:right;font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {testimonials.map(t => (
+              <tr class="t-row" data-id={t.id} style="border-bottom:1px solid var(--border);transition:background 0.15s;">
+                <td style="padding:0.875rem 1rem;">
+                  <a href={`/admin/content/testimonials/${t.id}`} style="font-weight:600;color:var(--text-primary);text-decoration:none;">{t.client_name}</a>
+                  <div class="text-xs text-muted" style="margin-top:2px;">{[t.client_title, t.client_company].filter(Boolean).join(' · ')}</div>
+                </td>
+                <td style="padding:0.875rem 1rem;color:var(--text-muted);">{t.industry ?? '—'}</td>
+                <td style="padding:0.875rem 1rem;text-align:center;">
+                  <button
+                    class="featured-toggle badge"
+                    data-id={t.id}
+                    data-featured={t.featured ? 'true' : 'false'}
+                    style={t.featured
+                      ? 'background:var(--accent-dim);color:var(--accent);border:1px solid var(--border-accent);cursor:pointer;'
+                      : 'background:var(--bg-hover);color:var(--text-dim);border:1px solid var(--border);cursor:pointer;'}
+                  >
+                    {t.featured ? 'Featured' : 'No'}
+                  </button>
+                </td>
+                <td style="padding:0.875rem 1rem;text-align:center;">
+                  <button
+                    class="publish-toggle badge"
+                    data-id={t.id}
+                    data-published={t.published ? 'true' : 'false'}
+                    style={t.published
+                      ? 'background:var(--success-dim);color:var(--success);border:1px solid rgba(34,197,94,0.25);cursor:pointer;'
+                      : 'background:var(--bg-hover);color:var(--text-dim);border:1px solid var(--border);cursor:pointer;'}
+                  >
+                    {t.published ? 'Published' : 'Draft'}
+                  </button>
+                </td>
+                <td style="padding:0.875rem 1rem;text-align:right;">
+                  <div class="flex items-center gap-2" style="justify-content:flex-end;">
+                    <a href={`/admin/content/testimonials/${t.id}`} class="btn btn-ghost btn-sm">Edit</a>
+                    <button class="btn btn-sm delete-t" data-id={t.id} data-name={t.client_name} style="color:var(--danger);border-color:var(--danger-dim);background:var(--danger-dim);">Delete</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )}
+</AdminLayout>
+
+<script>
+  document.querySelectorAll('.publish-toggle').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const el = btn as HTMLButtonElement;
+      const id = el.dataset.id!;
+      const current = el.dataset.published === 'true';
+      const next = !current;
+      el.textContent = 'Saving...';
+      const res = await fetch(`/api/admin/content/testimonials/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ published: next }),
+      });
+      if (res.ok) {
+        el.dataset.published = next ? 'true' : 'false';
+        el.textContent = next ? 'Published' : 'Draft';
+        el.style.background = next ? 'var(--success-dim)' : 'var(--bg-hover)';
+        el.style.color = next ? 'var(--success)' : 'var(--text-dim)';
+        el.style.border = next ? '1px solid rgba(34,197,94,0.25)' : '1px solid var(--border)';
+      } else {
+        el.textContent = 'Error';
+      }
+    });
+  });
+
+  document.querySelectorAll('.featured-toggle').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const el = btn as HTMLButtonElement;
+      const id = el.dataset.id!;
+      const current = el.dataset.featured === 'true';
+      const next = !current;
+      el.textContent = 'Saving...';
+      const res = await fetch(`/api/admin/content/testimonials/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ featured: next }),
+      });
+      if (res.ok) {
+        el.dataset.featured = next ? 'true' : 'false';
+        el.textContent = next ? 'Featured' : 'No';
+        el.style.background = next ? 'var(--accent-dim)' : 'var(--bg-hover)';
+        el.style.color = next ? 'var(--accent)' : 'var(--text-dim)';
+        el.style.border = next ? '1px solid var(--border-accent)' : '1px solid var(--border)';
+      } else {
+        el.textContent = 'Error';
+      }
+    });
+  });
+
+  document.querySelectorAll('.delete-t').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const el = btn as HTMLButtonElement;
+      const id = el.dataset.id!;
+      const name = el.dataset.name ?? 'this testimonial';
+      if (!confirm(`Delete testimonial from "${name}"? This cannot be undone.`)) return;
+      const res = await fetch(`/api/admin/content/testimonials/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        el.closest('tr')?.remove();
+      } else {
+        alert('Delete failed. Please try again.');
+      }
+    });
+  });
+
+  document.querySelectorAll('.t-row').forEach(row => {
+    row.addEventListener('mouseenter', () => (row as HTMLElement).style.background = 'var(--bg-hover)');
+    row.addEventListener('mouseleave', () => (row as HTMLElement).style.background = '');
+  });
+</script>

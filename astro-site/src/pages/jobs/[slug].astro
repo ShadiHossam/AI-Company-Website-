@@ -1,0 +1,392 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+
+const { slug } = Astro.params;
+
+const supabase = getSupabaseAdmin();
+const { data: job } = await supabase
+  .from('jobs')
+  .select('*')
+  .eq('slug', slug!)
+  .eq('published', true)
+  .single();
+
+if (!job) return Astro.redirect('/careers');
+
+const requirements: string[] = Array.isArray(job.requirements) ? job.requirements : [];
+const niceToHave: string[]   = Array.isArray(job.nice_to_have) ? job.nice_to_have : [];
+const benefits: string[]     = Array.isArray(job.benefits)     ? job.benefits     : [];
+---
+
+<BaseLayout
+  title={`${job.title} — Careers at Aegis AI`}
+  description={`Apply for ${job.title} at Aegis AI in ${job.location}. ${job.job_type} position.`}
+  canonicalPath={`/jobs/${job.slug}`}
+>
+
+<!-- HERO -->
+<header class="hero-section" style="padding-bottom:2rem;">
+  <div class="container">
+    <nav class="page-breadcrumb" style="margin-bottom:1.5rem;" aria-label="Breadcrumb">
+      <a href="/">Home</a><span>/</span>
+      <a href="/careers">Careers</a><span>/</span>
+      <strong>{job.title}</strong>
+    </nav>
+    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem;">
+      {job.department && (
+        <span style="background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:4px 12px;font-size:.8125rem;font-weight:600;color:#004f58;">{job.department}</span>
+      )}
+      <span style="display:inline-flex;align-items:center;gap:4px;font-size:.875rem;color:#42474e;">
+        <span class="material-symbols-outlined" style="font-size:16px;">location_on</span>{job.location}
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:4px;font-size:.875rem;color:#42474e;">
+        <span class="material-symbols-outlined" style="font-size:16px;">schedule</span>{job.job_type}
+      </span>
+      {job.salary_range && (
+        <span style="display:inline-flex;align-items:center;gap:4px;font-size:.875rem;color:#42474e;">
+          <span class="material-symbols-outlined" style="font-size:16px;">payments</span>{job.salary_range}
+        </span>
+      )}
+    </div>
+    <h1 style="margin-bottom:0;">{job.title}</h1>
+  </div>
+</header>
+
+<!-- CONTENT -->
+<div class="container" style="padding-top:2rem;padding-bottom:5rem;">
+  <div class="job-layout">
+
+    <!-- LEFT: Role Details -->
+    <div class="job-details">
+
+      <div class="card" style="margin-bottom:1.5rem;">
+        <h2 style="font-size:1.125rem;margin-bottom:1rem;">About the Role</h2>
+        <div class="prose" style="color:#42474e;line-height:1.75;white-space:pre-wrap;">{job.description}</div>
+      </div>
+
+      {requirements.length > 0 && (
+        <div class="card" style="margin-bottom:1.5rem;">
+          <h2 style="font-size:1.125rem;margin-bottom:1rem;">What We're Looking For</h2>
+          <ul class="req-list">
+            {requirements.map((r: string) => (
+              <li>
+                <span class="material-symbols-outlined" style="color:#006875;font-size:18px;flex-shrink:0;">check_circle</span>
+                <span>{r}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {niceToHave.length > 0 && (
+        <div class="card" style="margin-bottom:1.5rem;">
+          <h2 style="font-size:1.125rem;margin-bottom:1rem;">Nice to Have</h2>
+          <ul class="req-list">
+            {niceToHave.map((r: string) => (
+              <li>
+                <span class="material-symbols-outlined" style="color:#d97706;font-size:18px;flex-shrink:0;">star</span>
+                <span>{r}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {benefits.length > 0 && (
+        <div class="card">
+          <h2 style="font-size:1.125rem;margin-bottom:1rem;">What You Get</h2>
+          <ul class="req-list">
+            {benefits.map((b: string) => (
+              <li>
+                <span class="material-symbols-outlined" style="color:#006875;font-size:18px;flex-shrink:0;">favorite</span>
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+    </div>
+
+    <!-- RIGHT: Application Form -->
+    <div class="job-form-wrap">
+      <div class="card" id="application-form-card" style="position:sticky;top:1.5rem;">
+        <h2 style="font-size:1.125rem;margin-bottom:1.5rem;">Apply for This Role</h2>
+
+        <!-- Success state (hidden by default) -->
+        <div id="apply-success" style="display:none;text-align:center;padding:2rem 1rem;">
+          <div style="width:56px;height:56px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+            <span class="material-symbols-outlined" style="color:#16a34a;font-size:28px;">check_circle</span>
+          </div>
+          <h3 style="margin-bottom:.5rem;">Application Sent!</h3>
+          <p style="color:#42474e;font-size:.9375rem;">Thanks for applying. We'll review your application and be in touch within 5 business days.</p>
+        </div>
+
+        <!-- Error message -->
+        <div id="apply-error" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:.875rem 1rem;margin-bottom:1rem;color:#dc2626;font-size:.875rem;"></div>
+
+        <form id="apply-form">
+          <input type="hidden" id="f-job-id"    value={job.id} />
+          <input type="hidden" id="f-job-title" value={job.title} />
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="f-name">Full Name <span style="color:#dc2626;">*</span></label>
+              <input class="form-input" id="f-name" type="text" placeholder="Your full name" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="f-email">Email Address <span style="color:#dc2626;">*</span></label>
+              <input class="form-input" id="f-email" type="email" placeholder="you@email.com" required />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="f-phone">Phone / WhatsApp</label>
+              <input class="form-input" id="f-phone" type="tel" placeholder="+971 50 000 0000" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="f-linkedin">LinkedIn Profile</label>
+              <input class="form-input" id="f-linkedin" type="url" placeholder="linkedin.com/in/yourname" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="f-portfolio">Portfolio / Website</label>
+            <input class="form-input" id="f-portfolio" type="url" placeholder="yoursite.com (optional)" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="f-cv">CV / Resume <span style="color:#dc2626;">*</span></label>
+            <div class="file-drop-zone" id="cv-drop-zone">
+              <span class="material-symbols-outlined" style="font-size:32px;color:#c2c7ce;display:block;margin-bottom:.5rem;">upload_file</span>
+              <p style="font-size:.875rem;color:#42474e;margin:0 0 .25rem;">Drag & drop or <label for="f-cv" style="color:#006875;cursor:pointer;font-weight:600;">browse</label></p>
+              <p style="font-size:.75rem;color:#72787e;margin:0;">PDF or DOCX · max 5 MB</p>
+              <p id="cv-filename" style="font-size:.8125rem;color:#006875;font-weight:600;margin:.5rem 0 0;display:none;"></p>
+            </div>
+            <input type="file" id="f-cv" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none;" required />
+            <div id="cv-upload-progress" style="display:none;margin-top:.5rem;">
+              <div style="height:4px;background:#e2e8f0;border-radius:2px;overflow:hidden;">
+                <div id="cv-progress-bar" style="height:100%;background:#00e3fd;width:0%;transition:width .3s;"></div>
+              </div>
+              <p style="font-size:.75rem;color:#72787e;margin:.25rem 0 0;">Uploading…</p>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="f-cover">Cover Letter <span style="color:#dc2626;">*</span></label>
+            <textarea class="form-input" id="f-cover" rows="5" placeholder="Tell us why you're a great fit for this role and what excites you about working at Aegis AI…" required style="resize:vertical;"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="f-heard">How did you hear about us?</label>
+            <select class="form-select" id="f-heard" style="width:100%;">
+              <option value="">Select one (optional)</option>
+              <option>LinkedIn</option>
+              <option>Referral from a friend / colleague</option>
+              <option>Aegis AI website</option>
+              <option>Job board (Bayt, Indeed, etc.)</option>
+              <option>Social media</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <button type="submit" id="apply-submit" class="btn-primary" style="width:100%;justify-content:center;display:flex;align-items:center;gap:.5rem;margin-top:.5rem;">
+            <span class="material-symbols-outlined" style="font-size:18px;">send</span>
+            Submit Application
+          </button>
+
+          <p style="font-size:.75rem;color:#72787e;margin:.75rem 0 0;text-align:center;">By applying you agree to our <a href="/privacy" style="color:#006875;">Privacy Policy</a></p>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</BaseLayout>
+
+<script>
+  // CV file drag-and-drop
+  const dropZone   = document.getElementById('cv-drop-zone')!;
+  const fileInput  = document.getElementById('f-cv') as HTMLInputElement;
+  const fileLabel  = document.getElementById('cv-filename')!;
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer?.files[0];
+    if (file) setFile(file);
+  });
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files?.[0]) setFile(fileInput.files[0]);
+  });
+
+  function setFile(file: File) {
+    // Transfer to input
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    fileInput.files = dt.files;
+    fileLabel.textContent = file.name;
+    fileLabel.style.display = 'block';
+  }
+
+  // Form submission
+  const form       = document.getElementById('apply-form') as HTMLFormElement;
+  const submitBtn  = document.getElementById('apply-submit') as HTMLButtonElement;
+  const successDiv = document.getElementById('apply-success')!;
+  const errorDiv   = document.getElementById('apply-error')!;
+  const progressWrap = document.getElementById('cv-upload-progress')!;
+  const progressBar  = document.getElementById('cv-progress-bar')!;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorDiv.style.display = 'none';
+
+    const name       = (document.getElementById('f-name')      as HTMLInputElement).value.trim();
+    const email      = (document.getElementById('f-email')     as HTMLInputElement).value.trim();
+    const phone      = (document.getElementById('f-phone')     as HTMLInputElement).value.trim();
+    const linkedin   = (document.getElementById('f-linkedin')  as HTMLInputElement).value.trim();
+    const portfolio  = (document.getElementById('f-portfolio') as HTMLInputElement).value.trim();
+    const cover      = (document.getElementById('f-cover')     as HTMLTextAreaElement).value.trim();
+    const heard      = (document.getElementById('f-heard')     as HTMLSelectElement).value;
+    const jobId      = (document.getElementById('f-job-id')    as HTMLInputElement).value;
+    const jobTitle   = (document.getElementById('f-job-title') as HTMLInputElement).value;
+    const file       = fileInput.files?.[0];
+
+    if (!name || !email || !cover) {
+      showError('Please fill in all required fields.');
+      return;
+    }
+    if (!file) {
+      showError('Please upload your CV/Resume.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showError('CV file must be under 5 MB.');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Uploading CV…';
+
+    // Upload CV to Supabase Storage
+    let cvUrl = '';
+    try {
+      const { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } = (import.meta as unknown as Record<string, Record<string, string>>).env;
+      if (!PUBLIC_SUPABASE_URL || !PUBLIC_SUPABASE_ANON_KEY) throw new Error('Storage not configured');
+
+      progressWrap.style.display = 'block';
+      progressBar.style.width = '30%';
+
+      const ext      = file.name.split('.').pop() ?? 'pdf';
+      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const uploadUrl = `${PUBLIC_SUPABASE_URL}/storage/v1/object/cvs/${fileName}`;
+
+      const uploadRes = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${PUBLIC_SUPABASE_ANON_KEY}`,
+          'Content-Type': file.type || 'application/octet-stream',
+          'x-upsert': 'false',
+        },
+        body: file,
+      });
+
+      progressBar.style.width = '80%';
+      if (!uploadRes.ok) throw new Error('CV upload failed');
+
+      cvUrl = `${PUBLIC_SUPABASE_URL}/storage/v1/object/public/cvs/${fileName}`;
+      progressBar.style.width = '100%';
+    } catch (err) {
+      progressWrap.style.display = 'none';
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">send</span> Submit Application';
+      showError('CV upload failed. Please try again or contact us directly.');
+      return;
+    }
+
+    submitBtn.textContent = 'Submitting…';
+
+    try {
+      const res = await fetch('/api/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ job_id: jobId, job_title: jobTitle, full_name: name, email, phone, linkedin_url: linkedin, portfolio_url: portfolio, cv_url: cvUrl, cover_letter: cover, how_heard: heard }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Submission failed');
+
+      form.style.display = 'none';
+      successDiv.style.display = 'block';
+    } catch (err) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">send</span> Submit Application';
+      showError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+    }
+  });
+
+  function showError(msg: string) {
+    errorDiv.textContent = msg;
+    errorDiv.style.display = 'block';
+    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  Object.assign(window, { setFile, showError });
+</script>
+
+<style>
+  .job-layout {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 2rem;
+    align-items: start;
+  }
+  .req-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .625rem;
+  }
+  .req-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: .625rem;
+    font-size: .9375rem;
+    color: #42474e;
+    line-height: 1.5;
+  }
+  .file-drop-zone {
+    border: 2px dashed #c2c7ce;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+  }
+  .file-drop-zone:hover,
+  .file-drop-zone.drag-over {
+    border-color: #00e3fd;
+    background: rgba(0,227,253,0.04);
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .form-group { margin-bottom: 1rem; }
+  .form-label { display: block; font-size: .875rem; font-weight: 600; color: #00253b; margin-bottom: .375rem; }
+  @media (max-width: 900px) {
+    .job-layout { grid-template-columns: 1fr; }
+    .job-form-wrap .card { position: static !important; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+</style>

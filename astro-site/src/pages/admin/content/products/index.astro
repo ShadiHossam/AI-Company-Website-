@@ -1,0 +1,147 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+const { count: unreadNotifs } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false);
+
+const { data: products } = await supabase
+  .from('products')
+  .select('id, name, tagline, status_badge, published, sort_order, slug')
+  .order('sort_order', { ascending: true });
+---
+
+<AdminLayout title="Products" user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <a href="/admin/content" class="text-muted text-sm" style="text-decoration:none;">← Content</a>
+      <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-top:0.25rem;">Products</h1>
+    </div>
+    <a href="/admin/content/products/new" class="btn btn-primary btn-sm">+ Add Product</a>
+  </div>
+
+  <div id="msg" style="display:none;padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem;"></div>
+
+  {(!products || products.length === 0) ? (
+    <div class="card" style="text-align:center;padding:3rem;">
+      <p class="text-muted">No products yet.</p>
+      <a href="/admin/content/products/new" class="btn btn-primary btn-sm" style="margin-top:1rem;">+ Add Product</a>
+    </div>
+  ) : (
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div class="table-wrap">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);">
+              <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Name</th>
+              <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Tagline</th>
+              <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Status Badge</th>
+              <th style="padding:0.75rem 1rem;text-align:center;font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Published</th>
+              <th style="padding:0.75rem 1rem;text-align:right;font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map(p => (
+              <tr class="prod-row" style="border-bottom:1px solid var(--border);transition:background 0.15s;">
+                <td style="padding:0.875rem 1rem;">
+                  <a href={`/admin/content/products/${p.id}`} style="font-weight:600;color:var(--text-primary);text-decoration:none;">{p.name}</a>
+                  <div class="text-xs text-muted" style="margin-top:2px;">{p.slug}</div>
+                </td>
+                <td style="padding:0.875rem 1rem;color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{p.tagline ?? '—'}</td>
+                <td style="padding:0.875rem 1rem;">
+                  {p.status_badge
+                    ? <span class="badge" style="background:var(--accent-dim);color:var(--accent);border:1px solid var(--border-accent);">{p.status_badge}</span>
+                    : <span class="text-muted">—</span>
+                  }
+                </td>
+                <td style="padding:0.875rem 1rem;text-align:center;">
+                  <button
+                    class="publish-toggle badge"
+                    data-id={p.id}
+                    data-published={p.published ? 'true' : 'false'}
+                    style={p.published
+                      ? 'background:var(--success-dim);color:var(--success);border:1px solid rgba(34,197,94,0.25);cursor:pointer;'
+                      : 'background:var(--bg-hover);color:var(--text-dim);border:1px solid var(--border);cursor:pointer;'}
+                  >
+                    {p.published ? 'Published' : 'Draft'}
+                  </button>
+                </td>
+                <td style="padding:0.875rem 1rem;text-align:right;">
+                  <div class="flex items-center gap-2" style="justify-content:flex-end;">
+                    <a href={`/admin/content/products/${p.id}`} class="btn btn-ghost btn-sm">Edit</a>
+                    <button class="btn btn-sm delete-prod" data-id={p.id} data-name={p.name} style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);">Delete</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )}
+</AdminLayout>
+
+<script>
+  function showMsg(msg: string, type: 'success' | 'error' = 'success') {
+    const el = document.getElementById('msg') as HTMLElement;
+    el.textContent = msg;
+    el.style.display = 'block';
+    if (type === 'success') {
+      el.style.background = 'var(--success-dim)'; el.style.color = 'var(--success)'; el.style.border = '1px solid rgba(34,197,94,0.3)';
+    } else {
+      el.style.background = 'var(--danger-dim)'; el.style.color = 'var(--danger)'; el.style.border = '1px solid var(--danger)';
+    }
+    setTimeout(() => { el.style.display = 'none'; }, 3000);
+  }
+
+  document.querySelectorAll('.publish-toggle').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const el = btn as HTMLButtonElement;
+      const id = el.dataset.id!;
+      const current = el.dataset.published === 'true';
+      const next = !current;
+      el.textContent = 'Saving...';
+      const res = await fetch(`/api/admin/content/products/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ published: next }),
+      });
+      if (res.ok) {
+        el.dataset.published = next ? 'true' : 'false';
+        el.textContent = next ? 'Published' : 'Draft';
+        if (next) {
+          el.style.background = 'var(--success-dim)'; el.style.color = 'var(--success)'; el.style.border = '1px solid rgba(34,197,94,0.25)';
+        } else {
+          el.style.background = 'var(--bg-hover)'; el.style.color = 'var(--text-dim)'; el.style.border = '1px solid var(--border)';
+        }
+        showMsg('Publish status updated.');
+      } else {
+        showMsg('Update failed.', 'error');
+        el.textContent = current ? 'Published' : 'Draft';
+      }
+    });
+  });
+
+  document.querySelectorAll('.delete-prod').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const el = btn as HTMLButtonElement;
+      const id = el.dataset.id!;
+      const name = el.dataset.name ?? 'this product';
+      if (!confirm(`Delete "${name}"?`)) return;
+      const res = await fetch(`/api/admin/content/products/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        el.closest('tr')?.remove();
+        showMsg('Product deleted.');
+      } else {
+        showMsg('Delete failed.', 'error');
+      }
+    });
+  });
+
+  document.querySelectorAll('.prod-row').forEach(row => {
+    row.addEventListener('mouseenter', () => (row as HTMLElement).style.background = 'var(--bg-hover)');
+    row.addEventListener('mouseleave', () => (row as HTMLElement).style.background = '');
+  });
+</script>

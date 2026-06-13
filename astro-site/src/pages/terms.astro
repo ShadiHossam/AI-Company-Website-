@@ -1,23 +1,47 @@
 ---
+export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../lib/supabase";
+
+let dynamicSections: { heading: string; body: string }[] | null = null;
+let dynamicLastUpdated: string | null = null;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('legal_pages')
+    .select('sections, last_updated')
+    .eq('slug', 'terms')
+    .single();
+
+  if (!error && data && Array.isArray(data.sections) && data.sections.length > 0) {
+    dynamicSections = data.sections;
+    dynamicLastUpdated = data.last_updated ?? null;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
 
 <BaseLayout
-  title="Terms of Service | Aegis AI"
-  description="Terms of Service for Aegis AI — outlining the terms, conditions, and agreements for our custom AI development, consulting, and team training services in the UAE."
+  title="Terms & Conditions | Aegis AI"
+  description="Terms and Conditions for Aegis AI — outlining the terms, conditions, and agreements for our custom AI development, consulting, and team training services in the UAE."
   canonicalPath="/terms"
   ogImage="/assets/og-terms.jpg"
+  noindex={true}
 >
 
 <header class="hero-section" style="padding:8rem 0 5rem;">
   <div class="container" style="text-align:center;">
     <nav class="page-breadcrumb" style="justify-content:center; margin-bottom:1.5rem;" aria-label="Breadcrumb">
       <a href="/">Home</a><span>/</span>
-      <strong>Terms of Service</strong>
+      <strong>Terms &amp; Conditions</strong>
     </nav>
-    <h1>Terms of <span class="gradient-text">Service</span></h1>
+    <h1>Terms &amp; <span class="gradient-text">Conditions</span></h1>
     <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:1rem auto 0;">
-      Last Updated: May 22, 2026. Standard terms, conditions, and guarantee policies governing your engagement with Aegis AI services.
+      {dynamicLastUpdated ? `Last Updated: ${dynamicLastUpdated}.` : "Last Updated: June 11, 2026."} Please read these terms carefully before using our website or engaging our services.
     </p>
   </div>
 </header>
@@ -26,81 +50,155 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   <div class="container" style="max-width:760px;">
     <div class="prose">
 
-      <section>
-        <h2>1. Agreement to Terms</h2>
-        <p>These Terms of Service constitute a legally binding agreement made between you, whether personally or on behalf of an entity ("you", "client"), and <strong>Aegis AI</strong> ("we", "us", "our"), concerning your access to and use of our website <strong>https://aegisai.ae</strong> and any custom AI development, training workshops, and strategy services provided by us.</p>
-        <p>By accessing the site or engaging our services, you agree that you have read, understood, and agree to be bound by all of these Terms of Service. If you do not agree with all of these terms, you are prohibited from using the site and must discontinue use immediately.</p>
-      </section>
+      {dynamicSections ? (
+        dynamicSections.map((section) => (
+          <section>
+            <h2 set:html={section.heading}></h2>
+            <p set:html={section.body}></p>
+          </section>
+        ))
+      ) : (
+        <>
+          <section>
+            <h2>1. Interpretation and Definitions</h2>
+            <p>The following definitions apply throughout these Terms and Conditions. Words defined in the singular also apply in the plural and vice versa.</p>
+            <ul>
+              <li><strong>Company</strong> (referred to as "we", "us", or "our") means <strong>Aegis AI</strong>, a technology consultancy operating in Dubai, United Arab Emirates.</li>
+              <li><strong>Website</strong> means the website accessible at <strong>https://aegisai.ae</strong>.</li>
+              <li><strong>Service</strong> means the Website and all custom AI development, strategy consulting, and team training services offered by the Company.</li>
+              <li><strong>You</strong> (referred to as "Client" or "User") means the individual accessing the Service, or the company or legal entity on whose behalf such individual is acting.</li>
+              <li><strong>Statement of Work (SOW)</strong> means a separate signed document defining specific project deliverables, timelines, and payment terms.</li>
+              <li><strong>Country</strong> means the United Arab Emirates.</li>
+              <li><strong>Device</strong> means any device — computer, mobile phone, or tablet — that can access the Website.</li>
+            </ul>
+          </section>
 
-      <section>
-        <h2>2. Services Offered</h2>
-        <p>We provide technology consultancy services tailored to Small and Medium Enterprises (SMEs) in Dubai and the wider UAE, specializing in:</p>
-        <ul>
-          <li><strong>Custom AI Development:</strong> Designing and deploying bespoke AI agents, WhatsApp chat automation, databases, and operational dashboards integrated with client workflows.</li>
-          <li><strong>AI Training &amp; Workshops:</strong> Delivering departmental upskilling workshops in English and Arabic to ensure internal team adoption.</li>
-          <li><strong>AI Strategy &amp; Consulting:</strong> Creating 12-month roadmaps, ROI calculations, and vendor-neutral technology audits.</li>
-        </ul>
-        <p>All specific deliverables, timelines, and payment terms will be defined in a separate signed Statement of Work (SOW) or Service Agreement, which shall take precedence in case of any conflict with these generic terms.</p>
-      </section>
+          <section>
+            <h2>2. Acknowledgment</h2>
+            <p>These Terms and Conditions govern the use of our Service and form a legally binding agreement between you and Aegis AI. By accessing or using the Website, booking a consultation, or engaging our services, you confirm that you have read, understood, and agree to be bound by these Terms in their entirety.</p>
+            <p>You represent that you are at least <strong>18 years of age</strong>. If you are using the Service on behalf of a company or organisation, you represent that you have the authority to bind that entity to these Terms.</p>
+            <p>If you do not agree with any part of these Terms, you must discontinue use of the Website and our Services immediately. Access to the Service is also conditioned on your acceptance of our <a href="/privacy">Privacy Policy</a>, which describes how we collect, protect, and use your personal data.</p>
+          </section>
 
-      <section>
-        <h2>3. The 100% Refund Guarantee Policy</h2>
-        <div class="guarantee-box">
-          <p class="title">Zero-Cost Risk-Free Guarantee</p>
-          <p>We are proud to offer Dubai's only complete refund policy for custom AI development and workshops. Our guarantee is subject to the following standard parameters to protect both parties:</p>
-          <ul>
-            <li><strong>Defined Success Criteria:</strong> Every project features clear, objectively measurable milestones defined in writing inside the Statement of Work (SOW) before work commences.</li>
-            <li><strong>Active Engagement:</strong> The client must provide the necessary credentials, document samples, and attend scheduled alignment sessions required to build the system.</li>
-            <li><strong>Guarantee Trigger:</strong> If, at the final delivery stage of the initial defined scope, the custom system or training fails to meet the pre-agreed success criteria despite active collaboration, the client is entitled to request a 100% refund of all development fees paid to date.</li>
-            <li><strong>IP Protection:</strong> Upon trigger of a full refund, all licenses, built software code, custom configurations, and intellectual property developed during the project remain the sole property of Aegis AI and cannot be utilized by the client.</li>
-          </ul>
-        </div>
-      </section>
+          <section>
+            <h2>3. Services Offered</h2>
+            <p>Aegis AI provides technology consultancy services tailored to Small and Medium Enterprises (SMEs) in Dubai and the wider UAE, specialising in:</p>
+            <ul>
+              <li><strong>Custom AI Development:</strong> Designing and deploying bespoke AI agents, WhatsApp chat automation, databases, and operational dashboards integrated with client workflows.</li>
+              <li><strong>AI Training &amp; Workshops:</strong> Delivering departmental upskilling workshops in English and Arabic to ensure internal team adoption.</li>
+              <li><strong>AI Strategy &amp; Consulting:</strong> Creating 12-month roadmaps, ROI calculations, and vendor-neutral technology audits.</li>
+            </ul>
+            <p>All specific deliverables, timelines, and payment terms will be defined in a separate signed Statement of Work (SOW) or Service Agreement, which shall take precedence over these generic terms in the event of any conflict.</p>
+          </section>
 
-      <section>
-        <h2>4. Third-Party API Fees &amp; Retainers</h2>
-        <p>Unless explicitly written in the SOW, project fees do not include direct third-party usage fees (e.g., API charges from OpenAI, Anthropic, Microsoft Azure, Make.com, or Meta WhatsApp Business API). These are set up directly on the client's billing accounts or billed transparently at cost with zero mark-up.</p>
-        <p>Our development projects include <strong>90 days of complimentary post-launch support</strong> (bug fixes, performance monitoring). Ongoing updates, operational retainer packages, and additional training modules are subject to separate monthly agreements — contact us for details.</p>
-      </section>
+          <section>
+            <h2>4. The 100% Refund Guarantee Policy</h2>
+            <div class="guarantee-box">
+              <p class="title">Zero-Cost Risk-Free Guarantee</p>
+              <p>We are proud to offer a complete refund policy for custom AI development and workshops. Our guarantee is subject to the following standard parameters to protect both parties:</p>
+              <ul>
+                <li><strong>Defined Success Criteria:</strong> Every project features clear, objectively measurable milestones defined in writing inside the Statement of Work (SOW) before work commences.</li>
+                <li><strong>Active Engagement:</strong> The client must provide the necessary credentials, document samples, and attend scheduled alignment sessions required to build the system.</li>
+                <li><strong>Guarantee Trigger:</strong> If, at the final delivery stage of the initial defined scope, the custom system or training fails to meet the pre-agreed success criteria despite active collaboration, the client is entitled to request a 100% refund of all development fees paid to date.</li>
+                <li><strong>IP Protection:</strong> Upon trigger of a full refund, all licenses, built software code, custom configurations, and intellectual property developed during the project remain the sole property of Aegis AI and cannot be utilised by the client.</li>
+              </ul>
+            </div>
+          </section>
 
-      <section>
-        <h2>5. Intellectual Property Rights</h2>
-        <p>Unless otherwise agreed in a signed SOW, upon full and final payment of all invoices, the client is granted a perpetual, worldwide, non-exclusive, non-transferable license to use the custom software, workflows, and configurations developed specifically for their organization.</p>
-        <p>Aegis AI retains all rights to our pre-built software modules, underlying frameworks, training methodologies, and proprietary AI agents developed prior to or outside of the specific SOW.</p>
-      </section>
+          <section>
+            <h2>5. Third-Party API Fees &amp; Retainers</h2>
+            <p>Unless explicitly written in the SOW, project fees do not include direct third-party usage fees (e.g., API charges from OpenAI, Anthropic, Microsoft Azure, Make.com, or Meta WhatsApp Business API). These are set up directly on the client's billing accounts or billed transparently at cost with zero mark-up.</p>
+            <p>Our development projects include <strong>90 days of complimentary post-launch support</strong> (bug fixes, performance monitoring). Ongoing updates, operational retainer packages, and additional training modules are subject to separate monthly agreements.</p>
+          </section>
 
-      <section>
-        <h2>6. Client Responsibilities</h2>
-        <p>To ensure timely project delivery (typically 8–12 weeks), the client agrees to provide:</p>
-        <ul>
-          <li>Accurate data sources, process sheets, and sample documents required for training custom LLMs.</li>
-          <li>Timely reviews, feedback, and operational approvals within 3 business days of milestone presentations.</li>
-          <li>Departmental access for training workshops to ensure staff participation.</li>
-        </ul>
-        <p>Delays caused by prolonged failure to provide access or responses may result in adjustment of final launch timelines.</p>
-      </section>
+          <section>
+            <h2>6. Intellectual Property Rights</h2>
+            <p>Unless otherwise agreed in a signed SOW, upon full and final payment of all invoices, the client is granted a perpetual, worldwide, non-exclusive, non-transferable licence to use the custom software, workflows, and configurations developed specifically for their organisation.</p>
+            <p>Aegis AI retains all rights to our pre-built software modules, underlying frameworks, training methodologies, and proprietary AI agents developed prior to or outside of the specific SOW. All content on the Website — including text, graphics, logos, and design — is the exclusive intellectual property of Aegis AI and may not be reproduced without prior written consent.</p>
+          </section>
 
-      <section>
-        <h2>7. Limitation of Liability</h2>
-        <p>To the maximum extent permitted by UAE law, Aegis AI shall not be liable for any indirect, incidental, special, or consequential damages, including loss of profits, revenue, data, or business interruption, arising out of the use or inability to use our custom AI systems, even if we have been advised of the possibility of such damages. Our total liability under any SOW shall not exceed the total fees paid by the client under that specific SOW.</p>
-      </section>
+          <section>
+            <h2>7. Client Responsibilities</h2>
+            <p>To ensure timely project delivery (typically 8–12 weeks), you agree to provide:</p>
+            <ul>
+              <li>Accurate data sources, process sheets, and sample documents required for training custom AI systems.</li>
+              <li>Timely reviews, feedback, and operational approvals within 3 business days of milestone presentations.</li>
+              <li>Departmental access for training workshops to ensure staff participation.</li>
+            </ul>
+            <p>Delays caused by a prolonged failure to provide access, data, or responses may result in an adjustment of final launch timelines. Aegis AI shall not be held liable for delivery delays attributable to client-side delays.</p>
+          </section>
 
-      <section>
-        <h2>8. Governing Law &amp; Jurisdiction</h2>
-        <p>These Terms of Service and your relationship with us shall be governed by and construed in accordance with the laws of the Emirate of Dubai and the federal laws of the United Arab Emirates.</p>
-        <p>Any dispute arising out of or in connection with these Terms, including any question regarding its existence, validity, or termination, shall be subject to the exclusive jurisdiction of the courts of the Emirate of Dubai.</p>
-      </section>
+          <section>
+            <h2>8. Links to Other Websites</h2>
+            <p>Our Website may contain links to third-party websites or services not owned or controlled by Aegis AI. We have no control over and assume no responsibility for the content, privacy policies, or practices of any third-party websites. We do not warrant the offerings of any such entities or individuals, or their websites.</p>
+            <p>We strongly advise you to read the terms and conditions and privacy policies of any third-party websites you visit. Aegis AI shall not be liable for any loss or damage caused by your use of or reliance on any content, goods, or services available through such third-party links.</p>
+          </section>
 
-      <section>
-        <h2>9. Contact Us</h2>
-        <p>To resolve a complaint regarding the services or to receive further information regarding the terms of service, please contact us at:</p>
-        <div class="contact-box">
-          <p><strong style="color:#00253b;">Aegis AI</strong></p>
-          <p>Dubai, United Arab Emirates</p>
-          <p><strong>Email:</strong> hello@aegisai.ae</p>
-          <p><strong>WhatsApp Support:</strong> +971 4 321 8888</p>
-        </div>
-      </section>
+          <section>
+            <h2>9. Termination</h2>
+            <p>We reserve the right to terminate or suspend your access to the Website and our Services immediately, without prior notice or liability, for any reason whatsoever — including, without limitation, if you breach these Terms and Conditions.</p>
+            <p>Upon termination, your right to use the Service will cease immediately. If you wish to terminate your relationship with us, you may simply discontinue use of the Website. For active project engagements, termination clauses and associated fees will be governed by the signed SOW.</p>
+          </section>
+
+          <section>
+            <h2>10. "As Is" and "As Available" Disclaimer</h2>
+            <p>The Website and its content are provided on an "AS IS" and "AS AVAILABLE" basis without any warranties of any kind, either express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, or non-infringement.</p>
+            <p>Aegis AI does not warrant that the Website will be uninterrupted, error-free, or free from viruses or other harmful components. We do not guarantee the accuracy, completeness, or usefulness of any information on the Website, and you rely on such information entirely at your own risk.</p>
+            <p>Some jurisdictions do not allow the exclusion of implied warranties, so some of the above limitations may not apply to you.</p>
+          </section>
+
+          <section>
+            <h2>11. Limitation of Liability</h2>
+            <p>To the maximum extent permitted by applicable UAE law, Aegis AI and its directors, employees, partners, agents, suppliers, or affiliates shall not be liable for any indirect, incidental, special, exemplary, or consequential damages — including loss of profits, revenue, data, goodwill, or business interruption — arising out of your access to or use of (or inability to use) the Website or our Services.</p>
+            <p>In no event shall our total aggregate liability to you for any claim arising out of or relating to these Terms or the Service exceed the greater of (i) the total fees paid by you to Aegis AI under the applicable SOW or (ii) AED 500 (five hundred UAE Dirhams).</p>
+          </section>
+
+          <section>
+            <h2>12. Disputes Resolution</h2>
+            <p>If you have a concern or dispute about the Service, you agree to first attempt to resolve the dispute informally by contacting us at <strong>hello@aegisai.ae</strong>. We will use reasonable efforts to resolve disputes amicably within 30 days of receiving written notice.</p>
+            <p>If informal resolution is not achieved, both parties agree to submit the dispute to mediation before pursuing litigation. If mediation fails, the dispute shall be resolved in accordance with the governing law and jurisdiction set out in Section 13 below.</p>
+          </section>
+
+          <section>
+            <h2>13. Governing Law &amp; Jurisdiction</h2>
+            <p>These Terms and Conditions and any dispute or claim arising out of or in connection with them shall be governed by and construed in accordance with the laws of the <strong>Emirate of Dubai</strong> and the federal laws of the <strong>United Arab Emirates</strong>, without regard to its conflict of law provisions.</p>
+            <p>You agree that any legal action or proceeding relating to your use of the Service shall be brought exclusively before the courts of the Emirate of Dubai, and you irrevocably submit to the personal jurisdiction of those courts.</p>
+          </section>
+
+          <section>
+            <h2>14. EU Users</h2>
+            <p>If you are a consumer based in the European Union, you benefit from any mandatory provisions of the law of the country in which you are resident. Nothing in these Terms and Conditions affects your rights as a consumer to rely on such mandatory local law provisions.</p>
+          </section>
+
+          <section>
+            <h2>15. Severability and Waiver</h2>
+            <p>If any provision of these Terms is held to be invalid or unenforceable by a court of competent jurisdiction, the remaining provisions will continue in full force and effect. Any invalid or unenforceable provision will be modified to the minimum extent necessary to make it valid and enforceable.</p>
+            <p>Our failure to enforce any right or provision of these Terms shall not constitute a waiver of that right or provision. A waiver shall only be effective if given in writing and signed by a duly authorised representative of Aegis AI.</p>
+          </section>
+
+          <section>
+            <h2>16. Translation</h2>
+            <p>These Terms and Conditions may be translated into Arabic or other languages for convenience. In the event of any conflict or inconsistency between the English version and any translation, the <strong>original English text shall prevail</strong>.</p>
+          </section>
+
+          <section>
+            <h2>17. Changes to These Terms</h2>
+            <p>We reserve the right to modify or replace these Terms and Conditions at any time at our sole discretion. If a revision is material, we will provide at least <strong>30 days' notice</strong> prior to the new terms taking effect by updating the "Last Updated" date at the top of this page and, where appropriate, by notifying you by email.</p>
+            <p>What constitutes a material change will be determined at our sole discretion. By continuing to access or use our Service after any revisions become effective, you agree to be bound by the revised terms.</p>
+          </section>
+
+          <section>
+            <h2>18. Contact Us</h2>
+            <p>If you have any questions about these Terms and Conditions or wish to resolve a complaint regarding our Services, please contact us at:</p>
+            <div class="contact-box">
+              <p><strong style="color:#00253b;">Aegis AI</strong></p>
+              <p>Dubai, United Arab Emirates</p>
+              <p><strong>Email:</strong> hello@aegisai.ae</p>
+              <p><strong>WhatsApp Support:</strong> +971 4 321 8888</p>
+            </div>
+          </section>
+        </>
+      )}
 
     </div>
   </div>
@@ -115,6 +213,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     .prose li { margin-bottom: 0.5rem; }
     .prose strong { color: #111c2d; }
     .prose section { margin-bottom: 2.5rem; }
+    .prose a { color: #006875; text-decoration: underline; }
     .guarantee-box { background: rgba(0,104,117,0.06); border: 1px solid rgba(0,104,117,0.20); border-radius: 12px; padding: 1.25rem; margin: 1rem 0; }
     .guarantee-box p { color: #42474e; margin: 0 0 0.5rem; }
     .guarantee-box .title { font-weight: 700; color: #006875; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.875rem; margin-bottom: 0.75rem; }

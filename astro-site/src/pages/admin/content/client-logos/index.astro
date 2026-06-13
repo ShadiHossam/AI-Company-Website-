@@ -1,0 +1,145 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+const { count: unreadNotifs } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false);
+
+const { data: logos } = await supabase
+  .from('client_logos')
+  .select('id, company_name, logo_url, website_url, industry, show_on_homepage, active, sort_order')
+  .order('sort_order', { ascending: true });
+---
+
+<AdminLayout title="Client Logos" user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <a href="/admin/content" class="text-muted text-sm" style="text-decoration:none;">← Content</a>
+      <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-top:0.25rem;">Client Logos</h1>
+    </div>
+    <a href="/admin/content/client-logos/new" class="btn btn-primary btn-sm">+ Add Logo</a>
+  </div>
+
+  {(!logos || logos.length === 0) ? (
+    <div class="card" style="text-align:center;padding:3rem;">
+      <p class="text-muted">No client logos yet. Add your first partner or client logo.</p>
+      <a href="/admin/content/client-logos/new" class="btn btn-primary btn-sm" style="margin-top:1rem;">+ Add Logo</a>
+    </div>
+  ) : (
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;">
+      {logos.map(logo => (
+        <div class="card logo-card" data-id={logo.id} style="padding:1rem;">
+          <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
+            {logo.logo_url ? (
+              <img src={logo.logo_url} alt={logo.company_name} style="width:48px;height:48px;object-fit:contain;border-radius:6px;background:var(--bg-hover);padding:4px;" onerror="this.style.display='none'" />
+            ) : (
+              <div style="width:48px;height:48px;background:var(--bg-hover);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;color:var(--text-dim);">🏢</div>
+            )}
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{logo.company_name}</div>
+              {logo.industry && <div class="text-xs text-muted">{logo.industry}</div>}
+            </div>
+          </div>
+
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem;">
+            <button
+              class="homepage-toggle badge"
+              data-id={logo.id}
+              data-value={logo.show_on_homepage ? 'true' : 'false'}
+              style={logo.show_on_homepage
+                ? 'background:var(--accent-dim);color:var(--accent);border:1px solid var(--border-accent);cursor:pointer;'
+                : 'background:var(--bg-hover);color:var(--text-dim);border:1px solid var(--border);cursor:pointer;'}
+            >
+              {logo.show_on_homepage ? 'On Homepage' : 'Hidden'}
+            </button>
+            <button
+              class="active-toggle badge"
+              data-id={logo.id}
+              data-value={logo.active ? 'true' : 'false'}
+              style={logo.active
+                ? 'background:var(--success-dim);color:var(--success);border:1px solid rgba(34,197,94,0.25);cursor:pointer;'
+                : 'background:var(--bg-hover);color:var(--text-dim);border:1px solid var(--border);cursor:pointer;'}
+            >
+              {logo.active ? 'Active' : 'Inactive'}
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            {logo.website_url && (
+              <a href={logo.website_url} target="_blank" rel="noopener" class="btn btn-ghost btn-sm" style="flex:1;justify-content:center;" title={logo.website_url}>↗ Site</a>
+            )}
+            <a href={`/admin/content/client-logos/${logo.id}`} class="btn btn-ghost btn-sm" style="flex:1;justify-content:center;">Edit</a>
+            <button class="btn btn-sm delete-logo" data-id={logo.id} data-name={logo.company_name} style="color:var(--danger);border-color:var(--danger-dim);background:var(--danger-dim);">Del</button>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</AdminLayout>
+
+<script>
+  document.querySelectorAll('.homepage-toggle').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const el = btn as HTMLButtonElement;
+      const id = el.dataset.id!;
+      const current = el.dataset.value === 'true';
+      const next = !current;
+      el.textContent = 'Saving...';
+      const res = await fetch(`/api/admin/content/client-logos/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ show_on_homepage: next }),
+      });
+      if (res.ok) {
+        el.dataset.value = next ? 'true' : 'false';
+        el.textContent = next ? 'On Homepage' : 'Hidden';
+        el.style.background = next ? 'var(--accent-dim)' : 'var(--bg-hover)';
+        el.style.color = next ? 'var(--accent)' : 'var(--text-dim)';
+        el.style.border = next ? '1px solid var(--border-accent)' : '1px solid var(--border)';
+      } else {
+        el.textContent = 'Error';
+      }
+    });
+  });
+
+  document.querySelectorAll('.active-toggle').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const el = btn as HTMLButtonElement;
+      const id = el.dataset.id!;
+      const current = el.dataset.value === 'true';
+      const next = !current;
+      el.textContent = 'Saving...';
+      const res = await fetch(`/api/admin/content/client-logos/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: next }),
+      });
+      if (res.ok) {
+        el.dataset.value = next ? 'true' : 'false';
+        el.textContent = next ? 'Active' : 'Inactive';
+        el.style.background = next ? 'var(--success-dim)' : 'var(--bg-hover)';
+        el.style.color = next ? 'var(--success)' : 'var(--text-dim)';
+        el.style.border = next ? '1px solid rgba(34,197,94,0.25)' : '1px solid var(--border)';
+      } else {
+        el.textContent = 'Error';
+      }
+    });
+  });
+
+  document.querySelectorAll('.delete-logo').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const el = btn as HTMLButtonElement;
+      const id = el.dataset.id!;
+      const name = el.dataset.name ?? 'this logo';
+      if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+      const res = await fetch(`/api/admin/content/client-logos/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        el.closest('.logo-card')?.remove();
+      } else {
+        alert('Delete failed. Please try again.');
+      }
+    });
+  });
+</script>

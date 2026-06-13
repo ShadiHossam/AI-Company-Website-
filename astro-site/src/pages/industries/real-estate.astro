@@ -1,11 +1,65 @@
 ---
+export const prerender = false;
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+
+// Hardcoded fallback FAQ items
+const fallbackFaqs = [
+  { question: "How accurate are AI property valuations compared to human appraisers?", answer: "In high-transaction markets with rich data, AVMs are now highly competitive — Zillow's model carries a 2.4% median error for listed homes, vs. the roughly 5–8% variance in human appraisals. However, AVMs struggle with unique properties, low-transaction-volume markets, and sudden market shifts. The most reliable approach combines AI for initial pricing with human review for final decisions." },
+  { question: "Will AI replace real estate agents?", answer: "Unlikely in the near term, but it will significantly change what agents spend their time on. AI handles the high-volume, low-complexity work: initial inquiry response, listing management, document processing, lead qualification. This frees agents to focus on advisory, negotiation, and relationship work. The agencies growing fastest are those using AI to make agents more productive, not replace them." },
+  { question: "How does AI lead scoring work in practice?", answer: "A lead scoring model is trained on historical data — which leads eventually transacted, and what their behavioral patterns looked like before they did. It learns signals like: how many listings were viewed, time spent on each, viewing requests, response speed to follow-up. The model assigns a probability score to each new lead. Agents are shown a ranked list — highest-probability leads at the top — and notified in real time when a lead's score jumps." },
+  { question: "Can AI handle property inquiries in Arabic?", answer: "Yes — modern LLMs handle Arabic fluently, including switching between Arabic and English mid-conversation. For UAE real estate, this is critical: a significant portion of high-value buyers prefer communicating in Arabic. The key is testing the Arabic output quality specifically, since some models produce correct but stilted formal Arabic rather than natural conversational language." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'real_estate')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI for Real Estate Dubai",
+    "url": "https://aegisai.ae/industries/real-estate",
+    "description": "Custom AI systems for Dubai real estate agencies: WhatsApp lead chatbots, CRM automation, document processing, and bilingual property assistants.",
+    "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://aegisai.ae" },
+    "areaServed": "Dubai",
+    "serviceType": "AI Development for Real Estate"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://aegisai.ae/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://aegisai.ae/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Real Estate AI", "item": "https://aegisai.ae/industries/real-estate" }
+    ]
+  }
+];
 ---
 
 <BaseLayout
-  title="AI in Real Estate — PropTech Trends, Applications & Insights | Aegis AI"
-  description="How AI is transforming real estate: automated valuation, lead intelligence, document processing, and predictive analytics. Industry data and PropTech trends."
+  title="AI for Real Estate Dubai — Lead AI, WhatsApp Chatbots & CRM Automation | Aegis AI"
+  description="Aegis AI builds custom AI systems for Dubai real estate agencies: WhatsApp lead chatbots, CRM automation, document processing, and bilingual property assistants."
   canonicalPath="/industries/real-estate"
+  ogImage="/assets/og-real-estate.jpg"
+  ldJson={ldJson}
 >
 
 <header class="hero-section">
@@ -17,8 +71,12 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <span class="material-symbols-outlined" style="font-size:18px;">home</span>
       Real Estate AI
     </div>
-    <h1>How AI Is Transforming<br><span class="gradient-text">Real Estate</span></h1>
-    <p style="color:#42474e; font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">From automated property valuation and predictive lead scoring to AI-powered document processing and market forecasting — artificial intelligence is changing how properties are discovered, valued, and transacted. Here's the state of AI in real estate.</p>
+    <h1>AI for Dubai<br><span class="gradient-text">Real Estate</span></h1>
+    <p style="color:#42474e; font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Aegis AI builds custom AI systems for Dubai real estate agencies — WhatsApp lead assistants, CRM automation, document processing, and market intelligence tools. Bilingual (Arabic & English), UAE-compliant, and integrated with your existing workflows.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2rem;">
+      <button onclick="openModal(this)" data-source="real_estate_hero" class="btn-primary">Book Free Real Estate AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
     <div class="stat-grid">
       <div style="text-align:center;">
         <p class="stat-number" style="font-size:2rem;">$41B</p>
@@ -38,18 +96,72 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 <!-- HERO IMAGE -->
 <div style="position:relative; overflow:hidden; height:240px;">
-  <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1400&q=80&auto=format&fit=crop" alt="Dubai real estate and property development aerial view" loading="lazy" style="width:100%; height:100%; object-fit:cover; object-position:center 60%;" />
+  <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1400&q=80&auto=format&fit=crop" alt="Dubai real estate and property development aerial view" loading="eager" fetchpriority="high" width="1400" height="240" style="width:100%; height:100%; object-fit:cover; object-position:center 60%;" />
   <div style="position:absolute; inset:0; background:linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
 </div>
 
-<!-- THE AI SHIFT -->
-<section class="section" aria-labelledby="shift-heading">
+<!-- WHAT AEGIS BUILDS -->
+<section id="what-we-build" class="section" aria-labelledby="build-heading">
   <div class="container">
     <div class="section-header">
-      <div class="section-eyebrow">The AI Shift</div>
+      <div class="section-eyebrow">What We Build</div>
+      <h2 id="build-heading">AI Systems Built for Dubai Real Estate Agencies</h2>
+      <p>Six specific systems we've deployed for agencies across the UAE — each integrated with your CRM, WhatsApp, and existing tools.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">chat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">WhatsApp Lead AI</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Responds to every incoming lead in under 2 minutes, 24/7. Qualifies intent, collects property preferences, books viewings, and routes hot leads to agents — in Arabic and English.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Leads contacted in 5 min are 9× more likely to convert (MIT)</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">person_search</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">CRM Lead Scoring</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Ranks every lead in your CRM by likelihood to transact in the next 90 days — based on behavior, response speed, and inquiry patterns. Agents work the right leads, not the most recent ones.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Integrated with HubSpot, Salesforce, Property Finder CRM, and custom systems</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Document Processing AI</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Extracts and validates data from title deeds, NOCs, SPAs, tenancy contracts, and mortgage documents. Flags missing fields and RERA/DLD compliance issues automatically — what took days now takes hours.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Trained on UAE real estate document formats including DLD and RERA templates</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">smart_toy</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Property Listing Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI trained on your property portfolio answers buyer questions via your website and Bayut/Dubizzle listings — property details, availability, pricing, and viewing requests — in Arabic and English.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Handles inquiries across web, WhatsApp, and property portals</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">monitoring</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Market Intelligence Dashboard</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Aggregates DLD transaction data, REIDIN price indices, and competitive listing activity into a live dashboard your agents and management can act on daily. Know before your competitors do.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Built on UAE data sources, not global benchmarks</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">bolt</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Agent Workflow Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Automates the manual tasks between viewings and closing — follow-up messages, document requests, listing updates, pipeline status syncs. Agents focus on relationships, not admin.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Integrates with WhatsApp Business, Google Workspace, and your CRM</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#e7eeff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Typical project timeline: 8–12 weeks · Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems UAE-compliant (PDPL, DESC), bilingual, and integrated with your existing tools.</p>
+      <button onclick="openModal(this)" data-source="real_estate_mid" class="btn-primary">Book Free Real Estate AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- THE AI SHIFT -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">Industry Context</div>
       <h2 id="shift-heading">Why real estate is one of AI's highest-impact sectors</h2>
     </div>
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem;">
+    <div class="ind-context-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem;">
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:22px;">search</span></div>
         <h3 style="font-weight:700; font-size:1rem; color:#00253b; margin-bottom:0.5rem;">Information asymmetry is enormous</h3>
@@ -156,7 +268,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <div class="section-eyebrow">Industry Research</div>
       <h2 id="research-heading">What the data shows about AI in real estate</h2>
     </div>
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
       <div class="card" style="text-align:center;">
         <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">40–60%</p>
         <p style="color:#42474e; font-size:0.875rem;">improvement in sales conversion with AI lead scoring (HubSpot)</p>
@@ -171,7 +283,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       </div>
     </div>
     <div class="research-panel">
-      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
         <div>
           <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Valuation Accuracy</p>
           <p style="color:#42474e; line-height:1.7;">AVMs have improved dramatically. Zillow's Zestimate now carries a median absolute error of 2.4% for on-market homes. CoreLogic and Black Knight report similar accuracy for commercial AVM products. In high-transaction markets, AI valuations compete with human appraisers at a fraction of the cost.</p>
@@ -197,44 +309,25 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <h2 id="faq-heading">Questions about AI in real estate</h2>
     </div>
     <div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          How accurate are AI property valuations compared to human appraisers?
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-body">In high-transaction markets with rich data, AVMs are now highly competitive — Zillow's model carries a 2.4% median error for listed homes, vs. the roughly 5–8% variance in human appraisals. However, AVMs struggle with unique properties, low-transaction-volume markets, and sudden market shifts. The most reliable approach combines AI for initial pricing with human review for final decisions.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          Will AI replace real estate agents?
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-body">Unlikely in the near term, but it will significantly change what agents spend their time on. AI handles the high-volume, low-complexity work: initial inquiry response, listing management, document processing, lead qualification. This frees agents to focus on advisory, negotiation, and relationship work. The agencies growing fastest are those using AI to make agents more productive, not replace them.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          How does AI lead scoring work in practice?
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-body">A lead scoring model is trained on historical data — which leads eventually transacted, and what their behavioral patterns looked like before they did. It learns signals like: how many listings were viewed, time spent on each, viewing requests, response speed to follow-up. The model assigns a probability score to each new lead. Agents are shown a ranked list — highest-probability leads at the top — and notified in real time when a lead's score jumps.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          Can AI handle property inquiries in Arabic?
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-body">Yes — modern LLMs handle Arabic fluently, including switching between Arabic and English mid-conversation. For UAE real estate, this is critical: a significant portion of high-value buyers prefer communicating in Arabic. The key is testing the Arabic output quality specifically, since some models produce correct but stilted formal Arabic rather than natural conversational language.</div>
-      </div>
+      {faqItems.map((item) => (
+        <div class="faq-item">
+          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+            {item.question}
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">{item.answer}</div>
+        </div>
+      ))}
     </div>
   </div>
 </section>
 
 <!-- CTA -->
 <div class="cta-band">
-  <h2>Want to understand what AI could do for your real estate operation?</h2>
-  <p>We work with agencies and developers across the UAE. If you'd like to explore how these applications apply to your portfolio, market, and team structure — we're happy to talk it through.</p>
-  <button onclick="openModal()" class="btn-primary" style="font-size:1.0625rem; padding:0.9375rem 2.5rem;">Start a Conversation</button>
-  <p style="color:rgba(255,255,255,0.55); font-size:0.875rem; margin-top:1rem;">Free · No commitment · No sales pitch</p>
+  <h2>Book a Free Real Estate AI Audit</h2>
+  <p>We'll assess your agency's workflows, identify the highest-ROI AI opportunities, and show you exactly what we'd build — no obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+  <button onclick="openModal(this)" data-source="real_estate_cta" class="btn-primary" style="font-size:1.0625rem; padding:0.9375rem 2.5rem;">Book Free Real Estate AI Audit</button>
+  <p style="color:rgba(255,255,255,0.55); font-size:0.875rem; margin-top:1rem;">Free · Dubai-based team · Covered by our 100% refund guarantee</p>
 </div>
 
 </BaseLayout>

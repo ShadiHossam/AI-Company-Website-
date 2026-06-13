@@ -1,0 +1,196 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+const { count: unreadNotifs } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false);
+
+const { slug } = Astro.params;
+if (slug !== 'privacy' && slug !== 'terms') {
+  return Astro.redirect('/admin/content/legal');
+}
+
+const { data: page, error } = await supabase.from('legal_pages').select('*').eq('slug', slug).single();
+if (error || !page) {
+  return Astro.redirect('/admin/content/legal');
+}
+
+const sections = (page.sections as { heading: string; body: string }[]) ?? [];
+const previewPath = slug === 'privacy' ? '/privacy' : '/terms';
+---
+
+<AdminLayout title={`Edit: ${page.title}`} user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <a href="/admin/content/legal" class="text-muted text-sm" style="text-decoration:none;">← Legal Pages</a>
+      <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-top:0.25rem;">{page.title}</h1>
+    </div>
+    <a href={previewPath} target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Preview ↗</a>
+  </div>
+
+  <div id="save-banner" style="display:none;background:var(--success-dim);border:1px solid rgba(34,197,94,0.3);color:var(--success);padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem;">
+    Saved successfully.
+  </div>
+  <div id="error-banner" style="display:none;background:var(--danger-dim);border:1px solid var(--danger);color:var(--danger);padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem;"></div>
+
+  <!-- Meta -->
+  <div class="card mb-4" style="max-width:400px;">
+    <div style="font-weight:600;color:var(--text-primary);margin-bottom:1rem;">Page Settings</div>
+    <div class="form-group mb-3">
+      <label class="form-label">Title <span class="text-dim text-xs">(read-only)</span></label>
+      <input class="form-input" type="text" value={page.title} readonly style="opacity:0.6;cursor:not-allowed;" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Last Updated</label>
+      <input class="form-input" type="date" id="last-updated" value={page.last_updated ?? ''} />
+    </div>
+  </div>
+
+  <!-- Sections editor -->
+  <div class="card mb-4">
+    <div class="flex items-center justify-between mb-4">
+      <div style="font-weight:600;color:var(--text-primary);">Sections</div>
+      <button type="button" id="add-section" class="btn btn-ghost btn-sm">+ Add Section</button>
+    </div>
+
+    <div id="sections-list">
+      {sections.map((s, i) => (
+        <div class="legal-section" data-index={i} style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;margin-bottom:0.875rem;background:var(--bg-input);">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-muted" style="font-weight:600;">Section {i + 1}</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <button type="button" class="btn btn-ghost btn-sm move-up" data-index={i} title="Move up" style={i === 0 ? 'opacity:0.3;pointer-events:none;' : ''}>↑</button>
+              <button type="button" class="btn btn-ghost btn-sm move-down" data-index={i} title="Move down" style={i === sections.length - 1 ? 'opacity:0.3;pointer-events:none;' : ''}>↓</button>
+              <button type="button" class="btn btn-sm remove-section" data-index={i} style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);">Remove</button>
+            </div>
+          </div>
+          <div class="form-group mb-3">
+            <label class="form-label">Heading</label>
+            <input class="form-input section-heading" data-index={i} type="text" value={s.heading} placeholder="Section heading..." />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Body</label>
+            <textarea class="form-textarea section-body" data-index={i} rows="6" placeholder="Section content...">{s.body}</textarea>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <button id="save-btn" class="btn btn-primary">Save Changes</button>
+    <a href="/admin/content/legal" class="btn btn-ghost">Back</a>
+  </div>
+</AdminLayout>
+
+<script>
+  const slug = window.location.pathname.split('/').at(-1)!;
+
+  function getSections() {
+    const list = document.getElementById('sections-list')!;
+    const sectionEls = list.querySelectorAll('.legal-section');
+    return Array.from(sectionEls).map(el => ({
+      heading: (el.querySelector('.section-heading') as HTMLInputElement).value,
+      body: (el.querySelector('.section-body') as HTMLTextAreaElement).value,
+    }));
+  }
+
+  function renderSections(sections: { heading: string; body: string }[]) {
+    const list = document.getElementById('sections-list')!;
+    list.innerHTML = sections.map((s, i) => `
+      <div class="legal-section" data-index="${i}" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;margin-bottom:0.875rem;background:var(--bg-input);">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs text-muted" style="font-weight:600;">Section ${i + 1}</span>
+          <div class="flex items-center gap-1">
+            <button type="button" class="btn btn-ghost btn-sm move-up" data-index="${i}" title="Move up" ${i === 0 ? 'style="opacity:0.3;pointer-events:none;"' : ''}>↑</button>
+            <button type="button" class="btn btn-ghost btn-sm move-down" data-index="${i}" title="Move down" ${i === sections.length - 1 ? 'style="opacity:0.3;pointer-events:none;"' : ''}>↓</button>
+            <button type="button" class="btn btn-sm remove-section" data-index="${i}" style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);">Remove</button>
+          </div>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Heading</label>
+          <input class="form-input section-heading" data-index="${i}" type="text" value="${s.heading.replace(/"/g, '&quot;')}" placeholder="Section heading..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Body</label>
+          <textarea class="form-textarea section-body" data-index="${i}" rows="6" placeholder="Section content...">${s.body}</textarea>
+        </div>
+      </div>
+    `).join('');
+    attachHandlers();
+  }
+
+  function attachHandlers() {
+    document.querySelectorAll('.remove-section').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt((btn as HTMLElement).dataset.index ?? '0', 10);
+        const sections = getSections();
+        sections.splice(idx, 1);
+        renderSections(sections);
+      });
+    });
+
+    document.querySelectorAll('.move-up').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt((btn as HTMLElement).dataset.index ?? '0', 10);
+        if (idx === 0) return;
+        const sections = getSections();
+        [sections[idx - 1], sections[idx]] = [sections[idx], sections[idx - 1]];
+        renderSections(sections);
+      });
+    });
+
+    document.querySelectorAll('.move-down').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt((btn as HTMLElement).dataset.index ?? '0', 10);
+        const sections = getSections();
+        if (idx >= sections.length - 1) return;
+        [sections[idx], sections[idx + 1]] = [sections[idx + 1], sections[idx]];
+        renderSections(sections);
+      });
+    });
+  }
+
+  document.getElementById('add-section')!.addEventListener('click', () => {
+    const sections = getSections();
+    sections.push({ heading: '', body: '' });
+    renderSections(sections);
+  });
+
+  document.getElementById('save-btn')!.addEventListener('click', async () => {
+    const saveBtn = document.getElementById('save-btn') as HTMLButtonElement;
+    const saveBanner = document.getElementById('save-banner') as HTMLElement;
+    const errorBanner = document.getElementById('error-banner') as HTMLElement;
+    saveBtn.textContent = 'Saving...';
+    saveBtn.disabled = true;
+    saveBanner.style.display = 'none';
+    errorBanner.style.display = 'none';
+
+    const sections = getSections();
+    const last_updated = (document.getElementById('last-updated') as HTMLInputElement).value || null;
+
+    const res = await fetch(`/api/admin/content/legal/${slug}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sections, last_updated }),
+    });
+
+    if (res.ok) {
+      saveBanner.style.display = 'block';
+      setTimeout(() => { saveBanner.style.display = 'none'; }, 3000);
+    } else {
+      const err = await res.json();
+      errorBanner.textContent = err.error ?? 'Save failed';
+      errorBanner.style.display = 'block';
+    }
+    saveBtn.textContent = 'Save Changes';
+    saveBtn.disabled = false;
+  });
+
+  // Attach initial handlers
+  attachHandlers();
+</script>

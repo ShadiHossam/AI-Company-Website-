@@ -1,0 +1,276 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+const { count: unreadNotifs } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false);
+
+const { data: faqItems } = await supabase
+  .from('faq_items')
+  .select('*')
+  .order('section', { ascending: true })
+  .order('sort_order', { ascending: true });
+
+const ALL_SECTIONS = [
+  'getting_started', 'guarantee', 'technical', 'custom_ai',
+  'strategy', 'training', 'real_estate', 'retail', 'hospitality', 'logistics',
+];
+
+function sectionLabel(s: string) {
+  return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+// Group by section
+const grouped: Record<string, typeof faqItems> = {};
+for (const item of faqItems ?? []) {
+  if (!grouped[item.section]) grouped[item.section] = [];
+  grouped[item.section]!.push(item);
+}
+const usedSections = Object.keys(grouped);
+const allSections = [...new Set([...usedSections, ...ALL_SECTIONS])];
+---
+
+<AdminLayout title="FAQ Items" user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <a href="/admin/content" class="text-muted text-sm" style="text-decoration:none;">← Content</a>
+      <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-top:0.25rem;">FAQ Items</h1>
+    </div>
+  </div>
+
+  <div id="global-msg" style="display:none;padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem;"></div>
+
+  {allSections.map(section => {
+    const items = grouped[section] ?? [];
+    return (
+      <div class="card mb-4" data-section={section}>
+        <button
+          class="section-toggle flex items-center justify-between"
+          data-section={section}
+          style="width:100%;background:none;border:none;cursor:pointer;padding:0;text-align:left;"
+        >
+          <div style="font-weight:600;color:var(--text-primary);font-size:0.9375rem;">{sectionLabel(section)}</div>
+          <div class="flex items-center gap-2">
+            <span class="badge" style="background:var(--bg-hover);color:var(--text-muted);">{items.length}</span>
+            <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--text-muted);transition:transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </button>
+
+        <div class="section-body" data-section={section} style="display:none;margin-top:1rem;">
+          {/* Existing items */}
+          <div class="faq-items-list" data-section={section}>
+            {items.map(item => (
+              <div class="faq-item" data-id={item.id} style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.875rem;margin-bottom:0.75rem;background:var(--bg-input);">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="badge" style={item.published ? 'background:var(--success-dim);color:var(--success);' : 'background:var(--bg-hover);color:var(--text-dim);'}>{item.published ? 'Published' : 'Draft'}</span>
+                  <div class="flex items-center gap-2">
+                    <button class="btn btn-ghost btn-sm toggle-expand-faq" data-id={item.id}>Edit</button>
+                    <button class="btn btn-sm delete-faq" data-id={item.id} style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);">Delete</button>
+                  </div>
+                </div>
+                <div class="faq-question" data-id={item.id} style="font-weight:500;color:var(--text-primary);margin-bottom:0.25rem;">{item.question}</div>
+                <div class="faq-answer text-muted text-sm" data-id={item.id}>{item.answer}</div>
+
+                <div class="faq-edit-form" data-id={item.id} style="display:none;margin-top:1rem;border-top:1px solid var(--border);padding-top:1rem;">
+                  <div class="form-group mb-3">
+                    <label class="form-label">Question</label>
+                    <textarea class="form-textarea faq-q-input" data-id={item.id} rows="2">{item.question}</textarea>
+                  </div>
+                  <div class="form-group mb-3">
+                    <label class="form-label">Answer</label>
+                    <textarea class="form-textarea faq-a-input" data-id={item.id} rows="4">{item.answer}</textarea>
+                  </div>
+                  <div class="flex items-center gap-3 mb-3">
+                    <div class="form-group" style="margin:0;flex:0 0 100px;">
+                      <label class="form-label">Sort Order</label>
+                      <input class="form-input faq-sort-input" data-id={item.id} type="number" value={item.sort_order} />
+                    </div>
+                    <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;margin-top:1.25rem;">
+                      <input type="checkbox" class="faq-pub-input" data-id={item.id} checked={item.published} style="width:16px;height:16px;accent-color:var(--accent);" />
+                      <span class="text-sm">Published</span>
+                    </label>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button class="btn btn-primary btn-sm save-faq" data-id={item.id}>Save</button>
+                    <button class="btn btn-ghost btn-sm cancel-faq" data-id={item.id}>Cancel</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Add new question form */}
+          <div style="border:1px dashed var(--border);border-radius:var(--radius-sm);padding:1rem;margin-top:0.75rem;">
+            <div style="font-weight:500;color:var(--text-muted);margin-bottom:0.75rem;font-size:0.8125rem;">Add New Question</div>
+            <div class="form-group mb-3">
+              <label class="form-label">Question</label>
+              <textarea class="form-textarea new-faq-q" data-section={section} rows="2" placeholder="What is..."></textarea>
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label">Answer</label>
+              <textarea class="form-textarea new-faq-a" data-section={section} rows="3" placeholder="Answer text..."></textarea>
+            </div>
+            <button class="btn btn-secondary btn-sm add-faq-btn" data-section={section}>+ Add Question</button>
+          </div>
+        </div>
+      </div>
+    );
+  })}
+</AdminLayout>
+
+<script>
+  function showMsg(msg: string, type: 'success' | 'error' = 'success') {
+    const el = document.getElementById('global-msg') as HTMLElement;
+    el.textContent = msg;
+    el.style.display = 'block';
+    if (type === 'success') {
+      el.style.background = 'var(--success-dim)';
+      el.style.color = 'var(--success)';
+      el.style.border = '1px solid rgba(34,197,94,0.3)';
+    } else {
+      el.style.background = 'var(--danger-dim)';
+      el.style.color = 'var(--danger)';
+      el.style.border = '1px solid var(--danger)';
+    }
+    setTimeout(() => { el.style.display = 'none'; }, 3500);
+  }
+
+  // Section toggles
+  document.querySelectorAll('.section-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const section = (btn as HTMLElement).dataset.section!;
+      const body = document.querySelector(`.section-body[data-section="${section}"]`) as HTMLElement;
+      const icon = btn.querySelector('.toggle-icon') as HTMLElement;
+      const isOpen = body.style.display !== 'none';
+      body.style.display = isOpen ? 'none' : 'block';
+      icon.style.transform = isOpen ? '' : 'rotate(180deg)';
+    });
+  });
+
+  // Expand/collapse edit forms
+  document.querySelectorAll('.toggle-expand-faq').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = (btn as HTMLElement).dataset.id!;
+      const editForm = document.querySelector(`.faq-edit-form[data-id="${id}"]`) as HTMLElement;
+      const isOpen = editForm.style.display !== 'none';
+      editForm.style.display = isOpen ? 'none' : 'block';
+      (btn as HTMLElement).textContent = isOpen ? 'Edit' : 'Close';
+    });
+  });
+
+  // Cancel edit
+  document.querySelectorAll('.cancel-faq').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = (btn as HTMLElement).dataset.id!;
+      const editForm = document.querySelector(`.faq-edit-form[data-id="${id}"]`) as HTMLElement;
+      const toggleBtn = document.querySelector(`.toggle-expand-faq[data-id="${id}"]`) as HTMLElement;
+      editForm.style.display = 'none';
+      toggleBtn.textContent = 'Edit';
+    });
+  });
+
+  // Save FAQ item
+  document.querySelectorAll('.save-faq').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const el = btn as HTMLButtonElement;
+      const id = el.dataset.id!;
+      el.textContent = 'Saving...';
+      el.disabled = true;
+
+      const q = (document.querySelector(`.faq-q-input[data-id="${id}"]`) as HTMLTextAreaElement).value;
+      const a = (document.querySelector(`.faq-a-input[data-id="${id}"]`) as HTMLTextAreaElement).value;
+      const sort = parseInt((document.querySelector(`.faq-sort-input[data-id="${id}"]`) as HTMLInputElement).value ?? '0', 10);
+      const pub = (document.querySelector(`.faq-pub-input[data-id="${id}"]`) as HTMLInputElement).checked;
+
+      const res = await fetch(`/api/admin/content/faq/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: q, answer: a, sort_order: sort, published: pub }),
+      });
+
+      if (res.ok) {
+        // Update visible text
+        (document.querySelector(`.faq-question[data-id="${id}"]`) as HTMLElement).textContent = q;
+        (document.querySelector(`.faq-answer[data-id="${id}"]`) as HTMLElement).textContent = a;
+        showMsg('FAQ item saved.');
+        const editForm = document.querySelector(`.faq-edit-form[data-id="${id}"]`) as HTMLElement;
+        const toggleBtn = document.querySelector(`.toggle-expand-faq[data-id="${id}"]`) as HTMLElement;
+        editForm.style.display = 'none';
+        toggleBtn.textContent = 'Edit';
+      } else {
+        showMsg('Save failed.', 'error');
+      }
+      el.textContent = 'Save';
+      el.disabled = false;
+    });
+  });
+
+  // Delete FAQ item
+  document.querySelectorAll('.delete-faq').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const el = btn as HTMLButtonElement;
+      const id = el.dataset.id!;
+      if (!confirm('Delete this FAQ item?')) return;
+      const res = await fetch(`/api/admin/content/faq/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        document.querySelector(`.faq-item[data-id="${id}"]`)?.remove();
+        showMsg('FAQ item deleted.');
+      } else {
+        showMsg('Delete failed.', 'error');
+      }
+    });
+  });
+
+  // Add new FAQ item
+  document.querySelectorAll('.add-faq-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const el = btn as HTMLButtonElement;
+      const section = el.dataset.section!;
+      const qEl = document.querySelector(`.new-faq-q[data-section="${section}"]`) as HTMLTextAreaElement;
+      const aEl = document.querySelector(`.new-faq-a[data-section="${section}"]`) as HTMLTextAreaElement;
+
+      if (!qEl.value.trim() || !aEl.value.trim()) {
+        showMsg('Question and answer are required.', 'error');
+        return;
+      }
+      el.textContent = 'Adding...';
+      el.disabled = true;
+
+      const res = await fetch('/api/admin/content/faq', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: qEl.value, answer: aEl.value, section, sort_order: 0, published: true }),
+      });
+
+      if (res.ok) {
+        const item = await res.json();
+        const list = document.querySelector(`.faq-items-list[data-section="${section}"]`) as HTMLElement;
+        const div = document.createElement('div');
+        div.className = 'faq-item';
+        div.dataset.id = item.id;
+        div.style.cssText = 'border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.875rem;margin-bottom:0.75rem;background:var(--bg-input);';
+        div.innerHTML = `
+          <div class="flex items-center justify-between mb-2">
+            <span class="badge" style="background:var(--success-dim);color:var(--success);">Published</span>
+            <div class="flex items-center gap-2">
+              <button class="btn btn-ghost btn-sm">Edit</button>
+              <button class="btn btn-sm delete-faq" data-id="${item.id}" style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);">Delete</button>
+            </div>
+          </div>
+          <div style="font-weight:500;color:var(--text-primary);margin-bottom:0.25rem;">${item.question}</div>
+          <div class="text-muted text-sm">${item.answer}</div>
+        `;
+        list.appendChild(div);
+        qEl.value = '';
+        aEl.value = '';
+        showMsg('FAQ item added. Reload to edit it.');
+      } else {
+        showMsg('Add failed.', 'error');
+      }
+      el.textContent = '+ Add Question';
+      el.disabled = false;
+    });
+  });
+</script>

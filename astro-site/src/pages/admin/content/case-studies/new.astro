@@ -1,0 +1,138 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+const { count: unreadNotifs } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false);
+---
+
+<AdminLayout title="New Case Study" user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <a href="/admin/content/case-studies" class="text-muted text-sm" style="text-decoration:none;">← Case Studies</a>
+      <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-top:0.25rem;">New Case Study</h1>
+    </div>
+  </div>
+
+  <div class="card" style="max-width:720px;">
+    <div id="form-error" style="display:none;background:var(--danger-dim);border:1px solid var(--danger);color:var(--danger);padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem;"></div>
+
+    <form id="new-cs-form">
+      <div class="grid-2 gap-4 mb-4">
+        <div class="form-group">
+          <label class="form-label" for="title">Title *</label>
+          <input class="form-input" id="title" name="title" type="text" required placeholder="AI-Powered Property Matching" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="slug">Slug *</label>
+          <input class="form-input" id="slug" name="slug" type="text" required placeholder="ai-property-matching" />
+        </div>
+      </div>
+
+      <div class="grid-2 gap-4 mb-4">
+        <div class="form-group">
+          <label class="form-label" for="industry">Industry</label>
+          <select class="form-select" id="industry" name="industry">
+            <option value="">Select industry...</option>
+            <option value="Real Estate">Real Estate</option>
+            <option value="Retail">Retail</option>
+            <option value="Hospitality">Hospitality</option>
+            <option value="Logistics">Logistics</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Finance">Finance</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="delivery_time">Delivery Time</label>
+          <input class="form-input" id="delivery_time" name="delivery_time" type="text" placeholder="6 weeks" />
+        </div>
+      </div>
+
+      <div class="form-group mb-4">
+        <label class="form-label" for="challenge">Challenge</label>
+        <textarea class="form-textarea" id="challenge" name="challenge" rows="4" placeholder="Describe the client's challenge..."></textarea>
+      </div>
+
+      <div class="form-group mb-4">
+        <label class="form-label" for="solution">Solution</label>
+        <textarea class="form-textarea" id="solution" name="solution" rows="4" placeholder="Describe the solution delivered..."></textarea>
+      </div>
+
+      <div class="flex items-center gap-4 mb-6">
+        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+          <input type="checkbox" id="featured" name="featured" style="width:16px;height:16px;accent-color:var(--accent);" />
+          <span class="text-sm">Featured</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+          <input type="checkbox" id="published" name="published" style="width:16px;height:16px;accent-color:var(--accent);" />
+          <span class="text-sm">Published</span>
+        </label>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button type="submit" class="btn btn-primary" id="submit-btn">Create Case Study</button>
+        <a href="/admin/content/case-studies" class="btn btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </div>
+</AdminLayout>
+
+<script>
+  // Auto-generate slug from title
+  const titleInput = document.getElementById('title') as HTMLInputElement;
+  const slugInput = document.getElementById('slug') as HTMLInputElement;
+  let slugManuallyEdited = false;
+
+  slugInput.addEventListener('input', () => { slugManuallyEdited = true; });
+
+  titleInput.addEventListener('input', () => {
+    if (!slugManuallyEdited) {
+      slugInput.value = titleInput.value
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-');
+    }
+  });
+
+  document.getElementById('new-cs-form')!.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+    const errorEl = document.getElementById('form-error') as HTMLElement;
+    submitBtn.textContent = 'Creating...';
+    submitBtn.disabled = true;
+    errorEl.style.display = 'none';
+
+    const form = e.target as HTMLFormElement;
+    const payload = {
+      title: (form.querySelector('#title') as HTMLInputElement).value,
+      slug: (form.querySelector('#slug') as HTMLInputElement).value,
+      industry: (form.querySelector('#industry') as HTMLSelectElement).value || null,
+      delivery_time: (form.querySelector('#delivery_time') as HTMLInputElement).value || null,
+      challenge: (form.querySelector('#challenge') as HTMLTextAreaElement).value || null,
+      solution: (form.querySelector('#solution') as HTMLTextAreaElement).value || null,
+      featured: (form.querySelector('#featured') as HTMLInputElement).checked,
+      published: (form.querySelector('#published') as HTMLInputElement).checked,
+    };
+
+    const res = await fetch('/api/admin/content/case-studies', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      window.location.href = `/admin/content/case-studies/${data.id}`;
+    } else {
+      const err = await res.json();
+      errorEl.textContent = err.error ?? 'An error occurred';
+      errorEl.style.display = 'block';
+      submitBtn.textContent = 'Create Case Study';
+      submitBtn.disabled = false;
+    }
+  });
+</script>

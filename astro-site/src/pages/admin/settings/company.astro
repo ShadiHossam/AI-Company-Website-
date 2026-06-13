@@ -1,0 +1,103 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+
+const { data: configRows } = await supabase
+  .from('site_config')
+  .select('*')
+  .eq('section', 'company');
+
+const { count: unreadNotifs } = await supabase
+  .from('notifications')
+  .select('*', { count: 'exact', head: true })
+  .eq('read', false);
+
+const config: Record<string, string> = {};
+(configRows ?? []).forEach(row => { config[row.key] = row.value ?? ''; });
+
+const fields = [
+  { key: 'company.name', label: 'Company Name', type: 'text', placeholder: 'Aegis AI' },
+  { key: 'company.phone', label: 'Phone Number', type: 'tel', placeholder: '+971 XX XXX XXXX' },
+  { key: 'company.email', label: 'Email Address', type: 'email', placeholder: 'hello@aegisai.ae' },
+  { key: 'company.whatsapp', label: 'WhatsApp Number', type: 'text', placeholder: '+971XXXXXXXXX' },
+  { key: 'company.linkedin', label: 'LinkedIn Handle', type: 'text', placeholder: 'aegisai' },
+  { key: 'company.address', label: 'Address', type: 'text', placeholder: 'Dubai, UAE' },
+  { key: 'company.hours', label: 'Business Hours', type: 'text', placeholder: 'Mon–Fri, 9am–6pm GST' },
+];
+---
+
+<AdminLayout title="Company Info" user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="flex items-center gap-3 mb-6">
+    <a href="/admin/settings" class="btn btn-ghost btn-sm">← Back</a>
+    <div>
+      <h1 class="text-xl font-bold">Company Info</h1>
+      <p class="text-muted text-sm">Basic contact and business information.</p>
+    </div>
+  </div>
+
+  <div class="card" style="max-width:640px;">
+    <div style="padding:1.5rem;">
+      <form id="company-form">
+        {fields.map(field => (
+          <div class="form-group mb-4">
+            <label class="form-label" for={field.key}>{field.label}</label>
+            <input
+              type={field.type}
+              id={field.key}
+              name={field.key}
+              class="form-input"
+              placeholder={field.placeholder}
+              value={config[field.key] ?? ''}
+            />
+          </div>
+        ))}
+
+        <div class="flex items-center justify-between" style="margin-top:1.5rem;">
+          <span id="save-msg" style="font-size:0.875rem;display:none;"></span>
+          <button type="submit" class="btn btn-primary" id="save-btn" style="margin-left:auto;">
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  const form = document.getElementById('company-form') as HTMLFormElement;
+  const saveBtn = document.getElementById('save-btn') as HTMLButtonElement;
+  const saveMsg = document.getElementById('save-msg') as HTMLElement;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const updates = Array.from(fd.entries()).map(([key, value]) => ({ key, value: value as string }));
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving…';
+
+    try {
+      const res = await fetch('/api/admin/config', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ updates }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      saveMsg.textContent = '✓ Changes saved successfully';
+      saveMsg.style.color = '#4ade80';
+      saveMsg.style.display = 'inline';
+      setTimeout(() => { saveMsg.style.display = 'none'; }, 4000);
+    } catch {
+      saveMsg.textContent = '✗ Error saving changes';
+      saveMsg.style.color = '#f87171';
+      saveMsg.style.display = 'inline';
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save Changes';
+    }
+  });
+</script>

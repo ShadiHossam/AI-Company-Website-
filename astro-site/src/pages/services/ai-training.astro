@@ -1,5 +1,35 @@
 ---
+export const prerender = false;
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+
+// Hardcoded fallback FAQ items
+const fallbackFaqs = [
+  { question: "How many people can attend one workshop?", answer: "The AI Foundations workshop fits up to 20 participants. For larger teams, we run multiple sessions. The hands-on programs (AI Power User) are capped at 12 for quality — we'd schedule additional cohorts for larger teams." },
+  { question: "Do participants need any prior AI knowledge?", answer: "No. AI Foundations is designed for complete beginners. We run a pre-training assessment so we always start at the right level for your team. You don't need to know anything about AI." },
+  { question: "Can we get materials in Arabic only?", answer: "Yes. All materials are available in Arabic only, English only, or bilingual — you choose what works best for your team. We also deliver in Arabic upon request." },
+  { question: "Can training be combined with AI system development?", answer: "Yes — and this is our recommended approach. When we build you a custom AI system, team training is included in Core System and Transformation packages. This ensures adoption is high from day one." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'training')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
 
 <BaseLayout
@@ -28,10 +58,10 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <span class="gradient-text">AI Asset.</span> Let's Unlock It.
     </h1>
     <p style="color: #42474e; font-size: 1.125rem; line-height: 1.75; max-width: 40rem; margin: 0 auto 2.5rem;">
-      84% of UAE businesses that implement AI fail because their teams don't know how to use it. Our hands-on workshops fix that — in Arabic and English, tailored to your industry.
+      Industry research shows that most AI implementations fail not because the technology doesn't work — but because teams don't adopt it. Our hands-on workshops fix that — in Arabic and English, tailored to your industry.
     </p>
     <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;">
-      <button onclick="openModal()" class="btn-primary" style="font-size: 1rem;">Request Training Quote →</button>
+      <button onclick="openModal(this)" data-source="training_hero" class="btn-primary" style="font-size: 1rem;">Request Training Quote →</button>
       <a href="#programs" class="btn-outline" style="font-size: 1rem;">See Programs ↓</a>
     </div>
   </div>
@@ -43,12 +73,12 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     <div style="position: absolute; inset: 0; background-image: radial-gradient(circle, rgba(0,227,253,0.07) 1px, transparent 1px); background-size: 24px 24px;"></div>
     <div style="position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem; text-align: center; padding: 0 2rem;">
       <div>
-        <div class="stat-number" style="color: #00e3fd;">84%</div>
-        <p style="color: rgba(255,255,255,0.55); margin-top: .375rem; font-size: .9rem;">AI implementations fail due to poor team adoption</p>
+        <div class="stat-number" style="color: #00e3fd;">#1</div>
+        <p style="color: rgba(255,255,255,0.55); margin-top: .375rem; font-size: .9rem;">Reason AI fails: poor team adoption, not bad technology</p>
       </div>
       <div>
-        <div class="stat-number" style="color: #00e3fd;">2x</div>
-        <p style="color: rgba(255,255,255,0.55); margin-top: .375rem; font-size: .9rem;">Productivity increase for trained employees</p>
+        <div class="stat-number" style="color: #00e3fd;">Faster</div>
+        <p style="color: rgba(255,255,255,0.55); margin-top: .375rem; font-size: .9rem;">Trained teams use AI tools daily, not occasionally</p>
       </div>
       <div>
         <div class="stat-number" style="color: #00e3fd;">30 days</div>
@@ -161,7 +191,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         <div class="check-row"><svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span style="color: #42474e; font-size: .9rem;">Hotel staff using AI for guest service</span></div>
         <div class="check-row"><svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span style="color: #42474e; font-size: .9rem;">Retail teams using AI for merchandising</span></div>
         <div class="check-row"><svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span style="color: #42474e; font-size: .9rem;">Logistics teams using AI for operations</span></div>
-        <button onclick="openModal()" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 1.25rem;">Request Custom Quote →</button>
+        <button onclick="openModal(this)" data-source="training_custom" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 1.25rem;">Request Custom Quote →</button>
       </div>
     </div>
   </div>
@@ -221,10 +251,9 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <h2 id="faq-heading">Frequently Asked Questions</h2>
     </div>
     <div>
-      <div class="faq-item"><button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">How many people can attend one workshop?<span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" class="w-3 h-3" stroke="#006875" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg></span></button><div class="faq-body">The AI Foundations workshop fits up to 20 participants. For larger teams, we run multiple sessions. The hands-on programs (AI Power User) are capped at 12 for quality — we'd schedule additional cohorts for larger teams.</div></div>
-      <div class="faq-item"><button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">Do participants need any prior AI knowledge?<span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" class="w-3 h-3" stroke="#006875" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg></span></button><div class="faq-body">No. AI Foundations is designed for complete beginners. We run a pre-training assessment so we always start at the right level for your team. You don't need to know anything about AI.</div></div>
-      <div class="faq-item"><button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">Can we get materials in Arabic only?<span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" class="w-3 h-3" stroke="#006875" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg></span></button><div class="faq-body">Yes. All materials are available in Arabic only, English only, or bilingual — you choose what works best for your team. We also deliver in Arabic upon request.</div></div>
-      <div class="faq-item"><button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">Can training be combined with AI system development?<span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" class="w-3 h-3" stroke="#006875" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg></span></button><div class="faq-body">Yes — and this is our recommended approach. When we build you a custom AI system, team training is included in Core System and Transformation packages. This ensures adoption is high from day one.</div></div>
+      {faqItems.map((item) => (
+        <div class="faq-item"><button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">{item.question}<span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" class="w-3 h-3" stroke="#006875" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg></span></button><div class="faq-body">{item.answer}</div></div>
+      ))}
     </div>
   </div>
 </section>
@@ -236,7 +265,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <div style="position: relative; z-index: 1;">
         <h2 style="color: #ffffff; font-size: clamp(1.75rem, 3vw, 2.5rem); margin-bottom: 1rem;">Ready to Make Your Team AI-Confident?</h2>
         <p style="color: rgba(255,255,255,0.55); font-size: 1.125rem; max-width: 36rem; margin: 0 auto 2.5rem; line-height: 1.7;">Request a training quote. We'll design a program for your team, your industry, and your budget.</p>
-        <button onclick="openModal()" class="btn-primary" style="font-size: 1.125rem; padding: 1.125rem 2.75rem;">Request Training Quote →</button>
+        <button onclick="openModal(this)" data-source="training_cta" class="btn-primary" style="font-size: 1.125rem; padding: 1.125rem 2.75rem;">Request Training Quote →</button>
         <p style="color: rgba(255,255,255,0.30); font-size: .875rem; margin-top: 1.25rem;">Available in Arabic & English · On-site or online · UAE-based team</p>
       </div>
     </div>
@@ -262,8 +291,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       "@type": "BreadcrumbList",
       "itemListElement": [
         { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://aegisai.ae/" },
-        { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://aegisai.ae/pages/services.html" },
-        { "@type": "ListItem", "position": 3, "name": "AI Training & Workshops", "item": "https://aegisai.ae/services/ai-training.html" }
+        { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://aegisai.ae/services" },
+        { "@type": "ListItem", "position": 3, "name": "AI Training & Workshops", "item": "https://aegisai.ae/services/ai-training" }
       ]
     }
   ]

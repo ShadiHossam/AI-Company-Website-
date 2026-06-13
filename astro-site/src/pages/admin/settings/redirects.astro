@@ -1,0 +1,231 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+
+const { data: redirects } = await supabase
+  .from('redirects')
+  .select('*')
+  .order('created_at', { ascending: false });
+
+const { count: unreadNotifs } = await supabase
+  .from('notifications')
+  .select('*', { count: 'exact', head: true })
+  .eq('read', false);
+---
+
+<AdminLayout title="Redirects" user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="flex items-center gap-3 mb-6">
+    <a href="/admin/settings" class="btn btn-ghost btn-sm">← Back</a>
+    <div>
+      <h1 class="text-xl font-bold">URL Redirects</h1>
+      <p class="text-muted text-sm">Manage 301/302 redirects. Old URLs automatically redirect to new ones.</p>
+    </div>
+  </div>
+
+  <!-- Add Redirect Form -->
+  <div class="card mb-4">
+    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+      <h2 style="font-size:0.95rem;font-weight:700;">Add Redirect</h2>
+    </div>
+    <div style="padding:1.5rem;">
+      <form id="add-redirect-form" style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:0.75rem;align-items:end;">
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">From Path</label>
+          <input type="text" name="from_path" class="form-input" placeholder="/old-page" required />
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">To Path / URL</label>
+          <input type="text" name="to_path" class="form-input" placeholder="/new-page or https://..." required />
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">Type</label>
+          <select name="status_code" class="form-select">
+            <option value="301">301 Permanent</option>
+            <option value="302">302 Temporary</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="white-space:nowrap;">Add Redirect</button>
+      </form>
+      <div id="add-msg" style="display:none;margin-top:0.75rem;font-size:0.875rem;"></div>
+    </div>
+  </div>
+
+  <!-- Redirects Table -->
+  <div class="card" id="redirects-container">
+    <div class="table-wrap">
+      <table class="table" id="redirects-table">
+        <thead>
+          <tr>
+            <th>From Path</th>
+            <th>To Path</th>
+            <th>Type</th>
+            <th>Active</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="redirects-body">
+          {!redirects || redirects.length === 0 ? (
+            <tr id="empty-row">
+              <td colspan="6" style="text-align:center;padding:3rem;" class="text-muted">No redirects configured</td>
+            </tr>
+          ) : (
+            redirects.map(r => (
+              <tr data-id={r.id}>
+                <td>
+                  <code style="font-size:0.8rem;color:var(--accent);">{r.from_path}</code>
+                </td>
+                <td class="text-sm text-muted">{r.to_path}</td>
+                <td>
+                  <span style={`font-size:0.75rem;padding:2px 8px;border-radius:4px;font-weight:600;${r.status_code === 301 ? 'background:rgba(0,227,253,0.1);color:#00e3fd;' : 'background:rgba(251,146,60,0.1);color:#fb923c;'}`}>
+                    {r.status_code}
+                  </span>
+                </td>
+                <td>
+                  <label class="toggle-label" style="cursor:pointer;display:inline-flex;align-items:center;gap:0.5rem;">
+                    <input
+                      type="checkbox"
+                      class="active-toggle"
+                      data-id={r.id}
+                      checked={r.active}
+                      style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;"
+                    />
+                  </label>
+                </td>
+                <td class="text-xs text-muted">
+                  {new Date(r.created_at).toLocaleDateString('en-AE', { day:'numeric', month:'short', year:'numeric' })}
+                </td>
+                <td>
+                  <button
+                    class="btn btn-ghost btn-sm delete-btn"
+                    data-id={r.id}
+                    style="color:#f87171;"
+                    title="Delete redirect"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="toast" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;background:#1e2a40;border:1px solid var(--border);color:var(--text-primary);padding:0.75rem 1.25rem;border-radius:8px;font-size:0.875rem;z-index:9999;"></div>
+</AdminLayout>
+
+<script>
+  function toast(msg: string, ok = true) {
+    const t = document.getElementById('toast') as HTMLElement;
+    t.textContent = msg;
+    t.style.borderColor = ok ? 'rgba(74,222,128,0.3)' : 'rgba(248,113,113,0.3)';
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3000);
+  }
+
+  function addRow(r: any) {
+    const tbody = document.getElementById('redirects-body')!;
+    // Remove empty row if present
+    document.getElementById('empty-row')?.remove();
+
+    const tr = document.createElement('tr');
+    tr.dataset.id = r.id;
+    tr.innerHTML = `
+      <td><code style="font-size:0.8rem;color:var(--accent);">${r.from_path}</code></td>
+      <td class="text-sm text-muted">${r.to_path}</td>
+      <td><span style="font-size:0.75rem;padding:2px 8px;border-radius:4px;font-weight:600;${r.status_code === 301 ? 'background:rgba(0,227,253,0.1);color:#00e3fd;' : 'background:rgba(251,146,60,0.1);color:#fb923c;'}">${r.status_code}</span></td>
+      <td><label style="cursor:pointer;display:inline-flex;align-items:center;gap:0.5rem;"><input type="checkbox" class="active-toggle" data-id="${r.id}" ${r.active ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;"/></label></td>
+      <td class="text-xs text-muted">${new Date(r.created_at).toLocaleDateString('en-AE', {day:'numeric',month:'short',year:'numeric'})}</td>
+      <td><button class="btn btn-ghost btn-sm delete-btn" data-id="${r.id}" style="color:#f87171;">Delete</button></td>
+    `;
+    tbody.prepend(tr);
+    attachRowListeners(tr);
+  }
+
+  function attachRowListeners(row: HTMLElement) {
+    row.querySelector<HTMLInputElement>('.active-toggle')?.addEventListener('change', async (e) => {
+      const input = e.target as HTMLInputElement;
+      const id = input.dataset.id!;
+      try {
+        const res = await fetch(`/api/admin/redirects/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ active: input.checked }),
+        });
+        if (!res.ok) throw new Error();
+        toast(input.checked ? 'Redirect enabled' : 'Redirect disabled');
+      } catch {
+        input.checked = !input.checked;
+        toast('Error updating redirect', false);
+      }
+    });
+
+    row.querySelector<HTMLButtonElement>('.delete-btn')?.addEventListener('click', async (e) => {
+      const btn = e.currentTarget as HTMLButtonElement;
+      const id = btn.dataset.id!;
+      if (!confirm('Delete this redirect?')) return;
+      try {
+        const res = await fetch(`/api/admin/redirects/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error();
+        row.remove();
+        toast('Redirect deleted');
+        const tbody = document.getElementById('redirects-body')!;
+        if (tbody.children.length === 0) {
+          tbody.innerHTML = '<tr id="empty-row"><td colspan="6" style="text-align:center;padding:3rem;color:#94a3b8;">No redirects configured</td></tr>';
+        }
+      } catch {
+        toast('Error deleting redirect', false);
+      }
+    });
+  }
+
+  // Attach listeners to existing rows
+  document.querySelectorAll<HTMLElement>('#redirects-body tr[data-id]').forEach(attachRowListeners);
+
+  // Add form submit
+  const addForm = document.getElementById('add-redirect-form') as HTMLFormElement;
+  const addMsg = document.getElementById('add-msg') as HTMLElement;
+
+  addForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(addForm);
+    const payload = {
+      from_path: fd.get('from_path') as string,
+      to_path: fd.get('to_path') as string,
+      status_code: parseInt(fd.get('status_code') as string, 10),
+    };
+
+    const submitBtn = addForm.querySelector<HTMLButtonElement>('[type="submit"]')!;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Adding…';
+
+    try {
+      const res = await fetch('/api/admin/redirects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Failed');
+      addForm.reset();
+      addRow(data.data);
+      addMsg.textContent = '✓ Redirect added';
+      addMsg.style.color = '#4ade80';
+      addMsg.style.display = 'block';
+      setTimeout(() => { addMsg.style.display = 'none'; }, 3000);
+    } catch (err: any) {
+      addMsg.textContent = `✗ ${err.message ?? 'Error adding redirect'}`;
+      addMsg.style.color = '#f87171';
+      addMsg.style.display = 'block';
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Add Redirect';
+    }
+  });
+</script>

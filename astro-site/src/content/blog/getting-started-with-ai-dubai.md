@@ -2,8 +2,20 @@
 title: "Getting Started with AI: A Dubai SME Guide"
 description: "A practical guide for Dubai small and medium businesses looking to adopt AI — what to start with, what to avoid, and how to calculate ROI."
 pubDate: 2026-05-01
+updatedDate: 2026-06-08
 category: "AI Adoption"
+authorName: "Shadi Hossam"
+coverImage: "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=840&q=80&fit=crop"
 ogImage: "/assets/og-blog.jpg"
+keyPoints:
+  - heading: "Start with one high-friction process, not everything at once"
+    body: "Pick the task costing your team the most time. Trying to automate everywhere simultaneously is the most common AI failure mode."
+  - heading: "Calculate ROI before spending a single dirham"
+    body: "Hours/week × hourly cost × automation % = your annual saving. Know the number before you commit to any vendor."
+  - heading: "Team training is not optional — it kills ROI if skipped"
+    body: "Budget bilingual (Arabic/English) training as a line item in every AI project, not an afterthought."
+  - heading: "WhatsApp AI handles 70%+ of repetitive enquiries 24/7"
+    body: "For most Dubai SMEs, WhatsApp customer handling is the single highest-ROI place to start with AI."
 ---
 
 ## Why AI Matters for Dubai SMEs

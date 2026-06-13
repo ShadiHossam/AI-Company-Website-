@@ -1,5 +1,36 @@
 ---
+export const prerender = false;
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+
+// Hardcoded fallback FAQ items
+const fallbackFaqs = [
+  { question: "Does the route optimization account for Salik, Dubai traffic, and UAE road patterns?", answer: "Yes. The system uses real-time traffic data including UAE-specific road patterns, Salik gate costs, and historical congestion data by time of day. It also accounts for delivery time windows, prayer times, and weekend vs. weekday patterns that are unique to the UAE market. Route optimization built for the US or Europe doesn't always translate here — ours is built for the UAE." },
+  { question: "Can it integrate with our existing TMS or ERP? We don't want to replace our core systems.", answer: "That's how we always work. We integrate with your TMS, ERP, GPS tracking, and customer portals rather than replacing them. We've built integrations with SAP, Oracle, Microsoft Dynamics, and most regional logistics software. If you're on a custom-built system, we'll ask for API access and work from there. In the rare case something has no API, we'll tell you upfront — we won't discover it in week six." },
+  { question: "What about cross-border logistics? We operate between UAE, Saudi Arabia, and Oman.", answer: "Cross-border routing is more complex — customs clearance times, border crossing queues, and transit documentation all affect delivery planning. We build that complexity into the model rather than pretending it doesn't exist. The system can factor in average clearance times, flag documentation issues before departure, and adjust delivery windows for international routes. This is something we'd scope specifically for your cross-border volume in the first call." },
+  { question: "How does it handle same-day delivery requirements?", answer: "Same-day delivery requires real-time insertion into live routes — not rebuilding routes from scratch every time an order comes in. The system handles dynamic insertion, optimizing which driver picks up a new order based on proximity, current load, and remaining time window. It also sends customers an accurate ETA the moment the order is dispatched, which cuts inbound \"when is it arriving?\" calls significantly." },
+  { question: "Can it help with driver performance management without being invasive?", answer: "Driver data is one of the more sensitive areas in logistics AI. We build dashboards that track performance metrics — delivery completion rate, idle time, fuel consumption, route adherence — and show trends, not just snapshots. Managers see aggregated data by team first, then individual breakdowns when investigating a specific issue. Drivers see their own data on a separate mobile view. We can advise on how to introduce this to your team in a way that feels fair, not surveillance." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'logistics')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
 
 <BaseLayout
@@ -31,11 +62,11 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       We build AI systems for logistics and supply chain companies in the UAE — route optimization, fleet intelligence, warehouse automation, and customer communication. All integrated with your existing TMS and ERP.
     </p>
     <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:3.5rem;">
-      <button onclick="openModal()" class="btn-primary">Book Free Logistics AI Consultation</button>
+      <button onclick="openModal(this)" data-source="logistics_hero" class="btn-primary">Book Free Logistics AI Consultation</button>
       <a href="#solutions" class="btn-outline">See What We Fix ↓</a>
     </div>
     <!-- Stat banner -->
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px; max-width:780px; margin:0 auto;">
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px; max-width:780px; margin:0 auto;">
       <div class="card" style="padding:2rem; text-align:center;">
         <div class="stat-number">23%</div>
         <p style="color:#42474e; font-size:0.875rem; line-height:1.6; margin:0;">average fuel cost reduction with AI route optimization</p>
@@ -258,7 +289,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 <!-- RESEARCH DATA -->
 <section class="section">
   <div class="container">
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center;">
+    <div class="logistics-research-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center;">
       <div>
         <div class="section-eyebrow" style="text-align:left; margin-bottom:1rem;">Industry Research &amp; Data</div>
         <h2 style="text-align:left; margin-bottom:1.5rem;">What the data shows about AI in logistics</h2>
@@ -348,7 +379,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(0,104,117,0.10); border:1px solid rgba(0,104,117,0.20); border-radius:100px; padding:6px 16px; color:#004f58; font-size:0.875rem; font-weight:600; margin-top:0.5rem;">Delivered in 9 weeks</div>
     </div>
     <!-- Metrics -->
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-bottom:2rem;">
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-bottom:2rem;">
       <div class="card" style="padding:2rem; text-align:center;">
         <div class="stat-number" style="color:#ba1a1a;">−23%</div>
         <p style="color:#42474e; font-size:0.875rem; margin:0;">Fuel cost reduction</p>
@@ -364,7 +395,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     </div>
     <!-- Detail -->
     <div class="case-box">
-      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem;">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem;">
         <div>
           <p class="case-col-label">The Challenge</p>
           <p style="color:#42474e; font-size:0.9rem; line-height:1.7; margin:0;">120-vehicle fleet covering Dubai and Sharjah. Four dispatchers each spent 2 hours every morning manually building routes in Excel. No real-time tracking meant customers called constantly. Fuel costs were rising with no clear cause.</p>
@@ -390,65 +421,19 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <h2>What logistics businesses ask us</h2>
     </div>
 
-    <div class="faq-item">
-      <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-        Does the route optimization account for Salik, Dubai traffic, and UAE road patterns?
-        <span class="faq-icon">
-          <svg viewBox="0 0 24 24" fill="none" width="14" height="14" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-        </span>
-      </button>
-      <div class="faq-body">
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Yes. The system uses real-time traffic data including UAE-specific road patterns, Salik gate costs, and historical congestion data by time of day. It also accounts for delivery time windows, prayer times, and weekend vs. weekday patterns that are unique to the UAE market. Route optimization built for the US or Europe doesn't always translate here — ours is built for the UAE.</p>
+    {faqItems.map((item) => (
+      <div class="faq-item">
+        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+          {item.question}
+          <span class="faq-icon">
+            <svg viewBox="0 0 24 24" fill="none" width="14" height="14" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          </span>
+        </button>
+        <div class="faq-body">
+          <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">{item.answer}</p>
+        </div>
       </div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-        Can it integrate with our existing TMS or ERP? We don't want to replace our core systems.
-        <span class="faq-icon">
-          <svg viewBox="0 0 24 24" fill="none" width="14" height="14" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-        </span>
-      </button>
-      <div class="faq-body">
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">That's how we always work. We integrate with your TMS, ERP, GPS tracking, and customer portals rather than replacing them. We've built integrations with SAP, Oracle, Microsoft Dynamics, and most regional logistics software. If you're on a custom-built system, we'll ask for API access and work from there. In the rare case something has no API, we'll tell you upfront — we won't discover it in week six.</p>
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-        What about cross-border logistics? We operate between UAE, Saudi Arabia, and Oman.
-        <span class="faq-icon">
-          <svg viewBox="0 0 24 24" fill="none" width="14" height="14" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-        </span>
-      </button>
-      <div class="faq-body">
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Cross-border routing is more complex — customs clearance times, border crossing queues, and transit documentation all affect delivery planning. We build that complexity into the model rather than pretending it doesn't exist. The system can factor in average clearance times, flag documentation issues before departure, and adjust delivery windows for international routes. This is something we'd scope specifically for your cross-border volume in the first call.</p>
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-        How does it handle same-day delivery requirements?
-        <span class="faq-icon">
-          <svg viewBox="0 0 24 24" fill="none" width="14" height="14" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-        </span>
-      </button>
-      <div class="faq-body">
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Same-day delivery requires real-time insertion into live routes — not rebuilding routes from scratch every time an order comes in. The system handles dynamic insertion, optimizing which driver picks up a new order based on proximity, current load, and remaining time window. It also sends customers an accurate ETA the moment the order is dispatched, which cuts inbound "when is it arriving?" calls significantly.</p>
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-        Can it help with driver performance management without being invasive?
-        <span class="faq-icon">
-          <svg viewBox="0 0 24 24" fill="none" width="14" height="14" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-        </span>
-      </button>
-      <div class="faq-body">
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Driver data is one of the more sensitive areas in logistics AI. We build dashboards that track performance metrics — delivery completion rate, idle time, fuel consumption, route adherence — and show trends, not just snapshots. Managers see aggregated data by team first, then individual breakdowns when investigating a specific issue. Drivers see their own data on a separate mobile view. We can advise on how to introduce this to your team in a way that feels fair, not surveillance.</p>
-      </div>
-    </div>
+    ))}
   </div>
 </section>
 
@@ -460,7 +445,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <h2 style="color:#fff; font-size:clamp(1.75rem,3vw,2.75rem); font-weight:800; letter-spacing:-0.03em; margin-bottom:1.5rem;">Ready to see what AI can cut from your logistics costs?</h2>
       <p style="color:rgba(255,255,255,0.65); font-size:1.0625rem; line-height:1.8; max-width:560px; margin:0 auto 2.5rem;">Book a free logistics AI consultation. We'll look at your current operations and tell you honestly where AI would save you money — and where it wouldn't.</p>
       <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
-        <button onclick="openModal()" class="btn-primary" style="font-size:1rem; padding:0.875rem 2.5rem;">Book Free Logistics AI Consultation</button>
+        <button onclick="openModal(this)" data-source="logistics_cta" class="btn-primary" style="font-size:1rem; padding:0.875rem 2.5rem;">Book Free Logistics AI Consultation</button>
       </div>
       <p style="color:rgba(255,255,255,0.35); font-size:0.8125rem; margin-top:1.5rem; font-weight:600;">Free · No commitment · 100% Satisfaction Guarantee</p>
     </div>
@@ -560,6 +545,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       .key-app-grid { grid-template-columns: 1fr 1fr; grid-auto-rows: auto; }
       .key-app-large { grid-column: span 2; grid-row: span 1; min-height: 280px; }
       .key-app-wide { grid-column: span 2; }
+      .logistics-research-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
     }
     @media (max-width: 600px) {
       .key-app-grid { grid-template-columns: 1fr; }

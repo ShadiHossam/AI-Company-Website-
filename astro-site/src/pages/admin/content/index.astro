@@ -1,0 +1,81 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+const { count: unreadNotifs } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false);
+
+const sections = [
+  {
+    href: '/admin/content/case-studies',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`,
+    title: 'Case Studies',
+    description: 'Manage project case studies, results, timelines, and industry tags.',
+  },
+  {
+    href: '/admin/content/faq',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></svg>`,
+    title: 'FAQ Items',
+    description: 'Edit frequently asked questions grouped by section across the site.',
+  },
+  {
+    href: '/admin/content/team',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>`,
+    title: 'Team Members',
+    description: 'Add, edit, or reorder team member profiles and bios.',
+  },
+  {
+    href: '/admin/content/products',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`,
+    title: 'Products',
+    description: 'Manage AI product listings, features, tags, and publish status.',
+  },
+  {
+    href: '/admin/content/legal',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
+    title: 'Legal Pages',
+    description: 'Update Privacy Policy and Terms of Service sections and dates.',
+  },
+  {
+    href: '/admin/content/testimonials',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`,
+    title: 'Testimonials',
+    description: 'Manage client testimonials — publish, feature, and reorder.',
+  },
+  {
+    href: '/admin/content/client-logos',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
+    title: 'Client Logos',
+    description: 'Manage partner and client logos shown on the homepage.',
+  },
+  {
+    href: '#',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
+    title: 'Pages & Text',
+    description: 'Edit static page copy, hero text, and section content across the site.',
+    disabled: true,
+  },
+];
+---
+
+<AdminLayout title="Content Management" user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="mb-6">
+    <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-primary);">Content Management</h1>
+    <p class="text-muted mt-2">Manage all site content — case studies, FAQs, team, products, testimonials, and more.</p>
+  </div>
+
+  <div class="grid-3" style="gap:1.25rem;">
+    {sections.map(s => (
+      <div class="card" style={s.disabled ? 'opacity:0.5;pointer-events:none;' : ''}>
+        <div style="color:var(--accent);margin-bottom:0.75rem;" set:html={s.icon} />
+        <div style="font-size:1rem;font-weight:600;color:var(--text-primary);margin-bottom:0.25rem;">{s.title}</div>
+        <p class="text-muted text-sm" style="margin-bottom:1rem;">{s.description}</p>
+        <a href={s.href} class="btn btn-secondary btn-sm" style="width:100%;justify-content:center;">
+          {s.disabled ? 'Coming Soon' : 'Manage →'}
+        </a>
+      </div>
+    ))}
+  </div>
+</AdminLayout>

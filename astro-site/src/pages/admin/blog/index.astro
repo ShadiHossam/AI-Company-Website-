@@ -1,0 +1,157 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+
+const { count: unreadNotifs } = await supabase
+  .from('notifications')
+  .select('*', { count: 'exact', head: true })
+  .eq('read', false);
+
+const statusFilter = Astro.url.searchParams.get('status') ?? 'all';
+
+let query = supabase
+  .from('blog_posts')
+  .select('id, title, slug, category, status, pub_date, author_name, created_at')
+  .order('created_at', { ascending: false });
+
+if (statusFilter !== 'all') {
+  query = query.eq('status', statusFilter);
+}
+
+const { data: posts, error } = await query;
+---
+
+<AdminLayout title="Blog Posts" user={user} unreadCount={unreadNotifs ?? 0}>
+
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 style="font-size:1.375rem; font-weight:800; color:var(--text-primary);">Blog Posts</h1>
+      <p class="text-muted text-sm" style="margin-top:2px;">{posts?.length ?? 0} post{posts?.length !== 1 ? 's' : ''}{statusFilter !== 'all' ? ` (${statusFilter})` : ''}</p>
+    </div>
+    <a href="/admin/blog/new" class="btn btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Post
+    </a>
+  </div>
+
+  <!-- Status filter tabs -->
+  <div class="flex gap-2 mb-4" style="border-bottom:1px solid var(--border); padding-bottom:0.75rem;">
+    {(['all', 'draft', 'published', 'archived'] as const).map(s => (
+      <a
+        href={`/admin/blog${s !== 'all' ? `?status=${s}` : ''}`}
+        class={`btn btn-sm ${statusFilter === s ? 'btn-primary' : 'btn-ghost'}`}
+        style="text-transform:capitalize;"
+      >
+        {s}
+      </a>
+    ))}
+  </div>
+
+  {error && (
+    <div class="card" style="color:var(--danger); margin-bottom:1rem;">
+      Error loading posts: {error.message}
+    </div>
+  )}
+
+  <div class="card" style="padding:0;">
+    {!posts || posts.length === 0 ? (
+      <div style="padding:3rem; text-align:center; color:var(--text-muted);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;margin:0 auto 1rem;display:block;opacity:0.3;"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <p>No posts found. <a href="/admin/blog/new" style="color:var(--accent);">Create your first post</a></p>
+      </div>
+    ) : (
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Pub Date</th>
+              <th>Author</th>
+              <th style="text-align:right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {posts.map(post => (
+              <tr>
+                <td style="max-width:320px;">
+                  <a href={`/admin/blog/${post.id}`} style="color:var(--text-primary); font-weight:600; text-decoration:none; display:block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title={post.title}>
+                    {post.title}
+                  </a>
+                  <span class="text-xs text-muted">/blog/{post.slug}</span>
+                </td>
+                <td>
+                  <span class="tag">{post.category}</span>
+                </td>
+                <td>
+                  <span class={`badge ${post.status === 'published' ? 'badge-published' : post.status === 'draft' ? 'badge-draft' : ''}`}
+                    style={post.status === 'archived' ? 'background:rgba(245,158,11,0.12);color:#fbbf24;' : ''}
+                  >
+                    {post.status}
+                  </span>
+                </td>
+                <td class="text-muted text-sm">
+                  {post.pub_date ? new Date(post.pub_date).toLocaleDateString('en-AE', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}
+                </td>
+                <td class="text-muted text-sm">{post.author_name}</td>
+                <td style="text-align:right;">
+                  <div class="flex gap-2" style="justify-content:flex-end;">
+                    <a href={`/admin/blog/${post.id}`} class="btn btn-ghost btn-sm">Edit</a>
+                    {post.status === 'published' && (
+                      <a href={`/blog/${post.slug}`} target="_blank" rel="noopener" class="btn btn-ghost btn-sm">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                        View
+                      </a>
+                    )}
+                    <button
+                      class="btn btn-danger btn-sm"
+                      data-delete-id={post.id}
+                      data-delete-title={post.title}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+
+</AdminLayout>
+
+<script>
+  document.querySelectorAll('[data-delete-id]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = (btn as HTMLElement).dataset.deleteId!;
+      const title = (btn as HTMLElement).dataset.deleteTitle!;
+      if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+
+      (btn as HTMLButtonElement).disabled = true;
+      (btn as HTMLButtonElement).textContent = 'Deleting…';
+
+      try {
+        const res = await fetch(`/api/admin/blog/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          const { error } = await res.json();
+          alert(`Delete failed: ${error}`);
+          (btn as HTMLButtonElement).disabled = false;
+          (btn as HTMLButtonElement).textContent = 'Delete';
+        }
+      } catch {
+        alert('Network error. Please try again.');
+        (btn as HTMLButtonElement).disabled = false;
+        (btn as HTMLButtonElement).textContent = 'Delete';
+      }
+    });
+  });
+</script>

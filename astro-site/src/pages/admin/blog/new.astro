@@ -1,0 +1,228 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+
+const { count: unreadNotifs } = await supabase
+  .from('notifications')
+  .select('*', { count: 'exact', head: true })
+  .eq('read', false);
+---
+
+<AdminLayout title="New Blog Post" user={user} unreadCount={unreadNotifs ?? 0}>
+
+  <div class="flex items-center gap-3 mb-6">
+    <a href="/admin/blog" class="btn btn-ghost btn-sm">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </a>
+    <h1 style="font-size:1.375rem; font-weight:800; color:var(--text-primary);">New Post</h1>
+  </div>
+
+  <div id="error-banner" style="display:none;" class="card mb-4" style="background:var(--danger-dim); border-color:rgba(239,68,68,0.3); color:var(--danger);"></div>
+
+  <form id="post-form">
+    <div class="grid-2" style="gap:1.5rem; align-items:start;">
+
+      <!-- Main column -->
+      <div style="grid-column:1/3;" class="card">
+        <div class="form-group mb-4">
+          <label class="form-label" for="title">Title <span style="color:var(--danger);">*</span></label>
+          <input id="title" name="title" type="text" class="form-input" required placeholder="Post title" />
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="slug">Slug <span style="color:var(--danger);">*</span></label>
+          <input id="slug" name="slug" type="text" class="form-input" required placeholder="post-url-slug" pattern="[a-z0-9-]+" />
+          <span class="text-xs text-muted" style="margin-top:4px;">Auto-generated from title. Lowercase letters, numbers, hyphens only.</span>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="description">Description <span style="color:var(--danger);">*</span></label>
+          <textarea id="description" name="description" class="form-textarea" required placeholder="Short description / meta description" style="min-height:80px;"></textarea>
+        </div>
+
+        <div class="grid-2 mb-4" style="gap:1rem;">
+          <div class="form-group">
+            <label class="form-label" for="category">Category <span style="color:var(--danger);">*</span></label>
+            <input id="category" name="category" type="text" class="form-input" required list="category-suggestions" placeholder="Category" />
+            <datalist id="category-suggestions">
+              <option value="AI Automation" />
+              <option value="AI Training" />
+              <option value="Case Studies" />
+              <option value="Industry Insights" />
+              <option value="Product Updates" />
+            </datalist>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="author_name">Author</label>
+            <input id="author_name" name="author_name" type="text" class="form-input" value="Aegis AI" placeholder="Aegis AI" />
+          </div>
+        </div>
+
+        <div class="grid-2 mb-4" style="gap:1rem;">
+          <div class="form-group">
+            <label class="form-label" for="og_image">OG Image URL</label>
+            <input id="og_image" name="og_image" type="text" class="form-input" placeholder="/assets/og-blog.jpg" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="status">Status</label>
+            <select id="status" name="status" class="form-select">
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Body / Preview - full width -->
+      <div style="grid-column:1/3;">
+        <div class="card">
+          <div class="flex items-center justify-between mb-4">
+            <label class="form-label" style="margin:0;">Body (Markdown) <span style="color:var(--danger);">*</span></label>
+            <div class="flex gap-2">
+              <button type="button" id="tab-write" class="btn btn-sm btn-primary">Write</button>
+              <button type="button" id="tab-preview" class="btn btn-sm btn-secondary">Preview</button>
+            </div>
+          </div>
+
+          <div id="write-panel">
+            <textarea
+              id="body_markdown"
+              name="body_markdown"
+              class="form-textarea"
+              required
+              placeholder="Write your post in Markdown..."
+              style="min-height:500px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size:0.875rem; line-height:1.7;"
+            ></textarea>
+          </div>
+
+          <div id="preview-panel" style="display:none;">
+            <div
+              id="preview-content"
+              class="prose"
+              style="min-height:500px; padding:1rem; background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-primary); line-height:1.8;"
+            >
+              <em style="color:var(--text-muted);">Click "Preview" to render the markdown…</em>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="flex gap-3 mt-4" style="justify-content:flex-end;">
+      <a href="/admin/blog" class="btn btn-secondary">Cancel</a>
+      <button type="submit" id="submit-btn" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="20 6 9 17 4 12"/></svg>
+        Create Post
+      </button>
+    </div>
+  </form>
+
+</AdminLayout>
+
+<script>
+  import { marked } from 'marked';
+
+  // Auto-generate slug from title
+  const titleEl = document.getElementById('title') as HTMLInputElement;
+  const slugEl = document.getElementById('slug') as HTMLInputElement;
+  let slugManuallyEdited = false;
+
+  slugEl.addEventListener('input', () => { slugManuallyEdited = true; });
+  titleEl.addEventListener('input', () => {
+    if (!slugManuallyEdited) {
+      slugEl.value = titleEl.value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+    }
+  });
+
+  // Tab switching
+  const tabWrite = document.getElementById('tab-write')!;
+  const tabPreview = document.getElementById('tab-preview')!;
+  const writePanel = document.getElementById('write-panel')!;
+  const previewPanel = document.getElementById('preview-panel')!;
+  const previewContent = document.getElementById('preview-content')!;
+  const bodyEl = document.getElementById('body_markdown') as HTMLTextAreaElement;
+
+  tabWrite.addEventListener('click', () => {
+    writePanel.style.display = 'block';
+    previewPanel.style.display = 'none';
+    tabWrite.className = 'btn btn-sm btn-primary';
+    tabPreview.className = 'btn btn-sm btn-secondary';
+  });
+
+  tabPreview.addEventListener('click', async () => {
+    writePanel.style.display = 'none';
+    previewPanel.style.display = 'block';
+    tabWrite.className = 'btn btn-sm btn-secondary';
+    tabPreview.className = 'btn btn-sm btn-primary';
+    previewContent.innerHTML = await marked(bodyEl.value || '_No content yet_');
+  });
+
+  // Form submission
+  const form = document.getElementById('post-form') as HTMLFormElement;
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+  const errorBanner = document.getElementById('error-banner')!;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating…';
+    errorBanner.style.display = 'none';
+
+    const data = {
+      title: (document.getElementById('title') as HTMLInputElement).value.trim(),
+      slug: (document.getElementById('slug') as HTMLInputElement).value.trim(),
+      description: (document.getElementById('description') as HTMLTextAreaElement).value.trim(),
+      category: (document.getElementById('category') as HTMLInputElement).value.trim(),
+      author_name: (document.getElementById('author_name') as HTMLInputElement).value.trim(),
+      og_image: (document.getElementById('og_image') as HTMLInputElement).value.trim() || '/assets/og-blog.jpg',
+      status: (document.getElementById('status') as HTMLSelectElement).value,
+      body_markdown: bodyEl.value,
+    };
+
+    try {
+      const res = await fetch('/api/admin/blog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const json = await res.json();
+      if (res.ok) {
+        window.location.href = `/admin/blog/${json.data.id}`;
+      } else {
+        errorBanner.textContent = json.error ?? 'Failed to create post.';
+        errorBanner.style.display = 'block';
+        errorBanner.style.background = 'var(--danger-dim)';
+        errorBanner.style.borderColor = 'rgba(239,68,68,0.3)';
+        errorBanner.style.color = 'var(--danger)';
+        errorBanner.style.padding = '0.75rem 1rem';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Post';
+      }
+    } catch {
+      errorBanner.textContent = 'Network error. Please try again.';
+      errorBanner.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Create Post';
+    }
+  });
+</script>
+
+<style>
+  .prose h1, .prose h2, .prose h3 { color: var(--text-primary); margin-top:1.5rem; margin-bottom:0.5rem; }
+  .prose p { margin-bottom: 1rem; }
+  .prose ul, .prose ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+  .prose code { background: var(--bg-hover); padding: 2px 6px; border-radius: 4px; font-size: 0.85em; }
+  .prose pre { background: var(--bg-hover); padding: 1rem; border-radius: 8px; overflow-x: auto; margin-bottom: 1rem; }
+  .prose blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--text-muted); margin-bottom: 1rem; }
+  .prose a { color: var(--accent); }
+</style>

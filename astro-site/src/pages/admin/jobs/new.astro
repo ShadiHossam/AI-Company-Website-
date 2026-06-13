@@ -1,0 +1,191 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+const { count: unreadNotifs } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false);
+---
+
+<AdminLayout title="New Job" user={user} unreadCount={unreadNotifs ?? 0}>
+
+  <div class="flex items-center gap-3 mb-4">
+    <a href="/admin/jobs" class="btn btn-ghost btn-sm">← Back</a>
+    <h1 style="font-size:1.25rem;font-weight:800;">New Job Posting</h1>
+  </div>
+
+  <div id="save-error" style="display:none;" class="card" style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:.875rem 1rem;margin-bottom:1rem;font-size:.875rem;"></div>
+
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;align-items:start;">
+
+    <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+      <!-- Basic Info -->
+      <div class="card">
+        <h2 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">Basic Information</h2>
+        <div class="form-group">
+          <label class="form-label" for="f-title">Job Title <span style="color:#dc2626;">*</span></label>
+          <input class="form-input" id="f-title" type="text" placeholder="e.g. Senior AI Engineer" required oninput="updateSlug(this.value)" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-slug">URL Slug</label>
+          <input class="form-input" id="f-slug" type="text" placeholder="auto-generated" readonly style="color:var(--text-dim);background:var(--bg-subtle);" />
+          <p class="text-xs text-muted" style="margin-top:.25rem;">aegisai.ae/jobs/<span id="slug-preview">—</span></p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group">
+            <label class="form-label" for="f-dept">Department</label>
+            <input class="form-input" id="f-dept" type="text" placeholder="e.g. Engineering" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f-type">Job Type</label>
+            <select class="form-select" id="f-type" style="width:100%;">
+              <option>Full-time</option>
+              <option>Part-time</option>
+              <option>Contract</option>
+              <option>Freelance</option>
+              <option>Internship</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group">
+            <label class="form-label" for="f-location">Location</label>
+            <input class="form-input" id="f-location" type="text" value="Dubai, UAE" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f-salary">Salary Range</label>
+            <input class="form-input" id="f-salary" type="text" placeholder="e.g. AED 15,000 – 22,000/mo" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="card">
+        <h2 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">Role Description <span style="color:#dc2626;">*</span></h2>
+        <textarea class="form-input" id="f-description" rows="8" placeholder="Describe the role, what the person will do day-to-day, the team they'll join, etc." style="resize:vertical;" required></textarea>
+      </div>
+
+      <!-- Requirements -->
+      <div class="card">
+        <h2 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">Requirements</h2>
+        <div id="req-list" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.75rem;"></div>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="addListItem('req-list', 'req')">+ Add Requirement</button>
+      </div>
+
+      <!-- Nice to Have -->
+      <div class="card">
+        <h2 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">Nice to Have</h2>
+        <div id="nth-list" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.75rem;"></div>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="addListItem('nth-list', 'nth')">+ Add Item</button>
+      </div>
+
+      <!-- Benefits -->
+      <div class="card">
+        <h2 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">Benefits</h2>
+        <div id="ben-list" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.75rem;"></div>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="addListItem('ben-list', 'ben')">+ Add Benefit</button>
+      </div>
+
+    </div>
+
+    <!-- Sidebar -->
+    <div style="display:flex;flex-direction:column;gap:1.25rem;">
+      <div class="card">
+        <h2 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">Publish</h2>
+        <label style="display:flex;align-items:center;gap:.75rem;cursor:pointer;margin-bottom:1rem;">
+          <input type="checkbox" id="f-published" style="width:18px;height:18px;cursor:pointer;" />
+          <span style="font-size:.9375rem;font-weight:500;">Publish immediately</span>
+        </label>
+        <div class="form-group">
+          <label class="form-label" for="f-order">Sort Order</label>
+          <input class="form-input" id="f-order" type="number" value="0" min="0" style="width:100%;" />
+          <p class="text-xs text-muted" style="margin-top:.25rem;">Lower number = shown first</p>
+        </div>
+        <button type="button" onclick="saveJob()" id="save-btn" class="btn btn-primary" style="width:100%;justify-content:center;">Save Job</button>
+      </div>
+    </div>
+
+  </div>
+
+</AdminLayout>
+
+<script>
+  let reqCount = 0, nthCount = 0, benCount = 0;
+
+  function slugify(text: string): string {
+    return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+
+  function updateSlug(value: string) {
+    const slug = slugify(value);
+    (document.getElementById('f-slug') as HTMLInputElement).value = slug;
+    (document.getElementById('slug-preview') as HTMLElement).textContent = slug || '—';
+  }
+
+  function addListItem(containerId: string, prefix: string) {
+    const container = document.getElementById(containerId)!;
+    const idx = prefix === 'req' ? ++reqCount : prefix === 'nth' ? ++nthCount : ++benCount;
+    const id  = `${prefix}-${idx}`;
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;gap:.5rem;align-items:center;';
+    div.innerHTML = `
+      <input class="form-input" id="${id}" type="text" placeholder="Enter item…" style="flex:1;" />
+      <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:1.25rem;line-height:1;padding:0 .25rem;">×</button>
+    `;
+    container.appendChild(div);
+    (div.querySelector(`#${id}`) as HTMLInputElement)?.focus();
+  }
+
+  function getListValues(containerId: string): string[] {
+    return Array.from(document.querySelectorAll(`#${containerId} input`))
+      .map(el => (el as HTMLInputElement).value.trim())
+      .filter(Boolean);
+  }
+
+  async function saveJob() {
+    const title       = (document.getElementById('f-title')       as HTMLInputElement).value.trim();
+    const description = (document.getElementById('f-description') as HTMLTextAreaElement).value.trim();
+    if (!title || !description) {
+      showError('Title and description are required.');
+      return;
+    }
+
+    const btn = document.getElementById('save-btn') as HTMLButtonElement;
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    const payload = {
+      title,
+      department:   (document.getElementById('f-dept')      as HTMLInputElement).value.trim() || null,
+      location:     (document.getElementById('f-location')  as HTMLInputElement).value.trim() || 'Dubai, UAE',
+      job_type:     (document.getElementById('f-type')      as HTMLSelectElement).value,
+      salary_range: (document.getElementById('f-salary')    as HTMLInputElement).value.trim()  || null,
+      description,
+      requirements: getListValues('req-list'),
+      nice_to_have: getListValues('nth-list'),
+      benefits:     getListValues('ben-list'),
+      published:    (document.getElementById('f-published') as HTMLInputElement).checked,
+      sort_order:   parseInt((document.getElementById('f-order') as HTMLInputElement).value, 10) || 0,
+    };
+
+    const res  = await fetch('/api/admin/jobs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (!res.ok) {
+      btn.disabled = false;
+      btn.textContent = 'Save Job';
+      showError(data.error ?? 'Save failed');
+      return;
+    }
+    window.location.href = `/admin/jobs/${data.job.id}`;
+  }
+
+  function showError(msg: string) {
+    const el = document.getElementById('save-error')!;
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  Object.assign(window, { updateSlug, addListItem, getListValues, saveJob, showError });
+</script>

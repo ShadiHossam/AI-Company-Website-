@@ -1,0 +1,180 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+
+const { data: notifications } = await supabase
+  .from('notifications')
+  .select('*')
+  .order('created_at', { ascending: false })
+  .limit(50);
+
+const { count: unreadCount } = await supabase
+  .from('notifications')
+  .select('*', { count: 'exact', head: true })
+  .eq('read', false);
+
+function timeAgo(dateStr: string): string {
+  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+}
+
+const typeBadgeClass: Record<string, string> = {
+  new_lead: 'badge badge-success',
+  duplicate_lead: 'badge badge-warning',
+  system: 'badge badge-neutral',
+};
+---
+
+<AdminLayout title="Notifications" user={user} unreadCount={unreadCount ?? 0}>
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-xl font-bold">Notifications</h1>
+      {unreadCount! > 0 && (
+        <p class="text-muted text-sm">{unreadCount} unread</p>
+      )}
+    </div>
+    {unreadCount! > 0 && (
+      <button id="mark-all-read" class="btn btn-secondary btn-sm">
+        Mark All Read
+      </button>
+    )}
+  </div>
+
+  <div class="card" id="notifications-list">
+    {!notifications || notifications.length === 0 ? (
+      <div style="padding:3rem;text-align:center;" class="text-muted">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;margin:0 auto 1rem;opacity:0.3;display:block;"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        No notifications yet
+      </div>
+    ) : (
+      <ul style="list-style:none;margin:0;padding:0;" id="notif-items">
+        {notifications.map((n) => (
+          <li
+            class={`notif-item${!n.read ? ' notif-unread' : ''}`}
+            data-id={n.id}
+            data-related={n.related_id ?? ''}
+            style={`display:flex;align-items:flex-start;gap:1rem;padding:1rem 1.25rem;border-bottom:1px solid var(--border);cursor:${n.related_id ? 'pointer' : 'default'};transition:background 0.15s;`}
+          >
+            <div style="flex:1;min-width:0;">
+              <div class="flex items-center gap-2 mb-1">
+                <span class={typeBadgeClass[n.type] ?? 'badge badge-neutral'}>
+                  {n.type.replace('_', ' ')}
+                </span>
+                {!n.read && (
+                  <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;flex-shrink:0;" title="Unread"></span>
+                )}
+                <span class="text-xs text-muted" style="margin-left:auto;">{timeAgo(n.created_at)}</span>
+              </div>
+              <p style="margin:0;font-size:0.875rem;" class={!n.read ? '' : 'text-muted'}>{n.message}</p>
+            </div>
+            {!n.read && (
+              <button
+                class="btn btn-ghost btn-sm mark-read-btn"
+                data-id={n.id}
+                style="flex-shrink:0;font-size:0.75rem;"
+                title="Mark as read"
+              >
+                ✓
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+
+  <div id="toast" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;background:#1e2a40;border:1px solid var(--border);color:var(--text-primary);padding:0.75rem 1.25rem;border-radius:8px;font-size:0.875rem;z-index:9999;"></div>
+</AdminLayout>
+
+<style>
+  .notif-unread {
+    background: rgba(0, 227, 253, 0.04);
+  }
+  .notif-item:hover {
+    background: var(--bg-hover) !important;
+  }
+  .badge-success { background: rgba(0,227,253,0.15); color: #00e3fd; border: 1px solid rgba(0,227,253,0.3); font-size:0.7rem; padding:2px 8px; border-radius:4px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; }
+  .badge-warning { background: rgba(251,146,60,0.15); color: #fb923c; border: 1px solid rgba(251,146,60,0.3); font-size:0.7rem; padding:2px 8px; border-radius:4px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; }
+  .badge-neutral { background: rgba(148,163,184,0.15); color: #94a3b8; border: 1px solid rgba(148,163,184,0.3); font-size:0.7rem; padding:2px 8px; border-radius:4px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; }
+</style>
+
+<script>
+  function showToast(msg: string) {
+    const t = document.getElementById('toast') as HTMLElement;
+    t.textContent = msg;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3000);
+  }
+
+  async function markRead(ids: string[]) {
+    const res = await fetch('/api/admin/notifications', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids }),
+    });
+    if (!res.ok) throw new Error('Failed');
+  }
+
+  async function markAllRead() {
+    const res = await fetch('/api/admin/notifications', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ all: true }),
+    });
+    if (!res.ok) throw new Error('Failed');
+  }
+
+  // Mark all read button
+  document.getElementById('mark-all-read')?.addEventListener('click', async () => {
+    try {
+      await markAllRead();
+      // Update UI
+      document.querySelectorAll('.notif-unread').forEach(el => el.classList.remove('notif-unread'));
+      document.querySelectorAll('.mark-read-btn').forEach(el => el.remove());
+      document.querySelectorAll('[style*="border-radius:50%"]').forEach(el => el.remove());
+      document.getElementById('mark-all-read')?.remove();
+      showToast('All notifications marked as read');
+    } catch {
+      showToast('Error marking notifications as read');
+    }
+  });
+
+  // Individual mark-read buttons
+  document.querySelectorAll('.mark-read-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = (btn as HTMLElement).dataset.id!;
+      try {
+        await markRead([id]);
+        const item = document.querySelector(`[data-id="${id}"]`);
+        if (item) {
+          item.classList.remove('notif-unread');
+          item.querySelector('.mark-read-btn')?.remove();
+          item.querySelector('[style*="border-radius:50%"]')?.remove();
+          const msgEl = item.querySelector('p');
+          if (msgEl) msgEl.classList.add('text-muted');
+        }
+        showToast('Marked as read');
+      } catch {
+        showToast('Error');
+      }
+    });
+  });
+
+  // Click notification to navigate to related entity
+  document.querySelectorAll('.notif-item[data-related]').forEach(item => {
+    const related = (item as HTMLElement).dataset.related;
+    if (related) {
+      item.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement).closest('.mark-read-btn')) return;
+        window.location.href = `/admin/leads/${related}`;
+      });
+    }
+  });
+</script>

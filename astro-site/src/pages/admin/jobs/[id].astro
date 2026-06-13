@@ -1,0 +1,248 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+const { id } = Astro.params;
+
+const [
+  { data: job },
+  { data: applications, count: appCount },
+  { count: unreadNotifs },
+] = await Promise.all([
+  supabase.from('jobs').select('*').eq('id', id!).single(),
+  supabase.from('job_applications').select('id,full_name,email,status,created_at,cv_url').eq('job_id', id!).order('created_at', { ascending: false }),
+  supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false),
+]);
+
+if (!job) return Astro.redirect('/admin/jobs');
+
+const requirements: string[] = Array.isArray(job.requirements) ? job.requirements : [];
+const niceToHave: string[]   = Array.isArray(job.nice_to_have) ? job.nice_to_have : [];
+const benefits: string[]     = Array.isArray(job.benefits)     ? job.benefits     : [];
+
+const statusLabels: Record<string, string> = {
+  new: 'New', reviewing: 'Reviewing', shortlisted: 'Shortlisted', rejected: 'Rejected', hired: 'Hired',
+};
+const statusBadge: Record<string, string> = {
+  new: 'badge-new', reviewing: 'badge-contacted', shortlisted: 'badge-qualified', rejected: 'badge-lost', hired: 'badge-won',
+};
+---
+
+<AdminLayout title={`Edit: ${job.title}`} user={user} unreadCount={unreadNotifs ?? 0}>
+
+  <div class="flex items-center gap-3 mb-4">
+    <a href="/admin/jobs" class="btn btn-ghost btn-sm">← Back</a>
+    <h1 style="font-size:1.25rem;font-weight:800;">{job.title}</h1>
+    <span class={`badge ${job.published ? 'badge-won' : 'badge-lost'}`}>{job.published ? 'Published' : 'Draft'}</span>
+    <div style="margin-left:auto;display:flex;gap:.75rem;">
+      <a href={`/jobs/${job.slug}`} target="_blank" class="btn btn-secondary btn-sm">Preview ↗</a>
+    </div>
+  </div>
+
+  <div id="save-error" style="display:none;" class="card" style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:.875rem 1rem;margin-bottom:1rem;font-size:.875rem;"></div>
+  <div id="save-success" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;padding:.875rem 1rem;border-radius:10px;margin-bottom:1rem;font-size:.875rem;">Changes saved.</div>
+
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;align-items:start;">
+
+    <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+      <div class="card">
+        <h2 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">Basic Information</h2>
+        <div class="form-group">
+          <label class="form-label" for="f-title">Job Title</label>
+          <input class="form-input" id="f-title" type="text" value={job.title} />
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group">
+            <label class="form-label" for="f-dept">Department</label>
+            <input class="form-input" id="f-dept" type="text" value={job.department ?? ''} />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f-type">Job Type</label>
+            <select class="form-select" id="f-type" style="width:100%;">
+              {['Full-time','Part-time','Contract','Freelance','Internship'].map(t => (
+                <option selected={job.job_type === t}>{t}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group">
+            <label class="form-label" for="f-location">Location</label>
+            <input class="form-input" id="f-location" type="text" value={job.location} />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f-salary">Salary Range</label>
+            <input class="form-input" id="f-salary" type="text" value={job.salary_range ?? ''} />
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">Role Description</h2>
+        <textarea class="form-input" id="f-description" rows="8" style="resize:vertical;">{job.description}</textarea>
+      </div>
+
+      <div class="card">
+        <h2 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">Requirements</h2>
+        <div id="req-list" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.75rem;">
+          {requirements.map((r, i) => (
+            <div style="display:flex;gap:.5rem;align-items:center;">
+              <input class="form-input" id={`req-${i}`} type="text" value={r} style="flex:1;" />
+              <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:1.25rem;line-height:1;padding:0 .25rem;">×</button>
+            </div>
+          ))}
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="addListItem('req-list','req')">+ Add Requirement</button>
+      </div>
+
+      <div class="card">
+        <h2 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">Nice to Have</h2>
+        <div id="nth-list" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.75rem;">
+          {niceToHave.map((r, i) => (
+            <div style="display:flex;gap:.5rem;align-items:center;">
+              <input class="form-input" id={`nth-${i}`} type="text" value={r} style="flex:1;" />
+              <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:1.25rem;line-height:1;padding:0 .25rem;">×</button>
+            </div>
+          ))}
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="addListItem('nth-list','nth')">+ Add Item</button>
+      </div>
+
+      <div class="card">
+        <h2 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">Benefits</h2>
+        <div id="ben-list" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.75rem;">
+          {benefits.map((b, i) => (
+            <div style="display:flex;gap:.5rem;align-items:center;">
+              <input class="form-input" id={`ben-${i}`} type="text" value={b} style="flex:1;" />
+              <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:1.25rem;line-height:1;padding:0 .25rem;">×</button>
+            </div>
+          ))}
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="addListItem('ben-list','ben')">+ Add Benefit</button>
+      </div>
+
+    </div>
+
+    <!-- Sidebar -->
+    <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+      <div class="card">
+        <h2 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">Publish</h2>
+        <label style="display:flex;align-items:center;gap:.75rem;cursor:pointer;margin-bottom:1rem;">
+          <input type="checkbox" id="f-published" style="width:18px;height:18px;cursor:pointer;" checked={job.published} />
+          <span style="font-size:.9375rem;font-weight:500;">Published</span>
+        </label>
+        <div class="form-group">
+          <label class="form-label" for="f-order">Sort Order</label>
+          <input class="form-input" id="f-order" type="number" value={job.sort_order} min="0" style="width:100%;" />
+        </div>
+        <button type="button" onclick="saveJob()" id="save-btn" class="btn btn-primary" style="width:100%;justify-content:center;">Save Changes</button>
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);">
+          <button type="button" onclick="deleteJob()" class="btn btn-ghost btn-sm" style="color:var(--error);width:100%;justify-content:center;">Delete Job Posting</button>
+        </div>
+      </div>
+
+      <!-- Applications panel -->
+      <div class="card">
+        <div class="flex items-center justify-between mb-3">
+          <h2 style="font-size:1rem;font-weight:700;">Applications ({appCount ?? 0})</h2>
+          <a href={`/admin/applications?job_id=${job.id}`} class="btn btn-ghost btn-sm">View All</a>
+        </div>
+        {(applications ?? []).length === 0 ? (
+          <p class="text-sm text-muted">No applications yet.</p>
+        ) : (
+          <div style="display:flex;flex-direction:column;gap:.625rem;">
+            {(applications ?? []).slice(0, 5).map(app => (
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.625rem 0;border-bottom:1px solid var(--border);">
+                <div style="min-width:0;">
+                  <div style="font-weight:600;font-size:.875rem;truncate;">{app.full_name}</div>
+                  <div class="text-xs text-muted">{new Date(app.created_at).toLocaleDateString('en-GB')}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.5rem;flex-shrink:0;">
+                  <span class={`badge ${statusBadge[app.status] ?? 'badge-new'}`} style="font-size:.7rem;">{statusLabels[app.status]}</span>
+                  <a href={app.cv_url} target="_blank" class="btn btn-ghost btn-sm" title="Download CV" style="padding:2px 6px;">CV</a>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+    </div>
+  </div>
+
+</AdminLayout>
+
+<script define:vars={{ jobId: job.id }}>
+  let reqCount = 0, nthCount = 0, benCount = 0;
+
+  function addListItem(containerId, prefix) {
+    const container = document.getElementById(containerId);
+    const idx = prefix === 'req' ? ++reqCount : prefix === 'nth' ? ++nthCount : ++benCount;
+    const id  = `${prefix}-new-${idx}`;
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;gap:.5rem;align-items:center;';
+    div.innerHTML = `
+      <input class="form-input" id="${id}" type="text" placeholder="Enter item…" style="flex:1;" />
+      <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:1.25rem;line-height:1;padding:0 .25rem;">×</button>
+    `;
+    container.appendChild(div);
+    div.querySelector(`#${id}`)?.focus();
+  }
+
+  function getListValues(containerId) {
+    return Array.from(document.querySelectorAll(`#${containerId} input`))
+      .map(el => el.value.trim())
+      .filter(Boolean);
+  }
+
+  async function saveJob() {
+    const btn = document.getElementById('save-btn');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+    document.getElementById('save-error').style.display   = 'none';
+    document.getElementById('save-success').style.display = 'none';
+
+    const payload = {
+      title:        document.getElementById('f-title').value.trim(),
+      department:   document.getElementById('f-dept').value.trim()     || null,
+      location:     document.getElementById('f-location').value.trim() || 'Dubai, UAE',
+      job_type:     document.getElementById('f-type').value,
+      salary_range: document.getElementById('f-salary').value.trim()   || null,
+      description:  document.getElementById('f-description').value.trim(),
+      requirements: getListValues('req-list'),
+      nice_to_have: getListValues('nth-list'),
+      benefits:     getListValues('ben-list'),
+      published:    document.getElementById('f-published').checked,
+      sort_order:   parseInt(document.getElementById('f-order').value, 10) || 0,
+    };
+
+    const res  = await fetch(`/api/admin/jobs/${jobId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const data = await res.json();
+
+    btn.disabled = false;
+    btn.textContent = 'Save Changes';
+
+    if (!res.ok) {
+      const errEl = document.getElementById('save-error');
+      errEl.textContent = data.error ?? 'Save failed';
+      errEl.style.display = 'block';
+      return;
+    }
+    document.getElementById('save-success').style.display = 'block';
+    setTimeout(() => { document.getElementById('save-success').style.display = 'none'; }, 3000);
+  }
+
+  async function deleteJob() {
+    if (!confirm('Delete this job and all its applications?')) return;
+    const res = await fetch(`/api/admin/jobs/${jobId}`, { method: 'DELETE' });
+    if (res.ok) window.location.href = '/admin/jobs';
+    else alert('Delete failed');
+  }
+
+  Object.assign(window, { addListItem, getListValues, saveJob, deleteJob });
+</script>

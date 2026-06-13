@@ -1,31 +1,77 @@
 ---
 import BaseLayout from './BaseLayout.astro';
 
+interface KeyPoint {
+  heading: string;
+  body: string;
+}
+
+interface RelatedPost {
+  title: string;
+  slug: string;
+  category: string;
+}
+
 interface Props {
   title: string;
   description: string;
   pubDate: Date;
+  updatedDate?: Date;
   category: string;
   slug: string;
   ogImage?: string;
+  coverImage?: string;
+  authorName?: string;
+  keyPoints?: KeyPoint[];
+  relatedPosts?: RelatedPost[];
 }
 
-const { title, description, pubDate, category, slug, ogImage } = Astro.props;
+const {
+  title,
+  description,
+  pubDate,
+  updatedDate,
+  category,
+  slug,
+  ogImage,
+  coverImage,
+  authorName = 'Aegis AI',
+  keyPoints = [],
+  relatedPosts = [],
+} = Astro.props;
 
-const dateStr = pubDate.toLocaleDateString('en-AE', { year: 'numeric', month: 'long', day: 'numeric' });
+const displayDate = updatedDate ?? pubDate;
+const dateLabel = updatedDate ? 'Updated' : 'Published';
+const dateStr = displayDate.toLocaleDateString('en-AE', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+});
+
+const initials = authorName
+  .split(' ')
+  .map((w: string) => w[0] ?? '')
+  .join('')
+  .slice(0, 2)
+  .toUpperCase();
 
 const ldJson = {
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "headline": title,
-  "description": description,
-  "datePublished": pubDate.toISOString(),
-  "publisher": {
-    "@type": "Organization",
-    "name": "Aegis AI",
-    "url": "https://aegisai.ae"
-  }
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: title,
+  description,
+  datePublished: pubDate.toISOString(),
+  dateModified: (updatedDate ?? pubDate).toISOString(),
+  author: { '@type': 'Person', name: authorName },
+  publisher: { '@type': 'Organization', name: 'Aegis AI', url: 'https://aegisai.ae' },
+  ...(coverImage ? { image: `https://aegisai.ae${coverImage}` } : {}),
 };
+
+const cardGradients = [
+  'linear-gradient(135deg,#e7eeff,#f0f8ff)',
+  'linear-gradient(135deg,#eefff6,#f0f8ff)',
+  'linear-gradient(135deg,#fff0ee,#f0f8ff)',
+];
 ---
 
 <BaseLayout
@@ -36,49 +82,508 @@ const ldJson = {
   ogImage={ogImage ?? '/assets/og-blog.jpg'}
   ldJson={ldJson}
 >
-  <article>
-    <header class="article-hero">
-      <div class="article-wrap">
-        <nav class="page-breadcrumb mb-6" aria-label="Breadcrumb">
+
+<div id="progress-bar" aria-hidden="true"></div>
+
+<header class="article-hero">
+  <div class="ah-wrap">
+    <div class={coverImage ? 'hero-grid' : 'hero-grid hero-grid--solo'}>
+
+      <div class="hero-text">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
           <a href="/">Home</a>
-          <span class="sep">/</span>
+          <span class="sep" aria-hidden="true">/</span>
           <a href="/blog">Blog</a>
-          <span class="sep">/</span>
-          <span class="current">{title}</span>
+          <span class="sep" aria-hidden="true">/</span>
+          <span class="cur">{title}</span>
         </nav>
-        <div style="margin-bottom:1rem;">
-          <span class="tag tag-teal">{category}</span>
+        <div class="hero-meta">
+          <span class="article-tag">{category}</span>
+          <span class="meta-dot" aria-hidden="true"></span>
+          <span class="read-time">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span id="read-time-text">5 min read</span>
+          </span>
         </div>
-        <h1 style="font-size:clamp(1.75rem,4vw,2.75rem); font-weight:800; color:#00253b; letter-spacing:-0.03em; margin-bottom:1rem;">{title}</h1>
-        <p style="color:#42474e; font-size:1.0625rem; max-width:640px;">{description}</p>
-        <p style="font-size:.875rem; color:#72787e; margin-top:1rem;">{dateStr}</p>
+        <h1 class="hero-title">{title}</h1>
+        <p class="hero-desc">{description}</p>
+        <div class="author-row">
+          <div class="author-avatar" aria-hidden="true">{initials}</div>
+          <div class="author-info">
+            <span class="author-name">{authorName}</span>
+            <span class="author-date">{dateLabel} {dateStr}</span>
+          </div>
+          <div class="share-btns">
+            <a id="share-li" href="#" target="_blank" rel="noopener noreferrer" class="share-btn" aria-label="Share on LinkedIn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            </a>
+            <a id="share-wa" href="#" target="_blank" rel="noopener noreferrer" class="share-btn" aria-label="Share on WhatsApp">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.554 4.122 1.523 5.856L.072 23.928l6.286-1.428A11.956 11.956 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.514-5.163-1.41l-.371-.22-3.73.847.862-3.643-.241-.382A9.956 9.956 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+            </a>
+          </div>
+        </div>
       </div>
-    </header>
-    <div class="article-wrap" style="padding-top:3rem; padding-bottom:4rem;">
-      <div class="article-body prose">
-        <slot />
-      </div>
+
+      {coverImage && (
+        <div class="hero-cover">
+          <img src={coverImage} alt="" role="presentation" width="840" height="630" loading="eager" />
+        </div>
+      )}
+
     </div>
-  </article>
+  </div>
+</header>
+
+<div class="page-body">
+  <div class="ah-wrap">
+    <div class="body-grid">
+
+      <main id="article-main">
+
+        <!-- Mobile ToC accordion (hidden on desktop) -->
+        <div class="toc-accordion">
+          <button class="toc-acc-btn" id="toc-acc-btn" aria-expanded="false" aria-controls="toc-mobile">
+            <span class="toc-acc-label">In this article</span>
+            <svg class="toc-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <nav class="toc-acc-body" id="toc-mobile" aria-hidden="true"></nav>
+        </div>
+
+        <!-- Key Takeaways -->
+        {keyPoints.length > 0 && (
+          <div class="key-points" aria-labelledby="kp-heading">
+            <div class="kp-label" id="kp-heading">Key Takeaways</div>
+            <div class="kp-grid">
+              {keyPoints.map((kp, i) => (
+                <div class="kp-item" data-i={i}>
+                  <div class="kp-row">
+                    <div class="kp-check" aria-hidden="true">
+                      <svg viewBox="0 0 12 12" fill="none" stroke="#00e3fd" stroke-width="2.5" width="10" height="10">
+                        <polyline points="2,6 5,9 10,3"/>
+                      </svg>
+                    </div>
+                    <p class="kp-title">{kp.heading}</p>
+                    <button class="kp-toggle" aria-expanded="false" aria-label={`Expand: ${kp.heading}`}>+</button>
+                  </div>
+                  <p class="kp-body">{kp.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <!-- Article body -->
+        <div class="prose" id="article-body">
+          <slot />
+        </div>
+
+        <!-- Mobile share row (shown only on mobile) -->
+        <div class="mobile-share">
+          <span class="ms-label">Share this article</span>
+          <a id="ms-li" href="#" target="_blank" rel="noopener noreferrer" class="ms-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            LinkedIn
+          </a>
+          <a id="ms-wa" href="#" target="_blank" rel="noopener noreferrer" class="ms-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.554 4.122 1.523 5.856L.072 23.928l6.286-1.428A11.956 11.956 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.514-5.163-1.41l-.371-.22-3.73.847.862-3.643-.241-.382A9.956 9.956 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+            WhatsApp
+          </a>
+        </div>
+
+        <!-- Bottom CTA band -->
+        <div class="cta-band">
+          <h3>Ready to find your highest-ROI AI opportunity?</h3>
+          <p>We map your workflows, identify quick wins, and build a custom AI roadmap — in one free strategy call.</p>
+          <a href="/contact" class="cta-primary">Book a Free Strategy Call →</a>
+        </div>
+
+        <!-- Related posts -->
+        {relatedPosts.length > 0 && (
+          <div class="related-posts">
+            <div class="related-label">Related Articles</div>
+            <div class="related-grid">
+              {relatedPosts.map((post, idx) => (
+                <a href={`/blog/${post.slug}`} class="related-card">
+                  <div class="rcard-img" style={`background:${cardGradients[idx % 3]}`}></div>
+                  <div class="rcard-body">
+                    <span class="rcard-tag">{post.category}</span>
+                    <div class="rcard-title">{post.title}</div>
+                    <div class="rcard-read">Read article →</div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </main>
+
+      <!-- Desktop sidebar -->
+      <aside class="sidebar" aria-label="Article sidebar">
+        <div class="sidebar-card">
+          <p class="toc-label">In this article</p>
+          <nav id="toc-sidebar" aria-label="Table of contents"></nav>
+        </div>
+        <div class="newsletter-card">
+          <div class="nl-icon" aria-hidden="true">✉️</div>
+          <p class="nl-title">AI Insights — Monthly</p>
+          <p class="nl-sub">Practical AI guides and UAE market data. One email per month, zero fluff.</p>
+          <form id="nl-form" novalidate>
+            <input class="nl-input" type="email" name="email" placeholder="your@email.com" autocomplete="email" required aria-label="Email address" />
+            <button class="nl-btn" type="submit">Subscribe Free</button>
+          </form>
+          <p class="nl-note">No spam · Unsubscribe any time</p>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</div>
+
 </BaseLayout>
 
 <style>
-  .article-hero {
-    padding: 140px 0 64px;
-    background: linear-gradient(135deg, rgba(0,37,59,0.04) 0%, rgba(0,227,253,0.03) 100%);
-    border-bottom: 1px solid rgba(0,37,59,0.08);
-  }
-  .article-wrap {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 0 2rem;
-  }
-  .tag { display:inline-flex; align-items:center; padding:3px 12px; border-radius:100px; font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; }
-  .tag-teal { background:rgba(0,104,117,0.10); color:#004f58; border:1px solid rgba(0,104,117,0.20); }
-  .article-body h2 { margin-top: 2rem; margin-bottom: .75rem; }
-  .article-body h3 { margin-top: 1.5rem; margin-bottom: .5rem; }
-  .article-body p { color: #42474e; line-height: 1.8; margin-bottom: 1.25rem; }
-  .article-body ul, .article-body ol { color: #42474e; line-height: 1.8; margin-bottom: 1.25rem; padding-left: 1.5rem; }
-  .article-body li { margin-bottom: .5rem; }
-  .article-body a { color: #006875; text-decoration: underline; }
+/* ─── Progress bar ─── */
+#progress-bar {
+  position: fixed; top: 0; left: 0; height: 3px; width: 0;
+  background: linear-gradient(to right, #00e3fd, #006875);
+  z-index: 9999; transition: width 0.1s linear;
+  box-shadow: 0 0 8px rgba(0,227,253,0.5);
+}
+
+/* ─── Shared container ─── */
+.ah-wrap { max-width: 1120px; margin: 0 auto; padding: 0 2.5rem; }
+
+/* ─── Hero ─── */
+.article-hero {
+  background: linear-gradient(160deg, #eef1ff 0%, #f5f7ff 60%, #f9fbff 100%);
+  border-bottom: 1px solid rgba(0,37,59,0.07);
+  padding: 80px 0 60px;
+  position: relative; overflow: hidden;
+}
+.article-hero::before {
+  content: ''; position: absolute; top: -60%; right: -5%; width: 500px; height: 500px;
+  border-radius: 50%; background: radial-gradient(circle, rgba(0,227,253,0.09) 0%, transparent 65%);
+  pointer-events: none;
+}
+.hero-grid { display: grid; grid-template-columns: 1fr 420px; gap: 3.5rem; align-items: center; }
+.hero-grid--solo { grid-template-columns: minmax(0, 700px); }
+
+/* Breadcrumb */
+.breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.breadcrumb a { color: #72787e; text-decoration: none; }
+.breadcrumb a:hover { color: #006875; }
+.breadcrumb .sep { color: #d0d5dd; }
+.breadcrumb .cur { color: #111c2d; font-weight: 600; }
+
+/* Hero meta */
+.hero-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 1.125rem; }
+.article-tag { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 100px; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; background: rgba(0,104,117,0.10); color: #004f58; border: 1px solid rgba(0,104,117,0.18); }
+.meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #d0d5dd; flex-shrink: 0; }
+.read-time { font-size: 0.8rem; color: #72787e; display: flex; align-items: center; gap: 5px; }
+
+.hero-title { font-size: clamp(1.875rem, 3.5vw, 2.75rem); font-weight: 800; color: #00253b; letter-spacing: -0.035em; line-height: 1.13; margin-bottom: 1rem; }
+.hero-desc { color: #42474e; font-size: 1.0625rem; line-height: 1.75; max-width: 600px; margin-bottom: 1.75rem; }
+
+/* Author row */
+.author-row { display: flex; align-items: center; gap: 11px; }
+.author-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #00e3fd, #006875); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; color: #fff; box-shadow: 0 2px 8px rgba(0,104,117,0.3); }
+.author-info { flex: 1; }
+.author-name { font-size: 0.9rem; font-weight: 700; color: #00253b; display: block; }
+.author-date { font-size: 0.75rem; color: #72787e; }
+.share-btns { display: flex; gap: 7px; margin-left: auto; }
+.share-btn { width: 34px; height: 34px; border-radius: 9px; border: 1px solid rgba(0,37,59,0.12); background: #fff; display: flex; align-items: center; justify-content: center; color: #006875; text-decoration: none; transition: border-color 0.15s, background 0.15s; }
+.share-btn:hover { background: rgba(0,104,117,0.06); border-color: rgba(0,104,117,0.25); }
+
+/* Feature image */
+.hero-cover { width: 100%; aspect-ratio: 4/3; border-radius: 20px; overflow: hidden; box-shadow: 0 16px 48px rgba(0,37,59,0.18); }
+.hero-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ─── Page body ─── */
+.page-body { padding: 3rem 0 5rem; }
+.body-grid { display: grid; grid-template-columns: 1fr 288px; gap: 3.5rem; align-items: flex-start; }
+
+/* ─── Mobile ToC accordion ─── */
+.toc-accordion { display: none; margin-bottom: 1.5rem; }
+.toc-acc-btn {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.25rem; background: #fff; border: 1px solid rgba(0,37,59,0.08);
+  border-radius: 12px; cursor: pointer; font-family: inherit;
+}
+.toc-acc-label { font-size: 0.875rem; font-weight: 700; color: #00253b; }
+.toc-chevron { color: #72787e; transition: transform 0.2s; flex-shrink: 0; }
+.toc-acc-btn[aria-expanded="true"] .toc-chevron { transform: rotate(180deg); }
+.toc-acc-body { display: none; background: #fff; border: 1px solid rgba(0,37,59,0.08); border-top: none; border-radius: 0 0 12px 12px; padding: 0.5rem 0.75rem 0.75rem; }
+.toc-acc-body.open { display: block; }
+
+/* ─── ToC links (shared between sidebar + mobile) ─── */
+.toc-link { display: flex; align-items: flex-start; gap: 9px; padding: 6px 8px; border-radius: 8px; text-decoration: none; transition: background 0.15s; margin-bottom: 2px; }
+.toc-link:hover { background: rgba(0,104,117,0.06); }
+.toc-link.active { background: rgba(0,227,253,0.10); }
+.toc-pip { width: 6px; height: 6px; border-radius: 50%; background: #d0d5dd; flex-shrink: 0; margin-top: 5px; transition: background 0.2s, transform 0.2s; }
+.toc-link.active .toc-pip { background: #00e3fd; transform: scale(1.3); }
+.toc-text { font-size: 0.8125rem; color: #72787e; line-height: 1.45; }
+.toc-link.active .toc-text { color: #00253b; font-weight: 600; }
+
+/* ─── Key Takeaways ─── */
+.key-points {
+  background: #fff; border: 1px solid rgba(0,37,59,0.08); border-radius: 20px;
+  padding: 1.75rem 2rem; margin-bottom: 2.75rem;
+  box-shadow: 0 4px 24px rgba(0,59,92,0.06); position: relative; overflow: hidden;
+}
+.key-points::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: linear-gradient(to bottom, #00e3fd, #006875); border-radius: 20px 0 0 20px;
+}
+.kp-label {
+  font-size: 0.6875rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+  color: #006875; margin-bottom: 1.375rem; display: flex; align-items: center; gap: 10px;
+}
+.kp-label::before { content: ''; width: 20px; height: 2px; background: #00e3fd; border-radius: 2px; }
+.kp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+.kp-item { padding: 1rem 1rem 1rem 0; }
+.kp-item:nth-child(even) { padding-left: 1.5rem; border-left: 1px dashed rgba(0,37,59,0.08); }
+.kp-item:nth-child(1), .kp-item:nth-child(2) { border-bottom: 1px dashed rgba(0,37,59,0.08); }
+.kp-row { display: flex; align-items: flex-start; gap: 10px; }
+.kp-check { width: 22px; height: 22px; border-radius: 50%; background: #00253b; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+.kp-title { font-size: 0.9rem; font-weight: 700; color: #00253b; line-height: 1.45; flex: 1; margin: 0; }
+.kp-toggle {
+  width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid rgba(0,104,117,0.22);
+  background: rgba(0,227,253,0.06); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 1rem; line-height: 1; color: #006875; cursor: pointer;
+  margin-top: 1px; transition: all 0.2s; font-family: inherit;
+}
+.kp-item.open .kp-toggle { background: rgba(0,104,117,0.12); border-color: rgba(0,104,117,0.35); }
+.kp-body { font-size: 0.8375rem; color: #42474e; line-height: 1.65; margin-top: 0.625rem; padding-left: 32px; margin-bottom: 0; }
+.kp-item:not(.open) .kp-body { display: none; }
+
+/* ─── Prose ─── */
+.prose :global(h2) { font-size: 1.5625rem; font-weight: 800; color: #00253b; margin: 2.5rem 0 0.875rem; letter-spacing: -0.025em; line-height: 1.2; scroll-margin-top: 90px; }
+.prose :global(h3) { font-size: 1.125rem; font-weight: 700; color: #111c2d; margin: 1.875rem 0 0.625rem; scroll-margin-top: 90px; }
+.prose :global(p) { color: #42474e; line-height: 1.85; margin-bottom: 1.375rem; font-size: 1.0625rem; }
+.prose :global(ul) { list-style: none; padding: 0; margin-bottom: 1.375rem; }
+.prose :global(ul li) { position: relative; padding-left: 1.625rem; margin-bottom: 0.75rem; font-size: 1.0625rem; color: #42474e; line-height: 1.75; }
+.prose :global(ul li::before) { content: ''; position: absolute; left: 0; top: 0.625em; width: 7px; height: 7px; border-radius: 50%; background: #00e3fd; }
+.prose :global(ol) { padding-left: 1.5rem; margin-bottom: 1.375rem; }
+.prose :global(ol li) { margin-bottom: 0.75rem; font-size: 1.0625rem; color: #42474e; line-height: 1.75; }
+.prose :global(strong) { color: #00253b; font-weight: 700; }
+.prose :global(a) { color: #006875; text-decoration: underline; text-underline-offset: 2px; }
+.prose :global(a:hover) { color: #004f58; }
+.prose :global(figure) { margin: 2rem 0 2.5rem; }
+.prose :global(figure img) { width: 100%; border-radius: 14px; display: block; box-shadow: 0 6px 28px rgba(0,37,59,0.10); border: 1px solid rgba(0,37,59,0.06); }
+.prose :global(figcaption) { margin-top: 0.625rem; font-size: 0.8125rem; color: #72787e; text-align: center; line-height: 1.5; }
+.prose :global(img:not(figure img)) { max-width: 100%; border-radius: 14px; box-shadow: 0 6px 28px rgba(0,37,59,0.10); border: 1px solid rgba(0,37,59,0.06); margin: 1.5rem 0; display: block; }
+.prose :global(blockquote) { border-left: 4px solid #00e3fd; padding-left: 1.25rem; margin: 1.5rem 0; color: #42474e; font-style: italic; }
+.prose :global(code:not(pre code)) { background: rgba(0,104,117,0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; color: #004f58; }
+.prose :global(pre) { background: #00253b; padding: 1.25rem 1.5rem; border-radius: 12px; overflow-x: auto; margin: 1.5rem 0; }
+.prose :global(pre code) { background: none; padding: 0; color: #e2e8f0; font-size: 0.875rem; }
+
+/* ─── Inline CTA (injected by JS) ─── */
+:global(.inline-cta) {
+  background: linear-gradient(135deg, #eef1ff 0%, #f0f8ff 100%);
+  border: 1px solid rgba(0,104,117,0.14); border-radius: 18px;
+  padding: 1.75rem 2rem; margin: 2.75rem 0;
+  display: flex; align-items: center; gap: 1.5rem;
+}
+:global(.ic-icon) { width: 54px; height: 54px; border-radius: 15px; flex-shrink: 0; background: rgba(0,227,253,0.14); border: 1px solid rgba(0,227,253,0.28); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+:global(.ic-text) { flex: 1; }
+:global(.ic-text h4) { font-size: 1rem; font-weight: 800; color: #00253b; margin: 0 0 0.3rem; }
+:global(.ic-text p) { font-size: 0.875rem; color: #42474e; line-height: 1.55; margin: 0; }
+:global(.ic-btn) { background: #00253b; color: #fff; font-weight: 700; font-size: 0.875rem; padding: 12px 22px; border-radius: 9px; white-space: nowrap; text-decoration: none; flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; transition: background 0.2s, transform 0.15s; }
+:global(.ic-btn:hover) { background: #003a57; transform: translateY(-1px); }
+
+/* ─── Bottom CTA band ─── */
+.cta-band {
+  background: #00253b; border-radius: 20px; padding: 2.75rem 2.5rem;
+  text-align: center; margin-top: 3rem; position: relative; overflow: hidden;
+}
+.cta-band::before {
+  content: ''; position: absolute; top: -50%; left: 50%; transform: translateX(-50%);
+  width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,227,253,0.10) 0%, transparent 60%); pointer-events: none;
+}
+.cta-band h3 { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 0.625rem; position: relative; letter-spacing: -0.02em; }
+.cta-band p { color: rgba(255,255,255,0.68); font-size: 0.9375rem; margin-bottom: 1.625rem; position: relative; }
+.cta-primary { background: #00e3fd; color: #00253b; font-weight: 700; font-size: 0.9375rem; padding: 14px 32px; border-radius: 9px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; position: relative; transition: transform 0.15s, box-shadow 0.2s; }
+.cta-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,227,253,0.4); }
+
+/* ─── Related posts ─── */
+.related-posts { margin-top: 3.5rem; padding-top: 3rem; border-top: 1px solid rgba(0,37,59,0.08); }
+.related-label { font-size: 0.6875rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #006875; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; }
+.related-label::before { content: ''; width: 20px; height: 2px; background: #00e3fd; border-radius: 2px; }
+.related-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.related-card { background: #fff; border: 1px solid rgba(0,37,59,0.07); border-radius: 16px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; display: flex; flex-direction: column; }
+.related-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,59,92,0.10); }
+.rcard-img { height: 130px; }
+.rcard-body { padding: 1.125rem; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.rcard-tag { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 100px; font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; background: rgba(0,104,117,0.10); color: #004f58; border: 1px solid rgba(0,104,117,0.18); width: fit-content; }
+.rcard-title { font-size: 0.9rem; font-weight: 700; color: #00253b; line-height: 1.4; }
+.rcard-read { font-size: 0.75rem; color: #006875; font-weight: 600; margin-top: auto; padding-top: 6px; }
+
+/* ─── Sidebar ─── */
+.sidebar { position: sticky; top: 84px; display: flex; flex-direction: column; gap: 1.25rem; }
+.sidebar-card { background: #fff; border: 1px solid rgba(0,37,59,0.07); border-radius: 18px; padding: 1.375rem; box-shadow: 0 4px 18px rgba(0,59,92,0.04); }
+.toc-label { font-size: 0.6875rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: #006875; margin-bottom: 1rem; }
+
+/* Newsletter */
+.newsletter-card { background: #00253b; border-radius: 18px; padding: 1.5rem; box-shadow: 0 6px 24px rgba(0,37,59,0.16); position: relative; overflow: hidden; }
+.newsletter-card::before { content: ''; position: absolute; top: -40px; right: -40px; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, rgba(0,227,253,0.14) 0%, transparent 65%); pointer-events: none; }
+.nl-icon { width: 42px; height: 42px; border-radius: 12px; background: rgba(0,227,253,0.14); border: 1px solid rgba(0,227,253,0.25); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; font-size: 1.125rem; position: relative; z-index: 1; }
+.nl-title { font-size: 1rem; font-weight: 800; color: #fff; margin-bottom: 0.375rem; position: relative; z-index: 1; }
+.nl-sub { font-size: 0.775rem; color: rgba(255,255,255,0.6); line-height: 1.55; margin-bottom: 1.125rem; position: relative; z-index: 1; }
+#nl-form { position: relative; z-index: 1; }
+.nl-input { width: 100%; padding: 10px 13px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.07); color: #fff; font-size: 0.8125rem; font-family: inherit; outline: none; margin-bottom: 9px; transition: border-color 0.2s; display: block; }
+.nl-input:focus { border-color: rgba(0,227,253,0.4); }
+.nl-input::placeholder { color: rgba(255,255,255,0.35); }
+.nl-btn { width: 100%; padding: 11px; background: #00e3fd; color: #00253b; font-weight: 700; font-size: 0.875rem; border-radius: 9px; border: none; cursor: pointer; font-family: inherit; transition: transform 0.15s, box-shadow 0.2s; }
+.nl-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,227,253,0.35); }
+.nl-note { font-size: 0.7rem; color: rgba(255,255,255,0.35); margin-top: 0.625rem; text-align: center; position: relative; z-index: 1; }
+
+/* ─── Mobile share ─── */
+.mobile-share { display: none; align-items: center; gap: 10px; margin: 2rem 0 0; padding: 1.25rem; background: #fff; border: 1px solid rgba(0,37,59,0.08); border-radius: 14px; }
+.ms-label { font-size: 0.875rem; font-weight: 700; color: #00253b; margin-right: auto; }
+.ms-btn { display: flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: 8px; border: 1px solid rgba(0,37,59,0.12); background: #fff; font-size: 0.8125rem; font-weight: 600; color: #006875; text-decoration: none; transition: background 0.15s; }
+.ms-btn:hover { background: rgba(0,104,117,0.06); }
+
+/* ─── Mobile ─── */
+@media (max-width: 768px) {
+  .ah-wrap { padding: 0 1.25rem; }
+  .article-hero { padding: 48px 0 40px; }
+  .hero-grid { grid-template-columns: 1fr; gap: 1.75rem; }
+  .hero-grid--solo { grid-template-columns: 1fr; }
+  .hero-cover { aspect-ratio: 16/9; border-radius: 14px; }
+  .hero-title { font-size: 1.75rem; }
+  .share-btns { display: none; }
+
+  .page-body { padding: 2rem 0 3rem; }
+  .body-grid { grid-template-columns: 1fr; gap: 0; }
+  .sidebar { display: none; }
+  .toc-accordion { display: block; }
+
+  .kp-grid { grid-template-columns: 1fr; }
+  .kp-item:nth-child(even) { padding-left: 0; border-left: none; }
+  .kp-item:nth-child(2) { border-bottom: 1px dashed rgba(0,37,59,0.08); }
+  .key-points { padding: 1.25rem 1.25rem 1.25rem 1.5rem; margin-bottom: 2rem; }
+
+  .related-grid { grid-template-columns: 1fr; }
+  .cta-band { border-radius: 14px; padding: 2rem 1.5rem; }
+  .mobile-share { display: flex; }
+
+  :global(.inline-cta) { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  :global(.ic-btn) { width: 100%; justify-content: center; }
+}
 </style>
+
+<script>
+  // Progress bar
+  const bar = document.getElementById('progress-bar');
+  function updateProgress() {
+    const el = document.documentElement;
+    const scrolled = el.scrollTop || document.body.scrollTop;
+    const total = el.scrollHeight - el.clientHeight;
+    if (bar) bar.style.width = (total > 0 ? (scrolled / total) * 100 : 0) + '%';
+  }
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  updateProgress();
+
+  // Read time from article body word count
+  const articleBody = document.getElementById('article-body');
+  const rtEl = document.getElementById('read-time-text');
+  if (articleBody && rtEl) {
+    const words = (articleBody.textContent ?? '').trim().split(/\s+/).filter(Boolean).length;
+    const mins = Math.max(1, Math.round(words / 200));
+    rtEl.textContent = `${mins} min read`;
+  }
+
+  // Share URLs built at runtime from current page URL
+  const pageUrl = window.location.href;
+  const liHref = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`;
+  const waHref = `https://wa.me/?text=${encodeURIComponent(document.title + ' ' + pageUrl)}`;
+  (['share-li', 'ms-li'] as string[]).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.setAttribute('href', liHref);
+  });
+  (['share-wa', 'ms-wa'] as string[]).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.setAttribute('href', waHref);
+  });
+
+  // Auto-generate ToC from h2s in article body
+  function slugify(text: string): string {
+    return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  }
+  const tocSidebar = document.getElementById('toc-sidebar');
+  const tocMobile = document.getElementById('toc-mobile');
+  const h2s = articleBody ? Array.from(articleBody.querySelectorAll('h2')) : [];
+
+  if (h2s.length > 0) {
+    h2s.forEach((h2, idx) => {
+      if (!h2.id) h2.id = slugify(h2.textContent ?? '') || `section-${idx}`;
+      h2.setAttribute('data-toc', h2.id);
+      const text = h2.textContent ?? '';
+      const linkHtml = `<a class="toc-link" href="#${h2.id}" data-section="${h2.id}"><span class="toc-pip"></span><span class="toc-text">${text}</span></a>`;
+      if (tocSidebar) tocSidebar.insertAdjacentHTML('beforeend', linkHtml);
+      if (tocMobile) tocMobile.insertAdjacentHTML('beforeend', linkHtml);
+    });
+
+    // Highlight active section on scroll
+    const tocLinks = document.querySelectorAll<HTMLAnchorElement>('.toc-link[data-section]');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('data-toc');
+          tocLinks.forEach(l => l.classList.toggle('active', l.getAttribute('data-section') === id));
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+    h2s.forEach(h2 => observer.observe(h2));
+  }
+
+  // Mobile ToC accordion toggle
+  const tocBtn = document.getElementById('toc-acc-btn');
+  const tocBody = document.getElementById('toc-mobile');
+  if (tocBtn && tocBody) {
+    tocBtn.addEventListener('click', () => {
+      const expanded = tocBtn.getAttribute('aria-expanded') === 'true';
+      tocBtn.setAttribute('aria-expanded', String(!expanded));
+      tocBody.classList.toggle('open', !expanded);
+      tocBody.setAttribute('aria-hidden', String(expanded));
+    });
+  }
+
+  // Key Takeaways expand / collapse
+  document.querySelectorAll<HTMLButtonElement>('.kp-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest<HTMLElement>('.kp-item');
+      if (!item) return;
+      const open = item.classList.toggle('open');
+      btn.textContent = open ? '−' : '+';
+      btn.setAttribute('aria-expanded', String(open));
+    });
+  });
+
+  // Inject inline CTA before the 2nd h2 in the article
+  if (articleBody && h2s.length >= 2) {
+    const ctaHtml = `<div class="inline-cta"><div class="ic-icon">🎯</div><div class="ic-text"><h4>Not sure which process to automate first?</h4><p>Our free AI audit maps your workflows and ranks opportunities by ROI — done in 45 minutes.</p></div><a href="/contact" class="ic-btn">Get Free Audit →</a></div>`;
+    h2s[1].insertAdjacentHTML('beforebegin', ctaHtml);
+  }
+
+  // Newsletter form — optimistic success state
+  const nlForm = document.getElementById('nl-form');
+  if (nlForm) {
+    nlForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const btn = nlForm.querySelector<HTMLButtonElement>('button');
+      const input = nlForm.querySelector<HTMLInputElement>('input');
+      if (btn && input && input.value) {
+        btn.textContent = 'Subscribed ✓';
+        btn.disabled = true;
+        input.disabled = true;
+      }
+    });
+  }
+</script>

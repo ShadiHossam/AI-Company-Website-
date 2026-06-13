@@ -56,9 +56,25 @@ function toggleLang() {
   document.documentElement.setAttribute('dir', isArabic ? 'rtl' : 'ltr');
 }
 
-function openModal() {
+// Capture UTM params into sessionStorage on page load
+(function captureUTMs() {
+  const params = new URLSearchParams(window.location.search);
+  ['utm_source', 'utm_medium', 'utm_campaign'].forEach(k => {
+    const v = params.get(k);
+    if (v) sessionStorage.setItem(k, v);
+  });
+})();
+
+function openModal(el?: HTMLElement | Event) {
   const modal = document.getElementById('modal');
   if (!modal) return;
+  // Resolve source from data-source attribute or calling element
+  let source = 'unknown';
+  if (el instanceof HTMLElement) {
+    source = el.dataset.source ?? el.closest('[data-source]')?.getAttribute('data-source') ?? 'unknown';
+  }
+  const sourceField = document.getElementById('modal-source-field') as HTMLInputElement | null;
+  if (sourceField) sourceField.value = source;
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
   const today = new Date().toISOString().split('T')[0];
@@ -96,11 +112,50 @@ function goToStep(n: number) {
   document.getElementById('step-' + n)?.classList.remove('hidden');
 }
 
-function submitForm() {
-  document.getElementById('step-3')?.classList.add('hidden');
-  document.getElementById('step-success')?.classList.remove('hidden');
-  const ind = document.getElementById('step-indicator');
-  if (ind) ind.style.display = 'none';
+async function submitForm() {
+  const btn = document.querySelector('[onclick="submitForm()"]') as HTMLButtonElement | null;
+  if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
+
+  const waVal = (document.getElementById('whatsapp') as HTMLInputElement)?.value ?? '';
+  const payload = {
+    full_name:      (document.getElementById('full-name') as HTMLInputElement)?.value?.trim() ?? '',
+    company_name:   (document.getElementById('company') as HTMLInputElement)?.value?.trim() ?? '',
+    work_email:     (document.getElementById('email') as HTMLInputElement)?.value?.trim() ?? '',
+    whatsapp:       '+971' + waVal.replace(/^0+/, '').replace(/\D/g, ''),
+    job_title:      (document.getElementById('job-title') as HTMLInputElement)?.value?.trim() ?? '',
+    industry:       (document.getElementById('industry') as HTMLSelectElement)?.value ?? '',
+    company_size:   (document.getElementById('company-size') as HTMLSelectElement)?.value ?? '',
+    main_challenge: (document.getElementById('challenge') as HTMLTextAreaElement)?.value?.trim() ?? '',
+    budget_range:   (document.getElementById('budget') as HTMLSelectElement)?.value ?? '',
+    ai_experience:  (document.querySelector('input[name="ai-exp"]:checked') as HTMLInputElement)?.value ?? '',
+    meeting_format: (document.querySelector('input[name="meeting-type"]:checked') as HTMLInputElement)?.value ?? '',
+    preferred_date: (document.getElementById('pref-date') as HTMLInputElement)?.value ?? '',
+    preferred_time: (document.getElementById('pref-time') as HTMLSelectElement)?.value ?? '',
+    notes:          (document.getElementById('notes') as HTMLTextAreaElement)?.value?.trim() ?? '',
+    source:         'modal',
+    page_source:    (document.getElementById('modal-source-field') as HTMLInputElement)?.value ?? 'unknown',
+    utm_source:     sessionStorage.getItem('utm_source') ?? '',
+    utm_medium:     sessionStorage.getItem('utm_medium') ?? '',
+    utm_campaign:   sessionStorage.getItem('utm_campaign') ?? '',
+    website:        (document.getElementById('modal-honeypot') as HTMLInputElement)?.value ?? '',
+  };
+
+  try {
+    const res = await fetch('/api/submit-lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok && res.status !== 200) throw new Error('Failed');
+    document.getElementById('step-3')?.classList.add('hidden');
+    document.getElementById('step-success')?.classList.remove('hidden');
+    const ind = document.getElementById('step-indicator');
+    if (ind) ind.style.display = 'none';
+  } catch {
+    if (btn) { btn.disabled = false; btn.innerHTML = 'Confirm Booking'; }
+    const errEl = document.getElementById('modal-submit-error');
+    if (errEl) { errEl.classList.remove('hidden'); }
+  }
 }
 
 window.addEventListener('scroll', () => {
@@ -112,11 +167,13 @@ if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
 }
 
 function subscribeToMailchimp(email: string, onSuccess: () => void) {
-  // TODO: Replace with your Mailchimp audience POST URL from Audience > Signup forms > Embedded forms
-  const mailchimpURL = 'YOUR_MAILCHIMP_AUDIENCE_POST_URL';
-  const data = new FormData();
-  data.append('EMAIL', email);
-  fetch(mailchimpURL, { method: 'POST', body: data, mode: 'no-cors' }).catch(() => {});
+  // Mailchimp URL is stored in site_config and rendered into the page as a data attribute
+  const mailchimpURL = document.getElementById('newsletter-mailchimp-url')?.dataset?.url ?? '';
+  if (mailchimpURL && mailchimpURL !== 'YOUR_MAILCHIMP_AUDIENCE_POST_URL') {
+    const data = new FormData();
+    data.append('EMAIL', email);
+    fetch(mailchimpURL, { method: 'POST', body: data, mode: 'no-cors' }).catch(() => {});
+  }
   onSuccess();
 }
 

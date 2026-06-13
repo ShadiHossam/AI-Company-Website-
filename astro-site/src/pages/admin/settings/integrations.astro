@@ -1,0 +1,208 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+
+const { data: configRows } = await supabase
+  .from('site_config')
+  .select('*')
+  .in('section', ['integration', 'system']);
+
+const { count: unreadNotifs } = await supabase
+  .from('notifications')
+  .select('*', { count: 'exact', head: true })
+  .eq('read', false);
+
+const config: Record<string, string> = {};
+(configRows ?? []).forEach(row => { config[row.key] = row.value ?? ''; });
+---
+
+<AdminLayout title="Integrations" user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="flex items-center gap-3 mb-6">
+    <a href="/admin/settings" class="btn btn-ghost btn-sm">← Back</a>
+    <div>
+      <h1 class="text-xl font-bold">Integrations</h1>
+      <p class="text-muted text-sm">Third-party services and notification settings.</p>
+    </div>
+  </div>
+
+  <!-- Scheduling & CRM -->
+  <div class="card mb-4">
+    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+      <h2 style="font-size:0.95rem;font-weight:700;">Scheduling & CRM</h2>
+    </div>
+    <div style="padding:1.5rem;">
+      <form class="integration-form" data-section="scheduling" id="form-scheduling">
+        <div class="form-group mb-4">
+          <label class="form-label" for="calendly_url">Calendly URL</label>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <input
+              type="url"
+              id="calendly_url"
+              name="integration.calendly_url"
+              class="form-input"
+              placeholder="https://calendly.com/your-link"
+              value={config['integration.calendly_url'] ?? ''}
+              style="flex:1;"
+            />
+            {config['integration.calendly_url'] && (
+              <a href={config['integration.calendly_url']} target="_blank" rel="noopener" class="btn btn-ghost btn-sm" title="Open in new tab">↗</a>
+            )}
+          </div>
+          <p class="text-xs text-muted" style="margin-top:4px;">Used in the "Book a Call" CTAs throughout the site.</p>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="mailchimp_url">Mailchimp Audience POST URL</label>
+          <input
+            type="url"
+            id="mailchimp_url"
+            name="integration.mailchimp_url"
+            class="form-input"
+            placeholder="https://xxx.list-manage.com/subscribe/post?u=..."
+            value={config['integration.mailchimp_url'] ?? ''}
+          />
+          <p class="text-xs text-muted" style="margin-top:4px;">POST endpoint from your Mailchimp audience form embed code.</p>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="save-msg text-xs" style="display:none;"></span>
+          <button type="submit" class="btn btn-primary btn-sm" style="margin-left:auto;">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Analytics -->
+  <div class="card mb-4">
+    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+      <h2 style="font-size:0.95rem;font-weight:700;">Analytics</h2>
+    </div>
+    <div style="padding:1.5rem;">
+      <form class="integration-form" id="form-analytics">
+        <div class="form-group mb-4">
+          <label class="form-label" for="ga_id">Google Analytics Measurement ID</label>
+          <input
+            type="text"
+            id="ga_id"
+            name="integration.ga_measurement_id"
+            class="form-input"
+            placeholder="G-XXXXXXXXXX"
+            value={config['integration.ga_measurement_id'] ?? ''}
+          />
+          <p class="text-xs text-muted" style="margin-top:4px;">Format: G-XXXXXXXXXX. Found in GA4 → Admin → Data Streams.</p>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="save-msg text-xs" style="display:none;"></span>
+          <button type="submit" class="btn btn-primary btn-sm" style="margin-left:auto;">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Notifications -->
+  <div class="card mb-4">
+    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+      <h2 style="font-size:0.95rem;font-weight:700;">Notifications</h2>
+    </div>
+    <div style="padding:1.5rem;">
+      <form class="integration-form" id="form-notifications">
+        <div class="form-group mb-4">
+          <label class="form-label" for="admin_email">Admin Notify Email</label>
+          <input
+            type="email"
+            id="admin_email"
+            name="integration.admin_notify_email"
+            class="form-input"
+            placeholder="admin@aegisai.ae"
+            value={config['integration.admin_notify_email'] ?? ''}
+          />
+          <p class="text-xs text-muted" style="margin-top:4px;">Receives email alerts for new leads and form submissions.</p>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="wa_notify">WhatsApp Notify Number</label>
+          <input
+            type="text"
+            id="wa_notify"
+            name="integration.whatsapp_notify_number"
+            class="form-input"
+            placeholder="+971XXXXXXXXX"
+            value={config['integration.whatsapp_notify_number'] ?? ''}
+          />
+          <p class="text-xs text-muted" style="margin-top:4px;">International format. Receives WhatsApp messages for new leads.</p>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="save-msg text-xs" style="display:none;"></span>
+          <button type="submit" class="btn btn-primary btn-sm" style="margin-left:auto;">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Cookie Consent -->
+  <div class="card mb-4">
+    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+      <h2 style="font-size:0.95rem;font-weight:700;">Cookie Consent</h2>
+    </div>
+    <div style="padding:1.5rem;">
+      <form class="integration-form" id="form-cookie">
+        <div class="form-group mb-4">
+          <label class="form-label" for="cookie_text">Cookie Consent Text</label>
+          <textarea
+            id="cookie_text"
+            name="system.cookie_consent_text"
+            class="form-textarea"
+            rows="3"
+            placeholder="We use cookies to improve your experience..."
+          >{config['system.cookie_consent_text'] ?? ''}</textarea>
+          <p class="text-xs text-muted" style="margin-top:4px;">Text shown in the cookie consent bar at the bottom of every page.</p>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="save-msg text-xs" style="display:none;"></span>
+          <button type="submit" class="btn btn-primary btn-sm" style="margin-left:auto;">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>('.integration-form').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const updates = Array.from(fd.entries()).map(([key, value]) => ({ key, value: value as string }));
+      const saveBtn = form.querySelector<HTMLButtonElement>('[type="submit"]')!;
+      const saveMsg = form.querySelector<HTMLElement>('.save-msg')!;
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving…';
+
+      try {
+        const res = await fetch('/api/admin/config', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ updates }),
+        });
+        if (!res.ok) throw new Error('Failed');
+        saveMsg.textContent = '✓ Saved';
+        saveMsg.style.color = '#4ade80';
+        saveMsg.style.display = 'inline';
+        setTimeout(() => { saveMsg.style.display = 'none'; }, 3000);
+      } catch {
+        saveMsg.textContent = '✗ Error saving';
+        saveMsg.style.color = '#f87171';
+        saveMsg.style.display = 'inline';
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save';
+      }
+    });
+  });
+</script>

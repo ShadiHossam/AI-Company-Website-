@@ -1,26 +1,153 @@
 ---
-import { getCollection } from 'astro:content';
+export const prerender = false;
+import { getSupabaseAdmin } from '../../lib/supabase';
 import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import { marked } from 'marked';
 
-export async function getStaticPaths() {
-  const posts = await getCollection('blog');
-  return posts.map(post => ({
-    params: { slug: post.slug },
-    props: { post },
-  }));
+const { slug } = Astro.params;
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+interface KeyPoint {
+  heading: string;
+  body: string;
 }
 
-const { post } = Astro.props;
-const { Content } = await post.render();
+interface RelatedPost {
+  title: string;
+  slug: string;
+  category: string;
+}
+
+interface DbPost {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  body_markdown: string;
+  category: string;
+  pub_date: string;
+  updated_date?: string | null;
+  author_name?: string | null;
+  cover_image?: string | null;
+  og_image?: string | null;
+  key_points?: KeyPoint[] | null;
+  meta_title?: string | null;
+  meta_description?: string | null;
+}
+
+let dbPost: DbPost | null = null;
+let bodyHtml = '';
+let pubDate = new Date();
+let updatedDate: Date | undefined;
+let relatedPosts: RelatedPost[] = [];
+
+// 1. Try Supabase first
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .eq('slug', slug!)
+    .eq('status', 'published')
+    .single();
+
+  if (!error && data) {
+    dbPost = data as DbPost;
+    bodyHtml = await marked(dbPost.body_markdown ?? '');
+    pubDate = dbPost.pub_date ? new Date(dbPost.pub_date) : new Date();
+    updatedDate = dbPost.updated_date ? new Date(dbPost.updated_date) : undefined;
+
+    // Fetch related posts (same category, different slug, max 3)
+    const { data: related } = await supabase
+      .from('blog_posts')
+      .select('title, slug, category')
+      .eq('status', 'published')
+      .eq('category', dbPost.category)
+      .neq('slug', slug!)
+      .limit(3);
+
+    relatedPosts = (related ?? []) as RelatedPost[];
+  }
+} catch {
+  // fall through to content collection
+}
+
+// 2. Fall back to content collection
+let collectionTitle = '';
+let collectionDescription = '';
+let collectionCategory = '';
+let collectionPubDate = new Date();
+let collectionUpdatedDate: Date | undefined;
+let collectionOgImage: string | undefined;
+let collectionCoverImage: string | undefined;
+let collectionAuthorName: string | undefined;
+let collectionKeyPoints: KeyPoint[] = [];
+let CollectionContent: any = null;
+
+if (!dbPost) {
+  try {
+    const { getCollection } = await import('astro:content');
+    const posts = await getCollection('blog');
+    const found = posts.find(p => p.slug === slug);
+    if (found) {
+      collectionTitle = found.data.title;
+      collectionDescription = found.data.description;
+      collectionCategory = found.data.category;
+      collectionPubDate = found.data.pubDate;
+      collectionUpdatedDate = found.data.updatedDate;
+      collectionOgImage = found.data.ogImage;
+      collectionCoverImage = found.data.coverImage;
+      collectionAuthorName = found.data.authorName;
+      collectionKeyPoints = found.data.keyPoints ?? [];
+
+      const rendered = await found.render();
+      CollectionContent = rendered.Content;
+
+      // Related posts from content collection (same category)
+      relatedPosts = posts
+        .filter(p => p.slug !== slug && p.data.category === collectionCategory)
+        .slice(0, 3)
+        .map(p => ({ title: p.data.title, slug: p.slug, category: p.data.category }));
+    } else {
+      return Astro.redirect('/blog');
+    }
+  } catch {
+    return Astro.redirect('/blog');
+  }
+}
 ---
 
-<ArticleLayout
-  title={post.data.title}
-  description={post.data.description}
-  pubDate={post.data.pubDate}
-  category={post.data.category}
-  slug={post.slug}
-  ogImage={post.data.ogImage}
->
-  <Content />
-</ArticleLayout>
+{dbPost ? (
+  <ArticleLayout
+    title={dbPost.meta_title ?? dbPost.title}
+    description={dbPost.meta_description ?? dbPost.description}
+    pubDate={pubDate}
+    updatedDate={updatedDate}
+    category={dbPost.category}
+    slug={dbPost.slug}
+    ogImage={dbPost.og_image ?? '/assets/og-blog.jpg'}
+    coverImage={dbPost.cover_image ?? undefined}
+    authorName={dbPost.author_name ?? undefined}
+    keyPoints={dbPost.key_points ?? []}
+    relatedPosts={relatedPosts}
+  >
+    <Fragment set:html={bodyHtml} />
+  </ArticleLayout>
+) : (
+  <ArticleLayout
+    title={collectionTitle}
+    description={collectionDescription}
+    pubDate={collectionPubDate}
+    updatedDate={collectionUpdatedDate}
+    category={collectionCategory}
+    slug={slug!}
+    ogImage={collectionOgImage}
+    coverImage={collectionCoverImage}
+    authorName={collectionAuthorName}
+    keyPoints={collectionKeyPoints}
+    relatedPosts={relatedPosts}
+  >
+    {CollectionContent && <CollectionContent />}
+  </ArticleLayout>
+)}
