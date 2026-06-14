@@ -16,12 +16,35 @@ try {
 } catch {}
 
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const careersSchema = jobs.length > 0 ? {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Job Openings at Aegis AI',
+  url: 'https://aegisai.ae/careers',
+  itemListElement: jobs.map((j, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    item: {
+      '@type': 'JobPosting',
+      title: j.title,
+      url: `https://aegisai.ae/jobs/${j.slug}`,
+      hiringOrganization: { '@type': 'Organization', name: 'Aegis AI', sameAs: 'https://aegisai.ae' },
+      jobLocation: {
+        '@type': 'Place',
+        address: { '@type': 'PostalAddress', addressLocality: j.location ?? 'Dubai', addressCountry: 'AE' },
+      },
+      employmentType: 'FULL_TIME',
+    },
+  })),
+} : undefined;
 ---
 
 <BaseLayout
   title="Careers at Aegis AI — Join Our Dubai Team"
   description="Join Aegis AI and help SMEs across the UAE adopt AI. We're looking for builders, trainers, and problem-solvers based in Dubai."
   canonicalPath="/careers"
+  ldJson={careersSchema}
 >
 
 <!-- HERO -->
@@ -114,24 +137,13 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
 </section>
 
 <!-- OPEN ROLES -->
-<section class="section" style="padding:5rem 0;" id="open-roles">
-  <div class="container">
-    <div style="text-align:center; margin-bottom:3rem;">
-      <div class="section-eyebrow">Open Positions</div>
-      <h2>Find Your <span class="gradient-text">Next Role</span></h2>
-    </div>
-
-    {jobs.length === 0 ? (
-      <div style="text-align:center; padding:4rem 2rem; background:#f9f9ff; border-radius:24px; border:1px dashed #c2c7ce;">
-        <span class="material-symbols-outlined" style="font-size:48px;color:#c2c7ce;display:block;margin-bottom:1rem;">search_off</span>
-        <h3 style="color:#42474e;margin-bottom:.75rem;">No open roles right now</h3>
-        <p style="color:#72787e;max-width:420px;margin:0 auto 1.5rem;">We're not actively hiring but we're always interested in exceptional people. Send us your CV and we'll keep you in mind.</p>
-        <a href={`mailto:careers@aegisai.ae?subject=Speculative%20Application`} class="btn-primary" style="display:inline-flex;align-items:center;gap:.5rem;">
-          <span class="material-symbols-outlined" style="font-size:18px;">mail</span>
-          Send Your CV
-        </a>
+{jobs.length > 0 ? (
+  <section class="section" style="padding:5rem 0;" id="open-roles">
+    <div class="container">
+      <div style="text-align:center; margin-bottom:3rem;">
+        <div class="section-eyebrow">Open Positions</div>
+        <h2>Find Your <span class="gradient-text">Next Role</span></h2>
       </div>
-    ) : (
       <div style="display:flex;flex-direction:column;gap:1rem;">
         {jobs.map(job => (
           <a href={`/jobs/${job.slug}`} class="job-card">
@@ -169,23 +181,38 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
           </a>
         ))}
       </div>
-    )}
-  </div>
-</section>
-
-<!-- CTA BAND -->
-<section class="section" style="background:#e7eeff; padding:3.5rem 0;">
-  <div class="container">
-    <div class="cta-band">
-      <h2 style="margin-bottom:.75rem;">Don't See a Perfect Fit?</h2>
-      <p style="margin-bottom:1.75rem; opacity:.85;">We hire for attitude and aptitude. If you believe in what we're building, reach out — we'd still love to hear from you.</p>
-      <a href={`mailto:careers@aegisai.ae?subject=Speculative%20Application`} class="btn-primary" style="display:inline-flex;align-items:center;gap:.5rem;">
-        <span class="material-symbols-outlined" style="font-size:18px;">mail</span>
-        careers@aegisai.ae
-      </a>
     </div>
-  </div>
-</section>
+  </section>
+
+  <!-- CTA BAND (only shown when there are open roles) -->
+  <section class="section" style="background:#e7eeff; padding:3.5rem 0;">
+    <div class="container">
+      <div class="cta-band">
+        <h2 style="margin-bottom:.75rem;">Don't See a Perfect Fit?</h2>
+        <p style="margin-bottom:1.75rem; opacity:.85;">We hire for attitude and aptitude. If you believe in what we're building, reach out — we'd still love to hear from you.</p>
+        <a href={`mailto:careers@aegisai.ae?subject=Speculative%20Application`} class="btn-primary" style="display:inline-flex;align-items:center;gap:.5rem;">
+          <span class="material-symbols-outlined" style="font-size:18px;">mail</span>
+          careers@aegisai.ae
+        </a>
+      </div>
+    </div>
+  </section>
+) : (
+  <!-- COMBINED EMPTY STATE + CTA (single block when no roles) -->
+  <section class="section" style="padding:5rem 0;" id="open-roles">
+    <div class="container">
+      <div class="cta-band" style="text-align:center;">
+        <span class="material-symbols-outlined" style="font-size:48px;opacity:.6;display:block;margin-bottom:1.25rem;">work_history</span>
+        <h2 style="margin-bottom:.75rem;">No Open Roles Right Now</h2>
+        <p style="margin-bottom:1.75rem; opacity:.85; max-width:480px; margin-left:auto; margin-right:auto;">We're not actively hiring but we hire for attitude and aptitude. If you believe in what we're building, send us your CV — we'd love to hear from you.</p>
+        <a href={`mailto:careers@aegisai.ae?subject=Speculative%20Application`} class="btn-primary" style="display:inline-flex;align-items:center;gap:.5rem;">
+          <span class="material-symbols-outlined" style="font-size:18px;">mail</span>
+          careers@aegisai.ae
+        </a>
+      </div>
+    </div>
+  </section>
+)}
 
 </BaseLayout>
 

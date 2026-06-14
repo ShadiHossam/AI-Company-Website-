@@ -12,11 +12,9 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
   if (!locals.user) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
-
   if (locals.user.role !== 'super_admin') {
     return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
   }
-
   if (!CSRF(request)) {
     return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
   }
@@ -33,6 +31,19 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
   }
 
   const supabase = getSupabaseAdmin();
+
+  // super_admin is always valid; other roles must exist in site_config
+  if (body.role !== 'super_admin') {
+    const { data: roleRow } = await supabase
+      .from('site_config')
+      .select('key')
+      .eq('key', `admin.role.${body.role}`)
+      .single();
+    if (!roleRow) {
+      return new Response(JSON.stringify({ error: 'Invalid role' }), { status: 400 });
+    }
+  }
+
   const { data, error } = await supabase.auth.admin.updateUserById(body.uid, {
     user_metadata: { role: body.role },
   });

@@ -23,6 +23,7 @@ const fallbackCaseStudies = [
       "Week 5–6: Integration, testing, team training (1 day)",
       "Week 6: Go-live. Full adoption within 2 weeks.",
     ],
+    media_sections: [],
   },
   {
     industry: "Retail",
@@ -42,6 +43,7 @@ const fallbackCaseStudies = [
       "Week 7–8: Dashboard integration, buyer team training",
       "Results visible within first buying cycle.",
     ],
+    media_sections: [],
   },
   {
     industry: "Hospitality",
@@ -61,6 +63,27 @@ const fallbackCaseStudies = [
       "Week 5: Go-live. Satisfaction score up within 60 days.",
       "Team reassigned to proactive guest experience roles.",
     ],
+    media_sections: [],
+  },
+  {
+    industry: "Logistics",
+    industry_icon: "local_shipping",
+    title: "How a UAE Logistics Firm Cut Delivery Costs 22% with AI Route Optimisation",
+    delivery_time: "7 weeks",
+    results: [
+      { value: "−22%", label: "Delivery cost reduction" },
+      { value: "+18%", label: "On-time delivery rate" },
+      { value: "4h/day", label: "Dispatch time saved" },
+    ],
+    challenge: "A UAE courier and distribution company was planning every delivery run manually in Excel — drivers frequently overlapping territories, fuel wasted on inefficient routes, and dispatch managers spending 4+ hours daily just building the next day's schedule. Late deliveries were damaging key client contracts.",
+    solution: "AI route-optimisation dashboard that ingests delivery addresses, vehicle capacity, driver availability, and traffic patterns each morning and generates optimised routes for the full fleet in under 3 minutes. Integrated with the company's existing TMS and WhatsApp driver comms.",
+    timeline: [
+      "Week 1–2: Data mapping, TMS integration audit, route pattern analysis",
+      "Week 3–5: Model training on 18 months of historical route data",
+      "Week 6: Dashboard build, driver app integration, dispatcher training",
+      "Week 7: Go-live. Cost and time savings visible in first week.",
+    ],
+    media_sections: [],
   },
 ];
 
@@ -70,7 +93,7 @@ try {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from('case_studies')
-    .select('industry, title, delivery_time, challenge, solution, results')
+    .select('industry, title, delivery_time, challenge, solution, results, timeline_items, media_sections')
     .eq('published', true)
     .order('sort_order');
 
@@ -80,13 +103,17 @@ try {
       industry_icon: cs.industry?.toLowerCase() === 'real estate' ? 'home'
         : cs.industry?.toLowerCase() === 'retail' ? 'shopping_bag'
         : cs.industry?.toLowerCase() === 'hospitality' ? 'hotel'
+        : cs.industry?.toLowerCase() === 'logistics' ? 'local_shipping'
         : 'business',
       title: cs.title,
       delivery_time: cs.delivery_time,
       results: Array.isArray(cs.results) ? cs.results : [],
       challenge: cs.challenge,
       solution: cs.solution,
-      timeline: [],
+      timeline: Array.isArray(cs.timeline_items)
+        ? cs.timeline_items.map((t: { step: string; description: string }) => `${t.step}${t.description ? ': ' + t.description : ''}`)
+        : [],
+      media_sections: Array.isArray(cs.media_sections) ? cs.media_sections : [],
     }));
   }
 } catch (err) {
@@ -94,6 +121,25 @@ try {
 }
 
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const resultsSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Aegis AI Case Studies',
+  description: 'Real AI results from Dubai businesses across real estate, retail, and hospitality.',
+  url: 'https://aegisai.ae/results',
+  itemListElement: caseStudies.map((cs, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    item: {
+      '@type': 'Article',
+      headline: cs.title,
+      description: cs.challenge,
+      author: { '@type': 'Organization', name: 'Aegis AI' },
+      publisher: { '@type': 'Organization', name: 'Aegis AI', url: 'https://aegisai.ae' },
+    },
+  })),
+};
 ---
 
 <BaseLayout
@@ -101,6 +147,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
   description="Real AI results from Dubai businesses: 4× ROI, 3h saved/day, 74% of inquiries automated. Case studies across real estate, retail, and hospitality."
   canonicalPath="/results"
   ogImage="/assets/og-results.jpg"
+  ldJson={resultsSchema}
 >
 
 <header class="hero-section">
@@ -194,6 +241,41 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
               </div>
             )}
           </div>
+
+          {Array.isArray(cs.media_sections) && cs.media_sections.length > 0 && (
+            <div class="media-sections" style="margin-top:2rem; display:flex; flex-direction:column; gap:1.75rem;">
+              {cs.media_sections.map((m: { type: string; url: string; caption: string; description: string }) => (
+                <div class="media-block">
+                  {m.type === 'image' && m.url && (
+                    <figure style="margin:0;">
+                      <img
+                        src={m.url}
+                        alt={m.caption || m.description || ''}
+                        loading="lazy"
+                        style="width:100%; border-radius:12px; display:block; object-fit:cover; max-height:480px;"
+                      />
+                      {m.caption && <figcaption style="color:#42474e; font-size:0.8125rem; margin-top:0.5rem; text-align:center;">{m.caption}</figcaption>}
+                    </figure>
+                  )}
+                  {m.type === 'video' && m.url && (
+                    <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px;">
+                      <iframe
+                        src={m.url}
+                        title={m.caption || 'Video'}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                        loading="lazy"
+                        style="position:absolute; top:0; left:0; width:100%; height:100%; border:0; border-radius:12px;"
+                      ></iframe>
+                    </div>
+                  )}
+                  {m.description && (
+                    <p style="color:#42474e; line-height:1.75; margin:0.75rem 0 0; font-size:0.9375rem;">{m.description}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     ))}

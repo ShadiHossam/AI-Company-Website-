@@ -74,11 +74,12 @@ CREATE TABLE case_studies (
   delivery_time  TEXT,
   challenge      TEXT,
   solution       TEXT,
-  timeline_items JSONB DEFAULT '[]',
-  results        JSONB DEFAULT '[]',
-  featured       BOOLEAN DEFAULT false,
-  published      BOOLEAN DEFAULT false,
-  sort_order     INT DEFAULT 0
+  timeline_items  JSONB DEFAULT '[]',
+  results         JSONB DEFAULT '[]',
+  media_sections  JSONB DEFAULT '[]',
+  featured        BOOLEAN DEFAULT false,
+  published       BOOLEAN DEFAULT false,
+  sort_order      INT DEFAULT 0
 );
 CREATE TRIGGER t_cases BEFORE UPDATE ON case_studies FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
@@ -162,9 +163,29 @@ CREATE TABLE blog_posts (
   pub_date         DATE,
   author_name      TEXT DEFAULT 'Aegis AI',
   meta_title       TEXT,
-  meta_description TEXT
+  meta_description TEXT,
+  focus_keyword    TEXT
 );
 CREATE TRIGGER t_blog BEFORE UPDATE ON blog_posts FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ── BLOG POST VERSIONS ───────────────────────────────────────
+CREATE TABLE blog_post_versions (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id          UUID NOT NULL REFERENCES blog_posts(id) ON DELETE CASCADE,
+  version_num      INT NOT NULL,
+  saved_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
+  title            TEXT NOT NULL,
+  slug             TEXT NOT NULL,
+  description      TEXT NOT NULL DEFAULT '',
+  body_markdown    TEXT NOT NULL DEFAULT '',
+  category         TEXT NOT NULL DEFAULT '',
+  og_image         TEXT,
+  status           TEXT NOT NULL DEFAULT 'draft',
+  pub_date         DATE,
+  author_name      TEXT,
+  meta_title       TEXT,
+  meta_description TEXT
+);
 
 -- ── SITE CONFIG ──────────────────────────────────────────────
 CREATE TABLE site_config (
@@ -261,6 +282,7 @@ ALTER TABLE client_logos        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE faq_items           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE blog_posts          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE blog_post_versions  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE site_config         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE announcement_banner ENABLE ROW LEVEL SECURITY;
 ALTER TABLE media               ENABLE ROW LEVEL SECURITY;
@@ -279,6 +301,7 @@ CREATE POLICY "admin_logos"    ON client_logos        FOR ALL TO authenticated U
 CREATE POLICY "admin_faq"      ON faq_items           FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "admin_products" ON products            FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "admin_blog"     ON blog_posts          FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "admin_blog_ver" ON blog_post_versions  FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "admin_config"   ON site_config         FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "admin_banner"   ON announcement_banner FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "admin_media"    ON media               FOR ALL TO authenticated USING (true) WITH CHECK (true);
@@ -343,12 +366,31 @@ INSERT INTO site_config (key, value, type, label, section) VALUES
   ('services.guarantee_headline', 'All Three Services Are Covered by Our 100% Guarantee', 'string', 'Guarantee Headline', 'services'),
   ('services.guarantee_body',     'If you''re not completely satisfied with what we deliver — you pay absolutely nothing. No conditions. No disputes. Just a full refund.', 'string', 'Guarantee Body', 'services'),
 
-  -- Integrations
-  ('integration.calendly_url',           '',                'string', 'Calendly URL',           'integrations'),
-  ('integration.mailchimp_url',          'YOUR_MAILCHIMP_AUDIENCE_POST_URL', 'string', 'Mailchimp URL', 'integrations'),
-  ('integration.ga_measurement_id',      '',                'string', 'GA4 Measurement ID',     'integrations'),
-  ('integration.admin_notify_email',     '',                'string', 'Admin Notification Email','integrations'),
-  ('integration.whatsapp_notify_number', '',                'string', 'WhatsApp Notify Number', 'integrations'),
+  -- Integrations: Scheduling & CRM
+  ('integration.calendly_url',           '',  'string', 'Calendly URL',              'integrations'),
+  ('integration.mailchimp_url',          '',  'string', 'Mailchimp Audience POST URL','integrations'),
+  ('integration.hubspot_portal_id',      '',  'string', 'HubSpot Portal ID',         'integrations'),
+
+  -- Integrations: Analytics
+  ('integration.ga_measurement_id',      '',  'string', 'GA4 Measurement ID',        'integrations'),
+  ('integration.gtm_container_id',       '',  'string', 'Google Tag Manager ID',     'integrations'),
+  ('integration.clarity_project_id',     '',  'string', 'Microsoft Clarity ID',      'integrations'),
+  ('integration.hotjar_site_id',         '',  'string', 'Hotjar Site ID',            'integrations'),
+
+  -- Integrations: Advertising & Pixels
+  ('integration.meta_pixel_id',          '',  'string', 'Meta Pixel ID',             'integrations'),
+  ('integration.linkedin_insight_id',    '',  'string', 'LinkedIn Insight Tag ID',   'integrations'),
+  ('integration.google_ads_id',          '',  'string', 'Google Ads Conversion ID',  'integrations'),
+  ('integration.tiktok_pixel_id',        '',  'string', 'TikTok Pixel ID',           'integrations'),
+
+  -- Integrations: Live Chat
+  ('integration.intercom_app_id',        '',  'string', 'Intercom App ID',           'integrations'),
+  ('integration.crisp_website_id',       '',  'string', 'Crisp Website ID',          'integrations'),
+  ('integration.tawkto_property_id',     '',  'string', 'Tawk.to Property/Widget ID','integrations'),
+
+  -- Integrations: Notifications
+  ('integration.admin_notify_email',     '',  'string', 'Admin Notification Email',  'integrations'),
+  ('integration.whatsapp_notify_number', '',  'string', 'WhatsApp Notify Number',    'integrations'),
 
   -- System
   ('system.maintenance_mode',       'false',                               'boolean', 'Maintenance Mode',       'system'),
@@ -356,6 +398,26 @@ INSERT INTO site_config (key, value, type, label, section) VALUES
   ('system.maintenance_allowed_ips','',                                    'string',  'Allowed IPs (comma-separated)', 'system'),
   ('system.cookie_consent_text',    'We use cookies and similar technologies to improve your experience on our site. By continuing to browse, you agree to our use of cookies.', 'string', 'Cookie Consent Text', 'system')
 ON CONFLICT (key) DO NOTHING;
+
+-- ============================================================
+-- ADMIN ROLES (custom RBAC)
+-- ============================================================
+
+CREATE TABLE admin_roles (
+  name        TEXT PRIMARY KEY,
+  label       TEXT NOT NULL,
+  sections    TEXT[] NOT NULL DEFAULT '{}',
+  is_builtin  BOOLEAN DEFAULT false,
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE admin_roles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "admin_roles_rw" ON admin_roles FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- Built-in roles (mirror current hardcoded middleware permissions)
+INSERT INTO admin_roles (name, label, sections, is_builtin) VALUES
+  ('editor', 'Editor', '{content,blog,media,seo,notifications,dashboard}', true),
+  ('sales',  'Sales',  '{leads,notifications,dashboard}', true)
+ON CONFLICT (name) DO NOTHING;
 
 -- ============================================================
 -- CAREERS: JOBS & APPLICATIONS

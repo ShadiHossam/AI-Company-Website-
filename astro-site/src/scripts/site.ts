@@ -117,11 +117,12 @@ async function submitForm() {
   if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
 
   const waVal = (document.getElementById('whatsapp') as HTMLInputElement)?.value ?? '';
+  const countryCode = (document.getElementById('country-code') as HTMLSelectElement)?.value ?? '+971';
   const payload = {
     full_name:      (document.getElementById('full-name') as HTMLInputElement)?.value?.trim() ?? '',
     company_name:   (document.getElementById('company') as HTMLInputElement)?.value?.trim() ?? '',
     work_email:     (document.getElementById('email') as HTMLInputElement)?.value?.trim() ?? '',
-    whatsapp:       '+971' + waVal.replace(/^0+/, '').replace(/\D/g, ''),
+    whatsapp:       countryCode + waVal.replace(/^0+/, '').replace(/\D/g, ''),
     job_title:      (document.getElementById('job-title') as HTMLInputElement)?.value?.trim() ?? '',
     industry:       (document.getElementById('industry') as HTMLSelectElement)?.value ?? '',
     company_size:   (document.getElementById('company-size') as HTMLSelectElement)?.value ?? '',

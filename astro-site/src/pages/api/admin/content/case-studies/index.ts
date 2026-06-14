@@ -36,7 +36,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
   const supabase = getSupabaseAdmin();
   try {
     const body = await request.json();
-    const { title, slug, industry, delivery_time, challenge, solution, featured = false, published = false } = body;
+    const { title, slug, industry, delivery_time, challenge, solution, featured = false, published = false, media_sections = [] } = body;
 
     if (!title || !slug) {
       return new Response(JSON.stringify({ error: 'title and slug are required' }), { status: 400 });
@@ -44,7 +44,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
 
     const { data, error } = await supabase
       .from('case_studies')
-      .insert({ title, slug, industry, delivery_time, challenge, solution, featured, published })
+      .insert({ title, slug, industry, delivery_time, challenge, solution, featured, published, media_sections })
       .select()
       .single();
 

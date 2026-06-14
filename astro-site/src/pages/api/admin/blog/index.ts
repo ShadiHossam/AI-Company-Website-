@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getSupabaseAdmin } from '../../../../lib/supabase';
+import { getSupabaseAdmin, supabaseConfigured } from '../../../../lib/supabase';
 
 export const prerender = false;
 
@@ -49,6 +49,13 @@ export const POST: APIRoute = async ({ locals, request }) => {
     });
   }
 
+  if (!supabaseConfigured) {
+    return new Response(
+      JSON.stringify({ error: 'Database not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your .env.local file.' }),
+      { status: 503, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
   if (!CSRF(request)) {
     return new Response(JSON.stringify({ error: 'Forbidden' }), {
       status: 403,
@@ -89,6 +96,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
     pub_date: status === 'published' ? ((body.pub_date as string) ?? now) : (body.pub_date as string) ?? null,
     meta_title: (body.meta_title as string) ?? null,
     meta_description: (body.meta_description as string) ?? null,
+    focus_keyword: (body.focus_keyword as string) ?? null,
   };
 
   const supabase = getSupabaseAdmin();

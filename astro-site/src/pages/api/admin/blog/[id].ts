@@ -65,10 +65,13 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
   const { id } = params;
   const supabase = getSupabaseAdmin();
 
-  // Fetch current post to check status transition
+  const createVersion = body._create_version === true;
+  delete body._create_version;
+
+  // Fetch current post to check status transition and optionally snapshot
   const { data: existing } = await supabase
     .from('blog_posts')
-    .select('status, pub_date')
+    .select('*')
     .eq('id', id!)
     .single();
 
@@ -81,6 +84,33 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
   }
 
   body.updated_at = new Date().toISOString();
+
+  // Snapshot the current post as a new version before overwriting
+  if (createVersion && existing) {
+    const { data: maxVer } = await supabase
+      .from('blog_post_versions')
+      .select('version_num')
+      .eq('post_id', id)
+      .order('version_num', { ascending: false })
+      .limit(1)
+      .single();
+
+    await supabase.from('blog_post_versions').insert({
+      post_id: id,
+      version_num: (maxVer?.version_num ?? 0) + 1,
+      title: existing.title,
+      slug: existing.slug,
+      description: existing.description,
+      body_markdown: existing.body_markdown,
+      category: existing.category,
+      og_image: existing.og_image,
+      status: existing.status,
+      pub_date: existing.pub_date,
+      author_name: existing.author_name,
+      meta_title: existing.meta_title,
+      meta_description: existing.meta_description,
+    });
+  }
 
   const { data, error } = await supabase
     .from('blog_posts')

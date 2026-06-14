@@ -6,18 +6,15 @@ import { getSupabaseAdmin } from '../../../lib/supabase';
 const user = Astro.locals.user!;
 const supabase = getSupabaseAdmin();
 
-const { data: configRows } = await supabase
-  .from('site_config')
-  .select('*')
-  .in('section', ['integration', 'system']);
-
-const { count: unreadNotifs } = await supabase
-  .from('notifications')
-  .select('*', { count: 'exact', head: true })
-  .eq('read', false);
+const [{ data: configRows }, { count: unreadNotifs }] = await Promise.all([
+  supabase.from('site_config').select('key, value'),
+  supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false),
+]);
 
 const config: Record<string, string> = {};
-(configRows ?? []).forEach(row => { config[row.key] = row.value ?? ''; });
+(configRows ?? [])
+  .filter(r => r.key.startsWith('integration.') || r.key.startsWith('system.'))
+  .forEach(row => { config[row.key] = row.value ?? ''; });
 ---
 
 <AdminLayout title="Integrations" user={user} unreadCount={unreadNotifs ?? 0}>
@@ -25,7 +22,185 @@ const config: Record<string, string> = {};
     <a href="/admin/settings" class="btn btn-ghost btn-sm">← Back</a>
     <div>
       <h1 class="text-xl font-bold">Integrations</h1>
-      <p class="text-muted text-sm">Third-party services and notification settings.</p>
+      <p class="text-muted text-sm">Third-party services, analytics, and notification settings.</p>
+    </div>
+  </div>
+
+  <!-- Analytics -->
+  <div class="card mb-4">
+    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+      <h2 style="font-size:0.95rem;font-weight:700;">Analytics</h2>
+      <p class="text-xs text-muted" style="margin-top:2px;">Scripts are injected automatically when users give cookie consent.</p>
+    </div>
+    <div style="padding:1.5rem;">
+      <form class="integration-form" id="form-analytics">
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="ga_id">
+            <span style="display:flex;align-items:center;gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;"><path d="M22 12A10 10 0 1 1 12 2a10 10 0 0 1 10 10z" fill="#E37400" opacity=".15"/><path d="M15 8v8m-6-4v4M12 6v14" stroke="#E37400" stroke-width="2" stroke-linecap="round"/></svg>
+              Google Analytics 4 (GA4)
+            </span>
+          </label>
+          <input
+            type="text"
+            id="ga_id"
+            name="integration.ga_measurement_id"
+            class="form-input"
+            placeholder="G-XXXXXXXXXX"
+            value={config['integration.ga_measurement_id'] ?? ''}
+          />
+          <p class="text-xs text-muted" style="margin-top:4px;">Format: G-XXXXXXXXXX — found in GA4 → Admin → Data Streams.</p>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="gtm_id">
+            <span style="display:flex;align-items:center;gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;"><rect width="24" height="24" rx="4" fill="#4285F4" opacity=".15"/><path d="M12 4l5 9H7l5-9zM7 13l5 7 5-7H7z" fill="#4285F4"/></svg>
+              Google Tag Manager
+            </span>
+          </label>
+          <input
+            type="text"
+            id="gtm_id"
+            name="integration.gtm_container_id"
+            class="form-input"
+            placeholder="GTM-XXXXXXX"
+            value={config['integration.gtm_container_id'] ?? ''}
+          />
+          <p class="text-xs text-muted" style="margin-top:4px;">Format: GTM-XXXXXXX — use this to manage all tags in one place instead of adding them individually.</p>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="clarity_id">
+            <span style="display:flex;align-items:center;gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;"><circle cx="12" cy="12" r="10" fill="#0078D4" opacity=".15"/><path d="M8 12a4 4 0 0 1 8 0M12 8v1m-4 7h8" stroke="#0078D4" stroke-width="2" stroke-linecap="round"/></svg>
+              Microsoft Clarity
+            </span>
+          </label>
+          <input
+            type="text"
+            id="clarity_id"
+            name="integration.clarity_project_id"
+            class="form-input"
+            placeholder="xxxxxxxxxx"
+            value={config['integration.clarity_project_id'] ?? ''}
+          />
+          <p class="text-xs text-muted" style="margin-top:4px;">Project ID from clarity.microsoft.com → Settings → Setup. Provides heatmaps and session recordings.</p>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="hotjar_id">
+            <span style="display:flex;align-items:center;gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;"><circle cx="12" cy="12" r="10" fill="#FD3A5C" opacity=".15"/><path d="M9 6c0 4 3 4 3 8m3-10c0 4-3 4-3 8" stroke="#FD3A5C" stroke-width="2" stroke-linecap="round"/></svg>
+              Hotjar
+            </span>
+          </label>
+          <input
+            type="text"
+            id="hotjar_id"
+            name="integration.hotjar_site_id"
+            class="form-input"
+            placeholder="1234567"
+            value={config['integration.hotjar_site_id'] ?? ''}
+          />
+          <p class="text-xs text-muted" style="margin-top:4px;">Numeric Site ID from hotjar.com → Settings → Tracking Code.</p>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="save-msg text-xs" style="display:none;"></span>
+          <button type="submit" class="btn btn-primary btn-sm" style="margin-left:auto;">Save Analytics</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Advertising & Pixels -->
+  <div class="card mb-4">
+    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+      <h2 style="font-size:0.95rem;font-weight:700;">Advertising & Pixels</h2>
+      <p class="text-xs text-muted" style="margin-top:2px;">Conversion tracking and remarketing pixels. Loaded only with marketing cookie consent.</p>
+    </div>
+    <div style="padding:1.5rem;">
+      <form class="integration-form" id="form-pixels">
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="meta_pixel">
+            <span style="display:flex;align-items:center;gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;"><rect width="24" height="24" rx="4" fill="#1877F2" opacity=".15"/><path d="M13 10h3l-.5 3H13v7h-3v-7H8v-3h2V9a4 4 0 0 1 4-4h2v3h-1.5A.5.5 0 0 0 14 8.5V10h-1z" fill="#1877F2"/></svg>
+              Meta (Facebook) Pixel ID
+            </span>
+          </label>
+          <input
+            type="text"
+            id="meta_pixel"
+            name="integration.meta_pixel_id"
+            class="form-input"
+            placeholder="123456789012345"
+            value={config['integration.meta_pixel_id'] ?? ''}
+          />
+          <p class="text-xs text-muted" style="margin-top:4px;">Found in Meta Events Manager → Data Sources. Enables Facebook/Instagram remarketing.</p>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="linkedin_id">
+            <span style="display:flex;align-items:center;gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;"><rect width="24" height="24" rx="4" fill="#0077B5" opacity=".15"/><path d="M6.5 8a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM5 9h3v10H5V9zm5 0h3v1.4c.5-.9 1.6-1.6 3-1.6 2.3 0 3.5 1.4 3.5 4V19h-3v-5.5c0-1.1-.4-1.8-1.5-1.8-1 0-1.5.7-1.5 1.8V19h-3V9z" fill="#0077B5"/></svg>
+              LinkedIn Insight Tag Partner ID
+            </span>
+          </label>
+          <input
+            type="text"
+            id="linkedin_id"
+            name="integration.linkedin_insight_id"
+            class="form-input"
+            placeholder="1234567"
+            value={config['integration.linkedin_insight_id'] ?? ''}
+          />
+          <p class="text-xs text-muted" style="margin-top:4px;">Numeric Partner ID from LinkedIn Campaign Manager → Account Assets → Insight Tag.</p>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="google_ads">
+            <span style="display:flex;align-items:center;gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;"><circle cx="12" cy="12" r="10" fill="#4285F4" opacity=".15"/><path d="M7 14l5-8 5 8H7z" fill="#4285F4"/></svg>
+              Google Ads Conversion ID
+            </span>
+          </label>
+          <input
+            type="text"
+            id="google_ads"
+            name="integration.google_ads_id"
+            class="form-input"
+            placeholder="AW-XXXXXXXXXX"
+            value={config['integration.google_ads_id'] ?? ''}
+          />
+          <p class="text-xs text-muted" style="margin-top:4px;">Format: AW-XXXXXXXXXX — from Google Ads → Tools → Conversions → Google tag.</p>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="tiktok_pixel">
+            <span style="display:flex;align-items:center;gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;"><rect width="24" height="24" rx="4" fill="#000" opacity=".1"/><path d="M16 7c1 1 2 1.5 3 1.5v3c-1 0-2-.3-3-1v5a5 5 0 1 1-4-4.9V13a2 2 0 1 0 2 2V7h2z" fill="#010101"/></svg>
+              TikTok Pixel ID
+            </span>
+          </label>
+          <input
+            type="text"
+            id="tiktok_pixel"
+            name="integration.tiktok_pixel_id"
+            class="form-input"
+            placeholder="C1A2B3D4E5F6G7H8"
+            value={config['integration.tiktok_pixel_id'] ?? ''}
+          />
+          <p class="text-xs text-muted" style="margin-top:4px;">Found in TikTok Ads Manager → Assets → Events → Web Events → Set Up Web Events.</p>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="save-msg text-xs" style="display:none;"></span>
+          <button type="submit" class="btn btn-primary btn-sm" style="margin-left:auto;">Save Pixels</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -36,6 +211,7 @@ const config: Record<string, string> = {};
     </div>
     <div style="padding:1.5rem;">
       <form class="integration-form" data-section="scheduling" id="form-scheduling">
+
         <div class="form-group mb-4">
           <label class="form-label" for="calendly_url">Calendly URL</label>
           <div style="display:flex;gap:0.5rem;align-items:center;">
@@ -68,37 +244,98 @@ const config: Record<string, string> = {};
           <p class="text-xs text-muted" style="margin-top:4px;">POST endpoint from your Mailchimp audience form embed code.</p>
         </div>
 
+        <div class="form-group mb-4">
+          <label class="form-label" for="hubspot_id">
+            <span style="display:flex;align-items:center;gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;"><circle cx="12" cy="12" r="10" fill="#FF7A59" opacity=".15"/><circle cx="15" cy="9" r="3" stroke="#FF7A59" stroke-width="1.5"/><path d="M12 12v5M9 17h6" stroke="#FF7A59" stroke-width="1.5" stroke-linecap="round"/></svg>
+              HubSpot Portal ID
+            </span>
+          </label>
+          <input
+            type="text"
+            id="hubspot_id"
+            name="integration.hubspot_portal_id"
+            class="form-input"
+            placeholder="12345678"
+            value={config['integration.hubspot_portal_id'] ?? ''}
+          />
+          <p class="text-xs text-muted" style="margin-top:4px;">Numeric Portal ID from HubSpot Account Settings → Account Setup → Account ID. Enables HubSpot tracking and chat widget.</p>
+        </div>
+
         <div class="flex items-center justify-between">
           <span class="save-msg text-xs" style="display:none;"></span>
-          <button type="submit" class="btn btn-primary btn-sm" style="margin-left:auto;">Save</button>
+          <button type="submit" class="btn btn-primary btn-sm" style="margin-left:auto;">Save CRM</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Analytics -->
+  <!-- Live Chat -->
   <div class="card mb-4">
     <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
-      <h2 style="font-size:0.95rem;font-weight:700;">Analytics</h2>
+      <h2 style="font-size:0.95rem;font-weight:700;">Live Chat</h2>
+      <p class="text-xs text-muted" style="margin-top:2px;">Configure one chat widget. If multiple are set, the first one found in order is used.</p>
     </div>
     <div style="padding:1.5rem;">
-      <form class="integration-form" id="form-analytics">
+      <form class="integration-form" id="form-chat">
+
         <div class="form-group mb-4">
-          <label class="form-label" for="ga_id">Google Analytics Measurement ID</label>
+          <label class="form-label" for="intercom_id">
+            <span style="display:flex;align-items:center;gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;"><rect width="24" height="24" rx="6" fill="#6366F1" opacity=".15"/><path d="M5 5h14v10H5z" fill="none" stroke="#6366F1" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 19l4-4 4 4" stroke="#6366F1" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              Intercom App ID
+            </span>
+          </label>
           <input
             type="text"
-            id="ga_id"
-            name="integration.ga_measurement_id"
+            id="intercom_id"
+            name="integration.intercom_app_id"
             class="form-input"
-            placeholder="G-XXXXXXXXXX"
-            value={config['integration.ga_measurement_id'] ?? ''}
+            placeholder="abc12345"
+            value={config['integration.intercom_app_id'] ?? ''}
           />
-          <p class="text-xs text-muted" style="margin-top:4px;">Format: G-XXXXXXXXXX. Found in GA4 → Admin → Data Streams.</p>
+          <p class="text-xs text-muted" style="margin-top:4px;">Found in Intercom → Settings → Installation → Web. Enables the Intercom messenger widget.</p>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="crisp_id">
+            <span style="display:flex;align-items:center;gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;"><rect width="24" height="24" rx="6" fill="#1972F5" opacity=".15"/><path d="M4 4h16v12H4zM8 20h8" stroke="#1972F5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Crisp Website ID
+            </span>
+          </label>
+          <input
+            type="text"
+            id="crisp_id"
+            name="integration.crisp_website_id"
+            class="form-input"
+            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+            value={config['integration.crisp_website_id'] ?? ''}
+          />
+          <p class="text-xs text-muted" style="margin-top:4px;">UUID found in Crisp → Settings → Website Settings → Setup Instructions.</p>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="tawkto_id">
+            <span style="display:flex;align-items:center;gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;"><circle cx="12" cy="12" r="10" fill="#03b06b" opacity=".15"/><path d="M7 9h10M7 13h6" stroke="#03b06b" stroke-width="1.5" stroke-linecap="round"/></svg>
+              Tawk.to Property ID / Widget ID
+            </span>
+          </label>
+          <input
+            type="text"
+            id="tawkto_id"
+            name="integration.tawkto_property_id"
+            class="form-input"
+            placeholder="5f1234567f0abc/1a2b3c"
+            value={config['integration.tawkto_property_id'] ?? ''}
+          />
+          <p class="text-xs text-muted" style="margin-top:4px;">Format: <code style="font-family:monospace;">propertyId/widgetId</code> — from your Tawk.to embed snippet URL.</p>
         </div>
 
         <div class="flex items-center justify-between">
           <span class="save-msg text-xs" style="display:none;"></span>
-          <button type="submit" class="btn btn-primary btn-sm" style="margin-left:auto;">Save</button>
+          <button type="submit" class="btn btn-primary btn-sm" style="margin-left:auto;">Save Chat</button>
         </div>
       </form>
     </div>
@@ -139,7 +376,7 @@ const config: Record<string, string> = {};
 
         <div class="flex items-center justify-between">
           <span class="save-msg text-xs" style="display:none;"></span>
-          <button type="submit" class="btn btn-primary btn-sm" style="margin-left:auto;">Save</button>
+          <button type="submit" class="btn btn-primary btn-sm" style="margin-left:auto;">Save Notifications</button>
         </div>
       </form>
     </div>
@@ -201,8 +438,13 @@ const config: Record<string, string> = {};
         saveMsg.style.display = 'inline';
       } finally {
         saveBtn.disabled = false;
-        saveBtn.textContent = 'Save';
+        const originalText = saveBtn.dataset.original || 'Save';
+        saveBtn.textContent = originalText;
       }
     });
+
+    // Store original button text
+    const btn = form.querySelector<HTMLButtonElement>('[type="submit"]');
+    if (btn) btn.dataset.original = btn.textContent ?? 'Save';
   });
 </script>

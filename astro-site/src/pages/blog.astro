@@ -50,6 +50,11 @@ if (dbError || dbPosts.length === 0) {
 }
 
 const useDb = !dbError && dbPosts.length > 0;
+
+// Collect unique categories for filter
+const allCategories = useDb
+  ? [...new Set(dbPosts.map(p => p.category).filter(Boolean))]
+  : [...new Set(collectionPosts.map(p => p.data.category).filter(Boolean))];
 ---
 
 <BaseLayout
@@ -80,11 +85,21 @@ const useDb = !dbError && dbPosts.length > 0;
 <section class="section" style="padding-top:3rem;">
   <div class="container">
 
+    <!-- CATEGORY FILTER -->
+    {allCategories.length > 1 && (
+      <div id="filter-bar" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:2rem;">
+        <button class="filter-btn active" data-filter="all">All</button>
+        {allCategories.map(cat => (
+          <button class="filter-btn" data-filter={cat}>{cat}</button>
+        ))}
+      </div>
+    )}
+
     {useDb ? (
       <div>
-        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px;">
+        <div id="posts-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px;">
           {dbPosts.map(post => (
-            <article class="blog-card">
+            <article class="blog-card" data-category={post.category}>
               {post.og_image ? (
                 <img src={post.og_image} alt={post.title} class="blog-card-img" loading="lazy" />
               ) : (
@@ -114,9 +129,9 @@ const useDb = !dbError && dbPosts.length > 0;
         </div>
       </div>
     ) : collectionPosts.length > 0 ? (
-      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px;">
+      <div id="posts-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px;">
         {collectionPosts.map(post => (
-          <article class="blog-card">
+          <article class="blog-card" data-category={post.data.category}>
             {post.data.ogImage ? (
               <img src={post.data.ogImage} alt={post.data.title} class="blog-card-img" loading="lazy" />
             ) : (
@@ -174,25 +189,6 @@ const useDb = !dbError && dbPosts.length > 0;
   </div>
 </section>
 
-<!-- NEWSLETTER CTA -->
-<section class="section" style="background:#e7eeff;">
-  <div class="container">
-    <div style="max-width:580px; margin:0 auto; text-align:center; background:#fff; border:1px solid rgba(0,37,59,0.08); border-radius:24px; padding:3rem; box-shadow:0 20px 40px rgba(0,59,92,0.04);">
-      <div style="width:56px;height:56px;border-radius:16px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.25);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
-        <span class="material-symbols-outlined" style="color:#006875; font-size:24px;">mail</span>
-      </div>
-      <h2 style="font-size:1.5rem; font-weight:700; color:#00253b; margin-bottom:0.75rem;">Get New AI Insights — Monthly</h2>
-      <p style="color:#42474e; margin-bottom:2rem;">One email per month. Practical AI guides, UAE market data, and case studies — no fluff.</p>
-      <form id="newsletter-form" style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;" onsubmit="handleNewsletterSubmit(event)">
-        <input id="newsletter-email" type="email" name="EMAIL" required placeholder="your@email.com" style="flex:1; min-width:200px; height:48px; padding:0 1rem; border:1px solid rgba(0,37,59,0.18); border-radius:8px; font-size:0.9375rem; font-family:inherit; color:#111c2d; outline:none;" />
-        <button type="submit" class="btn-primary" style="height:48px; padding:0 1.5rem; white-space:nowrap;">Subscribe</button>
-      </form>
-      <div id="newsletter-success" style="display:none; color:#22c55e; font-weight:600; margin-top:0.75rem;">&#10003; You're subscribed!</div>
-      <p style="font-size:0.75rem; color:#72787e; margin-top:0.875rem;">No spam. Unsubscribe any time.</p>
-    </div>
-  </div>
-</section>
-
 </BaseLayout>
 
 <style>
@@ -204,4 +200,26 @@ const useDb = !dbError && dbPosts.length > 0;
     .tag { display:inline-flex; align-items:center; padding:3px 12px; border-radius:100px; font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; }
     .tag-coming { background:rgba(245,158,11,0.12); color:#d97706; border:1px solid rgba(245,158,11,0.25); }
     .tag-teal { background:rgba(0,104,117,0.10); color:#004f58; border:1px solid rgba(0,104,117,0.20); }
+    .filter-btn { padding:6px 18px; border-radius:100px; font-size:0.8125rem; font-weight:600; cursor:pointer; border:1px solid rgba(0,37,59,0.18); background:#fff; color:#42474e; transition:all .18s; }
+    .filter-btn:hover { border-color:#006875; color:#006875; }
+    .filter-btn.active { background:#006875; color:#fff; border-color:#006875; }
 </style>
+
+<script>
+  const filterBar = document.getElementById('filter-bar');
+  if (filterBar) {
+    filterBar.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest('.filter-btn') as HTMLButtonElement | null;
+      if (!btn) return;
+      const filter = btn.dataset.filter;
+      filterBar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const grid = document.getElementById('posts-grid');
+      if (!grid) return;
+      grid.querySelectorAll<HTMLElement>('.blog-card').forEach(card => {
+        const match = filter === 'all' || card.dataset.category === filter;
+        card.style.display = match ? '' : 'none';
+      });
+    });
+  }
+</script>

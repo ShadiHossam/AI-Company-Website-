@@ -1,24 +1,84 @@
 import { defineMiddleware } from 'astro:middleware';
 import { verifyJWT, extractRole } from './lib/jwt';
 import { getSupabaseAdmin } from './lib/supabase';
-import type { AppRole } from './lib/jwt';
+
+const supabaseConfigured = (() => {
+  const url = import.meta.env.SUPABASE_URL ?? '';
+  return url.length > 0 && !url.includes('placeholder');
+})();
 
 const STATIC_PREFIXES = ['/_astro/', '/assets/', '/favicon', '/_image'];
 const ADMIN_PUBLIC_PATHS = ['/admin/login'];
-const EDITOR_ALLOWED = ['/admin/content', '/admin/blog', '/admin/media', '/admin/seo', '/admin/notifications'];
-const SALES_ALLOWED = ['/admin/leads', '/admin/notifications'];
+const API_PUBLIC_PATHS = ['/api/admin/auth/login', '/api/admin/auth/logout'];
 
-// API routes accessible to non-super_admin roles
-const API_EDITOR_ALLOWED = [
-  '/api/admin/content', '/api/admin/blog', '/api/admin/media',
-  '/api/admin/seo', '/api/admin/notifications', '/api/admin/dashboard',
-];
-const API_SALES_ALLOWED = ['/api/admin/leads', '/api/admin/notifications', '/api/admin/dashboard'];
+// Section key → admin page prefixes
+const SECTION_ADMIN: Record<string, string[]> = {
+  dashboard:     ['/admin'],
+  blog:          ['/admin/blog'],
+  content:       ['/admin/content'],
+  media:         ['/admin/media'],
+  leads:         ['/admin/leads'],
+  jobs:          ['/admin/jobs'],
+  applications:  ['/admin/applications'],
+  notifications: ['/admin/notifications'],
+  seo:           ['/admin/seo'],
+  activity:      ['/admin/activity'],
+  settings:      ['/admin/settings'],
+  users:         ['/admin/settings/users'],
+};
 
-function isApiAllowed(pathname: string, role: AppRole): boolean {
-  if (role === 'super_admin') return true;
-  const list = role === 'editor' ? API_EDITOR_ALLOWED : API_SALES_ALLOWED;
-  return list.some(p => pathname.startsWith(p));
+// Section key → API prefixes
+const SECTION_API: Record<string, string[]> = {
+  dashboard:     ['/api/admin/dashboard'],
+  blog:          ['/api/admin/blog'],
+  content:       ['/api/admin/content'],
+  media:         ['/api/admin/media'],
+  leads:         ['/api/admin/leads'],
+  jobs:          ['/api/admin/jobs'],
+  applications:  ['/api/admin/applications'],
+  notifications: ['/api/admin/notifications'],
+  seo:           ['/api/admin/seo'],
+  activity:      ['/api/admin/activity'],
+  settings:      ['/api/admin/config', '/api/admin/banner', '/api/admin/redirects'],
+  users:         ['/api/admin/users'],
+};
+
+// Short-lived in-memory cache: role name → { sections, expiry }
+const roleCache = new Map<string, { sections: string[]; exp: number }>();
+const CACHE_TTL = 60_000;
+
+async function getAllowedSections(roleName: string): Promise<string[]> {
+  const hit = roleCache.get(roleName);
+  if (hit && Date.now() < hit.exp) return hit.sections;
+  try {
+    const supabase = getSupabaseAdmin();
+    const { data } = await supabase
+      .from('site_config')
+      .select('value')
+      .eq('key', `admin.role.${roleName}`)
+      .single();
+    if (!data) return [];
+    const roleData = JSON.parse(data.value) as { sections?: string[] };
+    const sections: string[] = roleData.sections ?? [];
+    roleCache.set(roleName, { sections, exp: Date.now() + CACHE_TTL });
+    return sections;
+  } catch {
+    return [];
+  }
+}
+
+function isAdminPathAllowed(pathname: string, sections: string[]): boolean {
+  return sections.some(s => {
+    const paths = SECTION_ADMIN[s] ?? [];
+    return paths.some(p => pathname === p || pathname.startsWith(p + '/') || (s === 'dashboard' && pathname === '/admin'));
+  });
+}
+
+function isApiPathAllowed(pathname: string, sections: string[]): boolean {
+  return sections.some(s => {
+    const paths = SECTION_API[s] ?? [];
+    return paths.some(p => pathname.startsWith(p));
+  });
 }
 
 function unauthorized401(): Response {
@@ -41,8 +101,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next();
   }
 
-  // DB redirect check (for non-admin, non-api paths)
-  if (!pathname.startsWith('/admin') && !pathname.startsWith('/api') && !pathname.startsWith('/_')) {
+  // DB redirect check (public routes)
+  if (supabaseConfigured && !pathname.startsWith('/admin') && !pathname.startsWith('/api') && !pathname.startsWith('/_')) {
     try {
       const supabase = getSupabaseAdmin();
       const { data } = await supabase
@@ -61,7 +121,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   // Maintenance mode check (public routes only)
-  if (!pathname.startsWith('/admin') && !pathname.startsWith('/api') && pathname !== '/maintenance') {
+  if (supabaseConfigured && !pathname.startsWith('/admin') && !pathname.startsWith('/api') && pathname !== '/maintenance') {
     try {
       const supabase = getSupabaseAdmin();
       const { data } = await supabase
@@ -88,9 +148,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  // Admin auth check
+  // Admin page auth + role check
   if (pathname.startsWith('/admin')) {
-    // Login page is public
     if (ADMIN_PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + '?'))) {
       return next();
     }
@@ -115,27 +174,27 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
     context.locals.user = { id: payload.sub, email: payload.email, role };
 
-    // Role-based route guarding
-    if (role === 'editor') {
-      const allowed = EDITOR_ALLOWED.some(p => pathname.startsWith(p)) || pathname === '/admin';
-      if (!allowed) return context.redirect('/admin?error=unauthorized');
-    }
-    if (role === 'sales') {
-      const allowed = SALES_ALLOWED.some(p => pathname.startsWith(p)) || pathname === '/admin';
+    // super_admin: unrestricted
+    if (role !== 'super_admin') {
+      const sections = await getAllowedSections(role);
+      const allowed = pathname === '/admin' || isAdminPathAllowed(pathname, sections);
       if (!allowed) return context.redirect('/admin?error=unauthorized');
     }
   }
 
   // API admin auth + role check
-  if (pathname.startsWith('/api/admin')) {
+  if (pathname.startsWith('/api/admin') && !API_PUBLIC_PATHS.some(p => pathname.startsWith(p))) {
     const token = context.cookies.get('sb-access-token')?.value;
     if (!token) return unauthorized401();
     try {
       const payload = await verifyJWT(token);
       const role = extractRole(payload);
       if (!role) return unauthorized401();
-      if (!isApiAllowed(pathname, role)) return forbidden403();
       context.locals.user = { id: payload.sub, email: payload.email, role };
+      if (role !== 'super_admin') {
+        const sections = await getAllowedSections(role);
+        if (!isApiPathAllowed(pathname, sections)) return forbidden403();
+      }
     } catch {
       return unauthorized401();
     }

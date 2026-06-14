@@ -13,6 +13,9 @@ const { count: unreadNotifs } = await supabase
 ---
 
 <AdminLayout title="New Blog Post" user={user} unreadCount={unreadNotifs ?? 0}>
+  <Fragment slot="head">
+    <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css" />
+  </Fragment>
 
   <div class="flex items-center gap-3 mb-6">
     <a href="/admin/blog" class="btn btn-ghost btn-sm">
@@ -22,7 +25,7 @@ const { count: unreadNotifs } = await supabase
     <h1 style="font-size:1.375rem; font-weight:800; color:var(--text-primary);">New Post</h1>
   </div>
 
-  <div id="error-banner" style="display:none;" class="card mb-4" style="background:var(--danger-dim); border-color:rgba(239,68,68,0.3); color:var(--danger);"></div>
+  <div id="error-banner" style="display:none;" class="card mb-4"></div>
 
   <form id="post-form">
     <div class="grid-2" style="gap:1.5rem; align-items:start;">
@@ -78,35 +81,100 @@ const { count: unreadNotifs } = await supabase
         </div>
       </div>
 
+      <!-- SEO & Focus Keyword card -->
+      <div style="grid-column:1/3;" class="card">
+        <div class="card-header" style="margin-bottom:1rem;">
+          <span class="card-title">SEO & Focus Keyword</span>
+        </div>
+        <div class="grid-2 mb-4" style="gap:1rem;">
+          <div class="form-group">
+            <label class="form-label" for="focus_keyword">Focus Keyword</label>
+            <input id="focus_keyword" name="focus_keyword" type="text" class="form-input"
+              placeholder="e.g. AI automation Dubai" />
+            <span class="text-xs text-muted" style="margin-top:4px; display:block;">The primary keyword you want this post to rank for</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="meta_title">Meta Title</label>
+            <input id="meta_title" name="meta_title" type="text" class="form-input"
+              placeholder="Defaults to post title" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="meta_description">Meta Description</label>
+          <textarea id="meta_description" name="meta_description" class="form-textarea"
+            style="min-height:70px;" placeholder="Defaults to description"></textarea>
+        </div>
+      </div>
+
       <!-- Body / Preview - full width -->
       <div style="grid-column:1/3;">
         <div class="card">
-          <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center justify-between mb-3">
             <label class="form-label" style="margin:0;">Body (Markdown) <span style="color:var(--danger);">*</span></label>
-            <div class="flex gap-2">
-              <button type="button" id="tab-write" class="btn btn-sm btn-primary">Write</button>
-              <button type="button" id="tab-preview" class="btn btn-sm btn-secondary">Preview</button>
+            <button type="button" id="preview-btn" class="btn btn-ghost btn-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Preview
+            </button>
+          </div>
+          <textarea id="body_markdown" name="body_markdown" placeholder="Write your post in Markdown..."></textarea>
+        </div>
+      </div>
+
+      <!-- SEO Analysis Panel - full width -->
+      <div style="grid-column:1/3;">
+        <div class="card" id="seo-panel">
+          <div id="seo-panel-toggle" style="cursor:pointer; display:flex; align-items:center; gap:0.75rem;">
+            <div style="position:relative; width:52px; height:52px; flex-shrink:0;">
+              <svg width="52" height="52" viewBox="0 0 52 52" style="transform:rotate(-90deg);">
+                <circle cx="26" cy="26" r="20" fill="none" stroke="var(--border)" stroke-width="5"/>
+                <circle id="seo-score-ring" cx="26" cy="26" r="20" fill="none"
+                  stroke="#475569" stroke-width="5"
+                  stroke-dasharray="125.66" stroke-dashoffset="125.66"
+                  stroke-linecap="round"/>
+              </svg>
+              <span id="seo-score-number" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.8125rem;color:var(--text-muted);">—</span>
             </div>
+            <div style="flex:1;">
+              <div class="card-title" style="margin:0;">SEO Analysis</div>
+              <div id="seo-score-label" class="text-xs text-muted" style="margin-top:2px;">Enter a focus keyword to begin</div>
+            </div>
+            <span id="seo-traffic-light" style="font-size:1.125rem;">⬜</span>
+            <svg id="seo-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              style="width:15px;height:15px;color:var(--text-muted);transition:transform 0.2s;flex-shrink:0;">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
           </div>
 
-          <div id="write-panel">
-            <textarea
-              id="body_markdown"
-              name="body_markdown"
-              class="form-textarea"
-              required
-              placeholder="Write your post in Markdown..."
-              style="min-height:500px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size:0.875rem; line-height:1.7;"
-            ></textarea>
-          </div>
+          <div id="seo-panel-body" style="margin-top:1.25rem;">
+            <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:1rem;">
+              <button type="button" class="seo-tab active" data-tab="overview">Overview</button>
+              <button type="button" class="seo-tab" data-tab="serp">SERP Preview</button>
+              <button type="button" class="seo-tab" data-tab="readability">Readability</button>
+              <button type="button" class="seo-tab" data-tab="stats">Content Stats</button>
+            </div>
 
-          <div id="preview-panel" style="display:none;">
-            <div
-              id="preview-content"
-              class="prose"
-              style="min-height:500px; padding:1rem; background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-primary); line-height:1.8;"
-            >
-              <em style="color:var(--text-muted);">Click "Preview" to render the markdown…</em>
+            <div id="seo-tab-overview" class="seo-tab-content">
+              <div id="seo-checks-list" style="display:flex;flex-direction:column;gap:0;"></div>
+            </div>
+
+            <div id="seo-tab-serp" class="seo-tab-content" style="display:none;">
+              <div id="seo-serp-box" style="background:#fff;border-radius:8px;padding:1rem 1.25rem;font-family:Arial,sans-serif;border:1px solid #e0e0e0;">
+                <div id="serp-breadcrumb" style="font-size:0.8125rem;color:#202124;margin-bottom:2px;"></div>
+                <div id="serp-title" style="font-size:1.125rem;color:#1a0dab;font-weight:400;margin-bottom:3px;line-height:1.3;"></div>
+                <div id="serp-desc" style="font-size:0.875rem;color:#4d5156;line-height:1.55;"></div>
+              </div>
+              <div style="display:flex;gap:1.5rem;margin-top:0.625rem;">
+                <span class="text-xs" id="serp-title-counter" style="color:var(--text-muted);">0/60 title chars</span>
+                <span class="text-xs" id="serp-desc-counter" style="color:var(--text-muted);">0/160 desc chars</span>
+              </div>
+            </div>
+
+            <div id="seo-tab-readability" class="seo-tab-content" style="display:none;">
+              <div id="seo-readability-content"></div>
+            </div>
+
+            <div id="seo-tab-stats" class="seo-tab-content" style="display:none;">
+              <div id="seo-stats-content" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.625rem;"></div>
             </div>
           </div>
         </div>
@@ -123,9 +191,25 @@ const { count: unreadNotifs } = await supabase
     </div>
   </form>
 
+  <!-- Preview overlay -->
+  <div id="preview-overlay" style="display:none; position:fixed; inset:0; z-index:500; background:var(--bg-page); overflow-y:auto; padding:2rem 1rem;">
+    <div style="max-width:780px; margin:0 auto;">
+      <div class="flex items-center gap-3 mb-6">
+        <button type="button" id="close-preview" class="btn btn-ghost btn-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to editing
+        </button>
+        <span class="text-xs text-muted" style="margin-left:auto;">Preview — not yet saved</span>
+      </div>
+      <h1 id="preview-title" style="font-size:2rem; font-weight:800; margin-bottom:1.5rem; color:var(--text-primary); line-height:1.25;"></h1>
+      <div id="preview-content" style="color:var(--text-primary); line-height:1.8; font-size:1rem;"></div>
+    </div>
+  </div>
+
 </AdminLayout>
 
 <script>
+  import EasyMDE from 'easymde';
   import { marked } from 'marked';
 
   // Auto-generate slug from title
@@ -141,40 +225,70 @@ const { count: unreadNotifs } = await supabase
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '');
     }
+    scheduleSEO();
   });
 
-  // Tab switching
-  const tabWrite = document.getElementById('tab-write')!;
-  const tabPreview = document.getElementById('tab-preview')!;
-  const writePanel = document.getElementById('write-panel')!;
-  const previewPanel = document.getElementById('preview-panel')!;
-  const previewContent = document.getElementById('preview-content')!;
-  const bodyEl = document.getElementById('body_markdown') as HTMLTextAreaElement;
+  // EasyMDE init
+  let editor: InstanceType<typeof EasyMDE> | null = null;
+  const bodyTextarea = document.getElementById('body_markdown') as HTMLTextAreaElement;
+  try {
+    editor = new EasyMDE({
+      element: bodyTextarea,
+      autofocus: false,
+      spellChecker: false,
+      placeholder: 'Write your post in Markdown…',
+      minHeight: '500px',
+      toolbar: [
+        'bold', 'italic', 'heading', '|',
+        'quote', 'unordered-list', 'ordered-list', '|',
+        'link', 'image', 'code', '|',
+        'preview', 'side-by-side', 'fullscreen', '|',
+        'guide',
+      ],
+    });
+  } catch (err) {
+    console.warn('EasyMDE failed to load, falling back to plain textarea:', err);
+  }
 
-  tabWrite.addEventListener('click', () => {
-    writePanel.style.display = 'block';
-    previewPanel.style.display = 'none';
-    tabWrite.className = 'btn btn-sm btn-primary';
-    tabPreview.className = 'btn btn-sm btn-secondary';
-  });
+  function getBodyValue(): string {
+    return editor ? editor.value() : bodyTextarea.value;
+  }
 
-  tabPreview.addEventListener('click', async () => {
-    writePanel.style.display = 'none';
-    previewPanel.style.display = 'block';
-    tabWrite.className = 'btn btn-sm btn-secondary';
-    tabPreview.className = 'btn btn-sm btn-primary';
-    previewContent.innerHTML = await marked(bodyEl.value || '_No content yet_');
-  });
+  // Wire up SEO triggers
+  let seoTimer: ReturnType<typeof setTimeout> | null = null;
+  function scheduleSEO() {
+    if (seoTimer) clearTimeout(seoTimer);
+    seoTimer = setTimeout(() => runSEOAnalysis(), 300);
+  }
+
+  const formInputs = document.querySelectorAll('#post-form input, #post-form textarea, #post-form select');
+  formInputs.forEach(f => f.addEventListener('input', scheduleSEO));
+
+  if (editor) {
+    editor.codemirror.on('change', scheduleSEO);
+  } else {
+    bodyTextarea.addEventListener('input', scheduleSEO);
+  }
 
   // Form submission
   const form = document.getElementById('post-form') as HTMLFormElement;
   const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
   const errorBanner = document.getElementById('error-banner')!;
 
+  function showError(msg: string) {
+    errorBanner.textContent = msg;
+    errorBanner.style.cssText = 'display:block; background:var(--danger-dim); border-color:rgba(239,68,68,0.3); color:var(--danger); padding:0.75rem 1rem;';
+    errorBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (!getBodyValue().trim()) {
+      showError('Body is required.');
+      return;
+    }
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Creating…';
+    submitBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="20 6 9 17 4 12"/></svg> Creating…';
     errorBanner.style.display = 'none';
 
     const data = {
@@ -185,7 +299,10 @@ const { count: unreadNotifs } = await supabase
       author_name: (document.getElementById('author_name') as HTMLInputElement).value.trim(),
       og_image: (document.getElementById('og_image') as HTMLInputElement).value.trim() || '/assets/og-blog.jpg',
       status: (document.getElementById('status') as HTMLSelectElement).value,
-      body_markdown: bodyEl.value,
+      body_markdown: getBodyValue(),
+      focus_keyword: (document.getElementById('focus_keyword') as HTMLInputElement).value.trim() || null,
+      meta_title: (document.getElementById('meta_title') as HTMLInputElement).value.trim() || null,
+      meta_description: (document.getElementById('meta_description') as HTMLTextAreaElement).value.trim() || null,
     };
 
     try {
@@ -196,33 +313,375 @@ const { count: unreadNotifs } = await supabase
       });
 
       const json = await res.json();
-      if (res.ok) {
+      if (res.ok && json.data?.id) {
         window.location.href = `/admin/blog/${json.data.id}`;
       } else {
-        errorBanner.textContent = json.error ?? 'Failed to create post.';
-        errorBanner.style.display = 'block';
-        errorBanner.style.background = 'var(--danger-dim)';
-        errorBanner.style.borderColor = 'rgba(239,68,68,0.3)';
-        errorBanner.style.color = 'var(--danger)';
-        errorBanner.style.padding = '0.75rem 1rem';
+        showError(json.error ?? 'Failed to create post.');
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Create Post';
+        submitBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="20 6 9 17 4 12"/></svg> Create Post';
       }
-    } catch {
-      errorBanner.textContent = 'Network error. Please try again.';
-      errorBanner.style.display = 'block';
+    } catch (err) {
+      console.error('Create post error:', err);
+      showError('Network error. Please try again.');
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Create Post';
+      submitBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="20 6 9 17 4 12"/></svg> Create Post';
     }
   });
+
+  // Preview
+  const previewBtn = document.getElementById('preview-btn') as HTMLButtonElement;
+  const previewOverlay = document.getElementById('preview-overlay')!;
+  const closePreviewBtn = document.getElementById('close-preview')!;
+  const previewTitleEl = document.getElementById('preview-title')!;
+  const previewContentEl = document.getElementById('preview-content')!;
+
+  previewBtn.addEventListener('click', async () => {
+    try {
+      previewTitleEl.textContent = (document.getElementById('title') as HTMLInputElement).value || 'Untitled';
+      const html = await marked.parse(getBodyValue() || '_No content yet._');
+      previewContentEl.innerHTML = html;
+      previewOverlay.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+    } catch (err) {
+      console.error('Preview error:', err);
+    }
+  });
+
+  closePreviewBtn.addEventListener('click', () => {
+    previewOverlay.style.display = 'none';
+    document.body.style.overflow = '';
+  });
+
+  // ─── SEO Analysis ─────────────────────────────────────────────────────────
+
+  async function mdToNodes(md: string) {
+    const html = await marked.parse(md || '');
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return { html, div, text: div.textContent ?? '' };
+  }
+
+  function countWords(t: string) { return t.trim().split(/\s+/).filter(w => w.length > 0).length; }
+  function getSentences(t: string) { return t.split(/[.!?]+(?:\s|$)/).filter(s => s.trim().length > 3); }
+
+  function countSyllables(w: string) {
+    w = w.toLowerCase().replace(/[^a-z]/g, '');
+    if (w.length <= 3) return 1;
+    w = w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '').replace(/^y/, '');
+    return (w.match(/[aeiouy]{1,2}/g) ?? []).length || 1;
+  }
+
+  function fleschScore(t: string) {
+    const sents = getSentences(t);
+    const words = t.trim().split(/\s+/).filter(w => w.length > 0);
+    if (!sents.length || !words.length) return 0;
+    const syls = words.reduce((s, w) => s + countSyllables(w), 0);
+    return Math.max(0, Math.min(100, Math.round(206.835 - 1.015 * (words.length / sents.length) - 84.6 * (syls / words.length))));
+  }
+
+  function readingLevel(s: number) {
+    if (s >= 90) return '5th grade';
+    if (s >= 80) return '6th grade';
+    if (s >= 70) return '7th grade';
+    if (s >= 60) return '8th–9th grade';
+    if (s >= 50) return '10th–12th grade';
+    if (s >= 30) return 'College level';
+    return 'Professional/Academic';
+  }
+
+  function passivePct(t: string) {
+    const sents = getSentences(t);
+    if (!sents.length) return 0;
+    const re = /\b(am|is|are|was|were|be|been|being)\s+\w+ed\b/gi;
+    return Math.round((sents.filter(s => re.test(s)).length / sents.length) * 100);
+  }
+
+  function checkLongSections(md: string) {
+    return !md.split(/^#{1,3}\s/m).some(s => countWords(s) > 300);
+  }
+
+  function kwDensity(kw: string, t: string) {
+    if (!kw || !t) return { count: 0, density: 0 };
+    const words = t.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+    const count = words.filter(w => w.includes(kw)).length;
+    return { count, density: words.length ? count / words.length : 0 };
+  }
+
+  function escHtml(s: string) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function hlKw(text: string, kw: string) {
+    if (!kw) return escHtml(text);
+    const re = new RegExp(`(${kw.replace(/[-.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return escHtml(text).replace(re, '<strong>$1</strong>');
+  }
+
+  interface Check { id: string; label: string; detail?: string; status: 'pass' | 'warn' | 'fail'; points: number; }
+
+  function calcScore(checks: Check[]) {
+    const total = checks.reduce((s, c) => s + c.points, 0);
+    const earned = checks.reduce((s, c) => s + (c.status === 'pass' ? c.points : c.status === 'warn' ? Math.floor(c.points * 0.5) : 0), 0);
+    return total ? Math.round((earned / total) * 100) : 0;
+  }
+
+  function renderScore(score: number) {
+    const ring = document.getElementById('seo-score-ring')!;
+    const num = document.getElementById('seo-score-number')!;
+    const lbl = document.getElementById('seo-score-label')!;
+    const tl = document.getElementById('seo-traffic-light')!;
+    const color = score >= 75 ? '#22c55e' : score >= 50 ? '#f59e0b' : '#ef4444';
+    ring.style.strokeDashoffset = String(125.66 * (1 - score / 100));
+    ring.style.stroke = color;
+    num.textContent = String(score);
+    num.style.color = color;
+    lbl.textContent = score >= 75 ? 'Good' : score >= 50 ? 'Needs improvement' : 'Poor';
+    tl.textContent = score >= 75 ? '🟢' : score >= 50 ? '🟡' : '🔴';
+  }
+
+  function renderChecks(checks: Check[]) {
+    document.getElementById('seo-checks-list')!.innerHTML = checks.map(c => {
+      const icon = c.status === 'pass' ? '✅' : c.status === 'warn' ? '⚠️' : '❌';
+      const color = c.status === 'pass' ? 'var(--success)' : c.status === 'warn' ? 'var(--warning)' : 'var(--danger)';
+      return `<div style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.5rem 0;border-bottom:1px solid var(--border);">
+        <span style="flex-shrink:0;font-size:0.875rem;margin-top:1px;">${icon}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:0.8125rem;color:var(--text-primary);line-height:1.4;">${c.label}</div>
+          ${c.detail ? `<div style="font-size:0.75rem;color:var(--text-muted);margin-top:1px;">${c.detail}</div>` : ''}
+        </div>
+        <span style="font-size:0.6875rem;color:${color};font-weight:700;flex-shrink:0;">${c.points}pt</span>
+      </div>`;
+    }).join('');
+  }
+
+  function renderSERP(title: string, desc: string, slug: string, kw: string) {
+    const tDisp = title.length > 60 ? title.slice(0, 57) + '…' : title;
+    const dDisp = desc.length > 160 ? desc.slice(0, 157) + '…' : desc;
+    (document.getElementById('serp-breadcrumb') as HTMLElement).textContent = `aegisai.ae › blog › ${slug || 'your-post-slug'}`;
+    (document.getElementById('serp-title') as HTMLElement).innerHTML = tDisp ? hlKw(tDisp, kw) : '<span style="color:#9aa0a6;">Your post title will appear here</span>';
+    (document.getElementById('serp-desc') as HTMLElement).innerHTML = dDisp ? hlKw(dDisp, kw) : '<span style="color:#9aa0a6;">Your meta description will appear here</span>';
+    const tc = document.getElementById('serp-title-counter')!;
+    const dc = document.getElementById('serp-desc-counter')!;
+    tc.textContent = `${title.length}/60 title chars`;
+    tc.style.color = title.length >= 50 && title.length <= 60 ? 'var(--success)' : title.length > 0 ? 'var(--warning)' : 'var(--text-muted)';
+    dc.textContent = `${desc.length}/160 desc chars`;
+    dc.style.color = desc.length >= 120 && desc.length <= 160 ? 'var(--success)' : desc.length > 0 ? 'var(--warning)' : 'var(--text-muted)';
+  }
+
+  function renderReadability(flesch: number, passive: number, avgSL: number) {
+    const fc = flesch > 60 ? 'var(--success)' : flesch >= 30 ? 'var(--warning)' : 'var(--danger)';
+    document.getElementById('seo-readability-content')!.innerHTML = `
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
+        <div style="font-size:2rem;font-weight:800;color:${fc};">${flesch}</div>
+        <div>
+          <div style="font-size:0.875rem;color:var(--text-primary);">Flesch Reading Ease</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">${readingLevel(flesch)}</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;">
+        <div style="display:flex;justify-content:space-between;font-size:0.8125rem;">
+          <span style="color:var(--text-muted);">Avg sentence length</span>
+          <span style="color:${avgSL < 20 ? 'var(--success)' : avgSL <= 25 ? 'var(--warning)' : 'var(--danger)'};">${avgSL} words</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.8125rem;">
+          <span style="color:var(--text-muted);">Passive voice</span>
+          <span style="color:${passive < 10 ? 'var(--success)' : passive < 20 ? 'var(--warning)' : 'var(--danger)'};">${passive}%</span>
+        </div>
+        <div style="margin-top:0.75rem;padding:0.625rem;background:var(--bg-input);border-radius:var(--radius-sm);">
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">Score guide</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">90–100: Very easy (5th grade) · 60–70: Standard (8th–9th) · 30–50: Difficult (College) · 0–30: Very difficult</div>
+        </div>
+      </div>`;
+  }
+
+  function renderStats(s: { wc: number; chars: number; readMin: number; h1: number; h2: number; h3: number; imgs: number; internalLinks: number; externalLinks: number; paras: number; avgSL: number; }) {
+    const items: [string, string | number][] = [
+      ['Words', s.wc.toLocaleString()], ['Read time', `${s.readMin} min`], ['Characters', s.chars.toLocaleString()],
+      ['Paragraphs', s.paras], ['H1', s.h1], ['H2', s.h2], ['H3', s.h3],
+      ['Images', s.imgs], ['Internal links', s.internalLinks], ['External links', s.externalLinks], ['Avg sentence', `${s.avgSL}w`],
+    ];
+    document.getElementById('seo-stats-content')!.innerHTML = items.map(([l, v]) =>
+      `<div style="background:var(--bg-input);border-radius:var(--radius-sm);padding:0.5rem 0.75rem;">
+        <div style="font-size:0.625rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;">${l}</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--text-primary);">${v}</div>
+      </div>`
+    ).join('');
+  }
+
+  async function runSEOAnalysis() {
+    const title = (document.getElementById('title') as HTMLInputElement).value.trim();
+    const slug = (document.getElementById('slug') as HTMLInputElement).value.trim();
+    const desc = (document.getElementById('description') as HTMLTextAreaElement).value.trim();
+    const metaT = (document.getElementById('meta_title') as HTMLInputElement)?.value.trim() ?? '';
+    const metaD = (document.getElementById('meta_description') as HTMLTextAreaElement)?.value.trim() ?? '';
+    const kw = (document.getElementById('focus_keyword') as HTMLInputElement).value.trim().toLowerCase();
+    const md = getBodyValue();
+
+    const { div, text } = await mdToNodes(md);
+    const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+    const sents = getSentences(text);
+    const wc = words.length;
+    const avgSL = sents.length ? Math.round(wc / sents.length) : 0;
+    const flesch = fleschScore(text);
+    const passive = passivePct(text);
+    const density = kwDensity(kw, text);
+    const effTitle = metaT || title;
+    const effDesc = metaD || desc;
+
+    const stats = {
+      wc, chars: text.length,
+      readMin: Math.max(1, Math.round(wc / 200)),
+      h1: div.querySelectorAll('h1').length,
+      h2: div.querySelectorAll('h2').length,
+      h3: div.querySelectorAll('h3').length,
+      imgs: (md.match(/!\[/g) ?? []).length,
+      internalLinks: [...div.querySelectorAll('a')].filter(a => { const h = a.getAttribute('href') ?? ''; return h.startsWith('/') || h.includes('aegisai.ae'); }).length,
+      externalLinks: [...div.querySelectorAll('a')].filter(a => { const h = a.getAttribute('href') ?? ''; return h.startsWith('http') && !h.includes('aegisai.ae'); }).length,
+      paras: div.querySelectorAll('p').length,
+      avgSL,
+    };
+
+    const checks: Check[] = [];
+
+    if (kw) {
+      checks.push({ id: 'kw-title', points: 8, label: 'Keyword in SEO title', status: effTitle.toLowerCase().includes(kw) ? 'pass' : 'fail' });
+      checks.push({ id: 'kw-desc', points: 8, label: 'Keyword in meta description', status: effDesc.toLowerCase().includes(kw) ? 'pass' : 'fail' });
+      const kwSlug = kw.replace(/\s+/g, '-');
+      checks.push({ id: 'kw-slug', points: 6, label: 'Keyword in URL slug', detail: `Slug: "${slug}"`, status: slug.includes(kwSlug) ? 'pass' : 'fail' });
+      const first200 = words.slice(0, 200).join(' ').toLowerCase();
+      checks.push({ id: 'kw-intro', points: 8, label: 'Keyword in first paragraph', status: first200.includes(kw) ? 'pass' : 'fail' });
+      const d = density.density;
+      checks.push({ id: 'kw-density', points: 6, label: `Keyword density (${(d * 100).toFixed(1)}%) — ${density.count} uses`, detail: 'Target: 0.5%–3%', status: d >= 0.005 && d <= 0.03 ? 'pass' : d < 0.005 ? 'warn' : 'fail' });
+      const headings = [...div.querySelectorAll('h2,h3')];
+      checks.push({ id: 'kw-heading', points: 5, label: 'Keyword in a subheading', status: headings.some(h => h.textContent?.toLowerCase().includes(kw)) ? 'pass' : 'warn' });
+    }
+
+    const tLen = effTitle.length;
+    checks.push({ id: 'title-len', points: 7, label: `Meta title length (${tLen} chars)`, detail: tLen >= 50 && tLen <= 60 ? 'Perfect' : tLen < 50 ? 'Too short — aim for 50–60' : 'Too long — Google truncates at ~60', status: tLen >= 50 && tLen <= 60 ? 'pass' : tLen >= 40 && tLen <= 70 ? 'warn' : 'fail' });
+    const dLen = effDesc.length;
+    checks.push({ id: 'desc-len', points: 7, label: `Meta description length (${dLen} chars)`, detail: dLen >= 120 && dLen <= 160 ? 'Perfect' : dLen < 120 ? 'Too short — aim for 120–160' : 'Too long — Google truncates', status: dLen >= 120 && dLen <= 160 ? 'pass' : dLen >= 100 && dLen <= 180 ? 'warn' : 'fail' });
+    if (metaT && title) {
+      checks.push({ id: 'title-diff', points: 4, label: 'Meta title differs from post title', detail: metaT === title ? 'Consider customising for SEO' : undefined, status: metaT !== title ? 'pass' : 'warn' });
+    }
+
+    checks.push({ id: 'wc', points: 8, label: `Word count (${wc.toLocaleString()} words)`, detail: wc >= 1000 ? 'Great for SEO' : wc >= 300 ? 'Good, but 1000+ is better' : 'Minimum 300 words recommended', status: wc >= 1000 ? 'pass' : wc >= 300 ? 'warn' : 'fail' });
+    checks.push({ id: 'image', points: 5, label: 'Contains at least one image', status: stats.imgs >= 1 ? 'pass' : 'fail' });
+    checks.push({ id: 'internal', points: 6, label: 'Has internal links', detail: stats.internalLinks === 0 ? 'Link to other aegisai.ae pages' : undefined, status: stats.internalLinks >= 1 ? 'pass' : 'warn' });
+    checks.push({ id: 'external', points: 4, label: 'Has outbound links', status: stats.externalLinks >= 1 ? 'pass' : 'warn' });
+    checks.push({ id: 'headings', points: 5, label: 'Uses H2/H3 subheadings', status: (stats.h2 + stats.h3) >= 1 ? 'pass' : 'fail' });
+    checks.push({ id: 'sections', points: 4, label: 'No section >300 words without heading', status: checkLongSections(md) ? 'pass' : 'warn' });
+    checks.push({ id: 'sent-len', points: 5, label: `Avg sentence length (${avgSL} words)`, status: avgSL < 20 ? 'pass' : avgSL <= 25 ? 'warn' : 'fail' });
+    checks.push({ id: 'flesch', points: 4, label: `Flesch reading ease (${flesch}/100)`, detail: readingLevel(flesch), status: flesch > 60 ? 'pass' : flesch >= 30 ? 'warn' : 'fail' });
+    checks.push({ id: 'passive', points: 4, label: `Passive voice (${passive}% of sentences)`, status: passive < 10 ? 'pass' : passive < 20 ? 'warn' : 'fail' });
+
+    const score = calcScore(checks);
+    renderScore(score);
+    renderChecks(checks);
+    renderSERP(effTitle, effDesc, slug, kw);
+    renderReadability(flesch, passive, avgSL);
+    renderStats(stats);
+  }
+
+  // Tab switching
+  document.querySelectorAll('.seo-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.seo-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.seo-tab-content').forEach(c => { (c as HTMLElement).style.display = 'none'; });
+      btn.classList.add('active');
+      (document.getElementById(`seo-tab-${(btn as HTMLElement).dataset.tab}`) as HTMLElement).style.display = 'block';
+    });
+  });
+
+  // Collapse toggle
+  let seoOpen = true;
+  document.getElementById('seo-panel-toggle')!.addEventListener('click', () => {
+    seoOpen = !seoOpen;
+    (document.getElementById('seo-panel-body') as HTMLElement).style.display = seoOpen ? 'block' : 'none';
+    (document.getElementById('seo-chevron') as SVGElement).style.transform = seoOpen ? '' : 'rotate(-90deg)';
+  });
+
+  // Initial run
+  runSEOAnalysis();
 </script>
 
-<style>
-  .prose h1, .prose h2, .prose h3 { color: var(--text-primary); margin-top:1.5rem; margin-bottom:0.5rem; }
-  .prose p { margin-bottom: 1rem; }
-  .prose ul, .prose ol { padding-left: 1.5rem; margin-bottom: 1rem; }
-  .prose code { background: var(--bg-hover); padding: 2px 6px; border-radius: 4px; font-size: 0.85em; }
-  .prose pre { background: var(--bg-hover); padding: 1rem; border-radius: 8px; overflow-x: auto; margin-bottom: 1rem; }
-  .prose blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--text-muted); margin-bottom: 1rem; }
-  .prose a { color: var(--accent); }
+<style is:global>
+  /* Dark theme overrides for EasyMDE */
+  .EasyMDEContainer .CodeMirror {
+    background: var(--bg-input);
+    color: var(--text-primary);
+    border-color: var(--border);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.875rem;
+    line-height: 1.7;
+  }
+  .EasyMDEContainer .editor-toolbar {
+    background: var(--bg-card);
+    border-color: var(--border);
+  }
+  .EasyMDEContainer .editor-toolbar button {
+    color: var(--text-muted) !important;
+  }
+  .EasyMDEContainer .editor-toolbar button:hover,
+  .EasyMDEContainer .editor-toolbar button.active {
+    background: var(--bg-hover);
+    border-color: var(--border);
+    color: var(--text-primary) !important;
+  }
+  .EasyMDEContainer .editor-toolbar i.separator { border-color: var(--border); }
+  .EasyMDEContainer .CodeMirror-cursor { border-color: var(--text-primary); }
+  .EasyMDEContainer .editor-preview {
+    background: var(--bg-input);
+    color: var(--text-primary);
+  }
+  .EasyMDEContainer .editor-preview-side {
+    background: var(--bg-input);
+    color: var(--text-primary);
+    border-color: var(--border);
+  }
+  .EasyMDEContainer .CodeMirror-scroll { min-height: 500px; }
+  .EasyMDEContainer { border-radius: var(--radius-sm); overflow: hidden; }
+
+  /* Preview overlay prose styles */
+  #preview-content h1, #preview-content h2, #preview-content h3,
+  #preview-content h4, #preview-content h5, #preview-content h6 {
+    color: var(--text-primary); margin-top: 1.75rem; margin-bottom: 0.5rem; font-weight: 700; line-height: 1.3;
+  }
+  #preview-content h1 { font-size: 1.875rem; }
+  #preview-content h2 { font-size: 1.5rem; }
+  #preview-content h3 { font-size: 1.25rem; }
+  #preview-content p { margin-bottom: 1rem; }
+  #preview-content ul, #preview-content ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+  #preview-content li { margin-bottom: 0.25rem; }
+  #preview-content code { background: var(--bg-hover); padding: 2px 6px; border-radius: 4px; font-size: 0.85em; font-family: ui-monospace, monospace; }
+  #preview-content pre { background: var(--bg-hover); padding: 1rem; border-radius: 8px; overflow-x: auto; margin-bottom: 1rem; }
+  #preview-content pre code { background: none; padding: 0; }
+  #preview-content blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--text-muted); margin-bottom: 1rem; }
+  #preview-content a { color: var(--accent); text-decoration: underline; }
+  #preview-content strong { font-weight: 700; }
+  #preview-content em { font-style: italic; }
+  #preview-content hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+  #preview-content table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+  #preview-content th, #preview-content td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; }
+  #preview-content th { background: var(--bg-hover); font-weight: 600; }
+  #preview-content img { max-width: 100%; border-radius: 8px; }
+
+  /* SEO Analysis Panel */
+  .seo-tab {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    font-family: var(--font);
+  }
+  .seo-tab:hover { color: var(--text-primary); }
+  .seo-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .seo-tab-content { animation: seo-fade 0.15s ease; }
+  @keyframes seo-fade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+  #seo-score-ring { transition: stroke-dashoffset 0.6s cubic-bezier(0.4,0,0.2,1), stroke 0.4s ease; }
+  #seo-serp-box strong { font-weight: 700; background: rgba(255,200,0,0.3); border-radius: 2px; }
 </style>

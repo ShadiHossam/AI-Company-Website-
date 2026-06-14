@@ -12,11 +12,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
   if (!locals.user) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
-
   if (locals.user.role !== 'super_admin') {
     return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
   }
-
   if (!CSRF(request)) {
     return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
   }
@@ -28,15 +26,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 });
   }
 
-  const ALLOWED_ROLES = ['editor', 'sales', 'super_admin'] as const;
   if (!body.email || !body.role) {
     return new Response(JSON.stringify({ error: 'email and role required' }), { status: 400 });
   }
-  if (!ALLOWED_ROLES.includes(body.role as typeof ALLOWED_ROLES[number])) {
-    return new Response(JSON.stringify({ error: 'Invalid role' }), { status: 400 });
-  }
 
   const supabase = getSupabaseAdmin();
+
+  // super_admin is always valid; other roles must exist in site_config
+  if (body.role !== 'super_admin') {
+    const { data: roleRow } = await supabase
+      .from('site_config')
+      .select('key')
+      .eq('key', `admin.role.${body.role}`)
+      .single();
+    if (!roleRow) {
+      return new Response(JSON.stringify({ error: 'Invalid role' }), { status: 400 });
+    }
+  }
+
   const { data, error } = await supabase.auth.admin.inviteUserByEmail(body.email, {
     data: { role: body.role },
   });

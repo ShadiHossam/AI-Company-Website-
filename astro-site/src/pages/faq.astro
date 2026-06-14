@@ -55,12 +55,24 @@ try {
 }
 
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const allFaqs = [...gettingStartedFaqs, ...guaranteeFaqs, ...technicalFaqs];
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: allFaqs.map(f => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
 ---
 
 <BaseLayout
   title="FAQ — Honest Answers About AI for Your Business | Aegis AI"
   description="Real answers to the questions Dubai businesses ask before starting an AI project. Timeline, the guarantee, and what actually happens during a project."
   canonicalPath="/faq"
+  ldJson={faqSchema}
 >
 
 <!-- ── HERO ── -->

@@ -1,0 +1,56 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../../lib/supabase';
+import { PAGE_CONFIGS } from '../../../../lib/page-content';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+const { count: unreadNotifs } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false);
+
+const { data: updatedRows } = await supabase
+  .from('page_content')
+  .select('page_slug, updated_at')
+  .order('updated_at', { ascending: false });
+
+const lastUpdatedMap: Record<string, string> = {};
+for (const row of updatedRows ?? []) {
+  if (!lastUpdatedMap[row.page_slug]) {
+    lastUpdatedMap[row.page_slug] = row.updated_at;
+  }
+}
+
+function formatDate(d: string | undefined) {
+  if (!d) return 'Never edited';
+  return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+---
+
+<AdminLayout title="Pages & Text" user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <a href="/admin/content" class="text-muted text-sm" style="text-decoration:none;">← Content</a>
+      <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-top:0.25rem;">Pages & Text</h1>
+      <p class="text-muted text-sm mt-1">Edit hero headlines, sub-text, and CTA copy for each public page.</p>
+    </div>
+  </div>
+
+  <div class="grid-2" style="gap:1.25rem;">
+    {PAGE_CONFIGS.map(page => (
+      <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
+            <div style="font-size:1rem;font-weight:600;color:var(--text-primary);">{page.title}</div>
+            <span style="font-size:0.75rem;color:var(--text-muted);background:var(--surface-2);padding:2px 8px;border-radius:100px;">{page.path}</span>
+          </div>
+          <p class="text-muted text-sm" style="margin-bottom:0.5rem;">{page.description}</p>
+          <p style="font-size:0.75rem;color:var(--text-muted);">Last edited: {formatDate(lastUpdatedMap[page.slug])}</p>
+        </div>
+        <div class="flex items-center gap-2" style="margin-top:1.25rem;">
+          <a href={`/admin/content/pages/${page.slug}`} class="btn btn-secondary btn-sm">Edit →</a>
+          <a href={page.path} target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Preview ↗</a>
+        </div>
+      </div>
+    ))}
+  </div>
+</AdminLayout>

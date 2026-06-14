@@ -20,13 +20,18 @@ const config: Record<string, string> = {};
 (configRows ?? []).forEach(row => { config[row.key] = row.value ?? ''; });
 
 const fields = [
-  { key: 'company.name', label: 'Company Name', type: 'text', placeholder: 'Aegis AI' },
-  { key: 'company.phone', label: 'Phone Number', type: 'tel', placeholder: '+971 XX XXX XXXX' },
-  { key: 'company.email', label: 'Email Address', type: 'email', placeholder: 'hello@aegisai.ae' },
-  { key: 'company.whatsapp', label: 'WhatsApp Number', type: 'text', placeholder: '+971XXXXXXXXX' },
-  { key: 'company.linkedin', label: 'LinkedIn Handle', type: 'text', placeholder: 'aegisai' },
-  { key: 'company.address', label: 'Address', type: 'text', placeholder: 'Dubai, UAE' },
-  { key: 'company.hours', label: 'Business Hours', type: 'text', placeholder: 'Mon–Fri, 9am–6pm GST' },
+  { key: 'company.name',      label: 'Company Name',    type: 'text',  placeholder: 'Aegis AI',                  section: 'General' },
+  { key: 'company.phone',     label: 'Phone Number',    type: 'tel',   placeholder: '+971 XX XXX XXXX',           section: 'General' },
+  { key: 'company.email',     label: 'Email Address',   type: 'email', placeholder: 'hello@aegisai.ae',           section: 'General' },
+  { key: 'company.address',   label: 'Address',         type: 'text',  placeholder: 'Dubai, UAE',                 section: 'General' },
+  { key: 'company.hours',     label: 'Business Hours',  type: 'text',  placeholder: 'Sun–Thu · 9:00 am–6:00 pm GST', section: 'General' },
+  { key: 'company.whatsapp',  label: 'WhatsApp Number', type: 'text',  placeholder: '971XXXXXXXXX',               section: 'Social Media' },
+  { key: 'company.linkedin',  label: 'LinkedIn Handle', type: 'text',  placeholder: 'aegis-ai-dubai',             section: 'Social Media' },
+  { key: 'company.twitter',   label: 'X (Twitter) Handle', type: 'text', placeholder: 'aegisai',                 section: 'Social Media' },
+  { key: 'company.instagram', label: 'Instagram Handle', type: 'text', placeholder: 'aegisai.ae',                 section: 'Social Media' },
+  { key: 'company.facebook',  label: 'Facebook Page',   type: 'text',  placeholder: 'aegisai',                    section: 'Social Media' },
+  { key: 'company.youtube',   label: 'YouTube Channel', type: 'text',  placeholder: '@aegisai',                   section: 'Social Media' },
+  { key: 'company.tiktok',    label: 'TikTok Handle',   type: 'text',  placeholder: '@aegisai',                   section: 'Social Media' },
 ];
 ---
 
@@ -42,19 +47,28 @@ const fields = [
   <div class="card" style="max-width:640px;">
     <div style="padding:1.5rem;">
       <form id="company-form">
-        {fields.map(field => (
-          <div class="form-group mb-4">
-            <label class="form-label" for={field.key}>{field.label}</label>
-            <input
-              type={field.type}
-              id={field.key}
-              name={field.key}
-              class="form-input"
-              placeholder={field.placeholder}
-              value={config[field.key] ?? ''}
-            />
-          </div>
-        ))}
+        {(() => {
+          const sections = [...new Set(fields.map(f => f.section))];
+          return sections.map((section, si) => (
+            <div>
+              {si > 0 && <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin:1.5rem 0;" />}
+              <p style="font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted,#6b7280);margin-bottom:1rem;">{section}</p>
+              {fields.filter(f => f.section === section).map(field => (
+                <div class="form-group mb-4">
+                  <label class="form-label" for={field.key}>{field.label}</label>
+                  <input
+                    type={field.type}
+                    id={field.key}
+                    name={field.key}
+                    class="form-input"
+                    placeholder={field.placeholder}
+                    value={config[field.key] ?? ''}
+                  />
+                </div>
+              ))}
+            </div>
+          ));
+        })()}
 
         <div class="flex items-center justify-between" style="margin-top:1.5rem;">
           <span id="save-msg" style="font-size:0.875rem;display:none;"></span>

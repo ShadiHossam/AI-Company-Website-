@@ -4,5 +4,12 @@ export const COMPANY = {
   phone: "+971 4 321 8888",
   whatsapp: "971501234567",
   email: "hello@aegisai.ae",
+  address: "Business Bay, Dubai, UAE",
+  hours: "Sun–Thu · 9:00 am–6:00 pm GST",
   linkedinSlug: "aegis-ai-dubai",
+  twitter: "",
+  instagram: "",
+  facebook: "",
+  youtube: "",
+  tiktok: "",
 } as const;

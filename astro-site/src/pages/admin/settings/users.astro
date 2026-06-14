@@ -23,7 +23,21 @@ try {
   usersError = err.message ?? 'Unable to load users';
 }
 
-const roles = ['super_admin', 'editor', 'sales'];
+// Fetch roles dynamically from site_config; fall back to hardcoded set if not seeded yet
+let roles = ['super_admin', 'editor', 'sales'];
+try {
+  const { data: roleRows } = await supabase
+    .from('site_config')
+    .select('key')
+    .eq('section', 'admin_roles')
+    .order('key');
+  if (roleRows && roleRows.length > 0) {
+    const names = roleRows.map((r: { key: string }) => r.key.replace('admin.role.', ''));
+    roles = ['super_admin', ...names];
+  }
+} catch {
+  // keep fallback
+}
 
 function formatDate(dateStr: string): string {
   if (!dateStr) return '—';

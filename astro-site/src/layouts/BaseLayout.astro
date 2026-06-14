@@ -13,6 +13,7 @@ interface Props {
   ogType?: string;
   ldJson?: object | object[];
   noindex?: boolean;
+  arPath?: string;
 }
 
 const {
@@ -23,6 +24,7 @@ const {
   ogType = 'website',
   ldJson,
   noindex = false,
+  arPath,
 } = Astro.props;
 
 const canonicalURL = `https://${COMPANY.domain}${canonicalPath}`;
@@ -53,10 +55,15 @@ const ogImageURL = ogImage.startsWith('http') ? ogImage : `https://${COMPANY.dom
   <meta property="og:image:height" content="630" />
   <meta property="og:locale" content="en_AE" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:site" content="@aegisai_ae" />
+  {COMPANY.twitter && <meta name="twitter:site" content={`@${COMPANY.twitter}`} />}
   <meta name="twitter:title" content={title} />
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={ogImageURL} />
+
+  <link rel="alternate" hreflang="en-ae" href={canonicalURL} />
+  <link rel="alternate" hreflang="x-default" href={canonicalURL} />
+  {arPath && <link rel="alternate" hreflang="ar" href={`https://${COMPANY.domain}${arPath}`} />}
+  <link rel="sitemap" type="application/xml" href="/sitemap_index.xml" />
 
   {ldJson && (
     <script type="application/ld+json" set:html={JSON.stringify(ldJson)} />
@@ -98,6 +105,132 @@ const ogImageURL = ogImage.startsWith('http') ? ogImage : `https://${COMPANY.dom
 })();
 </script>
 
+<!-- Analytics & Tracking -->
+<script>
+(function() {
+  function injectAnalytics(cfg) {
+    // Google Tag Manager (loads first — manages everything downstream if used)
+    var gtm = cfg['integration.gtm_container_id'];
+    if (gtm) {
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer',gtm);
+    }
+
+    // Google Analytics 4
+    var ga = cfg['integration.ga_measurement_id'];
+    if (ga) {
+      var gs = document.createElement('script'); gs.async = true;
+      gs.src = 'https://www.googletagmanager.com/gtag/js?id=' + ga;
+      document.head.appendChild(gs);
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function(){ window.dataLayer.push(arguments); };
+      window.gtag('js', new Date()); window.gtag('config', ga);
+    }
+
+    // Microsoft Clarity
+    var cl = cfg['integration.clarity_project_id'];
+    if (cl) {
+      (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src='https://www.clarity.ms/tag/'+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,'clarity','script',cl);
+    }
+
+    // Hotjar
+    var hj = cfg['integration.hotjar_site_id'];
+    if (hj) {
+      (function(h,o,t,j,a,r){h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};h._hjSettings={hjid:parseInt(hj,10),hjsv:6};a=o.getElementsByTagName('head')[0];r=o.createElement('script');r.async=1;r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;a.appendChild(r);})(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+    }
+
+    // Intercom
+    var ic = cfg['integration.intercom_app_id'];
+    if (ic) {
+      window.intercomSettings = { app_id: ic };
+      (function(){var w=window;var ic2=w.Intercom;if(typeof ic2==='function'){ic2('reattach_activator');ic2('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments)};i.q=[];i.c=function(args){i.q.push(args)};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/'+ic;var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x)};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
+    }
+
+    // Crisp
+    var cr = cfg['integration.crisp_website_id'];
+    if (cr) {
+      window.$crisp = []; window.CRISP_WEBSITE_ID = cr;
+      var cs = document.createElement('script'); cs.src = 'https://client.crisp.chat/l.js'; cs.async = true;
+      document.head.appendChild(cs);
+    }
+
+    // Tawk.to
+    var tw = cfg['integration.tawkto_property_id'];
+    if (tw) {
+      var Tawk_API = window.Tawk_API || {}; var Tawk_LoadStart = new Date();
+      (function(){var s1=document.createElement('script'),s0=document.getElementsByTagName('script')[0];s1.async=true;s1.src='https://embed.tawk.to/'+tw;s1.charset='UTF-8';s1.setAttribute('crossorigin','*');s0.parentNode.insertBefore(s1,s0);})();
+    }
+  }
+
+  function injectMarketing(cfg) {
+    // Meta (Facebook) Pixel
+    var mp = cfg['integration.meta_pixel_id'];
+    if (mp) {
+      !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+      window.fbq('init', mp); window.fbq('track', 'PageView');
+    }
+
+    // LinkedIn Insight Tag
+    var li = cfg['integration.linkedin_insight_id'];
+    if (li) {
+      window._linkedin_partner_id = li;
+      window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
+      window._linkedin_data_partner_ids.push(li);
+      (function(l){if(!l){window.lintrk=function(a,b){window.lintrk.q.push([a,b])};window.lintrk.q=[]}var s=document.getElementsByTagName('script')[0];var b=document.createElement('script');b.type='text/javascript';b.async=true;b.src='https://snap.licdn.com/li.lms-analytics/insight.min.js';s.parentNode.insertBefore(b,s)})(window.lintrk);
+    }
+
+    // Google Ads
+    var ads = cfg['integration.google_ads_id'];
+    if (ads) {
+      if (window.gtag) {
+        window.gtag('config', ads);
+      } else {
+        var as = document.createElement('script'); as.async = true;
+        as.src = 'https://www.googletagmanager.com/gtag/js?id=' + ads;
+        document.head.appendChild(as);
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function(){ window.dataLayer.push(arguments); };
+        window.gtag('js', new Date()); window.gtag('config', ads);
+      }
+    }
+
+    // TikTok Pixel
+    var tt = cfg['integration.tiktok_pixel_id'];
+    if (tt) {
+      !function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=['page','track','identify','instances','debug','on','off','once','ready','alias','group','enableCookie','disableCookie'];ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};ttq.load=function(e,n){var i='https://analytics.tiktok.com/i18n/pixel/events.js',o=n&&n.partner;ttq._i=ttq._i||{};ttq._i[e]=[];ttq._i[e]._u=i;ttq._t=ttq._t||{};ttq._t[e]=+new Date;ttq._o=ttq._o||{};ttq._o[e]=n||{};n=document.createElement('script');n.type='text/javascript';n.async=!0;n.src=i+'?sdkid='+e+'&lib='+t;e=document.getElementsByTagName('script')[0];e.parentNode.insertBefore(n,e)};ttq.load(tt);ttq.page()}(window,document,'ttq');
+    }
+
+    // HubSpot
+    var hs = cfg['integration.hubspot_portal_id'];
+    if (hs) {
+      var hss = document.createElement('script'); hss.type = 'text/javascript'; hss.id = 'hs-script-loader';
+      hss.async = true; hss.defer = true; hss.src = '//js.hs-scripts.com/' + hs + '.js';
+      document.head.appendChild(hss);
+    }
+  }
+
+  function loadFromConfig(cfg) {
+    var consent = localStorage.getItem('cookie_consent');
+    var prefs = {};
+    try { prefs = JSON.parse(localStorage.getItem('cookie_prefs') || '{}'); } catch(e) {}
+    var analyticsOk = consent === 'accepted' || (consent === 'customized' && prefs.analytics !== false);
+    var marketingOk = consent === 'accepted' || (consent === 'customized' && prefs.marketing !== false);
+    if (analyticsOk) injectAnalytics(cfg);
+    if (marketingOk) injectMarketing(cfg);
+  }
+
+  var consent = localStorage.getItem('cookie_consent');
+  if (consent === 'accepted' || consent === 'customized') {
+    fetch('/api/config/public').then(function(r){ return r.ok ? r.json() : {}; }).then(loadFromConfig).catch(function(){});
+  }
+
+  window.addEventListener('cookieConsent', function(e) {
+    if (e.detail && e.detail.accepted) {
+      fetch('/api/config/public').then(function(r){ return r.ok ? r.json() : {}; }).then(loadFromConfig).catch(function(){});
+    }
+  });
+})();
+</script>
+
 <!-- Cookie Consent -->
 <script>
 (function() {
@@ -109,56 +242,70 @@ const ogImageURL = ogImage.startsWith('http') ? ogImage : `https://${COMPANY.dom
   };
 
   window.openCookieSettings = function() {
-    localStorage.removeItem('cookie_consent');
-    localStorage.removeItem('cookie_prefs');
-    window.location.reload();
+    var existing = document.getElementById('cookie-consent');
+    if (existing) { existing.remove(); }
+    buildCard();
+    var c = document.getElementById('cookie-consent');
+    requestAnimationFrame(function() {
+      c.style.opacity = '1';
+      c.style.transform = 'translateY(0)';
+    });
   };
 
   if (consent === 'accepted' || consent === 'declined' || consent === 'customized') return;
 
   /* ── Card ── */
-  var card = document.createElement('div');
-  card.id = 'cookie-consent';
-  card.setAttribute('role', 'dialog');
-  card.setAttribute('aria-label', 'Cookie preferences');
-  card.style.cssText = [
-    'position:fixed;bottom:24px;left:24px;width:340px;max-width:calc(100vw - 48px)',
-    'background:rgba(10,15,26,0.96);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)',
-    'border:1px solid rgba(0,227,253,0.18);border-radius:16px;padding:22px 22px 20px',
-    'z-index:9999;box-shadow:0 24px 64px rgba(0,0,0,0.55),0 0 0 1px rgba(255,255,255,0.04)',
-    'color:#e2e8f0;font-family:inherit',
-    'transform:translateY(20px);opacity:0;transition:opacity .3s ease,transform .3s ease'
-  ].join(';');
+  function buildCard() {
+    var card = document.createElement('div');
+    card.id = 'cookie-consent';
+    card.setAttribute('role', 'dialog');
+    card.setAttribute('aria-label', 'Cookie preferences');
+    card.style.cssText = [
+      'position:fixed;bottom:24px;left:24px;width:340px;max-width:calc(100vw - 48px)',
+      'background:rgba(10,15,26,0.96);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)',
+      'border:1px solid rgba(0,227,253,0.18);border-radius:16px;padding:22px 22px 20px',
+      'z-index:9999;box-shadow:0 24px 64px rgba(0,0,0,0.55),0 0 0 1px rgba(255,255,255,0.04)',
+      'color:#e2e8f0;font-family:inherit',
+      'transform:translateY(20px);opacity:0;transition:opacity .3s ease,transform .3s ease'
+    ].join(';');
 
-  card.innerHTML =
-    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">' +
-      '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;" aria-hidden="true">' +
-        '<circle cx="12" cy="12" r="10" fill="rgba(0,227,253,0.12)" stroke="#00e3fd" stroke-width="1.5"/>' +
-        '<circle cx="8.5" cy="10" r="1.5" fill="#00e3fd"/>' +
-        '<circle cx="14" cy="8" r="1" fill="#00e3fd"/>' +
-        '<circle cx="15" cy="14" r="1.5" fill="#00e3fd"/>' +
-        '<circle cx="10" cy="15" r="1" fill="#00e3fd"/>' +
-      '</svg>' +
-      '<span style="font-size:0.9375rem;font-weight:700;color:#fff;letter-spacing:-0.01em;">Cookie Preferences</span>' +
-    '</div>' +
-    '<p id="cookie-consent-desc" style="margin:0 0 18px;font-size:0.8rem;line-height:1.65;color:#94a3b8;">' +
-      'We use cookies to analyse traffic &amp; improve your experience. ' +
-      '<a href="/privacy" style="color:#00e3fd;text-decoration:none;border-bottom:1px solid rgba(0,227,253,0.35);">Privacy Policy</a>' +
-    '</p>' +
-    '<button id="accept-cookies" style="width:100%;background:linear-gradient(135deg,#00e3fd 0%,#00aacc 100%);color:#0a0f1a;border:none;border-radius:8px;padding:10px 0;font-weight:700;cursor:pointer;font-size:0.875rem;margin-bottom:8px;transition:opacity .2s;">Accept All</button>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
-      '<button id="customize-cookies" style="background:rgba(255,255,255,0.07);color:#e2e8f0;border:1px solid rgba(255,255,255,0.14);border-radius:8px;padding:9px 0;font-weight:600;cursor:pointer;font-size:0.8125rem;transition:background .2s;">Customize</button>' +
-      '<button id="decline-cookies" style="background:transparent;color:#64748b;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:9px 0;font-weight:600;cursor:pointer;font-size:0.8125rem;transition:color .2s;">Decline All</button>' +
-    '</div>';
+    card.innerHTML =
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">' +
+        '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;" aria-hidden="true">' +
+          '<circle cx="12" cy="12" r="10" fill="rgba(0,227,253,0.12)" stroke="#00e3fd" stroke-width="1.5"/>' +
+          '<circle cx="8.5" cy="10" r="1.5" fill="#00e3fd"/>' +
+          '<circle cx="14" cy="8" r="1" fill="#00e3fd"/>' +
+          '<circle cx="15" cy="14" r="1.5" fill="#00e3fd"/>' +
+          '<circle cx="10" cy="15" r="1" fill="#00e3fd"/>' +
+        '</svg>' +
+        '<span style="font-size:0.9375rem;font-weight:700;color:#fff;letter-spacing:-0.01em;">Cookie Preferences</span>' +
+      '</div>' +
+      '<p id="cookie-consent-desc" style="margin:0 0 18px;font-size:0.8rem;line-height:1.65;color:#94a3b8;">' +
+        'We use cookies to analyse traffic &amp; improve your experience. ' +
+        '<a href="/privacy" style="color:#00e3fd;text-decoration:none;border-bottom:1px solid rgba(0,227,253,0.35);">Privacy Policy</a>' +
+      '</p>' +
+      '<button id="accept-cookies" style="width:100%;background:linear-gradient(135deg,#00e3fd 0%,#00aacc 100%);color:#0a0f1a;border:none;border-radius:8px;padding:10px 0;font-weight:700;cursor:pointer;font-size:0.875rem;margin-bottom:8px;transition:opacity .2s;">Accept All</button>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
+        '<button id="customize-cookies" style="background:rgba(255,255,255,0.07);color:#e2e8f0;border:1px solid rgba(255,255,255,0.14);border-radius:8px;padding:9px 0;font-weight:600;cursor:pointer;font-size:0.8125rem;transition:background .2s;">Customize</button>' +
+        '<button id="decline-cookies" style="background:transparent;color:#64748b;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:9px 0;font-weight:600;cursor:pointer;font-size:0.8125rem;transition:color .2s;">Decline All</button>' +
+      '</div>';
 
-  document.body.appendChild(card);
+    document.body.appendChild(card);
+    bindButtons();
+  }
+
+  function getCard() { return document.getElementById('cookie-consent'); }
+
+  buildCard();
   requestAnimationFrame(function() {
-    card.style.opacity = '1';
-    card.style.transform = 'translateY(0)';
+    var c = getCard();
+    c.style.opacity = '1';
+    c.style.transform = 'translateY(0)';
   });
 
   /* ── Customize panel (inline, replaces card content) ── */
   function showCustomize() {
+    var card = getCard();
     var prefs = window.getCookiePrefs();
     var analyticsOn = prefs.analytics !== false;
     var marketingOn = prefs.marketing !== false;
@@ -175,7 +322,7 @@ const ogImageURL = ogImage.startsWith('http') ? ogImage : `https://${COMPANY.dom
 
     /* wire up toggles */
     ['Analytics','Marketing'].forEach(function(name) {
-      var lbl = card.querySelector('[data-toggle="' + name + '"]');
+      var lbl = getCard().querySelector('[data-toggle="' + name + '"]');
       if (!lbl) return;
       var cb = lbl.querySelector('input');
       var track = lbl.querySelector('.ck-track');
@@ -190,8 +337,8 @@ const ogImageURL = ogImage.startsWith('http') ? ogImage : `https://${COMPANY.dom
 
     document.getElementById('cookie-back').onclick = function() { rebuildCard(); };
     document.getElementById('save-cookie-prefs').onclick = function() {
-      var aCb = card.querySelector('[data-toggle="Analytics"] input');
-      var mCb = card.querySelector('[data-toggle="Marketing"] input');
+      var aCb = getCard().querySelector('[data-toggle="Analytics"] input');
+      var mCb = getCard().querySelector('[data-toggle="Marketing"] input');
       localStorage.setItem('cookie_prefs', JSON.stringify({
         analytics: aCb ? aCb.checked : true,
         marketing: mCb ? mCb.checked : true
@@ -219,7 +366,7 @@ const ogImageURL = ogImage.startsWith('http') ? ogImage : `https://${COMPANY.dom
   }
 
   function rebuildCard() {
-    card.innerHTML =
+    getCard().innerHTML =
       '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">' +
         '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;" aria-hidden="true">' +
           '<circle cx="12" cy="12" r="10" fill="rgba(0,227,253,0.12)" stroke="#00e3fd" stroke-width="1.5"/>' +
@@ -241,9 +388,10 @@ const ogImageURL = ogImage.startsWith('http') ? ogImage : `https://${COMPANY.dom
   }
 
   function dismiss(choice) {
+    var card = getCard();
     card.style.opacity = '0';
     card.style.transform = 'translateY(12px)';
-    setTimeout(function() { card.remove(); }, 300);
+    setTimeout(function() { if (getCard()) getCard().remove(); }, 300);
     localStorage.setItem('cookie_consent', choice);
     window.dispatchEvent(new CustomEvent('cookieConsent', { detail: { accepted: choice !== 'declined' } }));
   }
@@ -254,7 +402,6 @@ const ogImageURL = ogImage.startsWith('http') ? ogImage : `https://${COMPANY.dom
     document.getElementById('customize-cookies').onclick = showCustomize;
   }
 
-  bindButtons();
 })();
 </script>
 </body>

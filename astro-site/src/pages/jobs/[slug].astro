@@ -18,12 +18,52 @@ if (!job) return Astro.redirect('/careers');
 const requirements: string[] = Array.isArray(job.requirements) ? job.requirements : [];
 const niceToHave: string[]   = Array.isArray(job.nice_to_have) ? job.nice_to_have : [];
 const benefits: string[]     = Array.isArray(job.benefits)     ? job.benefits     : [];
+
+const empTypeMap: Record<string, string> = {
+  'full-time': 'FULL_TIME', 'full time': 'FULL_TIME',
+  'part-time': 'PART_TIME', 'part time': 'PART_TIME',
+  'contract': 'CONTRACTOR', 'freelance': 'CONTRACTOR',
+  'intern': 'INTERN', 'internship': 'INTERN',
+  'temporary': 'TEMPORARY', 'volunteer': 'VOLUNTEER',
+};
+const empType = empTypeMap[(job.job_type ?? '').toLowerCase()] ?? 'FULL_TIME';
+
+const jobSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'JobPosting',
+  title: job.title,
+  description: job.description ?? `Apply for ${job.title} at Aegis AI in ${job.location}.`,
+  datePosted: job.created_at ?? new Date().toISOString(),
+  hiringOrganization: {
+    '@type': 'Organization',
+    name: 'Aegis AI',
+    sameAs: 'https://aegisai.ae',
+    logo: 'https://aegisai.ae/assets/logo.svg',
+  },
+  jobLocation: {
+    '@type': 'Place',
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: job.location ?? 'Dubai',
+      addressCountry: 'AE',
+    },
+  },
+  employmentType: empType,
+  ...(job.salary_range ? {
+    baseSalary: {
+      '@type': 'MonetaryAmount',
+      currency: 'AED',
+      value: { '@type': 'QuantitativeValue', description: job.salary_range },
+    },
+  } : {}),
+};
 ---
 
 <BaseLayout
   title={`${job.title} — Careers at Aegis AI`}
   description={`Apply for ${job.title} at Aegis AI in ${job.location}. ${job.job_type} position.`}
   canonicalPath={`/jobs/${job.slug}`}
+  ldJson={jobSchema}
 >
 
 <!-- HERO -->

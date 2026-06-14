@@ -8,6 +8,51 @@ const CSRF = (req: Request) => {
   return import.meta.env.DEV || origin === (import.meta.env.SITE_URL ?? 'https://aegisai.ae');
 };
 
+export const PATCH: APIRoute = async ({ locals, params, request }) => {
+  if (!locals.user) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (!CSRF(request)) {
+    return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const { id } = params;
+  let body: { alt_text?: string | null };
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase
+    .from('media')
+    .update({ alt_text: body.alt_text ?? null })
+    .eq('id', id!);
+
+  if (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  return new Response(JSON.stringify({ success: true }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
 export const DELETE: APIRoute = async ({ locals, params, request }) => {
   if (!locals.user) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {

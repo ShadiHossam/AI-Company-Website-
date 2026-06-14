@@ -1,5 +1,60 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { loadPageContent, getVal } from "../lib/page-content";
+import { getSupabaseAdmin } from "../lib/supabase";
+
+export const prerender = false;
+
+const pc = await loadPageContent('home');
+const g = (key: string, fallback: string) => getVal(pc, key, fallback);
+
+type Testimonial = {
+  client_name: string;
+  client_title: string | null;
+  client_company: string | null;
+  industry: string | null;
+  client_image_url: string | null;
+  quote: string;
+};
+
+const fallbackTestimonials: Testimonial[] = [
+  {
+    client_name: 'Ahmed Al Rashidi',
+    client_title: 'CEO',
+    client_company: 'Al Rashidi Properties',
+    industry: 'Real Estate',
+    quote: "Aegis AI built us a WhatsApp lead bot that responds in seconds — Arabic and English. Our lead-to-viewing conversion jumped 47% in the first month. Best investment we've made.",
+    client_image_url: null,
+  },
+  {
+    client_name: 'Sarah Mitchell',
+    client_title: 'Operations Director',
+    client_company: 'Bloom Retail Group',
+    industry: 'Retail',
+    quote: 'The AI inventory system they built eliminated our stockout problem entirely. We used to lose sales every weekend — now the system reorders automatically. ROI within 6 weeks.',
+    client_image_url: null,
+  },
+  {
+    client_name: 'Khalid Al Mansoori',
+    client_title: 'General Manager',
+    client_company: 'Noor Hospitality Group',
+    industry: 'Hospitality',
+    quote: 'Our AI concierge handles guest requests 24/7 in Arabic and English. Staff can now focus on high-value interactions instead of answering the same questions repeatedly.',
+    client_image_url: null,
+  },
+];
+
+const supabase = getSupabaseAdmin();
+const { data: rawTestimonials } = await supabase
+  .from('testimonials')
+  .select('client_name, client_title, client_company, industry, client_image_url, quote')
+  .eq('published', true)
+  .order('sort_order', { ascending: true })
+  .limit(6);
+
+const testimonials: Testimonial[] = (rawTestimonials && rawTestimonials.length > 0)
+  ? rawTestimonials as Testimonial[]
+  : fallbackTestimonials;
 
 const homeLdJson = [
   {
@@ -7,7 +62,7 @@ const homeLdJson = [
     "@type": "Organization",
     "name": "Aegis AI",
     "url": "https://aegisai.ae",
-    "logo": "https://aegisai.ae/assets/og-home.jpg",
+    "logo": "https://aegisai.ae/favicon-192.png",
     "description": "Aegis AI builds custom AI systems and trains teams to use them — serving SMEs in Dubai across real estate, retail, hospitality and logistics.",
     "email": "hello@aegisai.ae",
     "telephone": "+97143218888",
@@ -66,6 +121,7 @@ const homeLdJson = [
   description="Aegis AI builds custom AI systems and trains your team to use them — serving SMEs in Dubai across real estate, retail, hospitality and logistics. Book a free strategy call."
   canonicalPath="/"
   ldJson={homeLdJson}
+  arPath="/ar"
 >
 
 <!-- HERO -->
@@ -77,36 +133,36 @@ const homeLdJson = [
       <div>
         <div class="hero-eyebrow-pill">
           <span class="hero-pulse"></span>
-          The only Dubai AI partner with a 100% refund guarantee
+          {g('hero_eyebrow', 'The only Dubai AI partner with a 100% refund guarantee')}
         </div>
         <h1>
-          Custom AI Systems +<br>
-          <span class="gradient-text">Team Training, in One Package.</span>
+          {g('hero_h1_line1', 'Custom AI Systems +')}<br>
+          <span class="gradient-text">{g('hero_h1_line2', 'Team Training, in One Package.')}</span>
         </h1>
         <p style="color:#42474e; font-size:1.125rem; line-height:1.8; max-width:520px; margin:1.5rem 0 2.5rem;">
-          We build AI that fits your workflows and train your people to use it — for Dubai SMEs in real estate, retail, hospitality, and logistics.
+          {g('hero_subtext', 'We build AI that fits your workflows and train your people to use it — for Dubai SMEs in real estate, retail, hospitality, and logistics.')}
         </p>
         <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:2.5rem;">
           <button onclick="openModal(this)" data-source="homepage_hero" class="btn-primary">
-            Book Free Strategy Call
+            {g('hero_cta', 'Book Free Strategy Call')}
             <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
           </button>
         </div>
         <!-- Stats bar -->
         <div style="display:inline-flex; flex-wrap:wrap; gap:1.5rem; background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:16px; padding:1.25rem 1.75rem; box-shadow:0 8px 32px rgba(0,59,92,0.06);">
           <div style="text-align:center;">
-            <p style="font-size:1.25rem; font-weight:800; color:#00253b; margin:0;">100%</p>
-            <p style="font-size:0.75rem; color:#72787e; margin:0;">Refund Guarantee</p>
+            <p style="font-size:1.25rem; font-weight:800; color:#00253b; margin:0;">{g('stat_1_value', '100%')}</p>
+            <p style="font-size:0.75rem; color:#72787e; margin:0;">{g('stat_1_label', 'Refund Guarantee')}</p>
           </div>
           <div style="width:1px; background:rgba(0,37,59,0.10);"></div>
           <div style="text-align:center;">
-            <p style="font-size:1.25rem; font-weight:800; color:#00253b; margin:0;">AR/EN</p>
-            <p style="font-size:0.75rem; color:#72787e; margin:0;">Bilingual</p>
+            <p style="font-size:1.25rem; font-weight:800; color:#00253b; margin:0;">{g('stat_2_value', 'AR + EN')}</p>
+            <p style="font-size:0.75rem; color:#72787e; margin:0;">{g('stat_2_label', 'Bilingual Support')}</p>
           </div>
           <div style="width:1px; background:rgba(0,37,59,0.10);"></div>
           <div style="text-align:center;">
-            <p style="font-size:1.25rem; font-weight:800; color:#00253b; margin:0;">90-Day</p>
-            <p style="font-size:0.75rem; color:#72787e; margin:0;">Support Included</p>
+            <p style="font-size:1.25rem; font-weight:800; color:#00253b; margin:0;">{g('stat_3_value', '90-Day')}</p>
+            <p style="font-size:0.75rem; color:#72787e; margin:0;">{g('stat_3_label', 'Support Included')}</p>
           </div>
         </div>
       </div>
@@ -283,7 +339,7 @@ const homeLdJson = [
       <h2 id="results-heading">What Aegis AI Has Built for UAE Businesses</h2>
       <p>Real projects, real outcomes — across Dubai's most active industries.</p>
     </div>
-    <div class="bento-grid bento-grid-3">
+    <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:1.5rem;">
       <div class="card" style="padding:2.5rem;">
         <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(0,104,117,0.10);border-radius:8px;padding:6px 12px;margin-bottom:1.25rem;">
           <span class="material-symbols-outlined" style="font-size:16px;color:#006875;">home</span>
@@ -335,11 +391,65 @@ const homeLdJson = [
           </div>
         </div>
       </div>
+      <div class="card" style="padding:2.5rem;">
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(0,104,117,0.10);border-radius:8px;padding:6px 12px;margin-bottom:1.25rem;">
+          <span class="material-symbols-outlined" style="font-size:16px;color:#006875;">local_shipping</span>
+          <span style="font-size:0.75rem;font-weight:700;color:#006875;text-transform:uppercase;letter-spacing:0.05em;">Logistics Company · UAE</span>
+        </div>
+        <p style="font-size:0.875rem;color:#42474e;line-height:1.7;margin-bottom:1.25rem;">A UAE courier and distribution company was dispatching routes manually via Excel — drivers frequently overlapping territories, fuel wasted, deliveries delayed. We built an AI route-optimisation dashboard that plans every run automatically.</p>
+        <div style="display:flex;gap:2rem;">
+          <div>
+            <p style="font-size:1.375rem;font-weight:800;color:#006875;margin:0;">−22%</p>
+            <p style="font-size:0.75rem;color:#72787e;margin:0;">delivery cost reduction</p>
+          </div>
+          <div>
+            <p style="font-size:1.375rem;font-weight:800;color:#006875;margin:0;">+18%</p>
+            <p style="font-size:0.75rem;color:#72787e;margin:0;">on-time delivery rate</p>
+          </div>
+        </div>
+      </div>
     </div>
     <div style="text-align:center;margin-top:2.5rem;">
       <a href="/results" style="display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:0.9375rem;color:#006875;text-decoration:none;">
         See all client results <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
       </a>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section" style="background:#f8f9fe;" aria-labelledby="testimonials-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">Client Voices</div>
+      <h2 id="testimonials-heading">What Dubai Businesses Say</h2>
+      <p>Real feedback from the teams we've worked with.</p>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem;">
+      {testimonials.map(t => (
+        <div class="testimonial-card">
+          <div style="display:flex;align-items:center;gap:3px;margin-bottom:1.25rem;">
+            {[1,2,3,4,5].map(() => <span style="color:#f59e0b;font-size:18px;line-height:1;">★</span>)}
+          </div>
+          <p style="color:#42474e;font-size:0.9375rem;line-height:1.75;margin:0 0 1.5rem;font-style:italic;">"{t.quote}"</p>
+          <div style="display:flex;align-items:center;gap:0.875rem;">
+            {t.client_image_url ? (
+              <img src={t.client_image_url} alt={t.client_name} width="44" height="44" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+            ) : (
+              <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#006875,#00253b);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <span style="color:#fff;font-weight:700;font-size:1.125rem;">{t.client_name.charAt(0)}</span>
+              </div>
+            )}
+            <div style="flex:1;min-width:0;">
+              <p style="font-weight:700;color:#00253b;font-size:0.875rem;margin:0;">{t.client_name}</p>
+              <p style="color:#72787e;font-size:0.75rem;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{[t.client_title, t.client_company].filter(Boolean).join(', ')}</p>
+            </div>
+            {t.industry && (
+              <span style="font-size:0.6875rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#006875;background:rgba(0,104,117,0.10);border-radius:6px;padding:3px 8px;flex-shrink:0;">{t.industry}</span>
+            )}
+          </div>
+        </div>
+      ))}
     </div>
   </div>
 </section>
@@ -395,6 +505,82 @@ const homeLdJson = [
           Learn More <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
         </a>
       </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- GUARANTEE -->
+<section id="guarantee" class="section" style="background:#e7eeff;" aria-labelledby="guarantee-heading">
+  <div class="container">
+    <div class="section-header">
+      <div style="width:80px;height:80px;border-radius:50%;background:rgba(245,158,11,0.15);border:2px solid rgba(245,158,11,0.40);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
+        <span class="material-symbols-outlined" style="color:#d97706; font-size:36px;">shield</span>
+      </div>
+      <div class="guarantee-badge-gold" style="margin-bottom:1.25rem;">UAE's Only AI Guarantee</div>
+      <h2 id="guarantee-heading" style="font-size:clamp(1.75rem,4vw,3rem);">
+        If You Don't Love What We Build —<br>
+        <span style="color:#d97706;">You Pay Absolutely Nothing.</span>
+      </h2>
+      <p>We take on all the risk. You get results you're proud of, or you walk away with every dirham back.</p>
+    </div>
+    <div class="bento-grid bento-grid-3" style="margin-bottom:3rem;">
+      <div class="guarantee-step">
+        <div class="guarantee-step-num">1</div>
+        <h3 style="font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem;">We Build Your AI</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin:0;">We design, build, and deploy your custom AI system — fully integrated with your workflows and tools.</p>
+      </div>
+      <div class="guarantee-step">
+        <div class="guarantee-step-num">2</div>
+        <h3 style="font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem;">Your Team Tests It</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin:0;">Use it live with your team. Put it through real workflows. See if it saves time, reduces cost, and delivers what it promised.</p>
+      </div>
+      <div class="guarantee-step" style="background:rgba(245,158,11,0.07); border-color:rgba(245,158,11,0.25);">
+        <div style="width:48px;height:48px;border-radius:50%;background:#f59e0b;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;">
+          <span class="material-symbols-outlined" style="color:#fff; font-size:22px;">shield</span>
+        </div>
+        <h3 style="font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem;">Not Happy? Full Refund.</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin:0;">If you're not completely satisfied, just tell us. We refund 100% — no questions, no delays. Claim within 30 days of delivery. We agree on success criteria upfront — if we hit them and you're still unhappy, you still get the refund.</p>
+      </div>
+    </div>
+    <div class="card" style="max-width:720px; margin:0 auto 3rem; padding:2rem;">
+      <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; display:flex; align-items:center; gap:8px; margin-bottom:1.25rem;">
+        <span class="material-symbols-outlined" style="color:#006875;">description</span>
+        What's Covered
+      </h3>
+      <div class="guarantee-items">
+        <div class="guarantee-item-row">
+          <span class="material-symbols-outlined" style="color:#006875; font-size:18px; flex-shrink:0;">check</span>
+          <span style="color:#42474e; font-size:0.9rem;">Custom AI development projects</span>
+        </div>
+        <div class="guarantee-item-row">
+          <span class="material-symbols-outlined" style="color:#006875; font-size:18px; flex-shrink:0;">check</span>
+          <span style="color:#42474e; font-size:0.9rem;">Full project investment refunded</span>
+        </div>
+        <div class="guarantee-item-row">
+          <span class="material-symbols-outlined" style="color:#006875; font-size:18px; flex-shrink:0;">check</span>
+          <span style="color:#42474e; font-size:0.9rem;">Processed within 5 business days</span>
+        </div>
+        <div class="guarantee-item-row">
+          <span class="material-symbols-outlined" style="color:#006875; font-size:18px; flex-shrink:0;">check</span>
+          <span style="color:#42474e; font-size:0.9rem;">No reason required — just say so</span>
+        </div>
+        <div class="guarantee-item-row">
+          <span class="material-symbols-outlined" style="color:#006875; font-size:18px; flex-shrink:0;">check</span>
+          <span style="color:#42474e; font-size:0.9rem;">Bank transfer or original payment method</span>
+        </div>
+        <div class="guarantee-item-row">
+          <span class="material-symbols-outlined" style="color:#006875; font-size:18px; flex-shrink:0;">check</span>
+          <span style="color:#42474e; font-size:0.9rem;">Zero legal complications or disputes</span>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <button onclick="openModal(this)" data-source="homepage_guarantee" class="btn-primary" style="font-size:1.0625rem; padding:0.9375rem 2.5rem;">
+        Start Risk-Free Today
+        <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
+      </button>
+      <p style="font-size:0.875rem; color:#72787e; margin-top:1rem;">Free consultation · No upfront commitment · Zero risk</p>
     </div>
   </div>
 </section>
@@ -529,112 +715,6 @@ const homeLdJson = [
 </section>
 
 
-<!-- GUARANTEE -->
-<section id="guarantee" class="section" style="background:#e7eeff;" aria-labelledby="guarantee-heading">
-  <div class="container">
-    <div class="section-header">
-      <div style="width:80px;height:80px;border-radius:50%;background:rgba(245,158,11,0.15);border:2px solid rgba(245,158,11,0.40);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
-        <span class="material-symbols-outlined" style="color:#d97706; font-size:36px;">shield</span>
-      </div>
-      <div class="guarantee-badge-gold" style="margin-bottom:1.25rem;">UAE's Only AI Guarantee</div>
-      <h2 id="guarantee-heading" style="font-size:clamp(1.75rem,4vw,3rem);">
-        If You Don't Love What We Build —<br>
-        <span style="color:#d97706;">You Pay Absolutely Nothing.</span>
-      </h2>
-      <p>We take on all the risk. You get results you're proud of, or you walk away with every dirham back.</p>
-    </div>
-    <div class="bento-grid bento-grid-3" style="margin-bottom:3rem;">
-      <div class="guarantee-step">
-        <div class="guarantee-step-num">1</div>
-        <h3 style="font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem;">We Build Your AI</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin:0;">We design, build, and deploy your custom AI system — fully integrated with your workflows and tools.</p>
-      </div>
-      <div class="guarantee-step">
-        <div class="guarantee-step-num">2</div>
-        <h3 style="font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem;">Your Team Tests It</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin:0;">Use it live with your team. Put it through real workflows. See if it saves time, reduces cost, and delivers what it promised.</p>
-      </div>
-      <div class="guarantee-step" style="background:rgba(245,158,11,0.07); border-color:rgba(245,158,11,0.25);">
-        <div style="width:48px;height:48px;border-radius:50%;background:#f59e0b;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;">
-          <span class="material-symbols-outlined" style="color:#fff; font-size:22px;">shield</span>
-        </div>
-        <h3 style="font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem;">Not Happy? Full Refund.</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin:0;">If you're not completely satisfied, just tell us. We refund 100% — no questions, no conditions, no delays.</p>
-      </div>
-    </div>
-    <div class="card" style="max-width:720px; margin:0 auto 3rem; padding:2rem;">
-      <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; display:flex; align-items:center; gap:8px; margin-bottom:1.25rem;">
-        <span class="material-symbols-outlined" style="color:#006875;">description</span>
-        What's Covered
-      </h3>
-      <div class="guarantee-items">
-        <div class="guarantee-item-row">
-          <span class="material-symbols-outlined" style="color:#006875; font-size:18px; flex-shrink:0;">check</span>
-          <span style="color:#42474e; font-size:0.9rem;">Custom AI development projects</span>
-        </div>
-        <div class="guarantee-item-row">
-          <span class="material-symbols-outlined" style="color:#006875; font-size:18px; flex-shrink:0;">check</span>
-          <span style="color:#42474e; font-size:0.9rem;">Full project investment refunded</span>
-        </div>
-        <div class="guarantee-item-row">
-          <span class="material-symbols-outlined" style="color:#006875; font-size:18px; flex-shrink:0;">check</span>
-          <span style="color:#42474e; font-size:0.9rem;">Processed within 5 business days</span>
-        </div>
-        <div class="guarantee-item-row">
-          <span class="material-symbols-outlined" style="color:#006875; font-size:18px; flex-shrink:0;">check</span>
-          <span style="color:#42474e; font-size:0.9rem;">No reason required — just say so</span>
-        </div>
-        <div class="guarantee-item-row">
-          <span class="material-symbols-outlined" style="color:#006875; font-size:18px; flex-shrink:0;">check</span>
-          <span style="color:#42474e; font-size:0.9rem;">Bank transfer or original payment method</span>
-        </div>
-        <div class="guarantee-item-row">
-          <span class="material-symbols-outlined" style="color:#006875; font-size:18px; flex-shrink:0;">check</span>
-          <span style="color:#42474e; font-size:0.9rem;">Zero legal complications or disputes</span>
-        </div>
-      </div>
-    </div>
-    <div style="text-align:center;">
-      <button onclick="openModal(this)" data-source="homepage_guarantee" class="btn-primary" style="font-size:1.0625rem; padding:0.9375rem 2.5rem;">
-        Start Risk-Free Today
-        <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
-      </button>
-      <p style="font-size:0.875rem; color:#72787e; margin-top:1rem;">Free consultation · No upfront commitment · Zero risk</p>
-    </div>
-  </div>
-</section>
-
-
-<!-- NEWSLETTER -->
-<section class="section" aria-labelledby="newsletter-heading">
-  <div class="container">
-    <div class="newsletter-box">
-      <div class="newsletter-icon">
-        <span class="material-symbols-outlined" style="color:#006875; font-size:28px;">mail</span>
-      </div>
-      <div class="section-eyebrow">Newsletter</div>
-      <h2 id="newsletter-heading" style="font-size:1.625rem; margin-bottom:0.75rem;">Stay Ahead of the AI Curve</h2>
-      <p style="color:#42474e; margin-bottom:2rem;">Monthly insights on AI adoption, real case studies, and practical tips for Gulf businesses. No fluff, no spam.</p>
-      <div id="newsletter-form-wrap">
-        <form id="newsletter-form" style="display:flex; gap:12px; flex-wrap:wrap;" onsubmit="handleNewsletterSubmit(event)">
-          <input id="newsletter-email" type="email" name="EMAIL" required placeholder="Your email address" class="form-input" style="flex:1; min-width:0; height:52px;" />
-          <button type="submit" class="btn-primary" style="height:52px; padding:0 1.75rem; white-space:nowrap;">
-            Subscribe <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
-          </button>
-        </form>
-        <p style="font-size:0.75rem; color:#72787e; margin-top:0.75rem;">No spam. Unsubscribe anytime.</p>
-      </div>
-      <div id="newsletter-success" style="display:none;">
-        <div style="width:56px;height:56px;border-radius:50%;background:rgba(34,197,94,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
-          <span class="material-symbols-outlined" style="color:#22c55e; font-size:28px;">check_circle</span>
-        </div>
-        <h3 style="font-weight:700; font-size:1.125rem; color:#00253b; margin-bottom:0.5rem;">You're subscribed!</h3>
-        <p style="color:#42474e;">Welcome aboard. Watch your inbox for the next edition.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- FINAL CTA -->
 <section class="section">
   <div class="container">
@@ -711,9 +791,7 @@ const homeLdJson = [
     .guarantee-items { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; }
     .guarantee-item-row { display: flex; align-items: flex-start; gap: 10px; }
 
-    .newsletter-box { background: #fff; border: 1px solid rgba(0,37,59,0.08); border-radius: 24px; padding: 3.5rem; text-align: center; box-shadow: 0 20px 40px rgba(0,59,92,0.04); max-width: 620px; margin: 0 auto; }
-    .newsletter-icon { width: 64px; height: 64px; border-radius: 20px; background: rgba(0,227,253,0.12); border: 1px solid rgba(0,227,253,0.25); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; }
-
+    .testimonial-card { background: #fff; border: 1px solid rgba(0,37,59,0.08); border-radius: 20px; padding: 2rem; box-shadow: 0 4px 24px rgba(0,59,92,0.05); display: flex; flex-direction: column; }
     .form-input, .form-select, .form-textarea {
       width: 100%; padding: 0.75rem 1rem;
       border: 1px solid rgba(0,37,59,0.18); border-radius: 8px;
@@ -739,11 +817,13 @@ const homeLdJson = [
       .process-grid { grid-template-columns: 1fr 1fr !important; }
       .industries-grid { grid-template-columns: 1fr 1fr !important; }
     }
+    @media (max-width: 768px) {
+      .testimonials-grid { grid-template-columns: 1fr !important; }
+    }
     @media (max-width: 600px) {
       .process-grid { grid-template-columns: 1fr !important; }
     }
     @media (max-width: 480px) {
       .industries-grid { grid-template-columns: 1fr !important; }
-      .newsletter-box { padding: 2rem 1.25rem; }
     }
 </style>

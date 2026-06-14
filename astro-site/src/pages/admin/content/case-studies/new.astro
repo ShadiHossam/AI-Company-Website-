@@ -61,6 +61,16 @@ const { count: unreadNotifs } = await supabase.from('notifications').select('*',
         <textarea class="form-textarea" id="solution" name="solution" rows="4" placeholder="Describe the solution delivered..."></textarea>
       </div>
 
+      <!-- Media Sections -->
+      <div class="form-group mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <label class="form-label" style="margin:0;">Media &amp; Content Sections</label>
+          <button type="button" id="add-media" class="btn btn-ghost btn-sm">+ Add Section</button>
+        </div>
+        <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.75rem;">Add images, videos, or text blocks that appear in the body of the case study.</p>
+        <div id="media-list"></div>
+      </div>
+
       <div class="flex items-center gap-4 mb-6">
         <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
           <input type="checkbox" id="featured" name="featured" style="width:16px;height:16px;accent-color:var(--accent);" />
@@ -98,6 +108,44 @@ const { count: unreadNotifs } = await supabase.from('notifications').select('*',
     }
   });
 
+  // Media sections
+  document.getElementById('add-media')!.addEventListener('click', () => {
+    const list = document.getElementById('media-list')!;
+    const idx = list.querySelectorAll('.media-row').length;
+    const div = document.createElement('div');
+    div.className = 'media-row card mb-3';
+    div.style.cssText = 'background:var(--bg-elevated);border:1px solid var(--border);padding:1rem;';
+    div.innerHTML = `
+      <div class="flex items-center justify-between mb-3">
+        <select class="form-select" style="width:140px;" name="media_type_${idx}" data-media-type>
+          <option value="image">Image</option>
+          <option value="video">Video</option>
+          <option value="text">Text only</option>
+        </select>
+        <button type="button" class="btn btn-sm remove-media" style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);">✕ Remove</button>
+      </div>
+      <div class="media-url-row mb-3">
+        <label class="form-label text-xs">URL (image src or video embed URL)</label>
+        <input class="form-input" name="media_url_${idx}" placeholder="https://..." data-media-url />
+      </div>
+      <div class="form-group mb-2">
+        <label class="form-label text-xs">Caption / Short label</label>
+        <input class="form-input" name="media_caption_${idx}" placeholder="Optional short label" data-media-caption />
+      </div>
+      <div class="form-group">
+        <label class="form-label text-xs">Description / Body text</label>
+        <textarea class="form-textarea" name="media_desc_${idx}" rows="3" placeholder="Detailed description for this section..." data-media-desc></textarea>
+      </div>
+    `;
+    list.appendChild(div);
+    div.querySelector('.remove-media')!.addEventListener('click', () => div.remove());
+    (div.querySelector('[data-media-type]') as HTMLSelectElement).addEventListener('change', (ev) => {
+      const sel = ev.target as HTMLSelectElement;
+      const urlRow = div.querySelector('.media-url-row') as HTMLElement;
+      urlRow.style.display = sel.value === 'text' ? 'none' : '';
+    });
+  });
+
   document.getElementById('new-cs-form')!.addEventListener('submit', async (e) => {
     e.preventDefault();
     const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
@@ -107,6 +155,15 @@ const { count: unreadNotifs } = await supabase.from('notifications').select('*',
     errorEl.style.display = 'none';
 
     const form = e.target as HTMLFormElement;
+
+    const mediaRows = Array.from(document.querySelectorAll('.media-row'));
+    const media_sections = mediaRows.map(row => ({
+      type: (row.querySelector('[data-media-type]') as HTMLSelectElement).value,
+      url: (row.querySelector('[data-media-url]') as HTMLInputElement)?.value ?? '',
+      caption: (row.querySelector('[data-media-caption]') as HTMLInputElement)?.value ?? '',
+      description: (row.querySelector('[data-media-desc]') as HTMLTextAreaElement)?.value ?? '',
+    })).filter(m => m.url || m.description || m.caption);
+
     const payload = {
       title: (form.querySelector('#title') as HTMLInputElement).value,
       slug: (form.querySelector('#slug') as HTMLInputElement).value,
@@ -116,6 +173,7 @@ const { count: unreadNotifs } = await supabase.from('notifications').select('*',
       solution: (form.querySelector('#solution') as HTMLTextAreaElement).value || null,
       featured: (form.querySelector('#featured') as HTMLInputElement).checked,
       published: (form.querySelector('#published') as HTMLInputElement).checked,
+      media_sections,
     };
 
     const res = await fetch('/api/admin/content/case-studies', {

@@ -16,6 +16,7 @@ if (error || !cs) {
 
 const timelineItems = (cs.timeline_items as { step: string; description: string }[]) ?? [];
 const results = (cs.results as { value: string; label: string }[]) ?? [];
+const mediaSections = (cs.media_sections as { type: string; url: string; caption: string; description: string }[]) ?? [];
 ---
 
 <AdminLayout title={`Edit: ${cs.title}`} user={user} unreadCount={unreadNotifs ?? 0}>
@@ -105,7 +106,7 @@ const results = (cs.results as { value: string; label: string }[]) ?? [];
     </div>
 
     <!-- Timeline editor -->
-    <div class="card mb-6">
+    <div class="card mb-4">
       <div class="flex items-center justify-between mb-4">
         <div style="font-weight:600;color:var(--text-primary);">Timeline</div>
         <button type="button" id="add-timeline" class="btn btn-ghost btn-sm">+ Add Step</button>
@@ -121,6 +122,41 @@ const results = (cs.results as { value: string; label: string }[]) ?? [];
       </div>
     </div>
 
+    <!-- Media Sections editor -->
+    <div class="card mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <div style="font-weight:600;color:var(--text-primary);">Media &amp; Content Sections</div>
+        <button type="button" id="add-media" class="btn btn-ghost btn-sm">+ Add Section</button>
+      </div>
+      <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:1rem;">Add images, videos, or text blocks that appear in the body of the case study. Sections display in order.</p>
+      <div id="media-list">
+        {mediaSections.map((m, i) => (
+          <div class="media-row card mb-3" style="background:var(--bg-elevated);border:1px solid var(--border);padding:1rem;">
+            <div class="flex items-center justify-between mb-3">
+              <select class="form-select" style="width:140px;" name={`media_type_${i}`} data-media-type>
+                <option value="image" selected={m.type === 'image'}>Image</option>
+                <option value="video" selected={m.type === 'video'}>Video</option>
+                <option value="text" selected={m.type === 'text'}>Text only</option>
+              </select>
+              <button type="button" class="btn btn-sm remove-media" style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);">✕ Remove</button>
+            </div>
+            <div class="media-url-row mb-3" style={m.type === 'text' ? 'display:none;' : ''}>
+              <label class="form-label text-xs">URL (image src or video embed URL)</label>
+              <input class="form-input" name={`media_url_${i}`} value={m.url ?? ''} placeholder="https://..." data-media-url />
+            </div>
+            <div class="form-group mb-2">
+              <label class="form-label text-xs">Caption / Short label</label>
+              <input class="form-input" name={`media_caption_${i}`} value={m.caption ?? ''} placeholder="Optional short label" data-media-caption />
+            </div>
+            <div class="form-group">
+              <label class="form-label text-xs">Description / Body text</label>
+              <textarea class="form-textarea" name={`media_desc_${i}`} rows="3" placeholder="Detailed description for this section..." data-media-desc>{m.description ?? ''}</textarea>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
     <div class="flex items-center gap-3">
       <button type="submit" class="btn btn-primary" id="save-btn">Save Changes</button>
       <a href="/admin/content/case-studies" class="btn btn-ghost">Back</a>
@@ -130,6 +166,50 @@ const results = (cs.results as { value: string; label: string }[]) ?? [];
 
 <script>
   const csId = window.location.pathname.split('/').at(-1)!;
+
+  // Add media section row
+  document.getElementById('add-media')!.addEventListener('click', () => {
+    const list = document.getElementById('media-list')!;
+    const idx = list.querySelectorAll('.media-row').length;
+    const div = document.createElement('div');
+    div.className = 'media-row card mb-3';
+    div.style.cssText = 'background:var(--bg-elevated);border:1px solid var(--border);padding:1rem;';
+    div.innerHTML = `
+      <div class="flex items-center justify-between mb-3">
+        <select class="form-select" style="width:140px;" name="media_type_${idx}" data-media-type>
+          <option value="image">Image</option>
+          <option value="video">Video</option>
+          <option value="text">Text only</option>
+        </select>
+        <button type="button" class="btn btn-sm remove-media" style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);">✕ Remove</button>
+      </div>
+      <div class="media-url-row mb-3">
+        <label class="form-label text-xs">URL (image src or video embed URL)</label>
+        <input class="form-input" name="media_url_${idx}" placeholder="https://..." data-media-url />
+      </div>
+      <div class="form-group mb-2">
+        <label class="form-label text-xs">Caption / Short label</label>
+        <input class="form-input" name="media_caption_${idx}" placeholder="Optional short label" data-media-caption />
+      </div>
+      <div class="form-group">
+        <label class="form-label text-xs">Description / Body text</label>
+        <textarea class="form-textarea" name="media_desc_${idx}" rows="3" placeholder="Detailed description for this section..." data-media-desc></textarea>
+      </div>
+    `;
+    list.appendChild(div);
+    attachRemove(div.querySelector('.remove-media')!, 'media-row');
+    attachTypeToggle(div.querySelector('[data-media-type]') as HTMLSelectElement);
+  });
+
+  function attachTypeToggle(sel: HTMLSelectElement) {
+    sel.addEventListener('change', () => {
+      const urlRow = sel.closest('.media-row')!.querySelector('.media-url-row') as HTMLElement;
+      urlRow.style.display = sel.value === 'text' ? 'none' : '';
+    });
+  }
+
+  document.querySelectorAll('[data-media-type]').forEach(el => attachTypeToggle(el as HTMLSelectElement));
+  document.querySelectorAll('.remove-media').forEach(btn => attachRemove(btn as HTMLButtonElement, 'media-row'));
 
   // Add result row
   document.getElementById('add-result')!.addEventListener('click', () => {
@@ -193,6 +273,15 @@ const results = (cs.results as { value: string; label: string }[]) ?? [];
     const timelineDescs = Array.from(document.querySelectorAll('[data-timeline-desc]')) as HTMLInputElement[];
     const timeline_items = timelineSteps.map((s, i) => ({ step: s.value, description: timelineDescs[i]?.value ?? '' })).filter(t => t.step || t.description);
 
+    // Collect media sections
+    const mediaRows = Array.from(document.querySelectorAll('.media-row'));
+    const media_sections = mediaRows.map(row => ({
+      type: (row.querySelector('[data-media-type]') as HTMLSelectElement).value,
+      url: (row.querySelector('[data-media-url]') as HTMLInputElement)?.value ?? '',
+      caption: (row.querySelector('[data-media-caption]') as HTMLInputElement)?.value ?? '',
+      description: (row.querySelector('[data-media-desc]') as HTMLTextAreaElement)?.value ?? '',
+    })).filter(m => m.url || m.description || m.caption);
+
     const payload = {
       title: fd.get('title') as string,
       slug: fd.get('slug') as string,
@@ -205,6 +294,7 @@ const results = (cs.results as { value: string; label: string }[]) ?? [];
       sort_order: parseInt(fd.get('sort_order') as string ?? '0', 10),
       results,
       timeline_items,
+      media_sections,
     };
 
     const res = await fetch(`/api/admin/content/case-studies/${csId}`, {

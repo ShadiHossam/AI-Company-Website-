@@ -1,11 +1,64 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { loadPageContent, getVal } from "../lib/page-content";
+
+export const prerender = false;
+
+const pc = await loadPageContent('pricing');
+const g = (key: string, fallback: string) => getVal(pc, key, fallback);
+
+const pricingSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfessionalService',
+  name: 'Aegis AI — Custom AI Pricing',
+  description: 'Every AI project is scoped and priced specifically for your business, goals, and scale.',
+  url: 'https://aegisai.ae/pricing',
+  areaServed: { '@type': 'City', name: 'Dubai' },
+  priceRange: 'AED 8,000 – AED 80,000',
+  hasOfferCatalog: {
+    '@type': 'OfferCatalog',
+    name: 'AI Services',
+    itemListElement: [
+      { '@type': 'Offer', 'itemOffered': { '@type': 'Service', name: 'Custom AI Development', url: 'https://aegisai.ae/services/custom-ai-development' }, description: 'Custom pricing based on project scope' },
+      { '@type': 'Offer', 'itemOffered': { '@type': 'Service', name: 'AI Training & Workshops', url: 'https://aegisai.ae/services/ai-training' }, description: 'Custom pricing based on team size' },
+      { '@type': 'Offer', 'itemOffered': { '@type': 'Service', name: 'AI Strategy Consulting', url: 'https://aegisai.ae/services/ai-strategy' }, description: 'Custom pricing based on business complexity' },
+    ],
+  },
+};
+
+const pricingFaqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'How much does an AI project with Aegis AI cost?',
+      acceptedAnswer: { '@type': 'Answer', text: 'Most projects fall between AED 8,000 and AED 80,000. The final cost depends on workflow complexity, number of integrations, data readiness, team size, and timeline. Book a free discovery call for an exact quote.' },
+    },
+    {
+      '@type': 'Question',
+      name: 'How does the 100% refund guarantee work?',
+      acceptedAnswer: { '@type': 'Answer', text: 'If you are not completely satisfied with what we deliver, we refund the full project investment within 5 business days — no conditions, no disputes. We agree on success criteria upfront; claims must be made within 30 days of delivery.' },
+    },
+    {
+      '@type': 'Question',
+      name: 'What if we change direction halfway through the project?',
+      acceptedAnswer: { '@type': 'Answer', text: 'Small scope changes are usually absorbed. Major pivots get a revised scope document. If you decide not to continue, you pay only for work completed to that point.' },
+    },
+    {
+      '@type': 'Question',
+      name: 'What size companies do you work with?',
+      acceptedAnswer: { '@type': 'Answer', text: 'Most clients have between 15 and 300 employees. We have worked with companies as small as 8 people and as large as 600. The key factor is a clear business problem AI can solve, not company size.' },
+    },
+  ],
+};
 ---
 
 <BaseLayout
   title="Custom AI Pricing Dubai — Tailored to Your Business | Aegis AI"
   description="Every AI project is different. We scope and price each engagement specifically for your business, goals, and scale. Book a free discovery call to get your custom quote."
   canonicalPath="/pricing"
+  ldJson={[pricingSchema, pricingFaqSchema]}
 >
 
 <header class="page-hero" style="padding-top:10rem; padding-bottom:5rem; text-align:center;">
@@ -17,18 +70,17 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     </nav>
     <div class="hero-badge mb-6">
       <span class="material-symbols-outlined" style="font-size:16px; color:#006875;">payments</span>
-      Customized Pricing
+      {g('hero_eyebrow', 'Customized Pricing')}
     </div>
     <h1 style="max-width:48rem; margin:0 auto 1.5rem;">
-      Every Project is Scoped<br>
-      <span class="gradient-text">Specifically for You.</span>
+      {g('hero_h1', 'Every Project is Scoped Specifically for You.')}
     </h1>
     <p style="color:#42474e; font-size:1.125rem; line-height:1.75; max-width:38rem; margin:0 auto 2.5rem;">
-      We don't believe in one-size-fits-all pricing. Your business, workflow complexity, and goals are unique — so your quote will be too. Book a free 30-minute discovery call and we'll give you a clear, honest number.
+      {g('hero_subtext', "We don't believe in one-size-fits-all pricing. Your business, workflow complexity, and goals are unique — so your quote will be too. Book a free 30-minute discovery call and we'll give you a clear, honest number.")}
     </p>
     <div style="display:flex; flex-wrap:wrap; gap:1rem; justify-content:center;">
-      <button onclick="openModal(this)" data-source="pricing_hero" class="btn-primary" style="font-size:1rem;">Book Free Discovery Call →</button>
-      <a href="/contact" class="btn-outline" style="font-size:1rem;">Send Us a Message</a>
+      <button onclick="openModal(this)" data-source="pricing_hero" class="btn-primary" style="font-size:1rem;">{g('hero_cta_primary', 'Book Free Discovery Call →')}</button>
+      <a href="/contact" class="btn-outline" style="font-size:1rem;">{g('hero_cta_secondary', 'Send Us a Message')}</a>
     </div>
   </div>
 </header>
@@ -39,6 +91,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       <div class="section-eyebrow">What shapes your quote</div>
       <h2>What We Look At When We Price a Project</h2>
       <p style="color:#42474e; font-size:1.0625rem;">No hidden variables. These are the factors that determine scope and cost for every engagement.</p>
+    </div>
+    <div style="display:inline-flex; align-items:center; gap:0.875rem; background:rgba(0,104,117,0.06); border:1px solid rgba(0,104,117,0.20); border-radius:14px; padding:1rem 1.5rem; margin-bottom:2rem; width:100%; box-sizing:border-box;">
+      <span class="material-symbols-outlined" style="color:#006875; font-size:28px; flex-shrink:0;">payments</span>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.6; margin:0;"><strong style="color:#00253b;">Most projects fall between AED 8,000 and AED 80,000.</strong> The factors below determine where yours lands — book a free call and we'll give you an exact number.</p>
     </div>
     <div>
       <div class="value-row">

@@ -72,12 +72,21 @@ export const POST: APIRoute = async ({ locals, request }) => {
   const supabase = getSupabaseAdmin();
 
   // Upload to Supabase Storage
-  const { error: uploadError } = await supabase.storage
+  let { error: uploadError } = await supabase.storage
     .from('media')
     .upload(filename, arrayBuffer, {
       contentType: file.type,
       upsert: false,
     });
+
+  // Auto-create the bucket on first use if it doesn't exist yet
+  if (uploadError && uploadError.message.toLowerCase().includes('bucket not found')) {
+    await supabase.storage.createBucket('media', { public: true });
+    const retry = await supabase.storage
+      .from('media')
+      .upload(filename, arrayBuffer, { contentType: file.type, upsert: false });
+    uploadError = retry.error;
+  }
 
   if (uploadError) {
     return new Response(JSON.stringify({ error: `Upload failed: ${uploadError.message}` }), {

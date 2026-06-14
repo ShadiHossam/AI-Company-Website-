@@ -16,29 +16,97 @@ const { count: unreadNotifs } = await supabase
   .select('*', { count: 'exact', head: true })
   .eq('read', false);
 
-// Default pages to always show
-const defaultPages = ['/', '/about', '/services', '/pricing', '/contact', '/results', '/faq', '/blog', '/privacy', '/terms'];
+const defaultPages = [
+  '/',
+  '/about',
+  '/blog',
+  '/careers',
+  '/contact',
+  '/faq',
+  '/industries/hospitality',
+  '/industries/logistics',
+  '/industries/real-estate',
+  '/industries/retail',
+  '/pricing',
+  '/privacy',
+  '/products',
+  '/results',
+  '/services',
+  '/services/ai-strategy',
+  '/services/ai-training',
+  '/services/custom-ai-development',
+  '/terms',
+];
 
-// Build a map from DB rows
 const seoMap: Record<string, any> = {};
 (seoRows ?? []).forEach(row => { seoMap[row.page_slug] = row; });
 
-// Collect all pages (defaults + any extra from DB)
 const extraPages = (seoRows ?? [])
   .map(r => r.page_slug)
   .filter(slug => !defaultPages.includes(slug));
 const allPages = [...defaultPages, ...extraPages];
+
+function seoScore(row: any): { score: number; grade: string; color: string; bg: string } {
+  let score = 0;
+  const title = (row.meta_title ?? '').trim();
+  const desc = (row.meta_description ?? '').trim();
+  const img = (row.og_image_url ?? '').trim();
+
+  if (title.length > 0) {
+    score += 20;
+    if (title.length >= 30 && title.length <= 60) score += 15;
+    else if (title.length > 0) score += 8;
+  }
+  if (desc.length > 0) {
+    score += 25;
+    if (desc.length >= 120 && desc.length <= 160) score += 20;
+    else if (desc.length >= 50) score += 10;
+  }
+  if (img.length > 0) score += 20;
+
+  if (score >= 90) return { score, grade: 'A', color: '#4ade80', bg: 'rgba(74,222,128,0.12)' };
+  if (score >= 70) return { score, grade: 'B', color: '#a3e635', bg: 'rgba(163,230,53,0.12)' };
+  if (score >= 50) return { score, grade: 'C', color: '#facc15', bg: 'rgba(250,204,21,0.12)' };
+  if (score >= 30) return { score, grade: 'D', color: '#fb923c', bg: 'rgba(251,146,60,0.12)' };
+  return { score, grade: 'F', color: '#f87171', bg: 'rgba(248,113,113,0.12)' };
+}
+
+const totalPages = allPages.length;
+const optimizedCount = allPages.filter(slug => {
+  const r = seoMap[slug] ?? {};
+  return seoScore(r).score >= 70;
+}).length;
 ---
 
 <AdminLayout title="SEO Manager" user={user} unreadCount={unreadNotifs ?? 0}>
-  <div class="mb-6">
-    <h1 class="text-xl font-bold">SEO Manager</h1>
-    <p class="text-muted text-sm">Manage meta titles, descriptions, and open graph settings per page.</p>
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-xl font-bold">SEO Manager</h1>
+      <p class="text-muted text-sm">Manage meta titles, descriptions, and open graph settings per page.</p>
+    </div>
+    <div style="display:flex;gap:0.75rem;align-items:center;">
+      <div style="text-align:right;">
+        <div style="font-size:1.25rem;font-weight:800;color:var(--text-primary);">{optimizedCount}<span style="color:var(--text-muted);font-weight:400;font-size:0.9rem;">/{totalPages}</span></div>
+        <div class="text-xs text-muted">pages optimized</div>
+      </div>
+      <div style="width:56px;height:56px;position:relative;">
+        <svg viewBox="0 0 36 36" style="transform:rotate(-90deg);width:56px;height:56px;">
+          <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--border)" stroke-width="3"/>
+          <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--accent)" stroke-width="3"
+            stroke-dasharray={`${(optimizedCount / totalPages) * 100} 100`}
+            stroke-linecap="round"/>
+        </svg>
+        <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--accent);">
+          {Math.round((optimizedCount / totalPages) * 100)}%
+        </span>
+      </div>
+    </div>
   </div>
 
   <div id="accordion-container">
     {allPages.map((slug, idx) => {
       const row = seoMap[slug] ?? {};
+      const { grade, color, bg, score } = seoScore(row);
       const safeSlug = slug.replace(/\//g, '_').replace(/^_/, '') || 'home';
       return (
         <div class="card mb-3 accordion-item" data-slug={slug}>
@@ -46,13 +114,23 @@ const allPages = [...defaultPages, ...extraPages];
             class="accordion-trigger"
             aria-expanded={idx === 0 ? 'true' : 'false'}
             data-target={`panel-${safeSlug}`}
-            style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;background:none;border:none;color:var(--text-primary);cursor:pointer;font-size:0.9rem;font-weight:600;"
+            style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:0.875rem 1.25rem;background:none;border:none;color:var(--text-primary);cursor:pointer;font-size:0.9rem;font-weight:600;"
           >
             <span style="display:flex;align-items:center;gap:0.75rem;">
               <code style="background:var(--bg-input);padding:2px 8px;border-radius:4px;font-size:0.8rem;color:var(--accent);">{slug}</code>
               {row.meta_title && <span class="text-muted text-sm" style="font-weight:400;">{row.meta_title}</span>}
             </span>
-            <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style={`width:16px;height:16px;transition:transform 0.2s;${idx === 0 ? '' : 'transform:rotate(-90deg);'}`}><polyline points="6 9 12 15 18 9"/></svg>
+            <span style="display:flex;align-items:center;gap:0.75rem;">
+              <span
+                class="seo-grade-badge"
+                data-slug={slug}
+                style={`display:inline-flex;align-items:center;gap:0.375rem;padding:2px 10px;border-radius:20px;font-size:0.75rem;font-weight:700;background:${bg};color:${color};border:1px solid ${color}33;`}
+              >
+                <span class="grade-letter">{grade}</span>
+                <span class="grade-score" style="font-weight:400;opacity:0.8;">{score}</span>
+              </span>
+              <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style={`width:16px;height:16px;transition:transform 0.2s;flex-shrink:0;${idx === 0 ? '' : 'transform:rotate(-90deg);'}`}><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
           </button>
 
           <div
@@ -61,57 +139,105 @@ const allPages = [...defaultPages, ...extraPages];
             style={`padding:0 1.25rem 1.25rem;${idx !== 0 ? 'display:none;' : ''}`}
           >
             <form class="seo-form" data-slug={slug}>
-              <div class="grid-2 gap-3 mb-3">
-                <div class="form-group">
-                  <label class="form-label">Meta Title</label>
-                  <input
-                    type="text"
-                    name="meta_title"
-                    class="form-input"
-                    placeholder="Page title for search engines"
-                    value={row.meta_title ?? ''}
-                    maxlength="70"
-                  />
-                  <span class="text-xs text-muted char-count" data-max="70">0/70 chars</span>
+
+              <!-- Meta Section -->
+              <div style="margin-bottom:1.25rem;">
+                <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.75rem;">Meta Tags</div>
+                <div class="grid-2 gap-3 mb-3">
+                  <div class="form-group">
+                    <label class="form-label">Meta Title</label>
+                    <input
+                      type="text"
+                      name="meta_title"
+                      class="form-input"
+                      placeholder="Page title for search engines"
+                      value={row.meta_title ?? ''}
+                      maxlength="70"
+                    />
+                    <div style="display:flex;justify-content:space-between;margin-top:4px;">
+                      <span class="text-xs text-muted">Optimal: 30–60 chars</span>
+                      <span class="text-xs text-muted char-count" data-max="70">0/70</span>
+                    </div>
+                  </div>
+                  <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end;">
+                    <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.875rem;margin-top:auto;padding-bottom:2px;">
+                      <input
+                        type="checkbox"
+                        name="noindex"
+                        style="width:16px;height:16px;accent-color:var(--accent);"
+                        checked={row.noindex ?? false}
+                      />
+                      <span>noindex <span class="text-muted text-xs">(hide from search engines)</span></span>
+                    </label>
+                  </div>
                 </div>
+
                 <div class="form-group">
-                  <label class="form-label">OG Image URL</label>
-                  <input
-                    type="text"
-                    name="og_image_url"
-                    class="form-input"
-                    placeholder="/assets/og-image.jpg"
-                    value={row.og_image_url ?? ''}
-                  />
+                  <label class="form-label">Meta Description</label>
+                  <textarea
+                    name="meta_description"
+                    class="form-textarea"
+                    rows="3"
+                    placeholder="Brief description of this page (120–160 chars recommended)"
+                    maxlength="200"
+                  >{row.meta_description ?? ''}</textarea>
+                  <div style="display:flex;justify-content:space-between;margin-top:4px;">
+                    <span class="text-xs text-muted">Optimal: 120–160 chars</span>
+                    <span class="text-xs text-muted char-count" data-max="160">0/160</span>
+                  </div>
                 </div>
               </div>
 
-              <div class="form-group mb-3">
-                <label class="form-label">Meta Description</label>
-                <textarea
-                  name="meta_description"
-                  class="form-textarea"
-                  rows="3"
-                  placeholder="Brief description of this page for search engines (150–160 chars recommended)"
-                  maxlength="200"
-                >{row.meta_description ?? ''}</textarea>
-                <span class="text-xs text-muted char-count" data-max="160">0/160 chars</span>
+              <!-- Images Section -->
+              <div style="border-top:1px solid var(--border);padding-top:1.25rem;margin-bottom:1.25rem;">
+                <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.75rem;">Open Graph Image</div>
+                <div style="display:flex;gap:1rem;align-items:flex-start;">
+                  <div class="og-preview-wrap" style="flex-shrink:0;width:120px;height:75px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-input);overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                    {row.og_image_url ? (
+                      <img src={row.og_image_url} alt="OG preview" style="width:100%;height:100%;object-fit:cover;" class="og-preview-img" />
+                    ) : (
+                      <div class="og-preview-placeholder" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-muted);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:24px;height:24px;opacity:0.4;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        <span style="font-size:0.65rem;opacity:0.5;">No image</span>
+                      </div>
+                    )}
+                  </div>
+                  <div style="flex:1;">
+                    <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+                      <input
+                        type="text"
+                        name="og_image_url"
+                        class="form-input og-url-input"
+                        placeholder="/assets/og-image.jpg or paste URL"
+                        value={row.og_image_url ?? ''}
+                        style="flex:1;"
+                      />
+                      <button type="button" class="btn btn-secondary btn-sm browse-media-btn" style="white-space:nowrap;flex-shrink:0;">
+                        Browse Media
+                      </button>
+                    </div>
+                    <p class="text-xs text-muted">Recommended: 1200×630 px. Used by social media when sharing this page.</p>
+                  </div>
+                </div>
               </div>
 
-              <div class="flex items-center justify-between">
-                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.875rem;">
-                  <input
-                    type="checkbox"
-                    name="noindex"
-                    style="width:16px;height:16px;accent-color:var(--accent);"
-                    checked={row.noindex ?? false}
-                  />
-                  <span>noindex (hide from search engines)</span>
-                </label>
-                <div style="display:flex;align-items:center;gap:0.75rem;">
-                  <span class="save-msg text-xs" style="display:none;"></span>
-                  <button type="submit" class="btn btn-primary btn-sm">Save</button>
+              <!-- SEO Score breakdown -->
+              <div style="border-top:1px solid var(--border);padding-top:1rem;margin-bottom:1rem;">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);">SEO Score</div>
+                  <div class="live-score-display" style="display:flex;align-items:center;gap:0.5rem;">
+                    <div class="score-bar-wrap" style="width:100px;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+                      <div class="score-bar-fill" style={`height:100%;width:${score}%;background:${color};border-radius:3px;transition:width 0.3s;`}></div>
+                    </div>
+                    <span class="score-text" style={`font-size:0.8rem;font-weight:700;color:${color};min-width:36px;`}>{score}/100</span>
+                  </div>
                 </div>
+                <div class="score-hints" style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.375rem;"></div>
+              </div>
+
+              <div class="flex items-center justify-end" style="gap:0.75rem;">
+                <span class="save-msg text-xs" style="display:none;"></span>
+                <button type="submit" class="btn btn-primary btn-sm">Save</button>
               </div>
             </form>
           </div>
@@ -119,45 +245,146 @@ const allPages = [...defaultPages, ...extraPages];
       );
     })}
   </div>
+
+  <!-- Media Picker Modal -->
+  <div id="media-picker-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:400;align-items:center;justify-content:center;padding:1rem;">
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);width:100%;max-width:720px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;">
+      <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <span style="font-weight:700;color:var(--text-primary);">Pick from Media Library</span>
+        <button id="media-picker-close" class="btn btn-ghost btn-sm" style="padding:0.25rem;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div id="media-picker-grid" style="padding:1.25rem;overflow-y:auto;flex:1;">
+        <div id="media-picker-loading" style="text-align:center;padding:3rem;color:var(--text-muted);">Loading media…</div>
+      </div>
+    </div>
+  </div>
 </AdminLayout>
 
 <script>
-  // Accordion logic
+  // ── Accordion ────────────────────────────────────────────
   document.querySelectorAll<HTMLButtonElement>('.accordion-trigger').forEach(btn => {
     btn.addEventListener('click', () => {
       const panelId = btn.dataset.target!;
-      const panel = document.getElementById(panelId);
+      const panel = document.getElementById(panelId)!;
       const chevron = btn.querySelector<SVGElement>('.accordion-chevron');
       const isOpen = btn.getAttribute('aria-expanded') === 'true';
-
       if (isOpen) {
-        panel!.style.display = 'none';
+        panel.style.display = 'none';
         btn.setAttribute('aria-expanded', 'false');
         if (chevron) chevron.style.transform = 'rotate(-90deg)';
       } else {
-        panel!.style.display = 'block';
+        panel.style.display = 'block';
         btn.setAttribute('aria-expanded', 'true');
         if (chevron) chevron.style.transform = 'rotate(0deg)';
       }
     });
   });
 
-  // Char counters
+  // ── Char counters ────────────────────────────────────────
   document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input[maxlength], textarea[maxlength]').forEach(el => {
     const countEl = el.parentElement?.querySelector<HTMLElement>('.char-count');
     if (!countEl) return;
     const max = parseInt(el.getAttribute('maxlength') ?? '200', 10);
     const update = () => {
       const len = el.value.length;
-      countEl.textContent = `${len}/${max} chars`;
+      countEl.textContent = `${len}/${max}`;
       countEl.style.color = len > max * 0.9 ? '#fb923c' : '';
     };
     update();
     el.addEventListener('input', update);
   });
 
-  // SEO form submit
+  // ── Live SEO score ───────────────────────────────────────
+  function calcScore(title: string, desc: string, img: string): { score: number; grade: string; color: string; bg: string } {
+    let s = 0;
+    const t = title.trim(), d = desc.trim(), i = img.trim();
+    if (t.length > 0) { s += 20; s += (t.length >= 30 && t.length <= 60) ? 15 : 8; }
+    if (d.length > 0) { s += 25; s += (d.length >= 120 && d.length <= 160) ? 20 : (d.length >= 50 ? 10 : 0); }
+    if (i.length > 0) s += 20;
+    if (s >= 90) return { score: s, grade: 'A', color: '#4ade80', bg: 'rgba(74,222,128,0.12)' };
+    if (s >= 70) return { score: s, grade: 'B', color: '#a3e635', bg: 'rgba(163,230,53,0.12)' };
+    if (s >= 50) return { score: s, grade: 'C', color: '#facc15', bg: 'rgba(250,204,21,0.12)' };
+    if (s >= 30) return { score: s, grade: 'D', color: '#fb923c', bg: 'rgba(251,146,60,0.12)' };
+    return { score: s, grade: 'F', color: '#f87171', bg: 'rgba(248,113,113,0.12)' };
+  }
+
+  function scoreHints(title: string, desc: string, img: string): string[] {
+    const hints: string[] = [];
+    const t = title.trim(), d = desc.trim(), i = img.trim();
+    if (!t) hints.push('⚠ Add a meta title');
+    else if (t.length < 30) hints.push('⚠ Title too short (30–60 ideal)');
+    else if (t.length > 60) hints.push('⚠ Title too long (30–60 ideal)');
+    if (!d) hints.push('⚠ Add a meta description');
+    else if (d.length < 120) hints.push('⚠ Description too short (120–160 ideal)');
+    else if (d.length > 160) hints.push('⚠ Description too long (120–160 ideal)');
+    if (!i) hints.push('⚠ Add an OG image');
+    return hints;
+  }
+
+  function updateLiveScore(form: HTMLFormElement) {
+    const titleEl = form.querySelector<HTMLInputElement>('[name="meta_title"]')!;
+    const descEl = form.querySelector<HTMLTextAreaElement>('[name="meta_description"]')!;
+    const imgEl = form.querySelector<HTMLInputElement>('[name="og_image_url"]') as HTMLInputElement;
+    const title = titleEl?.value ?? '';
+    const desc = descEl?.value ?? '';
+    const img = imgEl?.value ?? '';
+
+    const { score, grade, color, bg } = calcScore(title, desc, img);
+
+    // Update bar & score text
+    const bar = form.querySelector<HTMLElement>('.score-bar-fill');
+    const scoreText = form.querySelector<HTMLElement>('.score-text');
+    if (bar) { bar.style.width = `${score}%`; bar.style.background = color; }
+    if (scoreText) { scoreText.textContent = `${score}/100`; scoreText.style.color = color; }
+
+    // Update accordion badge
+    const slug = form.dataset.slug!;
+    const badge = document.querySelector<HTMLElement>(`.seo-grade-badge[data-slug="${slug}"]`);
+    if (badge) {
+      badge.style.background = bg;
+      badge.style.color = color;
+      badge.style.borderColor = color + '33';
+      const letter = badge.querySelector<HTMLElement>('.grade-letter');
+      const scoreSpan = badge.querySelector<HTMLElement>('.grade-score');
+      if (letter) letter.textContent = grade;
+      if (scoreSpan) scoreSpan.textContent = String(score);
+    }
+
+    // Update hints
+    const hintsEl = form.querySelector<HTMLElement>('.score-hints');
+    if (hintsEl) {
+      const hints = scoreHints(title, desc, img);
+      hintsEl.innerHTML = hints.map(h =>
+        `<span style="font-size:0.7rem;padding:2px 8px;border-radius:20px;background:var(--bg-input);color:var(--text-muted);">${h}</span>`
+      ).join('');
+    }
+  }
+
   document.querySelectorAll<HTMLFormElement>('.seo-form').forEach(form => {
+    // Wire up live score
+    form.querySelectorAll('input, textarea').forEach(el => {
+      el.addEventListener('input', () => updateLiveScore(form));
+    });
+    updateLiveScore(form);
+
+    // OG image preview update
+    const ogInput = form.querySelector<HTMLInputElement>('[name="og_image_url"]');
+    const previewWrap = form.querySelector<HTMLElement>('.og-preview-wrap');
+    if (ogInput && previewWrap) {
+      const updatePreview = () => {
+        const url = ogInput.value.trim();
+        if (url) {
+          previewWrap.innerHTML = `<img src="${url}" alt="OG preview" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--text-muted);font-size:0.65rem;opacity:0.5;\\'>Invalid URL</div>'" />`;
+        } else {
+          previewWrap.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-muted);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:24px;height:24px;opacity:0.4;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span style="font-size:0.65rem;opacity:0.5;">No image</span></div>`;
+        }
+      };
+      ogInput.addEventListener('input', updatePreview);
+    }
+
+    // Form submit
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const slug = form.dataset.slug!;
@@ -194,6 +421,87 @@ const allPages = [...defaultPages, ...extraPages];
         saveBtn.disabled = false;
         saveBtn.textContent = 'Save';
       }
+    });
+  });
+
+  // ── Media Picker ─────────────────────────────────────────
+  const pickerModal = document.getElementById('media-picker-modal')!;
+  const pickerGrid = document.getElementById('media-picker-grid')!;
+  const pickerLoading = document.getElementById('media-picker-loading')!;
+  const pickerClose = document.getElementById('media-picker-close')!;
+
+  let activeOgInput: HTMLInputElement | null = null;
+  let activePreviewWrap: HTMLElement | null = null;
+  let mediaLoaded = false;
+
+  async function loadMediaGrid() {
+    if (mediaLoaded) return;
+    pickerLoading.style.display = 'block';
+    try {
+      const res = await fetch('/api/admin/media');
+      const { data } = await res.json();
+      pickerLoading.style.display = 'none';
+      if (!data || data.length === 0) {
+        pickerGrid.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem;">No media uploaded yet. Go to Media Library to upload images.</p>';
+        return;
+      }
+      const grid = document.createElement('div');
+      grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0.75rem;';
+      data.forEach((item: any) => {
+        const thumb = document.createElement('div');
+        thumb.style.cssText = 'cursor:pointer;border-radius:var(--radius-sm);overflow:hidden;border:2px solid var(--border);background:var(--bg-input);transition:border-color 0.15s,transform 0.1s;';
+        thumb.innerHTML = `
+          <div style="height:90px;overflow:hidden;background:var(--bg-hover);">
+            <img src="${item.public_url}" alt="${item.alt_text ?? item.filename}" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" />
+          </div>
+          <div style="padding:0.375rem 0.5rem;">
+            <div style="font-size:0.7rem;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.filename}</div>
+          </div>`;
+        thumb.addEventListener('mouseenter', () => { thumb.style.borderColor = 'var(--accent)'; thumb.style.transform = 'scale(1.02)'; });
+        thumb.addEventListener('mouseleave', () => { thumb.style.borderColor = 'var(--border)'; thumb.style.transform = ''; });
+        thumb.addEventListener('click', () => {
+          if (activeOgInput) {
+            activeOgInput.value = item.public_url;
+            activeOgInput.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+          if (activePreviewWrap) {
+            activePreviewWrap.innerHTML = `<img src="${item.public_url}" alt="OG preview" style="width:100%;height:100%;object-fit:cover;" />`;
+          }
+          closePickerModal();
+        });
+        grid.appendChild(thumb);
+      });
+      pickerGrid.appendChild(grid);
+      mediaLoaded = true;
+    } catch {
+      pickerLoading.textContent = 'Failed to load media.';
+    }
+  }
+
+  function openPickerModal(ogInput: HTMLInputElement, previewWrap: HTMLElement) {
+    activeOgInput = ogInput;
+    activePreviewWrap = previewWrap;
+    pickerModal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    loadMediaGrid();
+  }
+
+  function closePickerModal() {
+    pickerModal.style.display = 'none';
+    document.body.style.overflow = '';
+    activeOgInput = null;
+    activePreviewWrap = null;
+  }
+
+  pickerClose.addEventListener('click', closePickerModal);
+  pickerModal.addEventListener('click', (e) => { if (e.target === pickerModal) closePickerModal(); });
+
+  document.querySelectorAll<HTMLButtonElement>('.browse-media-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const form = btn.closest('.seo-form') as HTMLFormElement;
+      const ogInput = form.querySelector<HTMLInputElement>('[name="og_image_url"]')!;
+      const previewWrap = form.querySelector<HTMLElement>('.og-preview-wrap')!;
+      openPickerModal(ogInput, previewWrap);
     });
   });
 </script>

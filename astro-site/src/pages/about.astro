@@ -2,6 +2,7 @@
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getSupabaseAdmin } from "../lib/supabase";
+import { loadPageContent, getVal } from "../lib/page-content";
 
 // Hardcoded fallback team members
 const fallbackTeam = [
@@ -43,6 +44,30 @@ try {
 }
 
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+const pc = await loadPageContent('about');
+const g = (key: string, fallback: string) => getVal(pc, key, fallback);
+
+const aboutSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  name: 'About Aegis AI',
+  url: 'https://aegisai.ae/about',
+  description: 'Aegis AI is a Dubai-based AI company helping SMEs build and adopt AI — in Arabic and English.',
+  mainEntity: {
+    '@type': 'Organization',
+    name: 'Aegis AI',
+    url: 'https://aegisai.ae',
+    areaServed: { '@type': 'City', name: 'Dubai' },
+    employee: teamMembers.map(m => ({
+      '@type': 'Person',
+      name: m.name,
+      jobTitle: m.title,
+      description: m.bio,
+      ...(m.image_url ? { image: m.image_url } : {}),
+      worksFor: { '@type': 'Organization', name: 'Aegis AI' },
+    })),
+  },
+};
 ---
 
 <BaseLayout
@@ -50,6 +75,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
   description="Aegis AI is a Dubai-based AI company helping SMEs build and adopt AI. We combine custom AI development with employee training — in Arabic and English."
   canonicalPath="/about"
   ogImage="/assets/og-about.jpg"
+  ldJson={aboutSchema}
 >
 
 <header class="hero-section">
@@ -59,13 +85,13 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     </nav>
     <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.28); border-radius:100px; padding:6px 16px; color:#004f58; font-size:0.875rem; font-weight:600; margin-bottom:1.5rem;">
       <span class="material-symbols-outlined" style="font-size:18px;">group</span>
-      About Us
+      {g('hero_eyebrow', 'About Us')}
     </div>
     <h1 style="max-width:780px; margin-left:auto; margin-right:auto;">
-      We Believe Every Business<br>Deserves <span class="gradient-text">AI That Actually Works.</span>
+      {g('hero_h1', 'We Believe Every Business Deserves AI That Actually Works.')}
     </h1>
     <p style="color:#42474e; font-size:1.125rem; max-width:620px; margin:1.5rem auto 0;">
-      Not just enterprise giants. Not just tech companies. Every business in Dubai should be able to use AI to grow faster, waste less, and work smarter.
+      {g('hero_subtext', 'Not just enterprise giants. Not just tech companies. Every business in Dubai should be able to use AI to grow faster, waste less, and work smarter.')}
     </p>
   </div>
 </header>
@@ -104,7 +130,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         <div class="section-eyebrow" style="text-align:left; margin-bottom:1rem;">Our Story</div>
         <h2 id="story-heading" style="text-align:left; font-size:2rem; margin-bottom:1.25rem;">Built After Watching AI Projects Fail</h2>
         <p style="color:#42474e; line-height:1.8; margin-bottom:1rem;">We founded Aegis AI in Dubai after watching dozens of promising AI projects fail — not because the technology was wrong, but because the people using it weren't ready, and the systems were built for someone else's business.</p>
-        <p style="color:#42474e; line-height:1.8; margin-bottom:1rem;">We saw enterprise AI providers charging millions to government entities while Dubai's real estate agencies, retailers, hotel groups, and logistics companies were left behind — running on spreadsheets and gut feel in 2024.</p>
+        <p style="color:#42474e; line-height:1.8; margin-bottom:1rem;">We saw enterprise AI providers charging millions to government entities while Dubai's real estate agencies, retailers, hotel groups, and logistics companies were left behind — running on spreadsheets and gut feel in 2025.</p>
         <p style="color:#42474e; line-height:1.8;">We decided to do it differently. We build AI that's custom to your workflows, and we train your team to actually use it. That's our promise — backed by a full refund if we don't deliver.</p>
       </div>
       <div>
@@ -214,52 +240,6 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
   </div>
 </section>
 
-<!-- TEAM -->
-<section class="section" style="background:#e7eeff;" aria-labelledby="team-heading">
-  <div class="container">
-    <div class="section-header">
-      <div class="section-eyebrow">The Team</div>
-      <h2 id="team-heading">The People Behind the Work</h2>
-      <p>UAE-based AI specialists, engineers, and business consultants who have seen firsthand how AI transforms operations — and how it fails when done wrong.</p>
-    </div>
-    <div class="about-team-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px; max-width:860px; margin:0 auto;">
-      {teamMembers.map((member) => (
-        <div class="team-card">
-          <img src={member.image_url} alt={`${member.name}, ${member.title}`} class="team-avatar" loading="lazy" />
-          <h3 style="font-weight:700; color:#00253b; margin-bottom:3px;">{member.name}</h3>
-          <p style="color:#006875; font-size:0.875rem; font-weight:600; margin-bottom:0.75rem;" set:html={member.title}></p>
-          <p style="color:#42474e; font-size:0.8125rem; line-height:1.6; margin:0;">{member.bio}</p>
-        </div>
-      ))}
-    </div>
-  </div>
-</section>
-
-<!-- TECHNOLOGY PARTNERS -->
-<section class="section" aria-labelledby="partners-heading">
-  <div class="container">
-    <div class="section-header">
-      <div class="section-eyebrow">Technology</div>
-      <h2 id="partners-heading">The Tools We Build With</h2>
-      <p>We use the best AI models and platforms — selected based on your requirements and budget.</p>
-    </div>
-    <div class="about-partners-grid" style="display:grid; grid-template-columns:repeat(6,1fr); gap:12px; max-width:860px; margin:0 auto;">
-      <div class="partner-logo"><img src="https://cdn.simpleicons.org/openai/00253b" alt="" loading="lazy">OpenAI</div>
-      <div class="partner-logo"><img src="https://cdn.simpleicons.org/anthropic/CC785C" alt="" loading="lazy">Anthropic</div>
-      <div class="partner-logo"><img src="https://cdn.simpleicons.org/microsoftazure/0078D4" alt="" loading="lazy">Azure AI</div>
-      <div class="partner-logo"><img src="https://cdn.simpleicons.org/google/4285F4" alt="" loading="lazy">Google AI</div>
-      <div class="partner-logo"><img src="https://cdn.simpleicons.org/make/6D00CC" alt="" loading="lazy">Make.com</div>
-      <div class="partner-logo"><img src="https://cdn.simpleicons.org/n8n/EA4B71" alt="" loading="lazy">n8n</div>
-      <div class="partner-logo"><img src="https://cdn.simpleicons.org/langchain/1C3C3C" alt="" loading="lazy">LangChain</div>
-      <div class="partner-logo"><img src="https://cdn.simpleicons.org/hubspot/FF7A59" alt="" loading="lazy">HubSpot</div>
-      <div class="partner-logo"><img src="https://cdn.simpleicons.org/zapier/FF4A00" alt="" loading="lazy">Zapier</div>
-      <div class="partner-logo"><img src="https://cdn.simpleicons.org/python/3776AB" alt="" loading="lazy">Python</div>
-      <div class="partner-logo"><img src="https://cdn.simpleicons.org/fastapi/009688" alt="" loading="lazy">FastAPI</div>
-      <div class="partner-logo"><img src="https://cdn.simpleicons.org/whatsapp/25D366" alt="" loading="lazy">WhatsApp API</div>
-    </div>
-  </div>
-</section>
-
 <!-- CTA -->
 <section class="section" style="background:#e7eeff;">
   <div class="container">
@@ -280,13 +260,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     .value-icon { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); display:flex; align-items:center; justify-content:center; margin-bottom:1.25rem; color:#006875; }
     .stat-pill { background:#fff; border:1px solid rgba(0,37,59,0.08); border-radius:20px; padding:1.5rem; text-align:center; box-shadow:0 20px 40px rgba(0,59,92,0.04); transition:transform .25s, box-shadow .25s; }
     .stat-pill:hover { transform:translateY(-3px); box-shadow:0 24px 48px rgba(0,59,92,0.10); }
-    .team-card { background:#fff; border:1px solid rgba(0,37,59,0.08); border-radius:20px; padding:2rem; text-align:center; box-shadow:0 20px 40px rgba(0,59,92,0.04); transition:transform .25s, box-shadow .25s; }
-    .team-card:hover { transform:translateY(-4px); box-shadow:0 24px 56px rgba(0,59,92,0.10); }
-    .team-avatar { width:88px; height:88px; border-radius:50%; object-fit:cover; margin:0 auto 1rem; border:3px solid rgba(0,37,59,0.12); }
-    .partner-logo { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.5rem; padding:1rem 1rem; background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:12px; font-weight:700; font-size:0.8rem; color:#42474e; letter-spacing:0.02em; transition:all .2s; }
-    .partner-logo:hover { border-color:rgba(0,104,117,0.35); background:rgba(0,104,117,0.04); color:#006875; }
-    .partner-logo img { width:28px; height:28px; object-fit:contain; }
-    .timeline-item { display:grid; grid-template-columns:48px 1fr; gap:1.25rem; align-items:flex-start; margin-bottom:1.5rem; }
+.timeline-item { display:grid; grid-template-columns:48px 1fr; gap:1.25rem; align-items:flex-start; margin-bottom:1.5rem; }
     .timeline-dot { width:48px; height:48px; border-radius:50%; background:#00e3fd; display:flex; align-items:center; justify-content:center; color:#00253b; font-weight:800; font-size:0.9rem; flex-shrink:0; }
     @media(max-width:900px) {
       .about-values-grid { grid-template-columns: repeat(2, 1fr) !important; }
@@ -295,12 +269,8 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     @media(max-width:640px) {
       .about-stats-grid { grid-template-columns: 1fr !important; }
       .about-why-grid { grid-template-columns: 1fr !important; }
-      .about-team-grid { grid-template-columns: repeat(2, 1fr) !important; }
-      .about-partners-grid { grid-template-columns: repeat(3, 1fr) !important; }
     }
     @media(max-width:480px) {
       .about-values-grid { grid-template-columns: 1fr !important; }
-      .about-team-grid { grid-template-columns: 1fr !important; }
-      .about-partners-grid { grid-template-columns: repeat(2, 1fr) !important; }
     }
 </style>

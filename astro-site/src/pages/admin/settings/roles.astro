@@ -1,0 +1,466 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+
+const { count: unreadNotifs } = await supabase
+  .from('notifications')
+  .select('*', { count: 'exact', head: true })
+  .eq('read', false);
+
+let roles: any[] = [];
+let rolesError = '';
+
+try {
+  const { data, error } = await supabase
+    .from('site_config')
+    .select('key,value')
+    .eq('section', 'admin_roles')
+    .order('key');
+  if (error) throw error;
+  roles = (data ?? []).map((r: { key: string; value: string }) => {
+    const name = r.key.replace('admin.role.', '');
+    try {
+      const parsed = JSON.parse(r.value);
+      return { name, label: parsed.label ?? name, sections: parsed.sections ?? [], is_builtin: parsed.is_builtin ?? false };
+    } catch {
+      return { name, label: name, sections: [], is_builtin: false };
+    }
+  });
+} catch (err: any) {
+  rolesError = err.message ?? 'Unable to load roles';
+}
+
+const ALL_SECTIONS = [
+  { key: 'dashboard',     label: 'Dashboard' },
+  { key: 'blog',          label: 'Blog' },
+  { key: 'content',       label: 'Content' },
+  { key: 'media',         label: 'Media' },
+  { key: 'leads',         label: 'Leads' },
+  { key: 'jobs',          label: 'Jobs' },
+  { key: 'applications',  label: 'Applications' },
+  { key: 'notifications', label: 'Notifications' },
+  { key: 'seo',           label: 'SEO' },
+  { key: 'activity',      label: 'Activity Log' },
+  { key: 'settings',      label: 'Settings' },
+  { key: 'users',         label: 'Users' },
+];
+
+const builtinRoles = roles.filter(r => r.is_builtin);
+const customRoles  = roles.filter(r => !r.is_builtin);
+---
+
+<AdminLayout title="Roles" user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="flex items-center gap-3 mb-6">
+    <a href="/admin/settings" class="btn btn-ghost btn-sm">← Back</a>
+    <div>
+      <h1 class="text-xl font-bold">Roles &amp; Rules</h1>
+      <p class="text-muted text-sm">Define what sections each role can access. <code>super_admin</code> always has full access.</p>
+    </div>
+  </div>
+
+  {rolesError && (
+    <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1.5rem;">
+      <p class="text-sm" style="color:#ef4444;margin:0;">Error loading roles: {rolesError}</p>
+    </div>
+  )}
+
+  <!-- Built-in Roles (read-only display) -->
+  <div class="card mb-4">
+    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0.5rem;">
+      <h2 style="font-size:0.95rem;font-weight:700;margin:0;">Built-in Roles</h2>
+      <span style="font-size:0.75rem;background:rgba(255,255,255,0.08);padding:2px 8px;border-radius:4px;color:var(--text-muted);">Read-only</span>
+    </div>
+    <div style="padding:1.5rem;display:grid;gap:1rem;">
+      <!-- super_admin always shown -->
+      <div style="border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;">
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;">
+          <span style="font-weight:700;font-size:0.9rem;">super_admin</span>
+          <span style="font-size:0.75rem;background:rgba(0,227,253,0.15);color:#00e3fd;padding:2px 8px;border-radius:4px;">Super Admin</span>
+        </div>
+        <p class="text-sm text-muted" style="margin:0;">Full access to all sections. Cannot be modified.</p>
+      </div>
+
+      {builtinRoles.map(role => (
+        <div style="border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;"
+             data-role={role.name}
+             data-builtin="true">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <span style="font-weight:700;font-size:0.9rem;">{role.name}</span>
+              <span style="font-size:0.75rem;background:rgba(255,255,255,0.08);padding:2px 8px;border-radius:4px;">{role.label}</span>
+            </div>
+            <button
+              class="btn btn-ghost btn-sm edit-role-btn"
+              data-role={role.name}
+              data-label={role.label}
+              data-sections={JSON.stringify(role.sections)}
+              data-builtin="true"
+            >
+              Edit Sections
+            </button>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+            {ALL_SECTIONS.map(s => (
+              <span style={`font-size:0.75rem;padding:2px 8px;border-radius:4px;${role.sections?.includes(s.key) ? 'background:rgba(0,227,253,0.15);color:#00e3fd;' : 'background:rgba(255,255,255,0.05);color:var(--text-muted);'}`}>
+                {s.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <!-- Custom Roles -->
+  <div class="card mb-4" id="custom-roles-card">
+    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <h2 style="font-size:0.95rem;font-weight:700;margin:0;">Custom Roles</h2>
+      <span id="custom-role-count" style="font-size:0.8rem;color:var(--text-muted);">{customRoles.length} role{customRoles.length !== 1 ? 's' : ''}</span>
+    </div>
+    <div id="custom-roles-list" style="padding:1.5rem;display:grid;gap:1rem;">
+      {customRoles.length === 0 ? (
+        <p id="no-custom-msg" class="text-sm text-muted" style="margin:0;">No custom roles yet. Create one below.</p>
+      ) : (
+        customRoles.map(role => (
+          <div class="custom-role-row" id={`role-${role.name}`}
+               style="border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+              <div style="display:flex;align-items:center;gap:0.75rem;">
+                <span style="font-weight:700;font-size:0.9rem;">{role.name}</span>
+                <span style="font-size:0.75rem;background:rgba(255,255,255,0.08);padding:2px 8px;border-radius:4px;">{role.label}</span>
+              </div>
+              <div style="display:flex;gap:0.5rem;">
+                <button
+                  class="btn btn-ghost btn-sm edit-role-btn"
+                  data-role={role.name}
+                  data-label={role.label}
+                  data-sections={JSON.stringify(role.sections)}
+                  data-builtin="false"
+                >
+                  Edit
+                </button>
+                <button
+                  class="btn btn-ghost btn-sm delete-role-btn"
+                  data-role={role.name}
+                  style="color:#f87171;"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+            <div class="role-sections-display" style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+              {ALL_SECTIONS.map(s => (
+                <span style={`font-size:0.75rem;padding:2px 8px;border-radius:4px;${role.sections?.includes(s.key) ? 'background:rgba(0,227,253,0.15);color:#00e3fd;' : 'background:rgba(255,255,255,0.05);color:var(--text-muted);'}`}>
+                  {s.label}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  </div>
+
+  <!-- Create New Role -->
+  <div class="card">
+    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+      <h2 style="font-size:0.95rem;font-weight:700;">Create New Role</h2>
+    </div>
+    <div style="padding:1.5rem;">
+      <form id="create-role-form">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem;">
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Role ID <span style="color:var(--text-muted);font-weight:400;">(slug, e.g. hr_manager)</span></label>
+            <input type="text" name="name" class="form-input" placeholder="hr_manager" pattern="[a-z0-9_]+" title="Lowercase letters, numbers, and underscores only" required />
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">Display Name</label>
+            <input type="text" name="label" class="form-input" placeholder="HR Manager" required />
+          </div>
+        </div>
+
+        <div class="form-group" style="margin:0 0 1.25rem;">
+          <label class="form-label">Allowed Sections</label>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.5rem;margin-top:0.5rem;">
+            {ALL_SECTIONS.map(s => (
+              <label style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.75rem;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:0.875rem;transition:border-color .15s;">
+                <input type="checkbox" name="sections" value={s.key} style="accent-color:#00e3fd;" />
+                {s.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <button type="submit" class="btn btn-primary">Create Role</button>
+          <span id="create-msg" style="display:none;font-size:0.875rem;"></span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Role Modal -->
+  <div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;display:flex;align-items:center;justify-content:center;" class="hidden">
+    <div style="background:#111827;border:1px solid var(--border);border-radius:12px;padding:1.5rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+        <h3 style="font-size:1rem;font-weight:700;margin:0;" id="modal-title">Edit Role</h3>
+        <button id="modal-close" class="btn btn-ghost btn-sm">✕</button>
+      </div>
+
+      <form id="edit-role-form">
+        <input type="hidden" name="roleName" id="edit-role-name" />
+
+        <div class="form-group" style="margin-bottom:1rem;">
+          <label class="form-label">Display Name</label>
+          <input type="text" name="label" id="edit-label" class="form-input" required />
+        </div>
+
+        <div class="form-group" style="margin-bottom:1.25rem;">
+          <label class="form-label">Allowed Sections</label>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.5rem;margin-top:0.5rem;" id="edit-sections-grid">
+            {ALL_SECTIONS.map(s => (
+              <label style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.75rem;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:0.875rem;">
+                <input type="checkbox" name="sections" value={s.key} style="accent-color:#00e3fd;" />
+                {s.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+          <button type="button" id="modal-cancel" class="btn btn-ghost">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;background:#1e2a40;border:1px solid var(--border);color:var(--text-primary);padding:0.75rem 1.25rem;border-radius:8px;font-size:0.875rem;z-index:9999;"></div>
+</AdminLayout>
+
+<script>
+  const ALL_SECTIONS = [
+    { key: 'dashboard',     label: 'Dashboard' },
+    { key: 'blog',          label: 'Blog' },
+    { key: 'content',       label: 'Content' },
+    { key: 'media',         label: 'Media' },
+    { key: 'leads',         label: 'Leads' },
+    { key: 'jobs',          label: 'Jobs' },
+    { key: 'applications',  label: 'Applications' },
+    { key: 'notifications', label: 'Notifications' },
+    { key: 'seo',           label: 'SEO' },
+    { key: 'activity',      label: 'Activity Log' },
+    { key: 'settings',      label: 'Settings' },
+    { key: 'users',         label: 'Users' },
+  ];
+
+  function toast(msg: string, ok = true) {
+    const t = document.getElementById('toast') as HTMLElement;
+    t.textContent = msg;
+    t.style.borderColor = ok ? 'rgba(74,222,128,0.3)' : 'rgba(248,113,113,0.3)';
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3500);
+  }
+
+  function sectionBadgeHtml(sections: string[], key: string): string {
+    const active = sections.includes(key);
+    const label = ALL_SECTIONS.find(s => s.key === key)?.label ?? key;
+    return `<span style="font-size:0.75rem;padding:2px 8px;border-radius:4px;${active ? 'background:rgba(0,227,253,0.15);color:#00e3fd;' : 'background:rgba(255,255,255,0.05);color:var(--text-muted);'}">${label}</span>`;
+  }
+
+  // ── Create role ──────────────────────────────────────────────
+  const createForm = document.getElementById('create-role-form') as HTMLFormElement;
+  const createMsg  = document.getElementById('create-msg') as HTMLElement;
+
+  createForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(createForm);
+    const name     = (fd.get('name') as string).toLowerCase().replace(/[^a-z0-9_]/g, '_');
+    const label    = fd.get('label') as string;
+    const sections = fd.getAll('sections') as string[];
+
+    const btn = createForm.querySelector<HTMLButtonElement>('[type="submit"]')!;
+    btn.disabled = true;
+    btn.textContent = 'Creating…';
+
+    try {
+      const res = await fetch('/api/admin/roles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, label, sections }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Failed');
+
+      // Add new row to DOM
+      const list = document.getElementById('custom-roles-list')!;
+      const noMsg = document.getElementById('no-custom-msg');
+      noMsg?.remove();
+
+      const row = document.createElement('div');
+      row.className = 'custom-role-row';
+      row.id = `role-${name}`;
+      row.style.cssText = 'border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;';
+      row.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+          <div style="display:flex;align-items:center;gap:0.75rem;">
+            <span style="font-weight:700;font-size:0.9rem;">${name}</span>
+            <span style="font-size:0.75rem;background:rgba(255,255,255,0.08);padding:2px 8px;border-radius:4px;">${label}</span>
+          </div>
+          <div style="display:flex;gap:0.5rem;">
+            <button class="btn btn-ghost btn-sm edit-role-btn"
+              data-role="${name}" data-label="${label}"
+              data-sections='${JSON.stringify(sections)}' data-builtin="false">Edit</button>
+            <button class="btn btn-ghost btn-sm delete-role-btn" data-role="${name}" style="color:#f87171;">Delete</button>
+          </div>
+        </div>
+        <div class="role-sections-display" style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+          ${ALL_SECTIONS.map(s => sectionBadgeHtml(sections, s.key)).join('')}
+        </div>`;
+      list.appendChild(row);
+      attachRowListeners(row);
+
+      // Update count
+      const allRows = list.querySelectorAll('.custom-role-row');
+      const countEl = document.getElementById('custom-role-count');
+      if (countEl) countEl.textContent = `${allRows.length} role${allRows.length !== 1 ? 's' : ''}`;
+
+      createForm.reset();
+      createMsg.textContent = `✓ Role "${name}" created`;
+      createMsg.style.color = '#4ade80';
+      createMsg.style.display = 'block';
+      setTimeout(() => { createMsg.style.display = 'none'; }, 3000);
+      toast('Role created');
+    } catch (err: any) {
+      createMsg.textContent = `✗ ${err.message ?? 'Error'}`;
+      createMsg.style.color = '#f87171';
+      createMsg.style.display = 'block';
+      toast(err.message ?? 'Error creating role', false);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Create Role';
+    }
+  });
+
+  // ── Edit modal ───────────────────────────────────────────────
+  const modal      = document.getElementById('edit-modal') as HTMLElement;
+  const modalTitle = document.getElementById('modal-title') as HTMLElement;
+  const editForm   = document.getElementById('edit-role-form') as HTMLFormElement;
+  const editName   = document.getElementById('edit-role-name') as HTMLInputElement;
+  const editLabel  = document.getElementById('edit-label') as HTMLInputElement;
+
+  function openModal(roleName: string, label: string, sections: string[]) {
+    modalTitle.textContent = `Edit — ${roleName}`;
+    editName.value  = roleName;
+    editLabel.value = label;
+    const checkboxes = editForm.querySelectorAll<HTMLInputElement>('input[name="sections"]');
+    checkboxes.forEach(cb => { cb.checked = sections.includes(cb.value); });
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+  }
+
+  function closeModal() {
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+  }
+
+  document.getElementById('modal-close')!.addEventListener('click', closeModal);
+  document.getElementById('modal-cancel')!.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+  editForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const roleName = editName.value;
+    const fd       = new FormData(editForm);
+    const label    = fd.get('label') as string;
+    const sections = fd.getAll('sections') as string[];
+
+    const btn = editForm.querySelector<HTMLButtonElement>('[type="submit"]')!;
+    btn.disabled    = true;
+    btn.textContent = 'Saving…';
+
+    try {
+      const res = await fetch(`/api/admin/roles/${roleName}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ label, sections }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Failed');
+
+      // Update DOM badges
+      const row = document.getElementById(`role-${roleName}`);
+      if (row) {
+        const display = row.querySelector('.role-sections-display');
+        if (display) {
+          display.innerHTML = ALL_SECTIONS.map(s => sectionBadgeHtml(sections, s.key)).join('');
+        }
+        // Update edit button data attrs
+        const editBtn = row.querySelector<HTMLButtonElement>('.edit-role-btn');
+        if (editBtn) {
+          editBtn.dataset.sections = JSON.stringify(sections);
+          editBtn.dataset.label    = label;
+        }
+        // Update label badge
+        const labelBadge = row.querySelector('span:nth-child(2)') as HTMLElement;
+        if (labelBadge) labelBadge.textContent = label;
+      }
+
+      closeModal();
+      toast('Role updated');
+    } catch (err: any) {
+      toast(err.message ?? 'Error updating role', false);
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = 'Save Changes';
+    }
+  });
+
+  // ── Row listeners (edit + delete) ───────────────────────────
+  function attachRowListeners(container: Element | Document) {
+    container.querySelectorAll<HTMLButtonElement>('.edit-role-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const roleName = btn.dataset.role!;
+        const label    = btn.dataset.label!;
+        const sections = JSON.parse(btn.dataset.sections ?? '[]') as string[];
+        openModal(roleName, label, sections);
+      });
+    });
+
+    container.querySelectorAll<HTMLButtonElement>('.delete-role-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const roleName = btn.dataset.role!;
+        if (!confirm(`Delete role "${roleName}"? Users with this role will lose access.`)) return;
+        try {
+          const res = await fetch(`/api/admin/roles/${roleName}`, { method: 'DELETE' });
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.error ?? 'Failed');
+          document.getElementById(`role-${roleName}`)?.remove();
+
+          const list = document.getElementById('custom-roles-list')!;
+          const allRows = list.querySelectorAll('.custom-role-row');
+          const countEl = document.getElementById('custom-role-count');
+          if (countEl) countEl.textContent = `${allRows.length} role${allRows.length !== 1 ? 's' : ''}`;
+          if (allRows.length === 0) {
+            const p = document.createElement('p');
+            p.id = 'no-custom-msg';
+            p.className = 'text-sm text-muted';
+            p.style.margin = '0';
+            p.textContent = 'No custom roles yet. Create one below.';
+            list.appendChild(p);
+          }
+          toast('Role deleted');
+        } catch (err: any) {
+          toast(err.message ?? 'Error deleting role', false);
+        }
+      });
+    });
+  }
+
+  // Attach to server-rendered rows
+  attachRowListeners(document);
+</script>

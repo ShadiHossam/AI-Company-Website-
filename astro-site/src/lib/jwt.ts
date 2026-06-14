@@ -14,10 +14,9 @@ export async function verifyJWT(token: string): Promise<JWTPayload> {
   return payload as unknown as JWTPayload;
 }
 
-export type AppRole = 'super_admin' | 'editor' | 'sales';
+export type AppRole = string;
 
 export function extractRole(payload: JWTPayload): AppRole | null {
   const role = payload.user_metadata?.role ?? payload.role;
-  if (role === 'super_admin' || role === 'editor' || role === 'sales') return role;
-  return null;
+  return role && typeof role === 'string' ? role : null;
 }
