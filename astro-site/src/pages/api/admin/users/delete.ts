@@ -41,7 +41,7 @@ export const DELETE: APIRoute = async ({ request, locals }) => {
   const { error } = await supabase.auth.admin.deleteUser(body.uid);
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 
   return new Response(JSON.stringify({ success: true }), { status: 200 });

@@ -28,7 +28,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     .range(from, to);
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 
   return new Response(JSON.stringify({ data, count, page, pageSize: PAGE_SIZE }), { status: 200 });
@@ -59,7 +59,7 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
       .eq('read', false);
 
     if (error) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+      return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
     }
   } else if (body.ids && body.ids.length > 0) {
     const { error } = await supabase
@@ -68,7 +68,7 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
       .in('id', body.ids);
 
     if (error) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+      return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
     }
   } else {
     return new Response(JSON.stringify({ error: 'ids array or all:true required' }), { status: 400 });

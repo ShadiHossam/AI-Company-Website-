@@ -37,7 +37,7 @@ export const PUT: APIRoute = async ({ locals, request, params }) => {
 
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase.from('jobs').update(update).eq('id', params.id!).select().single();
-  if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  if (error) return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   return new Response(JSON.stringify({ job: data }), { headers: { 'Content-Type': 'application/json' } });
 };
 
@@ -48,6 +48,6 @@ export const DELETE: APIRoute = async ({ locals, request, params }) => {
 
   const supabase = getSupabaseAdmin();
   const { error } = await supabase.from('jobs').delete().eq('id', params.id!);
-  if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  if (error) return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   return new Response(JSON.stringify({ success: true }), { status: 200 });
 };

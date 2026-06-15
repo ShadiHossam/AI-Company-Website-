@@ -1,0 +1,273 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+
+const fallbackFaqs = [
+  { question: "What's the difference between fine-tuning and using a prompt?", answer: "A prompt tells a general-purpose model how to behave in a specific situation. Fine-tuning trains the model on hundreds or thousands of examples so that behavior becomes the model's default — no prompt required. The result is faster responses, lower token costs (shorter or no system prompt needed), and significantly more consistent output. Fine-tuning is worth it when you have a high-volume use case and need the model to perform a specific task reliably, at scale." },
+  { question: "Which models can you fine-tune?", answer: "We fine-tune GPT-4o mini, GPT-3.5 Turbo, and GPT-4 Turbo via the OpenAI API. For open-source options with full data ownership, we fine-tune Llama 3, Mistral, and Mixtral on your own infrastructure. For Claude-based customization, we use a combination of prompt engineering and retrieval augmentation since Anthropic does not currently offer a public fine-tuning API." },
+  { question: "How much data do I need to fine-tune a model?", answer: "It depends on the task. For most business use cases — classifying documents, generating responses in a specific format, or writing in a consistent brand tone — we can get strong results with 200–500 high-quality examples. More complex tasks benefit from more data, but quality matters far more than volume. We help you build and curate a training dataset as part of the engagement." },
+  { question: "Is our data safe during the fine-tuning process?", answer: "Yes. Your training data is used solely to fine-tune your model and is not used to train any shared or public models. For organizations with strict data policies, we can fine-tune open-source models on your own cloud infrastructure so your data never leaves your environment. We discuss and document your data handling requirements before any data is shared." },
+  { question: "What's included after the model is trained?", answer: "We deliver the fine-tuned model along with evaluation results showing exactly how it performs versus the base model, integration documentation for your developers, and 60-day support. For ongoing tasks, we can retrain on new data as your needs evolve — pricing for retraining is typically much lower than the initial engagement." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_finetuning')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+---
+
+<BaseLayout
+  title="AI Model Fine-Tuning — Train AI on Your Data, Not the Internet's | Aegis AI"
+  description="We fine-tune GPT-4o, Llama, Mistral, and other foundation models on your proprietary data — so your AI knows your business, speaks your language, and delivers consistent outputs at scale."
+  canonicalPath="/services/ai-model-finetuning"
+  ogImage="/assets/og-finetuning.jpg"
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <nav class="page-breadcrumb" style="justify-content:center; margin-bottom:1.5rem;" aria-label="Breadcrumb">
+      <a href="/">Home</a><span>/</span>
+      <a href="/services">Services</a><span>/</span>
+      <strong>AI Model Fine-Tuning</strong>
+    </nav>
+    <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.28); border-radius:100px; padding:6px 16px; color:#004f58; font-size:0.875rem; font-weight:600; margin-bottom:1.5rem;">
+      <span class="material-symbols-outlined" style="font-size:18px;">model_training</span>
+      AI Model Fine-Tuning
+    </div>
+    <h1>Stop Using Generic AI. <span class="gradient-text">Start Using Yours.</span></h1>
+    <p style="color:#42474e; font-size:1.125rem; max-width:640px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      Off-the-shelf models know everything about the internet and nothing about your business. Fine-tuning changes that. We train foundation models on your data, your tone, and your domain — so your AI actually performs like it belongs to you.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="finetuning_hero" class="btn-primary">Discuss Fine-Tuning</button>
+      <a href="#what-we-do" class="btn-outline">See What's Possible ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- STATS BANNER -->
+<div style="width:100%; overflow:hidden; position:relative;">
+  <div style="width:100%; background:linear-gradient(135deg,#001e30,#00253b,#006875); padding:3.5rem 2rem; display:flex; align-items:center; justify-content:center; position:relative;">
+    <div style="position:absolute; inset:0; background-image:radial-gradient(circle, rgba(0,227,253,0.07) 1px, transparent 1px); background-size:24px 24px;"></div>
+    <div style="position:relative; z-index:1; display:grid; grid-template-columns:repeat(3,1fr); gap:3rem; text-align:center; max-width:800px; margin:0 auto;">
+      <div>
+        <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">200+</p>
+        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">Training examples can be enough for a strong fine-tuned model</p>
+      </div>
+      <div>
+        <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">40–60%</p>
+        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">Reduction in inference cost vs. using long system prompts</p>
+      </div>
+      <div>
+        <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">Your data</p>
+        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">Never used to train shared models — fully isolated to your account</p>
+      </div>
+    </div>
+  </div>
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,#f9f9ff 0%,transparent 100%); pointer-events:none;"></div>
+</div>
+
+<!-- WHAT WE DO -->
+<section id="what-we-do" class="section" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">Use Cases</div>
+      <h2 id="use-cases-heading">Six Tasks Where Fine-Tuning Delivers the Most Value</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Fine-tuning works best for high-volume, repeatable tasks where consistency and accuracy matter.</p>
+    </div>
+    <div class="builds-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">draw</span></div>
+        <h3>Brand Voice Training</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Train the model on thousands of examples of your own copy until it writes in your exact voice — no prompting required to get on-brand output.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">category</span></div>
+        <h3>Document Classification</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Train a model to classify incoming documents, emails, or support tickets into your specific categories — with accuracy that general models simply can't match on niche taxonomies.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">support_agent</span></div>
+        <h3>Customer Support Responses</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Train on your best human support responses so your AI replies in the same tone, at the same quality level — consistently across thousands of daily tickets.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">gavel</span></div>
+        <h3>Industry-Specific Knowledge</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Legal, medical, financial, or technical domains where general models hallucinate or use imprecise terminology. Fine-tuning on domain data gives you expert-level precision.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">data_object</span></div>
+        <h3>Structured Data Extraction</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Fine-tune a model to extract specific fields from your document types — contracts, invoices, forms — in a consistent JSON format your systems can ingest directly.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">translate</span></div>
+        <h3>Specialized Translation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">For industries with specific terminology — medical, legal, engineering — fine-tuning produces translations that preserve meaning and precision where generic translation models fall short.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODELS WE USE -->
+<section class="section-sm" style="background:#e7eeff;" aria-label="Models we fine-tune">
+  <div class="container" style="text-align:center;">
+    <p style="color:#72787e; font-size:0.8125rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:2rem;">Models We Fine-Tune</p>
+    <div style="display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:2rem 2.5rem;">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+        <img src="https://cdn.simpleicons.org/openai/00253b" alt="OpenAI" width="30" height="30" loading="lazy">
+        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">GPT-4o mini</span>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+        <img src="https://cdn.simpleicons.org/openai/00253b" alt="OpenAI GPT-4" width="30" height="30" loading="lazy">
+        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">GPT-3.5 Turbo</span>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+        <img src="https://cdn.simpleicons.org/meta/0082FB" alt="Meta Llama" width="30" height="30" loading="lazy">
+        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">Llama 3</span>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+        <img src="https://cdn.simpleicons.org/mistral/FF7000" alt="Mistral AI" width="30" height="30" loading="lazy">
+        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">Mistral</span>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+        <img src="https://cdn.simpleicons.org/mistral/FF7000" alt="Mixtral" width="30" height="30" loading="lazy">
+        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">Mixtral</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">How It Works</div>
+      <h2 id="process-heading">From Raw Data to Deployed Model</h2>
+    </div>
+    <div class="process-grid">
+      <div class="process-connector"></div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">dataset</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 1</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Data Collection</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We scope the task, identify training data sources, and build or curate the dataset — cleaning, formatting, and labeling as needed.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">model_training</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 2</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Fine-Tune</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We run the training job with your data, monitoring loss curves and adjusting hyperparameters to prevent overfitting.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">science</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 3</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Evaluate</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We benchmark the fine-tuned model against the base model on held-out test data — so you can see exactly how much it improved.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">rocket_launch</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 4</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Deploy</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We integrate your fine-tuned model into your product or workflow, with documentation and 60 days of post-launch support.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <div>
+      {faqItems.map((item) => (
+        <div class="faq-item">
+          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+            {item.question}
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">{item.answer}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <h2 style="color:#fff; font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Train Your Own Model?</h2>
+    <p style="color:rgba(255,255,255,0.55); font-size:1.125rem; max-width:36rem; margin:0 auto 2.5rem; line-height:1.7;">Tell us your use case and what data you have. We'll tell you whether fine-tuning is the right approach — and what performance improvements you can realistically expect.</p>
+    <button onclick="openModal(this)" data-source="finetuning_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+    <p style="color:rgba(255,255,255,0.30); font-size:.875rem; margin-top:1.25rem;">Free · No commitment · 100% refund guarantee</p>
+  </div>
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "name": "AI Model Fine-Tuning",
+      "url": "https://aegisai.ae/services/ai-model-finetuning",
+      "description": "We fine-tune GPT-4o, Llama, Mistral, and other foundation models on your proprietary data — delivering consistent, domain-specific AI performance at scale.",
+      "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://aegisai.ae" },
+      "areaServed": "Worldwide",
+      "serviceType": "AI Model Fine-Tuning"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://aegisai.ae/" },
+        { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://aegisai.ae/services" },
+        { "@type": "ListItem", "position": 3, "name": "AI Model Fine-Tuning", "item": "https://aegisai.ae/services/ai-model-finetuning" }
+      ]
+    }
+  ]
+}
+</script>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+.builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+.process-step { display:flex; flex-direction:column; align-items:center; text-align:center; }
+.process-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#00253b,#006875); box-shadow:0 0 0 6px #fff, 0 0 0 8px rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; position:relative; z-index:1; }
+.process-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2rem; position:relative; }
+.process-connector { position:absolute; top:27px; left:calc(12.5% + 28px); right:calc(12.5% + 28px); height:2px; background:linear-gradient(90deg,#00e3fd,rgba(0,37,59,0.20)); }
+.faq-item { border-top:1px solid rgba(0,37,59,0.10); }
+.faq-btn { display:flex; justify-content:space-between; align-items:center; width:100%; text-align:left; padding:1.1rem 0; font-weight:600; color:#00253b; cursor:pointer; background:none; border:none; font-family:inherit; font-size:0.95rem; }
+.faq-body { display:none; padding-bottom:1rem; color:#42474e; font-size:0.9rem; line-height:1.7; }
+.faq-body.open { display:block; }
+.faq-icon { transition:transform 0.25s; font-size:1.1rem; color:#006875; }
+.faq-icon.open { transform:rotate(45deg); }
+@media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } }
+@media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
+</style>

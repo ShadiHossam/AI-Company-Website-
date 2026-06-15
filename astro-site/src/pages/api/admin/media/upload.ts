@@ -43,15 +43,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
     });
   }
 
-  // Validate MIME type
-  if (!file.type.startsWith('image/')) {
-    return new Response(JSON.stringify({ error: 'Only image files are allowed' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-
-  // Validate file size
+  // Validate file size first (cheap check before reading buffer)
   if (file.size > MAX_SIZE) {
     return new Response(JSON.stringify({ error: 'File exceeds 10 MB limit' }), {
       status: 400,
@@ -62,12 +54,26 @@ export const POST: APIRoute = async ({ locals, request }) => {
   const altText = (formData.get('alt_text') as string | null) ?? '';
 
   // Generate unique filename
-  const ext = file.name.split('.').pop() ?? 'jpg';
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/\s+/g, '_');
   const timestamp = Date.now();
   const filename = `${timestamp}-${safeName}`;
 
   const arrayBuffer = await file.arrayBuffer();
+
+  // Validate file type by magic bytes (not client-controlled MIME type)
+  const bytes = new Uint8Array(arrayBuffer.slice(0, 12));
+  const isJpeg = bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF;
+  const isPng = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47;
+  const isGif = bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38;
+  const isWebp = bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46
+    && bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;
+  const isAvif = bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70;
+  if (!isJpeg && !isPng && !isGif && !isWebp && !isAvif) {
+    return new Response(JSON.stringify({ error: 'Only image files (JPEG, PNG, GIF, WebP, AVIF) are allowed' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 
   const supabase = getSupabaseAdmin();
 
@@ -89,7 +95,8 @@ export const POST: APIRoute = async ({ locals, request }) => {
   }
 
   if (uploadError) {
-    return new Response(JSON.stringify({ error: `Upload failed: ${uploadError.message}` }), {
+    console.error('[media/upload] storage error:', uploadError.message);
+    return new Response(JSON.stringify({ error: 'Upload failed' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -113,9 +120,9 @@ export const POST: APIRoute = async ({ locals, request }) => {
     .single();
 
   if (dbError) {
-    // Attempt cleanup of uploaded file
+    console.error('[media/upload] db error:', dbError.message);
     await supabase.storage.from('media').remove([filename]);
-    return new Response(JSON.stringify({ error: `DB insert failed: ${dbError.message}` }), {
+    return new Response(JSON.stringify({ error: 'Failed to save file record' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });

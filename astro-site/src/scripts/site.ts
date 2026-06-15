@@ -114,7 +114,8 @@ function goToStep(n: number) {
 
 async function submitForm() {
   const btn = document.querySelector('[onclick="submitForm()"]') as HTMLButtonElement | null;
-  if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
+  const isAr = document.documentElement.lang.startsWith('ar');
+  if (btn) { btn.disabled = true; btn.textContent = isAr ? 'جاري الإرسال...' : 'Submitting…'; }
 
   const waVal = (document.getElementById('whatsapp') as HTMLInputElement)?.value ?? '';
   const countryCode = (document.getElementById('country-code') as HTMLSelectElement)?.value ?? '+971';
@@ -153,7 +154,7 @@ async function submitForm() {
     const ind = document.getElementById('step-indicator');
     if (ind) ind.style.display = 'none';
   } catch {
-    if (btn) { btn.disabled = false; btn.innerHTML = 'Confirm Booking'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = isAr ? 'تأكيد الحجز' : 'Confirm Booking'; }
     const errEl = document.getElementById('modal-submit-error');
     if (errEl) { errEl.classList.remove('hidden'); }
   }

@@ -17,9 +17,10 @@ export const GET: APIRoute = async () => {
     .maybeSingle();
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { 'Cache-Control': 'no-store' },
+    console.error('[banner] db error:', error.message);
+    return new Response(JSON.stringify(null), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=60' },
     });
   }
 
@@ -27,7 +28,7 @@ export const GET: APIRoute = async () => {
     status: 200,
     headers: {
       'Content-Type': 'application/json',
-      'Cache-Control': 'no-store',
+      'Cache-Control': 'public, max-age=60',
     },
   });
 };

@@ -17,7 +17,7 @@ export const GET: APIRoute = async ({ locals, params }) => {
     .select('section_key, value, updated_at')
     .eq('page_slug', slug);
 
-  if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  if (error) return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
 
   return new Response(JSON.stringify(data ?? []), {
     headers: { 'Content-Type': 'application/json' },
@@ -55,7 +55,7 @@ export const PUT: APIRoute = async ({ locals, params, request }) => {
     .from('page_content')
     .upsert(upserts, { onConflict: 'page_slug,section_key' });
 
-  if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  if (error) return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
 
   return new Response(JSON.stringify({ ok: true }), {
     headers: { 'Content-Type': 'application/json' },

@@ -20,7 +20,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
   if (status) query = query.eq('status', status);
 
   const { data, count, error } = await query;
-  if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  if (error) return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   return new Response(JSON.stringify({ applications: data ?? [], total: count ?? 0 }), {
     headers: { 'Content-Type': 'application/json' },
   });

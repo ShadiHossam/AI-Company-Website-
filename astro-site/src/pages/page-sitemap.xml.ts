@@ -7,35 +7,90 @@ interface PageEntry {
   lastmod: string;
   priority: string;
   changefreq: string;
+  arUrl?: string;
 }
 
+const NOW = new Date().toISOString().replace(/\.\d{3}Z$/, '+00:00');
+
 const PAGES: PageEntry[] = [
-  { url: '/',                                  lastmod: '2025-06-10T00:00:00+00:00', priority: '1.0', changefreq: 'weekly'  },
-  { url: '/services',                          lastmod: '2025-06-10T00:00:00+00:00', priority: '0.8', changefreq: 'monthly' },
-  { url: '/products',                          lastmod: '2025-06-10T00:00:00+00:00', priority: '0.8', changefreq: 'monthly' },
-  { url: '/pricing',                           lastmod: '2025-06-10T00:00:00+00:00', priority: '0.8', changefreq: 'monthly' },
-  { url: '/services/custom-ai-development',   lastmod: '2025-06-10T00:00:00+00:00', priority: '0.7', changefreq: 'monthly' },
-  { url: '/services/ai-training',             lastmod: '2025-06-10T00:00:00+00:00', priority: '0.7', changefreq: 'monthly' },
-  { url: '/services/ai-strategy',             lastmod: '2025-06-10T00:00:00+00:00', priority: '0.7', changefreq: 'monthly' },
-  { url: '/results',                           lastmod: '2025-06-10T00:00:00+00:00', priority: '0.7', changefreq: 'monthly' },
-  { url: '/industries/real-estate',           lastmod: '2025-06-10T00:00:00+00:00', priority: '0.6', changefreq: 'monthly' },
-  { url: '/industries/retail',                lastmod: '2025-06-10T00:00:00+00:00', priority: '0.6', changefreq: 'monthly' },
-  { url: '/industries/hospitality',           lastmod: '2025-06-10T00:00:00+00:00', priority: '0.6', changefreq: 'monthly' },
-  { url: '/industries/logistics',             lastmod: '2025-06-10T00:00:00+00:00', priority: '0.6', changefreq: 'monthly' },
-  { url: '/about',                             lastmod: '2025-06-10T00:00:00+00:00', priority: '0.6', changefreq: 'monthly' },
-  { url: '/blog',                              lastmod: '2025-06-10T00:00:00+00:00', priority: '0.6', changefreq: 'weekly'  },
-  { url: '/contact',                           lastmod: '2025-06-10T00:00:00+00:00', priority: '0.6', changefreq: 'monthly' },
-  { url: '/faq',                               lastmod: '2025-06-10T00:00:00+00:00', priority: '0.5', changefreq: 'monthly' },
-  { url: '/privacy',                           lastmod: '2025-06-10T00:00:00+00:00', priority: '0.3', changefreq: 'yearly'  },
-  { url: '/terms',                             lastmod: '2025-06-10T00:00:00+00:00', priority: '0.3', changefreq: 'yearly'  },
+  { url: '/',                                  lastmod: NOW, priority: '1.0', changefreq: 'weekly',  arUrl: '/ar' },
+  { url: '/services',                          lastmod: NOW, priority: '0.8', changefreq: 'monthly', arUrl: '/ar/services' },
+  { url: '/products',                          lastmod: NOW, priority: '0.8', changefreq: 'monthly' },
+  { url: '/pricing',                           lastmod: NOW, priority: '0.8', changefreq: 'monthly', arUrl: '/ar/pricing' },
+  { url: '/services/custom-ai-development',   lastmod: NOW, priority: '0.7', changefreq: 'monthly', arUrl: '/ar/services/custom-ai-development' },
+  { url: '/services/ai-agents',               lastmod: NOW, priority: '0.7', changefreq: 'monthly', arUrl: '/ar/services/ai-agents' },
+  { url: '/services/ai-automation',           lastmod: NOW, priority: '0.7', changefreq: 'monthly', arUrl: '/ar/services/ai-automation' },
+  { url: '/services/ai-training',             lastmod: NOW, priority: '0.7', changefreq: 'monthly', arUrl: '/ar/services/ai-training' },
+  { url: '/services/ai-strategy',             lastmod: NOW, priority: '0.7', changefreq: 'monthly', arUrl: '/ar/services/ai-strategy' },
+  { url: '/services/ai-integration',         lastmod: NOW, priority: '0.7', changefreq: 'monthly', arUrl: '/ar/services/ai-integration' },
+  { url: '/services/internal-ai-tools',       lastmod: NOW, priority: '0.7', changefreq: 'monthly', arUrl: '/ar/services/internal-ai-tools' },
+  { url: '/services/custom-gpt-development', lastmod: NOW, priority: '0.7', changefreq: 'monthly', arUrl: '/ar/services/custom-gpt-development' },
+  { url: '/services/vibe-coding',             lastmod: NOW, priority: '0.7', changefreq: 'monthly', arUrl: '/ar/services/vibe-coding' },
+  { url: '/services/ai-model-finetuning',    lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
+  { url: '/services/claude-agent-builds',    lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
+  { url: '/services/prompt-engineering',     lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
+  { url: '/results',                           lastmod: NOW, priority: '0.7', changefreq: 'monthly', arUrl: '/ar/results' },
+  { url: '/industries/real-estate',           lastmod: NOW, priority: '0.6', changefreq: 'monthly', arUrl: '/ar/industries/real-estate' },
+  { url: '/industries/retail',                lastmod: NOW, priority: '0.6', changefreq: 'monthly', arUrl: '/ar/industries/retail' },
+  { url: '/industries/hospitality',           lastmod: NOW, priority: '0.6', changefreq: 'monthly', arUrl: '/ar/industries/hospitality' },
+  { url: '/industries/logistics',             lastmod: NOW, priority: '0.6', changefreq: 'monthly', arUrl: '/ar/industries/logistics' },
+  { url: '/about',                             lastmod: NOW, priority: '0.6', changefreq: 'monthly', arUrl: '/ar/about' },
+  { url: '/blog',                              lastmod: NOW, priority: '0.6', changefreq: 'weekly',  arUrl: '/ar/blog' },
+  { url: '/contact',                           lastmod: NOW, priority: '0.6', changefreq: 'monthly', arUrl: '/ar/contact' },
+  { url: '/faq',                               lastmod: NOW, priority: '0.5', changefreq: 'monthly', arUrl: '/ar/faq' },
+  { url: '/privacy',                           lastmod: NOW, priority: '0.3', changefreq: 'yearly'  },
+  { url: '/terms',                             lastmod: NOW, priority: '0.3', changefreq: 'yearly'  },
+];
+
+const AR_ONLY: PageEntry[] = [
+  { url: '/ar',                                  lastmod: NOW, priority: '0.9', changefreq: 'weekly'  },
+  { url: '/ar/services',                         lastmod: NOW, priority: '0.8', changefreq: 'monthly' },
+  { url: '/ar/pricing',                          lastmod: NOW, priority: '0.7', changefreq: 'monthly' },
+  { url: '/ar/services/custom-ai-development',  lastmod: NOW, priority: '0.7', changefreq: 'monthly' },
+  { url: '/ar/services/ai-agents',              lastmod: NOW, priority: '0.7', changefreq: 'monthly' },
+  { url: '/ar/services/ai-automation',          lastmod: NOW, priority: '0.7', changefreq: 'monthly' },
+  { url: '/ar/services/ai-training',            lastmod: NOW, priority: '0.7', changefreq: 'monthly' },
+  { url: '/ar/services/ai-strategy',            lastmod: NOW, priority: '0.7', changefreq: 'monthly' },
+  { url: '/ar/services/ai-integration',        lastmod: NOW, priority: '0.7', changefreq: 'monthly' },
+  { url: '/ar/services/internal-ai-tools',      lastmod: NOW, priority: '0.7', changefreq: 'monthly' },
+  { url: '/ar/services/custom-gpt-development', lastmod: NOW, priority: '0.7', changefreq: 'monthly' },
+  { url: '/ar/services/vibe-coding',            lastmod: NOW, priority: '0.7', changefreq: 'monthly' },
+  { url: '/ar/results',                          lastmod: NOW, priority: '0.7', changefreq: 'monthly' },
+  { url: '/ar/industries/real-estate',          lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
+  { url: '/ar/industries/retail',               lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
+  { url: '/ar/industries/hospitality',          lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
+  { url: '/ar/industries/logistics',            lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
+  { url: '/ar/about',                            lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
+  { url: '/ar/contact',                          lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
+  { url: '/ar/faq',                              lastmod: NOW, priority: '0.5', changefreq: 'monthly' },
+  { url: '/ar/blog',                             lastmod: NOW, priority: '0.6', changefreq: 'weekly'  },
 ];
 
 function urlEntry(page: PageEntry): string {
+  const hreflang = page.arUrl
+    ? `
+    <xhtml:link rel="alternate" hreflang="en-ae" href="${BASE}${page.url}"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="${BASE}${page.arUrl}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}${page.url}"/>`
+    : '';
+  return `  <url>
+    <loc>${BASE}${page.url}</loc>
+    <lastmod>${page.lastmod}</lastmod>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>${hreflang}
+  </url>`;
+}
+
+function arUrlEntry(page: PageEntry): string {
+  const enUrl = page.url.replace(/^\/ar/, '') || '/';
   return `  <url>
     <loc>${BASE}${page.url}</loc>
     <lastmod>${page.lastmod}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority}</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="${BASE}${page.url}"/>
+    <xhtml:link rel="alternate" hreflang="en-ae" href="${BASE}${enUrl}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}${enUrl}"/>
   </url>`;
 }
 
@@ -48,6 +103,7 @@ export const GET: APIRoute = async () => {
         xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
 ${PAGES.map(urlEntry).join('\n')}
+${AR_ONLY.map(arUrlEntry).join('\n')}
 </urlset>`;
 
   return new Response(xml, {

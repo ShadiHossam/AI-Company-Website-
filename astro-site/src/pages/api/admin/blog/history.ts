@@ -56,7 +56,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
     .limit(50);
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });

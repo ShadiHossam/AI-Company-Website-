@@ -4,6 +4,22 @@ import { sendApplicationNotification } from '../../lib/resend';
 
 export const prerender = false;
 
+const ipHits = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT = 5;
+const RATE_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = ipHits.get(ip);
+  if (!entry || now > entry.resetAt) {
+    ipHits.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT) return false;
+  entry.count++;
+  return true;
+}
+
 const CSRF_CHECK = (req: Request) => {
   const origin = req.headers.get('origin') ?? '';
   const siteUrl = import.meta.env.SITE_URL ?? 'https://aegisai.ae';
@@ -20,6 +36,13 @@ export const POST: APIRoute = async ({ request }) => {
     body = await request.json();
   } catch {
     return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 });
+  }
+
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? request.headers.get('x-real-ip')
+    ?? 'unknown';
+  if (!checkRateLimit(ip)) {
+    return new Response(JSON.stringify({ error: 'Too many requests' }), { status: 429 });
   }
 
   const { job_id, job_title, full_name, email, cv_url, cover_letter, phone, linkedin_url, portfolio_url, how_heard } = body;

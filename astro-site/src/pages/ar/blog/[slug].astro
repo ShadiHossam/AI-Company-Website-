@@ -1,0 +1,212 @@
+---
+export const prerender = false;
+import ArBaseLayout from '../../../layouts/ArBaseLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+import { marked } from 'marked';
+
+const { slug } = Astro.params;
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+interface DbPost {
+  id: string;
+  title: string;
+  slug: string;
+  ar_title: string | null;
+  ar_description: string | null;
+  ar_body_markdown: string | null;
+  ar_meta_title: string | null;
+  ar_meta_description: string | null;
+  category: string;
+  pub_date: string;
+  updated_date?: string | null;
+  author_name?: string | null;
+  og_image?: string | null;
+}
+
+interface RelatedPost {
+  ar_title: string | null;
+  title: string;
+  slug: string;
+  category: string;
+}
+
+const supabase = getSupabaseAdmin();
+const { data: post, error } = await supabase
+  .from('blog_posts')
+  .select('id, title, slug, ar_title, ar_description, ar_body_markdown, ar_meta_title, ar_meta_description, category, pub_date, updated_date, author_name, og_image')
+  .eq('slug', slug!)
+  .eq('status', 'published')
+  .single();
+
+if (error || !post || !post.ar_title) {
+  return Astro.redirect(`/blog/${slug}`, 302);
+}
+
+const bodyHtml = post.ar_body_markdown ? await marked(post.ar_body_markdown) : '';
+
+const pubDate = post.pub_date ? new Date(post.pub_date) : new Date();
+const updatedDate = post.updated_date ? new Date(post.updated_date) : undefined;
+const displayDate = updatedDate ?? pubDate;
+const dateStr = displayDate.toLocaleDateString('ar-AE', { day: 'numeric', month: 'long', year: 'numeric' });
+
+const { data: related } = await supabase
+  .from('blog_posts')
+  .select('ar_title, title, slug, category')
+  .eq('status', 'published')
+  .eq('category', post.category)
+  .neq('slug', slug!)
+  .not('ar_title', 'is', null)
+  .limit(3);
+
+const relatedPosts = (related ?? []) as RelatedPost[];
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.ar_meta_title ?? post.ar_title,
+    description: post.ar_meta_description ?? post.ar_description ?? '',
+    inLanguage: 'ar',
+    datePublished: pubDate.toISOString(),
+    dateModified: (updatedDate ?? pubDate).toISOString(),
+    author: { '@type': 'Person', name: post.author_name ?? 'Aegis AI' },
+    publisher: { '@type': 'Organization', name: 'Aegis AI', url: 'https://aegisai.ae' },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `https://aegisai.ae/ar/blog/${slug}` },
+    ...(post.og_image ? { image: post.og_image.startsWith('http') ? post.og_image : `https://aegisai.ae${post.og_image}` } : {}),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://aegisai.ae/ar' },
+      { '@type': 'ListItem', position: 2, name: 'المدونة', item: 'https://aegisai.ae/ar/blog' },
+      { '@type': 'ListItem', position: 3, name: post.ar_title, item: `https://aegisai.ae/ar/blog/${slug}` },
+    ],
+  },
+];
+---
+
+<ArBaseLayout
+  title={`${post.ar_meta_title ?? post.ar_title} | مدونة Aegis AI`}
+  description={post.ar_meta_description ?? post.ar_description ?? ''}
+  canonicalPath={`/ar/blog/${slug}`}
+  enPath={`/blog/${slug}`}
+  ogImage={post.og_image ?? '/assets/og-blog.jpg'}
+  ogType="article"
+  ldJson={ldJson}
+>
+
+<div id="progress-bar" aria-hidden="true"></div>
+
+<header class="article-hero">
+  <div class="container">
+    <nav style="display:flex;align-items:center;gap:8px;font-size:0.875rem;color:#72787e;margin-bottom:1.5rem;flex-wrap:wrap;" aria-label="مسار التنقل">
+      <a href="/ar" style="color:#006875;font-weight:600;">الرئيسية</a>
+      <span aria-hidden="true">/</span>
+      <a href="/ar/blog" style="color:#006875;font-weight:600;">المدونة</a>
+      <span aria-hidden="true">/</span>
+      <span style="color:#42474e;">{post.ar_title}</span>
+    </nav>
+    <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.25rem;">
+      <span style="display:inline-flex;align-items:center;background:rgba(0,104,117,0.1);border-radius:8px;padding:4px 12px;font-size:0.8125rem;font-weight:700;color:#006875;text-transform:uppercase;">{post.category}</span>
+      <span style="color:#72787e;font-size:0.875rem;">{dateStr}</span>
+    </div>
+    <h1 style="font-size:clamp(1.75rem,4vw,2.75rem);font-weight:900;color:#00253b;line-height:1.25;margin-bottom:1.25rem;">{post.ar_title}</h1>
+    {post.ar_description && (
+      <p style="font-size:1.125rem;color:#42474e;line-height:1.8;max-width:700px;margin-bottom:1.5rem;">{post.ar_description}</p>
+    )}
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,104,117,0.12);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.875rem;color:#006875;" aria-hidden="true">AI</div>
+      <span style="font-size:0.9rem;color:#42474e;font-weight:600;">{post.author_name ?? 'Aegis AI'}</span>
+    </div>
+    <div style="margin-top:1rem;">
+      <a href={`/blog/${slug}`} style="font-size:0.875rem;color:#006875;font-weight:600;" lang="en">Read in English →</a>
+    </div>
+  </div>
+</header>
+
+<div style="padding:3rem 0 5rem;">
+  <div class="container">
+    <div class="article-grid">
+      <article class="article-body prose" set:html={bodyHtml} />
+
+      <aside>
+        {relatedPosts.length > 0 && (
+          <div class="card" style="position:sticky;top:calc(var(--topbar-h,80px) + 1.5rem);">
+            <div style="font-size:0.8125rem;font-weight:700;color:#42474e;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:1rem;">مقالات ذات صلة</div>
+            {relatedPosts.map(r => (
+              <a href={`/ar/blog/${r.slug}`} style="display:block;padding:0.75rem 0;border-bottom:1px solid rgba(0,37,59,0.08);text-decoration:none;">
+                <div style="font-size:0.875rem;font-weight:700;color:#00253b;line-height:1.4;margin-bottom:4px;">{r.ar_title ?? r.title}</div>
+                <div style="font-size:0.75rem;color:#72787e;">{r.category}</div>
+              </a>
+            ))}
+          </div>
+        )}
+      </aside>
+    </div>
+  </div>
+</div>
+
+<section style="background:#e7eeff;padding:4rem 0;text-align:center;">
+  <div class="container" style="max-width:600px;">
+    <h2 style="font-size:1.5rem;font-weight:800;color:#00253b;margin-bottom:1rem;">هل أنت مستعد لتطبيق الذكاء الاصطناعي في شركتك؟</h2>
+    <p style="color:#42474e;margin-bottom:1.5rem;line-height:1.8;">احجز استشارة مجانية مع فريقنا في دبي واكتشف ما يمكن للذكاء الاصطناعي تحقيقه لشركتك.</p>
+    <button onclick="openModal(this)" data-source={`ar_blog_${slug}`} class="btn-primary">احجز استشارة مجانية ←</button>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<script>
+  const bar = document.getElementById('progress-bar') as HTMLElement | null;
+  if (bar) {
+    const update = () => {
+      const doc = document.documentElement;
+      const pct = (doc.scrollTop / (doc.scrollHeight - doc.clientHeight)) * 100;
+      bar.style.width = `${Math.min(100, pct)}%`;
+    };
+    window.addEventListener('scroll', update, { passive: true });
+  }
+</script>
+
+<style>
+  #progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: linear-gradient(90deg, #00e3fd, #006875);
+    width: 0; z-index: 300; transition: width 0.1s linear;
+  }
+  .article-hero {
+    background: linear-gradient(160deg,#f0f9ff 0%,#e7eeff 50%,#f8f9fe 100%);
+    padding: 7rem 0 3.5rem;
+  }
+  .article-grid {
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 3rem;
+    align-items: start;
+  }
+  .prose { color: #1a2030; font-size: 1.0625rem; line-height: 1.85; }
+  .prose h1,.prose h2,.prose h3,.prose h4 { color: #00253b; font-weight: 800; margin-top: 2rem; margin-bottom: 0.75rem; line-height: 1.3; }
+  .prose h2 { font-size: 1.5rem; }
+  .prose h3 { font-size: 1.25rem; }
+  .prose p { margin-bottom: 1.25rem; }
+  .prose ul,.prose ol { padding-right: 1.5rem; margin-bottom: 1.25rem; }
+  .prose li { margin-bottom: 0.4rem; }
+  .prose blockquote { border-right: 3px solid #00e3fd; padding-right: 1rem; color: #42474e; margin: 1.5rem 0; font-style: italic; }
+  .prose code { background: rgba(0,37,59,0.07); padding: 2px 6px; border-radius: 4px; font-size: 0.875em; }
+  .prose pre { background: #00253b; color: #e2e8f0; padding: 1.25rem; border-radius: 12px; overflow-x: auto; margin-bottom: 1.5rem; }
+  .prose pre code { background: none; padding: 0; font-size: 0.875rem; }
+  .prose a { color: #006875; text-decoration: underline; }
+  .prose strong { font-weight: 700; }
+  .prose img { max-width: 100%; border-radius: 12px; margin: 1.5rem 0; }
+  .prose table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
+  .prose th,.prose td { border: 1px solid rgba(0,37,59,0.12); padding: 0.625rem 0.875rem; }
+  .prose th { background: rgba(0,37,59,0.05); font-weight: 700; }
+  .prose hr { border: none; border-top: 1px solid rgba(0,37,59,0.1); margin: 2rem 0; }
+  @media (max-width: 768px) {
+    .article-grid { grid-template-columns: 1fr; }
+    aside { display: none; }
+    .article-hero { padding: 5.5rem 0 2.5rem; }
+  }
+</style>

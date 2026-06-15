@@ -1,0 +1,285 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+
+const fallbackFaqs = [
+  { question: "What kinds of processes can you automate with AI?", answer: "We automate any workflow that involves repetitive data handling, approvals, communications, or routing — including email processing, invoice extraction, lead follow-up, report generation, data entry between systems, and multi-step approval chains. If your team does it manually and it follows a pattern, we can automate it." },
+  { question: "Do we need to replace our existing software?", answer: "No. We build automation on top of what you already use — HubSpot, Salesforce, Google Workspace, Microsoft 365, Slack, and hundreds of other apps via API or platforms like Make.com, n8n, and Zapier. The goal is to make your current stack smarter, not replace it." },
+  { question: "How long does an automation project take?", answer: "Simple automations (one workflow, one integration) go live in 2–4 weeks. Multi-workflow or cross-system projects typically take 6–10 weeks. We give you a precise timeline after a discovery session." },
+  { question: "What if the automation breaks or needs updating?", answer: "All automation projects include 90-day post-launch support. We monitor the workflows, fix any issues, and make small adjustments as your processes evolve. Beyond that, we offer ongoing maintenance retainers." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_automation')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+---
+
+<BaseLayout
+  title="AI Automation Services — Workflow & Process Automation | Aegis AI"
+  description="Stop doing it manually. We build intelligent AI automation that eliminates repetitive work across sales, operations, and admin — without replacing your existing tools."
+  canonicalPath="/services/ai-automation"
+  arPath="/ar/services/ai-automation"
+  ogImage="/assets/og-ai-automation.jpg"
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <nav class="page-breadcrumb" style="justify-content:center; margin-bottom:1.5rem;" aria-label="Breadcrumb">
+      <a href="/">Home</a><span>/</span>
+      <a href="/services">Services</a><span>/</span>
+      <strong>AI Automation</strong>
+    </nav>
+    <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.28); border-radius:100px; padding:6px 16px; color:#004f58; font-size:0.875rem; font-weight:600; margin-bottom:1.5rem;">
+      <span class="material-symbols-outlined" style="font-size:18px;">settings_suggest</span>
+      AI Automation
+    </div>
+    <h1>Stop Doing It Manually. <span class="gradient-text">Let AI Handle the Repetitive Work.</span></h1>
+    <p style="color:#42474e; font-size:1.125rem; max-width:620px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      Every hour your team spends on data entry, email routing, or manual approvals is an hour they're not spending on work that actually moves the business. We automate those workflows so they don't.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="automation_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#what-we-automate" class="btn-outline">See What We Automate ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <div class="stat-strip">
+      <div class="stat-item">
+        <div class="stat-num">40%</div>
+        <p class="stat-label">of work tasks in most businesses are automatable with existing AI — most teams haven't started</p>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="stat-num">2–4 wks</div>
+        <p class="stat-label">from discovery to first live automation — not months</p>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="stat-num">90 days</div>
+        <p class="stat-label">post-launch support included with every automation project</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WHAT WE AUTOMATE -->
+<section id="what-we-automate" class="section" aria-labelledby="automate-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">What We Build</div>
+      <h2 id="automate-heading">Six Categories of AI Automation</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Built on your existing tools. Monitored, supported, and refined after launch.</p>
+    </div>
+    <div class="builds-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">mail</span></div>
+        <h3>Email &amp; Communication Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">AI reads, categorizes, and routes emails — drafts replies, escalates urgent messages, and logs everything automatically.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">description</span></div>
+        <h3>Document &amp; Invoice Processing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Contracts, invoices, and forms processed in seconds — AI extracts data, validates it, and pushes it into your systems without manual entry.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">route</span></div>
+        <h3>Lead Routing &amp; Follow-Up</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Every inbound lead is scored, assigned to the right rep, and followed up with automatically — no more leads falling through the cracks.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">task_alt</span></div>
+        <h3>Approval &amp; Review Workflows</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Multi-step approvals that move automatically — from submission to sign-off — with smart reminders, escalations, and audit trails built in.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">sync_alt</span></div>
+        <h3>Cross-System Data Sync</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Keep your CRM, ERP, project management, and communication tools in sync automatically — no more copy-pasting between platforms.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">bar_chart</span></div>
+        <h3>Automated Reporting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Weekly status reports, pipeline summaries, and performance dashboards that write and send themselves — always up to date, never late.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECH STACK -->
+<section class="section-sm" style="background:#e7eeff;" aria-label="Technology partners">
+  <div class="container" style="text-align:center;">
+    <p style="color:#72787e; font-size:0.8125rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:2rem;">Platforms We Build On</p>
+    <div style="display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:2rem 2.5rem;">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+        <img src="https://cdn.simpleicons.org/make/6D00CC" alt="Make.com" width="30" height="30" loading="lazy">
+        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">Make.com</span>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+        <img src="https://cdn.simpleicons.org/n8n/EA4B71" alt="n8n" width="30" height="30" loading="lazy">
+        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">n8n</span>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+        <img src="https://cdn.simpleicons.org/zapier/FF4A00" alt="Zapier" width="30" height="30" loading="lazy">
+        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">Zapier</span>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+        <img src="https://cdn.simpleicons.org/openai/00253b" alt="OpenAI" width="30" height="30" loading="lazy">
+        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">OpenAI GPT-4o</span>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+        <img src="https://cdn.simpleicons.org/anthropic/CC785C" alt="Claude AI" width="30" height="30" loading="lazy">
+        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">Claude AI</span>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+        <img src="https://cdn.simpleicons.org/python/3776AB" alt="Python" width="30" height="30" loading="lazy">
+        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">Python / FastAPI</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">How It Works</div>
+      <h2 id="process-heading">From Discovery to Live Automation in Weeks</h2>
+    </div>
+    <div class="process-grid">
+      <div class="process-connector"></div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">search</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Week 1</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Process Audit</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We map your current workflows, identify the highest-value automation targets, and prioritize them by ROI.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">edit</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Week 2</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Design &amp; Plan</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We design the automation logic, define triggers and outputs, and get your approval before building.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">build</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Weeks 3–6</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Build &amp; Test</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We build the automation, run it on real data in a staging environment, and refine until it's reliable.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">rocket_launch</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Week 7+</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Go Live &amp; Monitor</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Automation goes live. We monitor it for 90 days, fix any issues, and expand to additional workflows.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <div>
+      {faqItems.map((item) => (
+        <div class="faq-item">
+          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+            {item.question}
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">{item.answer}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <h2 style="color:#fff; font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Automate Your Biggest Time Wasters?</h2>
+    <p style="color:rgba(255,255,255,0.55); font-size:1.125rem; max-width:36rem; margin:0 auto 2.5rem; line-height:1.7;">Book a free discovery call. We'll identify your top 3 automation opportunities and estimate the time and cost savings.</p>
+    <button onclick="openModal(this)" data-source="automation_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+    <p style="color:rgba(255,255,255,0.30); font-size:.875rem; margin-top:1.25rem;">Free · No commitment · 100% refund guarantee</p>
+  </div>
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "name": "AI Automation",
+      "url": "https://aegisai.ae/services/ai-automation",
+      "description": "Intelligent workflow and process automation that eliminates repetitive manual work across sales, operations, and admin.",
+      "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://aegisai.ae" },
+      "areaServed": "Worldwide",
+      "offers": { "@type": "Offer", "description": "AI automation projects — pricing based on workflow complexity and scope. Book a free discovery call for a quote." },
+      "serviceType": "AI Automation"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://aegisai.ae/" },
+        { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://aegisai.ae/services" },
+        { "@type": "ListItem", "position": 3, "name": "AI Automation", "item": "https://aegisai.ae/services/ai-automation" }
+      ]
+    }
+  ]
+}
+</script>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+.builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+.process-step { display:flex; flex-direction:column; align-items:center; text-align:center; }
+.process-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#00253b,#006875); box-shadow:0 0 0 6px #fff, 0 0 0 8px rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; position:relative; z-index:1; }
+.process-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2rem; position:relative; }
+.process-connector { position:absolute; top:27px; left:calc(12.5% + 28px); right:calc(12.5% + 28px); height:2px; background:linear-gradient(90deg,#00e3fd,rgba(0,37,59,0.20)); }
+.stat-strip { display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:2rem; align-items:center; }
+.stat-divider { width:1px; height:80px; background:rgba(255,255,255,0.15); }
+.stat-item { text-align:center; }
+.stat-num { font-size:2.5rem; font-weight:800; color:#00e3fd; line-height:1; margin-bottom:0.5rem; }
+.stat-label { color:rgba(255,255,255,0.55); font-size:0.875rem; line-height:1.6; }
+.faq-item { border-top:1px solid rgba(0,37,59,0.10); }
+.faq-btn { display:flex; justify-content:space-between; align-items:center; width:100%; text-align:left; padding:1.1rem 0; font-weight:600; color:#00253b; cursor:pointer; background:none; border:none; font-family:inherit; font-size:0.95rem; }
+.faq-body { display:none; padding-bottom:1rem; color:#42474e; font-size:0.9rem; line-height:1.7; }
+.faq-body.open { display:block; }
+.faq-icon { transition:transform 0.25s; font-size:1.1rem; color:#006875; }
+.faq-icon.open { transform:rotate(45deg); }
+@media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } .stat-strip { grid-template-columns:1fr; } .stat-divider { display:none; } }
+@media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
+</style>

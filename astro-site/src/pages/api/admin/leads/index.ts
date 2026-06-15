@@ -75,7 +75,7 @@ export const PATCH: APIRoute = async ({ locals, request }) => {
 
   const supabase = getSupabaseAdmin();
   const { error } = await supabase.from('leads').update({ status }).in('id', ids);
-  if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  if (error) return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
 
   return new Response(JSON.stringify({ success: true }), { status: 200 });
 };

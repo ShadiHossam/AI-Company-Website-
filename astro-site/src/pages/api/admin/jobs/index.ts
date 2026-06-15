@@ -24,7 +24,7 @@ export const GET: APIRoute = async ({ locals }) => {
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: false });
 
-  if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  if (error) return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   return new Response(JSON.stringify({ jobs: data ?? [] }), { headers: { 'Content-Type': 'application/json' } });
 };
 
@@ -70,7 +70,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
     if (error.code === '23505') {
       return new Response(JSON.stringify({ error: 'A job with that title already exists' }), { status: 409 });
     }
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 
   return new Response(JSON.stringify({ job: data }), { status: 201, headers: { 'Content-Type': 'application/json' } });

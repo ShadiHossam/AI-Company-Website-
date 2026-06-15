@@ -120,7 +120,7 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
     .single();
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -173,7 +173,7 @@ export const DELETE: APIRoute = async ({ locals, params, request }) => {
     .eq('id', id!);
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });

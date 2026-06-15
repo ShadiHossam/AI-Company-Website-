@@ -164,7 +164,12 @@ CREATE TABLE blog_posts (
   author_name      TEXT DEFAULT 'Aegis AI',
   meta_title       TEXT,
   meta_description TEXT,
-  focus_keyword    TEXT
+  focus_keyword    TEXT,
+  ar_title         TEXT,
+  ar_description   TEXT,
+  ar_body_markdown TEXT,
+  ar_meta_title    TEXT,
+  ar_meta_description TEXT
 );
 CREATE TRIGGER t_blog BEFORE UPDATE ON blog_posts FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 

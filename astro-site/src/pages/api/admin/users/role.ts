@@ -49,7 +49,7 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
   });
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 
   return new Response(JSON.stringify({ data }), { status: 200 });

@@ -1,0 +1,252 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+
+const fallbackFaqs = [
+  { question: "What exactly is a Custom GPT?", answer: "A Custom GPT is a version of ChatGPT configured specifically for your business. You give it a name, a set of instructions, knowledge files (your docs, SOPs, product info), and optionally connect it to external tools via API. It behaves according to your rules, knows your content, and can be shared with your team or customers — all without writing a single line of code." },
+  { question: "Can our Custom GPT connect to our systems?", answer: "Yes. Through GPT Actions, we can connect your Custom GPT to external APIs — your CRM, your database, your website, your helpdesk, or any system with an API. This means your GPT can look up real-time data, create records, send messages, and take action — not just answer questions." },
+  { question: "Who can access it once it's built?", answer: "You choose. We can publish it privately (only people you invite), share it with everyone in your ChatGPT Team or Enterprise workspace, or publish it publicly to the GPT Store for anyone to find. Most business clients start with internal-only access and expand from there." },
+  { question: "Does it stay up to date with new information?", answer: "We can set up workflows to refresh your Custom GPT's knowledge files automatically — so it always reflects your latest pricing, policies, and documentation. For real-time data, we use GPT Actions to pull live information from your systems at the time of each conversation." },
+  { question: "What's the 100% guarantee?", answer: "If you're not satisfied with what we deliver, you pay nothing. That's not marketing — it's our standard terms. We only take on projects we know we can deliver, which is why we've never had to issue a refund." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'custom_gpt')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+---
+
+<BaseLayout
+  title="Custom GPT Development — Build a Branded AI Assistant for Your Business | Aegis AI"
+  description="We build Custom GPTs trained on your products, knowledge base, and workflows. Your brand, your data, your AI — deployed inside ChatGPT for your team or customers."
+  canonicalPath="/services/custom-gpt-development"
+  arPath="/ar/services/custom-gpt-development"
+  ogImage="/assets/og-custom-gpt.jpg"
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <nav class="page-breadcrumb" style="justify-content:center; margin-bottom:1.5rem;" aria-label="Breadcrumb">
+      <a href="/">Home</a><span>/</span>
+      <a href="/services">Services</a><span>/</span>
+      <strong>Custom GPT Development</strong>
+    </nav>
+    <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.28); border-radius:100px; padding:6px 16px; color:#004f58; font-size:0.875rem; font-weight:600; margin-bottom:1.5rem;">
+      <span class="material-symbols-outlined" style="font-size:18px;">chat</span>
+      Custom GPT Development
+    </div>
+    <h1>Your Business. Your AI. <span class="gradient-text">Built Inside ChatGPT.</span></h1>
+    <p style="color:#42474e; font-size:1.125rem; max-width:640px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      Generic ChatGPT doesn't know your products, your tone, or your customers. We build Custom GPTs that do — trained on your data, branded with your name, and deployed where your team actually works.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="custom_gpt_hero" class="btn-primary">Build Your Custom GPT</button>
+      <a href="#what-we-build" class="btn-outline">See What's Possible ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- STATS BANNER -->
+<div style="width:100%; overflow:hidden; position:relative;">
+  <div style="width:100%; background:linear-gradient(135deg,#001e30,#00253b,#006875); padding:3.5rem 2rem; display:flex; align-items:center; justify-content:center; position:relative;">
+    <div style="position:absolute; inset:0; background-image:radial-gradient(circle, rgba(0,227,253,0.07) 1px, transparent 1px); background-size:24px 24px;"></div>
+    <div style="position:relative; z-index:1; display:grid; grid-template-columns:repeat(3,1fr); gap:3rem; text-align:center; max-width:800px; margin:0 auto;">
+      <div>
+        <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">1–2 wks</p>
+        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">Average time from brief to live GPT</p>
+      </div>
+      <div>
+        <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">No code</p>
+        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">Your team uses it — no technical training needed</p>
+      </div>
+      <div>
+        <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">Any team</p>
+        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">Sales, support, ops, HR — built for whoever needs it</p>
+      </div>
+    </div>
+  </div>
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,#f9f9ff 0%,transparent 100%); pointer-events:none;"></div>
+</div>
+
+<!-- WHAT WE BUILD -->
+<section id="what-we-build" class="section" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">What We Build</div>
+      <h2 id="build-heading">Six Types of Custom GPTs We Deploy</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Each one is trained on your content, configured to your rules, and connected to your tools.</p>
+    </div>
+    <div class="builds-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">support_agent</span></div>
+        <h3>Customer Support GPT</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Handles Tier 1 and Tier 2 questions using your actual documentation, FAQs, and return policies — without sending customers to a generic ChatGPT.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">trending_up</span></div>
+        <h3>Sales Assistant GPT</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Knows your products, pricing, and objection-handling playbooks. Helps your sales team write proposals, prepare for calls, and respond to prospect questions in seconds.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">school</span></div>
+        <h3>Internal Knowledge GPT</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Your company handbook, SOPs, and internal docs — searchable through a conversation. New hires get answers instantly. Senior staff stop answering the same questions.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">draw</span></div>
+        <h3>Brand Content GPT</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Writes in your voice. Trained on your previous copy, your style guide, and your brand rules. Generates emails, social posts, and ads that actually sound like you.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">gavel</span></div>
+        <h3>Legal & Compliance GPT</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Built for regulated industries. Answers questions about internal policies, contracts, and compliance procedures — with guardrails that prevent it from giving legal advice it shouldn't.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">hub</span></div>
+        <h3>Connected API GPT</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Goes beyond documents. Uses GPT Actions to pull live data from your CRM, check order status, create tickets, and update records — all from a chat interface.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">How It Works</div>
+      <h2 id="process-heading">From Brief to Live GPT in 1–2 Weeks</h2>
+    </div>
+    <div class="process-grid">
+      <div class="process-connector"></div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">description</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Day 1–2</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Brief & Scope</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We define the GPT's purpose, audience, and what knowledge it needs to do its job.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">upload_file</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Day 3–5</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Build & Train</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We configure the system prompt, upload your knowledge files, set up any API connections, and apply your brand rules.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">science</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Day 6–8</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Test & Refine</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We run it through real scenarios, edge cases, and adversarial questions — then tune until it performs exactly as intended.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">rocket_launch</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Day 9–14</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Deploy & Hand Off</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We publish it to your team or customers, train your admins on how to update it, and hand over full ownership.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <div>
+      {faqItems.map((item) => (
+        <div class="faq-item">
+          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+            {item.question}
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">{item.answer}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <h2 style="color:#fff; font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Build Your Custom GPT?</h2>
+    <p style="color:rgba(255,255,255,0.55); font-size:1.125rem; max-width:36rem; margin:0 auto 2.5rem; line-height:1.7;">Tell us what your GPT needs to do. We'll scope it, build it, and have it live for your team in under two weeks.</p>
+    <button onclick="openModal(this)" data-source="custom_gpt_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+    <p style="color:rgba(255,255,255,0.30); font-size:.875rem; margin-top:1.25rem;">Free · No commitment · 100% refund guarantee</p>
+  </div>
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "name": "Custom GPT Development",
+      "url": "https://aegisai.ae/services/custom-gpt-development",
+      "description": "We build Custom GPTs trained on your products, documentation, and workflows — so your team has an AI assistant that actually knows your business.",
+      "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://aegisai.ae" },
+      "areaServed": "Worldwide",
+      "serviceType": "Custom GPT Development"
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "What exactly is a Custom GPT?", "acceptedAnswer": { "@type": "Answer", "text": "A Custom GPT is a version of ChatGPT configured specifically for your business. You give it a name, a set of instructions, knowledge files, and optionally connect it to external tools via API." } },
+        { "@type": "Question", "name": "Can our Custom GPT connect to our systems?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Through GPT Actions, we can connect your Custom GPT to external APIs — your CRM, database, website, or any system with an API." } }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://aegisai.ae/" },
+        { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://aegisai.ae/services" },
+        { "@type": "ListItem", "position": 3, "name": "Custom GPT Development", "item": "https://aegisai.ae/services/custom-gpt-development" }
+      ]
+    }
+  ]
+}
+</script>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+.builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+.process-step { display:flex; flex-direction:column; align-items:center; text-align:center; }
+.process-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#00253b,#006875); box-shadow:0 0 0 6px #fff, 0 0 0 8px rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; position:relative; z-index:1; }
+.process-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2rem; position:relative; }
+.process-connector { position:absolute; top:27px; left:calc(12.5% + 28px); right:calc(12.5% + 28px); height:2px; background:linear-gradient(90deg,#00e3fd,rgba(0,37,59,0.20)); }
+.faq-item { border-top:1px solid rgba(0,37,59,0.10); }
+.faq-btn { display:flex; justify-content:space-between; align-items:center; width:100%; text-align:left; padding:1.1rem 0; font-weight:600; color:#00253b; cursor:pointer; background:none; border:none; font-family:inherit; font-size:0.95rem; }
+.faq-body { display:none; padding-bottom:1rem; color:#42474e; font-size:0.9rem; line-height:1.7; }
+.faq-body.open { display:block; }
+.faq-icon { transition:transform 0.25s; font-size:1.1rem; color:#006875; }
+.faq-icon.open { transform:rotate(45deg); }
+@media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } }
+@media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
+</style>

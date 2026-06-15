@@ -34,7 +34,9 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
   if (!CSRF_CHECK(request)) return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
 
   const supabase = getSupabaseAdmin();
-  const updates = await request.json();
+  const body = await request.json();
+  const ALLOWED_FIELDS = ['status', 'internal_notes', 'assigned_to', 'budget_range', 'ai_experience', 'meeting_format', 'preferred_date', 'preferred_time', 'notes'];
+  const updates = Object.fromEntries(Object.entries(body).filter(([k]) => ALLOWED_FIELDS.includes(k)));
 
   // Capture before state for audit log
   const { data: before } = await supabase.from('leads').select('*').eq('id', params.id!).single();
@@ -45,7 +47,7 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
     .select()
     .single();
 
-  if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  if (error) return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
 
   // Write audit log entry
   if (before && updates.status && updates.status !== before.status) {

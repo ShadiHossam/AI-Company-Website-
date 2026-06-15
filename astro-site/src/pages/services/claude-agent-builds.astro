@@ -1,0 +1,272 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+
+const fallbackFaqs = [
+  { question: "Why build on Claude specifically?", answer: "Claude is built by Anthropic with a focus on safety, instruction-following, and long-context reasoning. For business applications, that translates to agents that follow rules reliably, handle complex multi-step tasks without going off-script, and deal gracefully with ambiguous situations. It performs particularly well on tasks that require reading and reasoning over large documents, maintaining consistent behavior across long conversations, and operating within strict guardrails." },
+  { question: "How is a Claude agent different from a regular chatbot?", answer: "A chatbot waits for questions and answers them. A Claude agent has goals, tools, and the ability to take actions. It can browse your internal systems, read emails, write and send responses, update records, call APIs, and chain dozens of steps together to complete a complex task — all without waiting for you to guide each step. Think of a chatbot as a reference tool and an agent as a junior employee who can actually do the work." },
+  { question: "What tools can Claude agents use?", answer: "We build agents that can use web search, read and write files, query databases, call REST APIs, send emails and Slack messages, interact with your CRM, run code, and call other agents. The toolset is defined by what your workflow needs — we scope this in the discovery session and only add what's actually useful." },
+  { question: "How do you keep agents from doing something wrong?", answer: "We build guardrails at every level: clear system instructions that define what the agent can and cannot do, approval checkpoints for high-stakes actions, action logging so every step is auditable, and rate limits that prevent runaway loops. For irreversible actions — sending emails, updating records, moving money — we design human-in-the-loop steps that require confirmation before execution." },
+  { question: "What does deployment look like?", answer: "We deliver Claude agents as production-ready systems — hosted on your infrastructure or ours, accessible via API, web interface, Slack, or wherever your team works. We include documentation, admin controls, monitoring dashboards, and 90 days of post-launch support as standard." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'claude_agents')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+---
+
+<BaseLayout
+  title="Claude Agent Builds — Production AI Agents Built on Anthropic Claude | Aegis AI"
+  description="We build production-ready Claude agents with memory, tool use, and multi-step reasoning. Autonomous AI that follows instructions reliably, operates within guardrails, and gets complex work done."
+  canonicalPath="/services/claude-agent-builds"
+  ogImage="/assets/og-claude-agents.jpg"
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <nav class="page-breadcrumb" style="justify-content:center; margin-bottom:1.5rem;" aria-label="Breadcrumb">
+      <a href="/">Home</a><span>/</span>
+      <a href="/services">Services</a><span>/</span>
+      <strong>Claude Agent Builds</strong>
+    </nav>
+    <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.28); border-radius:100px; padding:6px 16px; color:#004f58; font-size:0.875rem; font-weight:600; margin-bottom:1.5rem;">
+      <span class="material-symbols-outlined" style="font-size:18px;">psychology</span>
+      Claude Agent Builds
+    </div>
+    <h1>The Smartest AI Agents. <span class="gradient-text">Built on Claude.</span></h1>
+    <p style="color:#42474e; font-size:1.125rem; max-width:640px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      Claude agents don't just answer — they reason, plan, and act. We build production-ready agents on Anthropic's Claude that handle complex workflows autonomously, follow your rules reliably, and get measurable work done.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="claude_agents_hero" class="btn-primary">Build Your Claude Agent</button>
+      <a href="#agent-types" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- STATS BANNER -->
+<div style="width:100%; overflow:hidden; position:relative;">
+  <div style="width:100%; background:linear-gradient(135deg,#001e30,#00253b,#006875); padding:3.5rem 2rem; display:flex; align-items:center; justify-content:center; position:relative;">
+    <div style="position:absolute; inset:0; background-image:radial-gradient(circle, rgba(0,227,253,0.07) 1px, transparent 1px); background-size:24px 24px;"></div>
+    <div style="position:relative; z-index:1; display:grid; grid-template-columns:repeat(3,1fr); gap:3rem; text-align:center; max-width:800px; margin:0 auto;">
+      <div>
+        <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">200K</p>
+        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">Token context window — Claude reasons over entire documents at once</p>
+      </div>
+      <div>
+        <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">Multi-step</p>
+        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">Agents chain dozens of actions to complete complex tasks end-to-end</p>
+      </div>
+      <div>
+        <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">Auditable</p>
+        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">Every action logged and reviewable — full transparency on what the agent did</p>
+      </div>
+    </div>
+  </div>
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,#f9f9ff 0%,transparent 100%); pointer-events:none;"></div>
+</div>
+
+<!-- AGENT TYPES -->
+<section id="agent-types" class="section" aria-labelledby="agents-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">What We Build</div>
+      <h2 id="agents-heading">Six Claude Agents We Deploy for Businesses</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Each agent is purpose-built for your workflow — not a generic template adapted to fit.</p>
+    </div>
+    <div class="builds-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">manage_search</span></div>
+        <h3>Research & Analysis Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Reads documents, searches the web, synthesizes findings, and delivers structured reports. Hours of analyst work completed in minutes.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">mail</span></div>
+        <h3>Email & Communication Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Reads inbound emails, categorizes them, drafts responses, sends follow-ups, and updates your CRM — handling hundreds of conversations simultaneously.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">description</span></div>
+        <h3>Document Processing Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Extracts data from contracts, invoices, and reports. Classifies, summarizes, routes, and flags exceptions — with zero manual data entry.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">support_agent</span></div>
+        <h3>Customer Service Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Resolves support tickets autonomously — checks order status, processes returns, answers complex product questions, and escalates only what truly needs a human.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">trending_up</span></div>
+        <h3>Sales & Prospecting Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Researches prospects, personalizes outreach, sends emails, tracks replies, and books meetings — running your top-of-funnel without an SDR team.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">account_tree</span></div>
+        <h3>Multi-Agent Systems</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Networks of specialized Claude agents working together — one researches, one writes, one reviews, one publishes. Coordinated by an orchestrating agent that manages the full workflow.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY CLAUDE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="why-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">Why Claude</div>
+      <h2 id="why-heading">Why We Build on Anthropic's Claude</h2>
+      <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto;">Not all AI models are equal for agentic work. Here's why Claude is our platform of choice for autonomous, multi-step business agents.</p>
+    </div>
+    <div class="builds-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">shield</span></div>
+        <h3>Instruction-Following</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Claude follows detailed system instructions reliably — which is critical when your agent needs to stay within specific guardrails and not improvise on high-stakes tasks.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">article</span></div>
+        <h3>Long-Context Reasoning</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Claude's 200K token context window means agents can read and reason over entire contracts, reports, or email threads in a single pass — without losing track of earlier details.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">precision_manufacturing</span></div>
+        <h3>Tool Use Accuracy</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Claude's tool use is precise and consistent. It calls the right tool with the right parameters and knows when not to use a tool — reducing errors in production workflows.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">How It Works</div>
+      <h2 id="process-heading">How We Build and Deploy Your Claude Agent</h2>
+    </div>
+    <div class="process-grid">
+      <div class="process-connector"></div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">target</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 1</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Define the Mission</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We scope the agent's goals, the tools it needs, and where humans stay in the loop for high-stakes decisions.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">extension</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 2</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Build & Connect</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We build the agent, wire it to your tools and data sources, write the system prompts, and configure guardrails.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">science</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 3</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Test Rigorously</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We stress-test with edge cases, adversarial inputs, and real workflow scenarios before anything touches production.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">monitoring</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 4</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Deploy & Monitor</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Full audit logs, performance dashboards, and 90-day support. Your agent keeps improving after launch.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <div>
+      {faqItems.map((item) => (
+        <div class="faq-item">
+          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+            {item.question}
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">{item.answer}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <h2 style="color:#fff; font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Deploy a Claude Agent?</h2>
+    <p style="color:rgba(255,255,255,0.55); font-size:1.125rem; max-width:36rem; margin:0 auto 2.5rem; line-height:1.7;">Tell us what you want automated. We'll design a Claude agent that handles it — and show you exactly how it works before we build.</p>
+    <button onclick="openModal(this)" data-source="claude_agents_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+    <p style="color:rgba(255,255,255,0.30); font-size:.875rem; margin-top:1.25rem;">Free · No commitment · 100% refund guarantee</p>
+  </div>
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "name": "Claude Agent Builds",
+      "url": "https://aegisai.ae/services/claude-agent-builds",
+      "description": "Production-ready autonomous AI agents built on Anthropic Claude — with memory, tool use, multi-step reasoning, and enterprise guardrails.",
+      "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://aegisai.ae" },
+      "areaServed": "Worldwide",
+      "serviceType": "AI Agent Development"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://aegisai.ae/" },
+        { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://aegisai.ae/services" },
+        { "@type": "ListItem", "position": 3, "name": "Claude Agent Builds", "item": "https://aegisai.ae/services/claude-agent-builds" }
+      ]
+    }
+  ]
+}
+</script>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+.builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+.process-step { display:flex; flex-direction:column; align-items:center; text-align:center; }
+.process-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#00253b,#006875); box-shadow:0 0 0 6px #fff, 0 0 0 8px rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; position:relative; z-index:1; }
+.process-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2rem; position:relative; }
+.process-connector { position:absolute; top:27px; left:calc(12.5% + 28px); right:calc(12.5% + 28px); height:2px; background:linear-gradient(90deg,#00e3fd,rgba(0,37,59,0.20)); }
+.faq-item { border-top:1px solid rgba(0,37,59,0.10); }
+.faq-btn { display:flex; justify-content:space-between; align-items:center; width:100%; text-align:left; padding:1.1rem 0; font-weight:600; color:#00253b; cursor:pointer; background:none; border:none; font-family:inherit; font-size:0.95rem; }
+.faq-body { display:none; padding-bottom:1rem; color:#42474e; font-size:0.9rem; line-height:1.7; }
+.faq-body.open { display:block; }
+.faq-icon { transition:transform 0.25s; font-size:1.1rem; color:#006875; }
+.faq-icon.open { transform:rotate(45deg); }
+@media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } }
+@media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
+</style>

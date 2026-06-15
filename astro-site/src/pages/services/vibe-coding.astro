@@ -1,0 +1,272 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+
+const fallbackFaqs = [
+  { question: "What exactly is vibe coding?", answer: "Vibe coding is AI-accelerated software development — using the latest AI coding tools (like Cursor, GitHub Copilot, and Claude) to dramatically speed up how software is written, reviewed, and shipped. Instead of writing every line manually, developers work with AI as a pair programmer. The result is faster delivery without sacrificing quality." },
+  { question: "Is the quality as good as traditional development?", answer: "Yes — often better. AI tools catch more bugs, suggest optimized patterns, and enforce consistency across large codebases. We pair AI-generated code with rigorous human review, automated testing, and QA cycles. You get speed and quality." },
+  { question: "What kinds of projects are best suited for vibe coding?", answer: "Web applications, SaaS products, internal tools, APIs, dashboards, mobile apps, and scripts. It works especially well for MVPs where speed to market matters, and for modernizing legacy codebases that need to be rewritten efficiently." },
+  { question: "Do you hand over the code and documentation?", answer: "Yes. You receive full ownership of all code, documentation, and infrastructure configuration. We don't lock you in — the handover includes a technical walkthrough so your team can maintain and extend the product independently." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'vibe_coding')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+---
+
+<BaseLayout
+  title="Vibe Coding — AI-Accelerated Software Development | Aegis AI"
+  description="Ship software 10× faster with AI-accelerated development. We build your product using the latest AI coding tools — turning weeks of work into days without sacrificing quality."
+  canonicalPath="/services/vibe-coding"
+  arPath="/ar/services/vibe-coding"
+  ogImage="/assets/og-vibe-coding.jpg"
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <nav class="page-breadcrumb" style="justify-content:center; margin-bottom:1.5rem;" aria-label="Breadcrumb">
+      <a href="/">Home</a><span>/</span>
+      <a href="/services">Services</a><span>/</span>
+      <strong>Vibe Coding</strong>
+    </nav>
+    <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.28); border-radius:100px; padding:6px 16px; color:#004f58; font-size:0.875rem; font-weight:600; margin-bottom:1.5rem;">
+      <span class="material-symbols-outlined" style="font-size:18px;">terminal</span>
+      Vibe Coding
+    </div>
+    <h1>Ship 10× Faster With <span class="gradient-text">AI-Powered Development.</span></h1>
+    <p style="color:#42474e; font-size:1.125rem; max-width:620px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      Traditional software development is slow. Vibe coding changes that. We use the latest AI coding tools to build your product faster — without cutting corners on quality, security, or maintainability.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="vibe_hero" class="btn-primary">Discuss Your Project</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#003b5c,#006875); padding:4rem 0;">
+  <div class="container">
+    <div class="stat-strip">
+      <div class="stat-item">
+        <div class="stat-num">10×</div>
+        <p class="stat-label">faster than traditional development on average — measured across our client projects</p>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="stat-num">2–4 wks</div>
+        <p class="stat-label">typical MVP delivery — from spec to working product in your hands</p>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="stat-num">Full code</div>
+        <p class="stat-label">ownership — you get everything: code, docs, infra configs, no lock-in</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WHAT WE BUILD -->
+<section id="what-we-build" class="section" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">What We Build</div>
+      <h2 id="build-heading">What You Can Ship With Vibe Coding</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">From MVPs to full products to legacy modernization — built fast, built right.</p>
+    </div>
+    <div class="builds-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">web</span></div>
+        <h3>Web Applications &amp; SaaS Products</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Full-stack web apps built with modern frameworks — React, Next.js, Astro, Node, FastAPI — shipped in weeks, not quarters.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">speed</span></div>
+        <h3>Rapid Prototypes &amp; MVPs</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Got an idea? We'll build a working MVP fast enough to validate it with real users before you've spent a significant budget.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">dashboard</span></div>
+        <h3>Internal Tools &amp; Admin Panels</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Custom dashboards, admin interfaces, and internal tools that do exactly what your team needs — without enterprise software bloat.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">api</span></div>
+        <h3>APIs &amp; Backend Systems</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">RESTful and GraphQL APIs, microservices, and data pipelines built for scale — with documentation and testing built in from day one.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">transform</span></div>
+        <h3>Legacy Code Modernization</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">We use AI to analyze, refactor, and modernize old codebases — eliminating tech debt and reducing maintenance costs without full rewrites.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">verified</span></div>
+        <h3>AI-Generated Test Suites</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Comprehensive unit, integration, and end-to-end tests generated by AI — so your codebase ships with confidence and stays stable as it grows.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECH STACK -->
+<section class="section-sm" style="background:#e7eeff;" aria-label="Technology stack">
+  <div class="container" style="text-align:center;">
+    <p style="color:#72787e; font-size:0.8125rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:2rem;">AI Tools We Use to Build Faster</p>
+    <div style="display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:1.5rem 2.5rem;">
+      <span class="tech-pill">Cursor AI</span>
+      <span class="tech-pill">Claude Code</span>
+      <span class="tech-pill">GitHub Copilot</span>
+      <span class="tech-pill">GPT-4o</span>
+      <span class="tech-pill">React / Next.js</span>
+      <span class="tech-pill">Astro</span>
+      <span class="tech-pill">Node.js</span>
+      <span class="tech-pill">Python / FastAPI</span>
+      <span class="tech-pill">PostgreSQL</span>
+      <span class="tech-pill">Supabase</span>
+      <span class="tech-pill">Vercel / AWS</span>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">How It Works</div>
+      <h2 id="process-heading">How We Ship Your Product Fast</h2>
+    </div>
+    <div class="process-grid">
+      <div class="process-connector"></div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">description</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Day 1–3</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Spec &amp; Architecture</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We scope the product, define the tech stack, and create a detailed spec you approve before we write a line of code.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">code</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Week 1–2</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">AI-Powered Build</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We build using AI tools at maximum velocity — every line reviewed by senior engineers for quality and security.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">bug_report</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Week 2–3</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Test &amp; Review</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">AI-generated tests + manual QA + your team's review. Nothing ships without passing every check.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">rocket_launch</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Week 3–4</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Deploy &amp; Hand Over</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Product goes live. Full code handover with documentation and a technical walkthrough for your team.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <div>
+      {faqItems.map((item) => (
+        <div class="faq-item">
+          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+            {item.question}
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">{item.answer}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <h2 style="color:#fff; font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Ship Your Product in Weeks, Not Months?</h2>
+    <p style="color:rgba(255,255,255,0.55); font-size:1.125rem; max-width:36rem; margin:0 auto 2.5rem; line-height:1.7;">Tell us what you want to build. We'll give you a timeline and cost estimate — free, in 48 hours.</p>
+    <button onclick="openModal(this)" data-source="vibe_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Discuss Your Project</button>
+    <p style="color:rgba(255,255,255,0.30); font-size:.875rem; margin-top:1.25rem;">Free estimate · 100% code ownership · No lock-in</p>
+  </div>
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "name": "Vibe Coding",
+      "url": "https://aegisai.ae/services/vibe-coding",
+      "description": "AI-accelerated software development — web apps, SaaS products, APIs, and internal tools shipped 10× faster using the latest AI coding tools.",
+      "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://aegisai.ae" },
+      "areaServed": "Worldwide",
+      "serviceType": "Software Development"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://aegisai.ae/" },
+        { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://aegisai.ae/services" },
+        { "@type": "ListItem", "position": 3, "name": "Vibe Coding", "item": "https://aegisai.ae/services/vibe-coding" }
+      ]
+    }
+  ]
+}
+</script>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+.builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+.process-step { display:flex; flex-direction:column; align-items:center; text-align:center; }
+.process-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#00253b,#006875); box-shadow:0 0 0 6px #fff, 0 0 0 8px rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; position:relative; z-index:1; }
+.process-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2rem; position:relative; }
+.process-connector { position:absolute; top:27px; left:calc(12.5% + 28px); right:calc(12.5% + 28px); height:2px; background:linear-gradient(90deg,#00e3fd,rgba(0,37,59,0.20)); }
+.stat-strip { display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:2rem; align-items:center; }
+.stat-divider { width:1px; height:80px; background:rgba(255,255,255,0.15); }
+.stat-item { text-align:center; }
+.stat-num { font-size:2.5rem; font-weight:800; color:#00e3fd; line-height:1; margin-bottom:0.5rem; }
+.stat-label { color:rgba(255,255,255,0.55); font-size:0.875rem; line-height:1.6; }
+.tech-pill { display:inline-block; background:#fff; border:1px solid #dde3ea; border-radius:100px; padding:0.375rem 1rem; font-size:0.8125rem; font-weight:600; color:#00253b; }
+.faq-item { border-top:1px solid rgba(0,37,59,0.10); }
+.faq-btn { display:flex; justify-content:space-between; align-items:center; width:100%; text-align:left; padding:1.1rem 0; font-weight:600; color:#00253b; cursor:pointer; background:none; border:none; font-family:inherit; font-size:0.95rem; }
+.faq-body { display:none; padding-bottom:1rem; color:#42474e; font-size:0.9rem; line-height:1.7; }
+.faq-body.open { display:block; }
+.faq-icon { transition:transform 0.25s; font-size:1.1rem; color:#006875; }
+.faq-icon.open { transform:rotate(45deg); }
+@media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } .stat-strip { grid-template-columns:1fr; } .stat-divider { display:none; } }
+@media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
+</style>

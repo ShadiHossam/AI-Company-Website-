@@ -10,21 +10,36 @@ export const GET: APIRoute = async () => {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from('blog_posts')
-      .select('slug, pub_date')
+      .select('slug, pub_date, updated_date, ar_title')
       .eq('status', 'published')
       .order('pub_date', { ascending: false });
 
     if (!error && data) {
       entries = data
         .map((post) => {
-          const lastmod = (post.pub_date ?? new Date().toISOString())
+          const lastmod = (post.updated_date ?? post.pub_date ?? new Date().toISOString())
             .replace('Z', '+00:00');
+          const hreflang = post.ar_title
+            ? `
+    <xhtml:link rel="alternate" hreflang="en-ae" href="${BASE}/blog/${post.slug}"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="${BASE}/ar/blog/${post.slug}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}/blog/${post.slug}"/>`
+            : '';
           return `  <url>
     <loc>${BASE}/blog/${post.slug}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.6</priority>${hreflang}
+  </url>${post.ar_title ? `
+  <url>
+    <loc>${BASE}/ar/blog/${post.slug}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.6</priority>
-  </url>`;
+    <xhtml:link rel="alternate" hreflang="ar" href="${BASE}/ar/blog/${post.slug}"/>
+    <xhtml:link rel="alternate" hreflang="en-ae" href="${BASE}/blog/${post.slug}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}/blog/${post.slug}"/>
+  </url>` : ''}`;
         })
         .join('\n');
     }

@@ -1,0 +1,246 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+
+const fallbackFaqs = [
+  { question: "What's the difference between an AI agent and a chatbot?", answer: "A chatbot responds to questions. An AI agent takes actions. Agents can browse the web, write and send emails, update your CRM, book meetings, run searches, call APIs, and chain multiple steps together — all without waiting to be told what to do next. They're autonomous problem-solvers, not just answer machines." },
+  { question: "How reliable are AI agents at making decisions?", answer: "We design agents with clear guardrails, approval checkpoints for high-stakes actions, and human-in-the-loop controls where needed. Agents handle the high-volume, low-risk decisions automatically; anything requiring human judgment routes to a person for approval. Reliability increases over time as agents learn from feedback." },
+  { question: "Can agents work with our existing tools?", answer: "Yes. We build agents that connect to your existing systems via API — CRM, email, calendar, databases, Slack, and more. The agent acts as a smart layer on top of your current stack, not a replacement for it." },
+  { question: "Is there a risk of agents doing something wrong?", answer: "We build comprehensive logging, rollback capabilities, and action limits into every agent. Every action the agent takes is recorded and reviewable. For mission-critical workflows, we add a human approval step before irreversible actions are executed." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_agents')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+---
+
+<BaseLayout
+  title="AI Agents & Agentic Systems — Autonomous AI That Acts | Aegis AI"
+  description="AI that doesn't just answer — it acts. We build autonomous AI agents that reason through multi-step tasks, make decisions, and execute without constant human oversight."
+  canonicalPath="/services/ai-agents"
+  arPath="/ar/services/ai-agents"
+  ogImage="/assets/og-ai-agents.jpg"
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <nav class="page-breadcrumb" style="justify-content:center; margin-bottom:1.5rem;" aria-label="Breadcrumb">
+      <a href="/">Home</a><span>/</span>
+      <a href="/services">Services</a><span>/</span>
+      <strong>AI Agents</strong>
+    </nav>
+    <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.28); border-radius:100px; padding:6px 16px; color:#004f58; font-size:0.875rem; font-weight:600; margin-bottom:1.5rem;">
+      <span class="material-symbols-outlined" style="font-size:18px;">smart_toy</span>
+      AI Agents &amp; Agentic Systems
+    </div>
+    <h1>AI That Thinks, Decides, and Acts — <span class="gradient-text">Without Waiting for Instructions.</span></h1>
+    <p style="color:#42474e; font-size:1.125rem; max-width:640px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      Most AI just responds. Agents take initiative. They reason through complex problems, use tools, make decisions, and complete multi-step tasks — autonomously, at scale, 24/7.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="agents_hero" class="btn-primary">Build Your First Agent</button>
+      <a href="#agent-types" class="btn-outline">See Agent Types ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- IMAGE BANNER -->
+<div style="width:100%; height:280px; overflow:hidden; position:relative;">
+  <div style="width:100%; height:100%; background:linear-gradient(135deg,#001e30,#00253b,#006875); display:flex; align-items:center; justify-content:center; position:relative;">
+    <div style="position:absolute; inset:0; background-image:radial-gradient(circle, rgba(0,227,253,0.07) 1px, transparent 1px); background-size:24px 24px;"></div>
+    <div style="position:relative; z-index:1; display:grid; grid-template-columns:repeat(3,1fr); gap:3rem; text-align:center; padding:0 2rem; max-width:800px; margin:0 auto;">
+      <div>
+        <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">24/7</p>
+        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">Agents run around the clock — no breaks, no off days</p>
+      </div>
+      <div>
+        <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">Multi-step</p>
+        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">Agents chain dozens of actions to complete complex tasks</p>
+      </div>
+      <div>
+        <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">Adaptive</p>
+        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">Agents adjust their approach based on what they find</p>
+      </div>
+    </div>
+  </div>
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,#f9f9ff 0%,transparent 100%); pointer-events:none;"></div>
+</div>
+
+<!-- AGENT TYPES -->
+<section id="agent-types" class="section" aria-labelledby="agents-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">What We Build</div>
+      <h2 id="agents-heading">Six Types of AI Agents We Deploy</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Each agent is purpose-built for your use case, trained on your context, and integrated with your existing tools.</p>
+    </div>
+    <div class="builds-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">trending_up</span></div>
+        <h3>Sales &amp; Outreach Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Researches prospects, personalizes outreach, sends follow-ups, and updates your CRM — handling hundreds of conversations simultaneously.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">manage_search</span></div>
+        <h3>Research &amp; Analysis Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Searches the web, reads documents, synthesizes findings, and delivers structured reports — hours of research in minutes.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">support_agent</span></div>
+        <h3>Customer Service Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Handles Tier 1 and Tier 2 support autonomously — checks order status, processes refunds, escalates edge cases, and never keeps a customer waiting.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">calendar_month</span></div>
+        <h3>Scheduling &amp; Operations Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Coordinates calendars, books meetings, manages availability, and handles logistics — freeing your team from back-and-forth coordination.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">gavel</span></div>
+        <h3>Compliance &amp; Monitoring Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Monitors data, flags anomalies, reviews documents for policy compliance, and alerts the right people — continuously, without fatigue.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">build_circle</span></div>
+        <h3>Custom Agentic Workflows</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Multi-agent systems where specialized agents collaborate — one researches, one writes, one reviews, one publishes — coordinated by an orchestrating agent.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW AGENTS WORK -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="how-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">How It Works</div>
+      <h2 id="how-heading">How We Build and Deploy Your Agent</h2>
+    </div>
+    <div class="process-grid">
+      <div class="process-connector"></div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">target</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 1</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Define the Mission</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We scope exactly what your agent needs to do, what tools it needs access to, and where humans stay in the loop.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">extension</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 2</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Build &amp; Connect</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We build the agent, connect it to your tools, train it on your context, and define guardrails for safe operation.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">science</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 3</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Test Rigorously</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We stress-test with edge cases, adversarial inputs, and real scenarios to ensure the agent behaves as expected before going live.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-circle">
+          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">monitoring</span>
+        </div>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 4</span>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Monitor &amp; Improve</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Full audit logs, performance dashboards, and 90-day support ensure your agent keeps improving after launch.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <div>
+      {faqItems.map((item) => (
+        <div class="faq-item">
+          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+            {item.question}
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">{item.answer}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <h2 style="color:#fff; font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Deploy Your First AI Agent?</h2>
+    <p style="color:rgba(255,255,255,0.55); font-size:1.125rem; max-width:36rem; margin:0 auto 2.5rem; line-height:1.7;">Tell us what you want automated. We'll design an agent that handles it — and show you exactly how it works before we build.</p>
+    <button onclick="openModal(this)" data-source="agents_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+    <p style="color:rgba(255,255,255,0.30); font-size:.875rem; margin-top:1.25rem;">Free · No commitment · 100% refund guarantee</p>
+  </div>
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "name": "AI Agents & Agentic Systems",
+      "url": "https://aegisai.ae/services/ai-agents",
+      "description": "Autonomous AI agents that reason through complex tasks, use tools, and execute multi-step workflows without constant human oversight.",
+      "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://aegisai.ae" },
+      "areaServed": "Worldwide",
+      "serviceType": "AI Agent Development"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://aegisai.ae/" },
+        { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://aegisai.ae/services" },
+        { "@type": "ListItem", "position": 3, "name": "AI Agents", "item": "https://aegisai.ae/services/ai-agents" }
+      ]
+    }
+  ]
+}
+</script>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+.builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+.process-step { display:flex; flex-direction:column; align-items:center; text-align:center; }
+.process-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#00253b,#006875); box-shadow:0 0 0 6px #fff, 0 0 0 8px rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; position:relative; z-index:1; }
+.process-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2rem; position:relative; }
+.process-connector { position:absolute; top:27px; left:calc(12.5% + 28px); right:calc(12.5% + 28px); height:2px; background:linear-gradient(90deg,#00e3fd,rgba(0,37,59,0.20)); }
+.faq-item { border-top:1px solid rgba(0,37,59,0.10); }
+.faq-btn { display:flex; justify-content:space-between; align-items:center; width:100%; text-align:left; padding:1.1rem 0; font-weight:600; color:#00253b; cursor:pointer; background:none; border:none; font-family:inherit; font-size:0.95rem; }
+.faq-body { display:none; padding-bottom:1rem; color:#42474e; font-size:0.9rem; line-height:1.7; }
+.faq-body.open { display:block; }
+.faq-icon { transition:transform 0.25s; font-size:1.1rem; color:#006875; }
+.faq-icon.open { transform:rotate(45deg); }
+@media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } }
+@media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
+</style>

@@ -29,7 +29,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
     .range(from, to);
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -97,6 +97,11 @@ export const POST: APIRoute = async ({ locals, request }) => {
     meta_title: (body.meta_title as string) ?? null,
     meta_description: (body.meta_description as string) ?? null,
     focus_keyword: (body.focus_keyword as string) ?? null,
+    ar_title: (body.ar_title as string) || null,
+    ar_description: (body.ar_description as string) || null,
+    ar_body_markdown: (body.ar_body_markdown as string) || null,
+    ar_meta_title: (body.ar_meta_title as string) || null,
+    ar_meta_description: (body.ar_meta_description as string) || null,
   };
 
   const supabase = getSupabaseAdmin();
@@ -107,7 +112,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
     .single();
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });

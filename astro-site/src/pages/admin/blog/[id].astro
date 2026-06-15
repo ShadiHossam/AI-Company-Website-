@@ -124,6 +124,51 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
           <textarea id="body_markdown" name="body_markdown">{post.body_markdown}</textarea>
         </div>
 
+        <!-- Arabic Translation -->
+        <div class="card" id="ar-section" style="margin-top:1.5rem;">
+          <div id="ar-toggle" style="cursor:pointer;display:flex;align-items:center;gap:0.75rem;">
+            <div style="flex:1;">
+              <div class="card-title" style="margin:0;">الترجمة العربية <span style="font-weight:400;color:var(--text-muted);font-size:0.875rem;">(اختياري)</span></div>
+              <div class="text-xs text-muted" style="margin-top:3px;">
+                {post.ar_title ? 'هذا المقال له نسخة عربية منشورة على /ar/blog/' + post.slug : 'أضف ترجمة عربية لنشرها على /ar/blog/' + post.slug}
+              </div>
+            </div>
+            <svg id="ar-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              style={`width:15px;height:15px;color:var(--text-muted);transition:transform 0.2s;flex-shrink:0;${post.ar_title ? '' : 'transform:rotate(-90deg);'}`}>
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+          <div id="ar-body" style={`margin-top:1.5rem;${post.ar_title ? '' : 'display:none;'}`} dir="rtl">
+            <div class="form-group mb-4">
+              <label class="form-label" for="ar_title">العنوان بالعربية</label>
+              <input id="ar_title" name="ar_title" type="text" class="form-input"
+                value={post.ar_title ?? ''} placeholder="عنوان المقال بالعربية" style="text-align:right;" />
+            </div>
+            <div class="form-group mb-4">
+              <label class="form-label" for="ar_description">الوصف بالعربية</label>
+              <textarea id="ar_description" name="ar_description" class="form-textarea"
+                style="min-height:80px;text-align:right;" placeholder="وصف قصير للمقال بالعربية">{post.ar_description ?? ''}</textarea>
+            </div>
+            <div class="form-group mb-4">
+              <label class="form-label" for="ar_body_markdown">المحتوى بالعربية (Markdown)</label>
+              <textarea id="ar_body_markdown" name="ar_body_markdown" class="form-textarea"
+                style="min-height:300px;text-align:right;font-family:inherit;" placeholder="اكتب محتوى المقال بالعربية هنا...">{post.ar_body_markdown ?? ''}</textarea>
+            </div>
+            <div class="grid-2" style="gap:1rem;">
+              <div class="form-group">
+                <label class="form-label" for="ar_meta_title">عنوان SEO بالعربية</label>
+                <input id="ar_meta_title" name="ar_meta_title" type="text" class="form-input"
+                  value={post.ar_meta_title ?? ''} placeholder="يُستخدم إن وجد، وإلا العنوان الرئيسي" style="text-align:right;" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ar_meta_description">وصف SEO بالعربية</label>
+                <textarea id="ar_meta_description" name="ar_meta_description" class="form-textarea"
+                  style="min-height:70px;text-align:right;" placeholder="يُستخدم إن وجد، وإلا الوصف الرئيسي">{post.ar_meta_description ?? ''}</textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- SEO Analysis Panel -->
         <div class="card" id="seo-panel" style="margin-top:1.5rem;">
           <div id="seo-panel-toggle" style="cursor:pointer; display:flex; align-items:center; gap:0.75rem;">
@@ -230,6 +275,12 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
             <a href={`/blog/${post.slug}`} target="_blank" rel="noopener" class="btn btn-ghost" style="width:100%; justify-content:center;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
               View Live Post
+            </a>
+          )}
+          {post.status === 'published' && post.ar_title && (
+            <a href={`/ar/blog/${post.slug}`} target="_blank" rel="noopener" class="btn btn-ghost" style="width:100%; justify-content:center; direction:rtl;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              عرض النسخة العربية
             </a>
           )}
         </div>
@@ -405,6 +456,11 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
       status: (document.getElementById('status') as HTMLSelectElement).value,
       pub_date: (document.getElementById('pub_date') as HTMLInputElement).value || null,
       body_markdown: getBodyValue(),
+      ar_title: (document.getElementById('ar_title') as HTMLInputElement)?.value.trim() || null,
+      ar_description: (document.getElementById('ar_description') as HTMLTextAreaElement)?.value.trim() || null,
+      ar_body_markdown: (document.getElementById('ar_body_markdown') as HTMLTextAreaElement)?.value.trim() || null,
+      ar_meta_title: (document.getElementById('ar_meta_title') as HTMLInputElement)?.value.trim() || null,
+      ar_meta_description: (document.getElementById('ar_meta_description') as HTMLTextAreaElement)?.value.trim() || null,
     };
   }
 
@@ -903,6 +959,14 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
 
   // Initial analysis on page load
   runSEOAnalysis();
+
+  // Arabic section toggle
+  let arOpen = !!(document.getElementById('ar_title') as HTMLInputElement)?.value;
+  document.getElementById('ar-toggle')!.addEventListener('click', () => {
+    arOpen = !arOpen;
+    (document.getElementById('ar-body') as HTMLElement).style.display = arOpen ? 'block' : 'none';
+    (document.getElementById('ar-chevron') as SVGElement).style.transform = arOpen ? '' : 'rotate(-90deg)';
+  });
 </script>
 
 <style is:global>

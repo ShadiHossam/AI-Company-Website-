@@ -37,7 +37,7 @@ export const GET: APIRoute = async ({ locals }) => {
     .order('key');
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 
   const roles = (data ?? []).map(r => parseRole(r.key, r.value)).filter(Boolean);
@@ -81,7 +81,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     .insert({ key: `admin.role.${name}`, value, type: 'json', label: `${body.label} Role`, section: 'admin_roles' });
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 
   return new Response(JSON.stringify({ data: { name, label: body.label, sections, is_builtin: false } }), { status: 201 });

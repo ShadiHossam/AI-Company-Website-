@@ -62,7 +62,7 @@ export const PATCH: APIRoute = async ({ request, locals, params }) => {
     .eq('key', `admin.role.${roleName}`);
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 
   return new Response(JSON.stringify({ data: { name: roleName, ...current } }), { status: 200 });
@@ -109,7 +109,7 @@ export const DELETE: APIRoute = async ({ request, locals, params }) => {
     .eq('key', `admin.role.${roleName}`);
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 
   return new Response(JSON.stringify({ ok: true }), { status: 200 });

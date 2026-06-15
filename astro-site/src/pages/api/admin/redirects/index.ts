@@ -20,7 +20,7 @@ export const GET: APIRoute = async ({ locals }) => {
     .order('created_at', { ascending: false });
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 
   return new Response(JSON.stringify({ data }), { status: 200 });
@@ -48,12 +48,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return new Response(JSON.stringify({ error: 'from_path and to_path required' }), { status: 400 });
   }
 
-  if (!body.from_path.startsWith('/') || body.from_path.startsWith('//')) {
-    return new Response(JSON.stringify({ error: 'from_path must be a relative path starting with /' }), { status: 400 });
+  const SAFE_PATH = /^\/[\w\-/.]*$/;
+  if (!SAFE_PATH.test(body.from_path)) {
+    return new Response(JSON.stringify({ error: 'from_path must be a simple relative path starting with /' }), { status: 400 });
   }
 
-  if (!body.to_path.startsWith('/') || body.to_path.startsWith('//')) {
-    return new Response(JSON.stringify({ error: 'to_path must be a relative path starting with /' }), { status: 400 });
+  if (!SAFE_PATH.test(body.to_path)) {
+    return new Response(JSON.stringify({ error: 'to_path must be a simple relative path starting with /' }), { status: 400 });
   }
 
   if (body.status_code !== undefined && !ALLOWED_STATUS_CODES.includes(body.status_code)) {
@@ -73,7 +74,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     .single();
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 
   return new Response(JSON.stringify({ data }), { status: 201 });
