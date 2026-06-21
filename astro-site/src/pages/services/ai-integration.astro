@@ -4,9 +4,9 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getSupabaseAdmin } from "../../lib/supabase";
 
 const fallbackFaqs = [
-  { question: "We already have a CRM — can you add AI to it without replacing it?", answer: "Yes — that's exactly what AI integration is for. We add an AI layer on top of your existing HubSpot, Salesforce, Zoho, or custom CRM. Your team keeps working in the same system they know; it just gets smarter: auto-enriching contacts, predicting deal health, surfacing the right follow-up actions." },
-  { question: "What systems do you integrate AI with?", answer: "Any system with an API. Common ones include CRMs (HubSpot, Salesforce), ERPs (SAP, NetSuite, Odoo), communication tools (Slack, Teams, email), project management (Jira, Linear, Notion), data warehouses (Snowflake, BigQuery), and e-commerce platforms (Shopify, WooCommerce)." },
-  { question: "How long does an AI integration project take?", answer: "Straightforward integrations (one system, clear scope) take 3–6 weeks. Multi-system integrations with custom workflows take 6–12 weeks. We give you a precise timeline after a discovery session where we assess your existing setup." },
+  { question: "We already have a CRM. Can you add AI to it without replacing it?", answer: "Yes, that's exactly what AI integration is for. We add an AI layer on top of your existing CRM or custom system. Your team keeps working in the same system they know; it just gets smarter: auto-enriching contacts, predicting deal health, surfacing the right follow-up actions." },
+  { question: "What systems do you integrate AI with?", answer: "Any system with an API. We regularly work with CRMs, ERPs, communication platforms, project management tools, data warehouses, and e-commerce platforms. If your system has an API, we can add AI to it. We'll tell you upfront if something isn't feasible." },
+  { question: "How long does an AI integration project take?", answer: "Each project is scoped individually. We give you a precise timeline after the discovery session, based on the number of systems involved, data complexity, and your existing API setup." },
   { question: "Will our existing workflows break during integration?", answer: "No. We build and test AI integrations in a staging environment first. Your production systems remain untouched until the integration has been fully validated. Rollbacks are built in as a safety net." },
 ];
 
@@ -28,6 +28,16 @@ try {
   // Fallback to hardcoded content on error
 }
 
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
 
@@ -36,7 +46,8 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
   description="You don't need to replace your software — you need to make it smarter. We add an AI layer to your CRM, ERP, and existing tools so they work harder with the same team."
   canonicalPath="/services/ai-integration"
   arPath="/ar/services/ai-integration"
-  ogImage="/assets/og-ai-integration.jpg"
+  ogImage="/assets/og-services.jpg"
+  ldJson={[faqLdJson]}
 >
 
 <header class="hero-section">
@@ -52,7 +63,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     </div>
     <h1>Your Existing Software, <span class="gradient-text">Supercharged With AI.</span></h1>
     <p style="color:#42474e; font-size:1.125rem; max-width:620px; margin:1.5rem auto 2.5rem; line-height:1.8;">
-      You don't need to rip out your CRM, ERP, or tools. You need to make them smarter. We add a precise AI layer on top of what you already use — so the same team gets dramatically better results.
+      You don't need to rip out your CRM, ERP, or tools. You need to make them smarter. We add a precise AI layer on top of what you already use, so the same team gets dramatically better results.
     </p>
     <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
       <button onclick="openModal(this)" data-source="integration_hero" class="btn-primary">Book a Free Discovery Call</button>
@@ -67,7 +78,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     <div class="stat-strip">
       <div class="stat-item">
         <div class="stat-num">No replace</div>
-        <p class="stat-label">We enhance your existing tools — never ask you to scrap what's working</p>
+        <p class="stat-label">We enhance your existing tools. We never ask you to scrap what's working.</p>
       </div>
       <div class="stat-divider"></div>
       <div class="stat-item">
@@ -76,8 +87,8 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       </div>
       <div class="stat-divider"></div>
       <div class="stat-item">
-        <div class="stat-num">3–12 wks</div>
-        <p class="stat-label">typical delivery — scoped precisely after a discovery session</p>
+        <div class="stat-num">100%</div>
+        <p class="stat-label">refund guarantee if you're not satisfied with what we deliver</p>
       </div>
     </div>
   </div>
@@ -95,54 +106,33 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">contacts</span></div>
         <h3>CRM AI Enrichment</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Add AI to your CRM to auto-enrich contacts, score leads, predict deal health, and surface the right next action for every rep — without leaving your existing system.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Add AI to your CRM to auto-enrich contacts, score leads, predict deal health, and surface the right next action for every rep, all without leaving your existing system.</p>
       </div>
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">inventory_2</span></div>
         <h3>ERP AI Intelligence</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Transform raw ERP data into predictive insights — demand forecasting, inventory optimization, supplier risk scoring, and anomaly detection that acts before issues escalate.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Transform raw ERP data into predictive insights: demand forecasting, inventory optimization, supplier risk scoring, and anomaly detection that acts before issues escalate.</p>
       </div>
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">forum</span></div>
         <h3>Communication Platform AI</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">AI in your Slack, Teams, or email — summarizes long threads, surfaces action items, drafts responses, and routes messages to the right person automatically.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">AI added to your communication tools to summarize long threads, surface action items, draft responses, and route messages to the right person automatically.</p>
       </div>
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">shopping_cart</span></div>
         <h3>E-commerce AI Layer</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">AI recommendations, dynamic pricing, personalized search, and churn prediction layered on top of Shopify, WooCommerce, or your custom platform.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">AI recommendations, dynamic pricing, personalized search, and churn prediction layered on top of your e-commerce platform or custom storefront.</p>
       </div>
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">storage</span></div>
         <h3>Data Warehouse AI</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Ask your Snowflake, BigQuery, or Redshift data questions in plain English — AI translates to SQL, runs queries, and returns insights without your team needing to know SQL.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Ask your data warehouse questions in plain English. AI translates to SQL, runs queries, and returns insights without your team needing to know SQL.</p>
       </div>
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">webhook</span></div>
         <h3>Custom API AI Connections</h3>
         <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">We build bespoke AI middleware that connects your proprietary systems — so data flows intelligently between tools that were never designed to talk to each other.</p>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- TECH STACK -->
-<section class="section-sm" style="background:#e7eeff;" aria-label="Supported platforms">
-  <div class="container" style="text-align:center;">
-    <p style="color:#72787e; font-size:0.8125rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:2rem;">Platforms We Integrate With</p>
-    <div style="display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:1.5rem 2.5rem;">
-      <span class="tech-pill">HubSpot</span>
-      <span class="tech-pill">Salesforce</span>
-      <span class="tech-pill">SAP</span>
-      <span class="tech-pill">NetSuite</span>
-      <span class="tech-pill">Shopify</span>
-      <span class="tech-pill">Slack</span>
-      <span class="tech-pill">Microsoft 365</span>
-      <span class="tech-pill">Google Workspace</span>
-      <span class="tech-pill">Snowflake</span>
-      <span class="tech-pill">BigQuery</span>
-      <span class="tech-pill">Jira</span>
-      <span class="tech-pill">Notion</span>
     </div>
   </div>
 </section>
@@ -160,15 +150,15 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         <div class="process-circle">
           <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">search</span>
         </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Week 1</span>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 1</span>
         <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Stack Audit</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We assess your existing systems, APIs, and data flows — then identify exactly where AI integration creates the most value.</p>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We assess your existing systems, APIs, and data flows, then identify exactly where AI integration creates the most value.</p>
       </div>
       <div class="process-step">
         <div class="process-circle">
           <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">architecture</span>
         </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Weeks 2–3</span>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 2</span>
         <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Design &amp; Connect</h3>
         <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We design the AI layer, establish secure API connections, and build integrations in a staging environment.</p>
       </div>
@@ -176,7 +166,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         <div class="process-circle">
           <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">fact_check</span>
         </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Weeks 3–4</span>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 3</span>
         <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Test on Real Data</h3>
         <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We validate the integration against your actual data, edge cases, and load — with zero impact on your live systems.</p>
       </div>
@@ -184,9 +174,9 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         <div class="process-circle">
           <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">rocket_launch</span>
         </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Week 5+</span>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 4</span>
         <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Deploy &amp; Monitor</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Integration goes live. 90-day monitoring and support included — we catch issues before they reach your team.</p>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Integration goes live. 90-day monitoring and support included. We catch issues before they reach your team.</p>
       </div>
     </div>
   </div>
@@ -230,7 +220,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       "@type": "Service",
       "name": "AI Integration Services",
       "url": "https://aegisai.ae/services/ai-integration",
-      "description": "We add an AI layer to your existing CRM, ERP, and software stack — making your current tools dramatically smarter without replacing them.",
+      "description": "We add an AI layer to your existing CRM, ERP, and software stack, making your current tools dramatically smarter without replacing them.",
       "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://aegisai.ae" },
       "areaServed": "Worldwide",
       "serviceType": "AI Integration"

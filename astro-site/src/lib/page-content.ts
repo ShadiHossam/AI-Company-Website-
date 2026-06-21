@@ -114,15 +114,27 @@ export const PAGE_CONFIGS: PageConfig[] = [
   },
 ];
 
+const pageContentCache = new Map<string, { data: Record<string, string>; exp: number }>();
+const PAGE_CONTENT_TTL = 60_000;
+
 export async function loadPageContent(pageSlug: string): Promise<Record<string, string>> {
+  const now = Date.now();
+  const hit = pageContentCache.get(pageSlug);
+  if (hit && now < hit.exp) return hit.data;
+
   try {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from('page_content')
       .select('section_key, value')
       .eq('page_slug', pageSlug);
-    if (error || !data) return {};
-    return Object.fromEntries(data.map(r => [r.section_key, r.value]));
+    if (error || !data) {
+      pageContentCache.set(pageSlug, { data: {}, exp: now + 5_000 });
+      return {};
+    }
+    const result = Object.fromEntries(data.map((r: { section_key: string; value: string }) => [r.section_key, r.value]));
+    pageContentCache.set(pageSlug, { data: result, exp: now + PAGE_CONTENT_TTL });
+    return result;
   } catch {
     return {};
   }

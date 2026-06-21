@@ -33,14 +33,14 @@ describe('extractRole', () => {
     expect(extractRole(payload)).toBe('editor');
   });
 
-  it('defaults to super_admin for an unknown role', () => {
+  it('passes through unrecognized role strings from payload.role', () => {
     const payload = { role: 'unknown_role' } as JWTPayload;
-    expect(extractRole(payload)).toBe('super_admin');
+    expect(extractRole(payload)).toBe('unknown_role');
   });
 
-  it('defaults to super_admin when role is empty string', () => {
+  it('returns null when role is empty string', () => {
     const payload = { role: '' } as JWTPayload;
-    expect(extractRole(payload)).toBe('super_admin');
+    expect(extractRole(payload)).toBeNull();
   });
 });
 

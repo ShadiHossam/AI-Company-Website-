@@ -38,6 +38,7 @@ const PAGES: PageEntry[] = [
   { url: '/blog',                              lastmod: NOW, priority: '0.6', changefreq: 'weekly',  arUrl: '/ar/blog' },
   { url: '/contact',                           lastmod: NOW, priority: '0.6', changefreq: 'monthly', arUrl: '/ar/contact' },
   { url: '/faq',                               lastmod: NOW, priority: '0.5', changefreq: 'monthly', arUrl: '/ar/faq' },
+  { url: '/careers',                           lastmod: NOW, priority: '0.5', changefreq: 'weekly'  },
   { url: '/privacy',                           lastmod: NOW, priority: '0.3', changefreq: 'yearly'  },
   { url: '/terms',                             lastmod: NOW, priority: '0.3', changefreq: 'yearly'  },
 ];

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getSupabaseAdmin, supabaseConfigured } from '../../../../lib/supabase';
+import { getSupabaseAdmin } from '../../../../lib/supabase';
 
 export const prerender = false;
 
@@ -29,7 +29,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
     .range(from, to);
 
   if (error) {
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -47,13 +47,6 @@ export const POST: APIRoute = async ({ locals, request }) => {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
-  }
-
-  if (!supabaseConfigured) {
-    return new Response(
-      JSON.stringify({ error: 'Database not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your .env.local file.' }),
-      { status: 503, headers: { 'Content-Type': 'application/json' } }
-    );
   }
 
   if (!CSRF(request)) {
@@ -112,7 +105,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
     .single();
 
   if (error) {
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });

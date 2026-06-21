@@ -11,6 +11,58 @@ const STATIC_PREFIXES = ['/_astro/', '/assets/', '/favicon', '/_image'];
 const ADMIN_PUBLIC_PATHS = ['/admin/login'];
 const API_PUBLIC_PATHS = ['/api/admin/auth/login', '/api/admin/auth/logout'];
 
+// In-memory cache: full redirects table as Map<from_path, {to_path, status_code}>
+let redirectsMap: Map<string, { to_path: string; status_code: number }> | null = null;
+let redirectsExp = 0;
+const REDIRECTS_TTL = 60_000;
+
+async function getRedirectFor(pathname: string): Promise<{ to_path: string; status_code: number } | null> {
+  const now = Date.now();
+  if (!redirectsMap || now >= redirectsExp) {
+    try {
+      const supabase = getSupabaseAdmin();
+      const { data } = await supabase
+        .from('redirects')
+        .select('from_path, to_path, status_code')
+        .eq('active', true);
+      redirectsMap = new Map((data ?? []).map((r: { from_path: string; to_path: string; status_code: number }) => [r.from_path, { to_path: r.to_path, status_code: r.status_code }]));
+      redirectsExp = now + REDIRECTS_TTL;
+    } catch {
+      redirectsMap = redirectsMap ?? new Map();
+      redirectsExp = now + 5_000;
+    }
+  }
+  return redirectsMap.get(pathname) ?? null;
+}
+
+// In-memory cache: maintenance mode state (batches both config keys into one query)
+let maintenanceState: { enabled: boolean; allowedIPs: string[] } | null = null;
+let maintenanceExp = 0;
+const MAINTENANCE_TTL = 30_000;
+
+async function getMaintenanceState(): Promise<{ enabled: boolean; allowedIPs: string[] }> {
+  const now = Date.now();
+  if (maintenanceState && now < maintenanceExp) return maintenanceState;
+  try {
+    const supabase = getSupabaseAdmin();
+    const { data } = await supabase
+      .from('site_config')
+      .select('key, value')
+      .in('key', ['system.maintenance_mode', 'system.maintenance_allowed_ips']);
+    const map = Object.fromEntries((data ?? []).map((r: { key: string; value: string }) => [r.key, r.value]));
+    maintenanceState = {
+      enabled: map['system.maintenance_mode'] === 'true',
+      allowedIPs: (map['system.maintenance_allowed_ips'] ?? '').split(',').map((s: string) => s.trim()).filter(Boolean),
+    };
+    maintenanceExp = now + MAINTENANCE_TTL;
+    return maintenanceState;
+  } catch {
+    maintenanceState = maintenanceState ?? { enabled: false, allowedIPs: [] };
+    maintenanceExp = Date.now() + 5_000;
+    return maintenanceState;
+  }
+}
+
 // Section key → admin page prefixes
 const SECTION_ADMIN: Record<string, string[]> = {
   dashboard:     ['/admin'],
@@ -93,6 +145,14 @@ function forbidden403(): Response {
   });
 }
 
+export function __resetCachesForTest() {
+  redirectsMap = null;
+  redirectsExp = 0;
+  maintenanceState = null;
+  maintenanceExp = 0;
+  roleCache.clear();
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
 
@@ -101,50 +161,25 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next();
   }
 
-  // DB redirect check (public routes)
-  if (supabaseConfigured && !pathname.startsWith('/admin') && !pathname.startsWith('/api') && !pathname.startsWith('/_')) {
-    try {
-      const supabase = getSupabaseAdmin();
-      const { data } = await supabase
-        .from('redirects')
-        .select('to_path,status_code')
-        .eq('from_path', pathname)
-        .eq('active', true)
-        .single();
-      if (data && data.to_path.startsWith('/') && !data.to_path.startsWith('//')) {
-        const safeCode = [301, 302, 307, 308].includes(data.status_code) ? data.status_code : 301;
-        return context.redirect(data.to_path, safeCode);
-      }
-    } catch {
-      // Table may not exist yet — continue
+  // DB redirect check + maintenance check (public routes only) — both use in-memory caches
+  const isPublicRoute = supabaseConfigured && !pathname.startsWith('/admin') && !pathname.startsWith('/api') && !pathname.startsWith('/_');
+  if (isPublicRoute) {
+    // Redirect lookup: O(1) Map lookup after first warm (cache refreshes every 60s)
+    const redirect = await getRedirectFor(pathname);
+    if (redirect && redirect.to_path.startsWith('/') && !redirect.to_path.startsWith('//')) {
+      const safeCode = ([301, 302, 307, 308].includes(redirect.status_code) ? redirect.status_code : 301) as 301 | 302 | 307 | 308;
+      return context.redirect(redirect.to_path, safeCode);
     }
-  }
 
-  // Maintenance mode check (public routes only)
-  if (supabaseConfigured && !pathname.startsWith('/admin') && !pathname.startsWith('/api') && pathname !== '/maintenance') {
-    try {
-      const supabase = getSupabaseAdmin();
-      const { data } = await supabase
-        .from('site_config')
-        .select('value')
-        .eq('key', 'system.maintenance_mode')
-        .single();
-      if (data?.value === 'true') {
-        const allowedIPs = await (async () => {
-          const { data: ipData } = await supabase
-            .from('site_config')
-            .select('value')
-            .eq('key', 'system.maintenance_allowed_ips')
-            .single();
-          return (ipData?.value ?? '').split(',').map((s: string) => s.trim()).filter(Boolean);
-        })();
+    // Maintenance check: cached for 30s; batches both config keys into one query
+    if (pathname !== '/maintenance') {
+      const maintenance = await getMaintenanceState();
+      if (maintenance.enabled) {
         const ip = context.request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? '';
-        if (!allowedIPs.includes(ip)) {
+        if (!maintenance.allowedIPs.includes(ip)) {
           return context.redirect('/maintenance');
         }
       }
-    } catch {
-      // Table may not exist yet — continue
     }
   }
 
@@ -200,5 +235,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  return next();
+  const response = await next();
+
+  // Add edge-cache headers for public HTML pages that haven't set their own Cache-Control.
+  // Vercel will serve cached HTML from the edge CDN and revalidate in the background.
+  if (
+    !pathname.startsWith('/admin') &&
+    !pathname.startsWith('/api') &&
+    !pathname.startsWith('/_') &&
+    !response.headers.has('Cache-Control')
+  ) {
+    response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+  }
+
+  return response;
 });

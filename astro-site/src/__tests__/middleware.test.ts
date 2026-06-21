@@ -14,7 +14,7 @@ vi.mock('../lib/jwt', () => ({
 
 import { getSupabaseAdmin } from '../lib/supabase';
 import { verifyJWT, extractRole } from '../lib/jwt';
-import { onRequest } from '../middleware';
+import { onRequest, __resetCachesForTest } from '../middleware';
 
 // ---- helpers ----------------------------------------------------------------
 
@@ -82,7 +82,7 @@ describe('DB redirect check', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('redirects when a matching active redirect row is found', async () => {
-    const chain = makeChain({ data: { to_path: '/new-path', status_code: 301 }, error: null });
+    const chain = makeChain({ data: [{ from_path: '/old-path', to_path: '/new-path', status_code: 301 }], error: null });
     const supabase = { from: vi.fn().mockReturnValue(chain) };
     (getSupabaseAdmin as ReturnType<typeof vi.fn>).mockReturnValue(supabase);
 
@@ -108,21 +108,18 @@ describe('DB redirect check', () => {
 });
 
 describe('maintenance mode', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); __resetCachesForTest(); });
 
   it('redirects to /maintenance when enabled and IP not in allowlist', async () => {
-    let callCount = 0;
-    const chain = {
-      ...makeChain({}),
-      // first call (redirects) → null, second (maintenance on) → { value: 'true' }, third (allowed IPs) → { value: '10.0.0.1' }
-    };
+    // The middleware fetches both maintenance config keys in a single batched query
     const supabase = {
-      from: vi.fn().mockImplementation(() => {
-        callCount++;
-        if (callCount === 1) return makeChain({ data: null, error: null }); // redirects
-        if (callCount === 2) return makeChain({ data: { value: 'true' }, error: null }); // maintenance flag
-        return makeChain({ data: { value: '10.0.0.1' }, error: null }); // allowed IPs
-      }),
+      from: vi.fn().mockReturnValue(makeChain({
+        data: [
+          { key: 'system.maintenance_mode', value: 'true' },
+          { key: 'system.maintenance_allowed_ips', value: '10.0.0.1' },
+        ],
+        error: null,
+      })),
     };
     (getSupabaseAdmin as ReturnType<typeof vi.fn>).mockReturnValue(supabase);
 
@@ -166,7 +163,7 @@ describe('maintenance mode', () => {
 });
 
 describe('admin auth guard', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); __resetCachesForTest(); });
 
   it('allows /admin/login without a token', async () => {
     const ctx = makeCtx({ pathname: '/admin/login' });
@@ -226,6 +223,12 @@ describe('admin auth guard', () => {
       sub: 'u2', email: 'ed@test.com', role: 'editor', exp: 9999999999,
     });
     (extractRole as ReturnType<typeof vi.fn>).mockReturnValueOnce('editor');
+    (getSupabaseAdmin as ReturnType<typeof vi.fn>).mockReturnValueOnce({
+      from: vi.fn().mockReturnValue(makeChain({
+        data: { value: JSON.stringify({ sections: ['content', 'blog', 'media'] }) },
+        error: null,
+      })),
+    });
 
     const ctx = makeCtx({ pathname: '/admin/content/faq', token: 'editor.token' });
     const next = vi.fn().mockResolvedValue(new Response('ok'));
@@ -253,6 +256,12 @@ describe('admin auth guard', () => {
       sub: 'u3', email: 'sales@test.com', role: 'sales', exp: 9999999999,
     });
     (extractRole as ReturnType<typeof vi.fn>).mockReturnValueOnce('sales');
+    (getSupabaseAdmin as ReturnType<typeof vi.fn>).mockReturnValueOnce({
+      from: vi.fn().mockReturnValue(makeChain({
+        data: { value: JSON.stringify({ sections: ['leads'] }) },
+        error: null,
+      })),
+    });
 
     const ctx = makeCtx({ pathname: '/admin/leads', token: 'sales.token' });
     const next = vi.fn().mockResolvedValue(new Response('ok'));
@@ -263,7 +272,7 @@ describe('admin auth guard', () => {
 });
 
 describe('API admin auth guard', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); __resetCachesForTest(); });
 
   it('returns 401 JSON when no token present on /api/admin/*', async () => {
     const ctx = makeCtx({ pathname: '/api/admin/leads', token: null });

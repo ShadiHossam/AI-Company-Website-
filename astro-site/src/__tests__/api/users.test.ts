@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { makeLocals, makeRequest } from '../helpers';
+import { makeChain, makeLocals, makeRequest } from '../helpers';
 
 vi.mock('../../lib/supabase', () => ({ getSupabaseAdmin: vi.fn() }));
 
@@ -8,6 +8,7 @@ import { POST as invitePOST } from '../../pages/api/admin/users/invite';
 
 function makeAdminSupabase(result: { data: unknown; error: null | { message: string } }) {
   const supabase = {
+    from: vi.fn().mockReturnValue(makeChain({ data: { key: 'admin.role.editor' }, error: null })),
     auth: {
       admin: {
         inviteUserByEmail: vi.fn().mockResolvedValue(result),

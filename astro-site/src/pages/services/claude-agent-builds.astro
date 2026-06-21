@@ -5,8 +5,8 @@ import { getSupabaseAdmin } from "../../lib/supabase";
 
 const fallbackFaqs = [
   { question: "Why build on Claude specifically?", answer: "Claude is built by Anthropic with a focus on safety, instruction-following, and long-context reasoning. For business applications, that translates to agents that follow rules reliably, handle complex multi-step tasks without going off-script, and deal gracefully with ambiguous situations. It performs particularly well on tasks that require reading and reasoning over large documents, maintaining consistent behavior across long conversations, and operating within strict guardrails." },
-  { question: "How is a Claude agent different from a regular chatbot?", answer: "A chatbot waits for questions and answers them. A Claude agent has goals, tools, and the ability to take actions. It can browse your internal systems, read emails, write and send responses, update records, call APIs, and chain dozens of steps together to complete a complex task — all without waiting for you to guide each step. Think of a chatbot as a reference tool and an agent as a junior employee who can actually do the work." },
-  { question: "What tools can Claude agents use?", answer: "We build agents that can use web search, read and write files, query databases, call REST APIs, send emails and Slack messages, interact with your CRM, run code, and call other agents. The toolset is defined by what your workflow needs — we scope this in the discovery session and only add what's actually useful." },
+  { question: "How is a Claude agent different from a regular chatbot?", answer: "A chatbot waits for questions and answers them. A Claude agent has goals, tools, and the ability to take actions. It can browse your internal systems, read emails, write and send responses, update records, call APIs, and chain dozens of steps together to complete a complex task without waiting for you to guide each step. Think of a chatbot as a reference tool and an agent as a junior employee who can actually do the work." },
+  { question: "What tools can Claude agents use?", answer: "We build agents that can use web search, read and write files, query databases, call REST APIs, send emails and messages, interact with your CRM, run code, and call other agents. The toolset is defined by what your workflow needs. We scope this in the discovery session and only add what's actually useful." },
   { question: "How do you keep agents from doing something wrong?", answer: "We build guardrails at every level: clear system instructions that define what the agent can and cannot do, approval checkpoints for high-stakes actions, action logging so every step is auditable, and rate limits that prevent runaway loops. For irreversible actions — sending emails, updating records, moving money — we design human-in-the-loop steps that require confirmation before execution." },
   { question: "What does deployment look like?", answer: "We deliver Claude agents as production-ready systems — hosted on your infrastructure or ours, accessible via API, web interface, Slack, or wherever your team works. We include documentation, admin controls, monitoring dashboards, and 90 days of post-launch support as standard." },
 ];
@@ -27,6 +27,16 @@ try {
   }
 } catch (err) {}
 
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
 
@@ -34,7 +44,8 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
   title="Claude Agent Builds — Production AI Agents Built on Anthropic Claude | Aegis AI"
   description="We build production-ready Claude agents with memory, tool use, and multi-step reasoning. Autonomous AI that follows instructions reliably, operates within guardrails, and gets complex work done."
   canonicalPath="/services/claude-agent-builds"
-  ogImage="/assets/og-claude-agents.jpg"
+  ogImage="/assets/og-services.jpg"
+  ldJson={[faqLdJson]}
 >
 
 <header class="hero-section">
@@ -50,7 +61,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     </div>
     <h1>The Smartest AI Agents. <span class="gradient-text">Built on Claude.</span></h1>
     <p style="color:#42474e; font-size:1.125rem; max-width:640px; margin:1.5rem auto 2.5rem; line-height:1.8;">
-      Claude agents don't just answer — they reason, plan, and act. We build production-ready agents on Anthropic's Claude that handle complex workflows autonomously, follow your rules reliably, and get measurable work done.
+      Claude agents don't just answer. They reason, plan, and act. We build production-ready agents on Anthropic's Claude that handle complex workflows autonomously, follow your rules reliably, and get measurable work done.
     </p>
     <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
       <button onclick="openModal(this)" data-source="claude_agents_hero" class="btn-primary">Build Your Claude Agent</button>
@@ -66,7 +77,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     <div style="position:relative; z-index:1; display:grid; grid-template-columns:repeat(3,1fr); gap:3rem; text-align:center; max-width:800px; margin:0 auto;">
       <div>
         <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">200K</p>
-        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">Token context window — Claude reasons over entire documents at once</p>
+        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">Token context window. Claude reasons over entire documents at once</p>
       </div>
       <div>
         <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">Multi-step</p>
@@ -74,7 +85,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       </div>
       <div>
         <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">Auditable</p>
-        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">Every action logged and reviewable — full transparency on what the agent did</p>
+        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">Every action logged and reviewable, with full transparency on what the agent did</p>
       </div>
     </div>
   </div>
@@ -118,7 +129,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">account_tree</span></div>
         <h3>Multi-Agent Systems</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Networks of specialized Claude agents working together — one researches, one writes, one reviews, one publishes. Coordinated by an orchestrating agent that manages the full workflow.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Networks of specialized Claude agents working together: one researches, one writes, one reviews, one publishes. Coordinated by an orchestrating agent that manages the full workflow.</p>
       </div>
     </div>
   </div>
@@ -221,7 +232,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
 <div class="cta-band">
   <div style="position:relative; z-index:1; text-align:center;">
     <h2 style="color:#fff; font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Deploy a Claude Agent?</h2>
-    <p style="color:rgba(255,255,255,0.55); font-size:1.125rem; max-width:36rem; margin:0 auto 2.5rem; line-height:1.7;">Tell us what you want automated. We'll design a Claude agent that handles it — and show you exactly how it works before we build.</p>
+    <p style="color:rgba(255,255,255,0.55); font-size:1.125rem; max-width:36rem; margin:0 auto 2.5rem; line-height:1.7;">Tell us what you want automated. We'll design a Claude agent that handles it and show you exactly how it works before we build.</p>
     <button onclick="openModal(this)" data-source="claude_agents_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
     <p style="color:rgba(255,255,255,0.30); font-size:.875rem; margin-top:1.25rem;">Free · No commitment · 100% refund guarantee</p>
   </div>
@@ -235,7 +246,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       "@type": "Service",
       "name": "Claude Agent Builds",
       "url": "https://aegisai.ae/services/claude-agent-builds",
-      "description": "Production-ready autonomous AI agents built on Anthropic Claude — with memory, tool use, multi-step reasoning, and enterprise guardrails.",
+      "description": "Production-ready autonomous AI agents built on Anthropic Claude, with memory, tool use, multi-step reasoning, and enterprise guardrails.",
       "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://aegisai.ae" },
       "areaServed": "Worldwide",
       "serviceType": "AI Agent Development"

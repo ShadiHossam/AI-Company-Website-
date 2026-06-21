@@ -30,11 +30,16 @@ function createMockClient() {
   return client;
 }
 
+let _adminClient: ReturnType<typeof createClient> | null = null;
+
 export function getSupabaseAdmin() {
   if (!supabaseConfigured) return createMockClient();
-  return createClient(
-    SUPABASE_URL,
-    import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
+  if (!_adminClient) {
+    _adminClient = createClient(
+      SUPABASE_URL,
+      import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+  }
+  return _adminClient;
 }

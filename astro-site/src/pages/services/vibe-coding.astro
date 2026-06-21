@@ -4,7 +4,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getSupabaseAdmin } from "../../lib/supabase";
 
 const fallbackFaqs = [
-  { question: "What exactly is vibe coding?", answer: "Vibe coding is AI-accelerated software development — using the latest AI coding tools (like Cursor, GitHub Copilot, and Claude) to dramatically speed up how software is written, reviewed, and shipped. Instead of writing every line manually, developers work with AI as a pair programmer. The result is faster delivery without sacrificing quality." },
+  { question: "What exactly is vibe coding?", answer: "Vibe coding is AI-accelerated software development. Instead of writing every line manually, developers work with AI as a pair programmer using the latest AI coding tools. The result is faster delivery without sacrificing quality." },
   { question: "Is the quality as good as traditional development?", answer: "Yes — often better. AI tools catch more bugs, suggest optimized patterns, and enforce consistency across large codebases. We pair AI-generated code with rigorous human review, automated testing, and QA cycles. You get speed and quality." },
   { question: "What kinds of projects are best suited for vibe coding?", answer: "Web applications, SaaS products, internal tools, APIs, dashboards, mobile apps, and scripts. It works especially well for MVPs where speed to market matters, and for modernizing legacy codebases that need to be rewritten efficiently." },
   { question: "Do you hand over the code and documentation?", answer: "Yes. You receive full ownership of all code, documentation, and infrastructure configuration. We don't lock you in — the handover includes a technical walkthrough so your team can maintain and extend the product independently." },
@@ -28,15 +28,26 @@ try {
   // Fallback to hardcoded content on error
 }
 
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
 
 <BaseLayout
   title="Vibe Coding — AI-Accelerated Software Development | Aegis AI"
-  description="Ship software 10× faster with AI-accelerated development. We build your product using the latest AI coding tools — turning weeks of work into days without sacrificing quality."
+  description="Ship software 10× faster with AI-accelerated development. We build your product using the latest AI coding tools without sacrificing quality."
   canonicalPath="/services/vibe-coding"
   arPath="/ar/services/vibe-coding"
-  ogImage="/assets/og-vibe-coding.jpg"
+  ogImage="/assets/og-services.jpg"
+  ldJson={[faqLdJson]}
 >
 
 <header class="hero-section">
@@ -67,17 +78,17 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     <div class="stat-strip">
       <div class="stat-item">
         <div class="stat-num">10×</div>
-        <p class="stat-label">faster than traditional development on average — measured across our client projects</p>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat-item">
-        <div class="stat-num">2–4 wks</div>
-        <p class="stat-label">typical MVP delivery — from spec to working product in your hands</p>
+        <p class="stat-label">faster than traditional development on average, measured across our client projects</p>
       </div>
       <div class="stat-divider"></div>
       <div class="stat-item">
         <div class="stat-num">Full code</div>
-        <p class="stat-label">ownership — you get everything: code, docs, infra configs, no lock-in</p>
+        <p class="stat-label">ownership. You get everything: source code, docs, infra configs, and no lock-in</p>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="stat-num">100%</div>
+        <p class="stat-label">refund guarantee if you're not satisfied with what we deliver</p>
       </div>
     </div>
   </div>
@@ -95,7 +106,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">web</span></div>
         <h3>Web Applications &amp; SaaS Products</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Full-stack web apps built with modern frameworks — React, Next.js, Astro, Node, FastAPI — shipped in weeks, not quarters.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Full-stack web apps built with modern frameworks, shipped faster than traditional development without cutting corners on quality.</p>
       </div>
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">speed</span></div>
@@ -126,26 +137,6 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
   </div>
 </section>
 
-<!-- TECH STACK -->
-<section class="section-sm" style="background:#e7eeff;" aria-label="Technology stack">
-  <div class="container" style="text-align:center;">
-    <p style="color:#72787e; font-size:0.8125rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:2rem;">AI Tools We Use to Build Faster</p>
-    <div style="display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:1.5rem 2.5rem;">
-      <span class="tech-pill">Cursor AI</span>
-      <span class="tech-pill">Claude Code</span>
-      <span class="tech-pill">GitHub Copilot</span>
-      <span class="tech-pill">GPT-4o</span>
-      <span class="tech-pill">React / Next.js</span>
-      <span class="tech-pill">Astro</span>
-      <span class="tech-pill">Node.js</span>
-      <span class="tech-pill">Python / FastAPI</span>
-      <span class="tech-pill">PostgreSQL</span>
-      <span class="tech-pill">Supabase</span>
-      <span class="tech-pill">Vercel / AWS</span>
-    </div>
-  </div>
-</section>
-
 <!-- PROCESS -->
 <section class="section" aria-labelledby="process-heading">
   <div class="container">
@@ -159,7 +150,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         <div class="process-circle">
           <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">description</span>
         </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Day 1–3</span>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 1</span>
         <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Spec &amp; Architecture</h3>
         <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We scope the product, define the tech stack, and create a detailed spec you approve before we write a line of code.</p>
       </div>
@@ -167,7 +158,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         <div class="process-circle">
           <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">code</span>
         </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Week 1–2</span>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 2</span>
         <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">AI-Powered Build</h3>
         <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We build using AI tools at maximum velocity — every line reviewed by senior engineers for quality and security.</p>
       </div>
@@ -175,7 +166,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         <div class="process-circle">
           <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">bug_report</span>
         </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Week 2–3</span>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 3</span>
         <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Test &amp; Review</h3>
         <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">AI-generated tests + manual QA + your team's review. Nothing ships without passing every check.</p>
       </div>
@@ -183,7 +174,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         <div class="process-circle">
           <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">rocket_launch</span>
         </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Week 3–4</span>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 4</span>
         <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Deploy &amp; Hand Over</h3>
         <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Product goes live. Full code handover with documentation and a technical walkthrough for your team.</p>
       </div>
@@ -214,8 +205,8 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
 <!-- FINAL CTA -->
 <div class="cta-band">
   <div style="position:relative; z-index:1; text-align:center;">
-    <h2 style="color:#fff; font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Ship Your Product in Weeks, Not Months?</h2>
-    <p style="color:rgba(255,255,255,0.55); font-size:1.125rem; max-width:36rem; margin:0 auto 2.5rem; line-height:1.7;">Tell us what you want to build. We'll give you a timeline and cost estimate — free, in 48 hours.</p>
+    <h2 style="color:#fff; font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Ship Your Product Faster?</h2>
+    <p style="color:rgba(255,255,255,0.55); font-size:1.125rem; max-width:36rem; margin:0 auto 2.5rem; line-height:1.7;">Tell us what you want to build. We'll give you a timeline and cost estimate, free, with no commitment.</p>
     <button onclick="openModal(this)" data-source="vibe_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Discuss Your Project</button>
     <p style="color:rgba(255,255,255,0.30); font-size:.875rem; margin-top:1.25rem;">Free estimate · 100% code ownership · No lock-in</p>
   </div>

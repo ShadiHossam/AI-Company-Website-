@@ -43,7 +43,8 @@ const ogImageURL = ogImage.startsWith('http') ? ogImage : `https://${COMPANY.dom
   <link rel="manifest" href="/site.webmanifest" />
   <title>{title}</title>
   <meta name="description" content={description} />
-  {noindex && <meta name="robots" content="noindex, nofollow" />}
+  {noindex ? <meta name="robots" content="noindex, nofollow" /> : <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />}
+  <meta name="author" content="Aegis AI" />
   <link rel="canonical" href={canonicalURL} />
   <meta property="og:site_name" content="Aegis AI" />
   <meta property="og:type" content={ogType} />
@@ -69,10 +70,14 @@ const ogImageURL = ogImage.startsWith('http') ? ogImage : `https://${COMPANY.dom
     <script type="application/ld+json" set:html={JSON.stringify(ldJson)} />
   )}
 
-  <!-- Material Symbols icon font — loaded non-blocking; icons are decorative -->
+  <!-- Material Symbols icon font — non-blocking; icons are decorative -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" /></noscript>
+  <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+  <link rel="dns-prefetch" href="https://www.clarity.ms" />
+  <link rel="dns-prefetch" href="https://cdn.simpleicons.org" />
 </head>
 <body>
 
@@ -88,25 +93,38 @@ const ogImageURL = ogImage.startsWith('http') ? ogImage : `https://${COMPANY.dom
 <!-- Announcement Banner -->
 <script>
 (function() {
+  var CACHE_KEY = 'banner_cache';
+  var CACHE_TTL = 60000;
+  function renderBanner(data) {
+    if (!data || !data.active) return;
+    var bar = document.createElement('div');
+    bar.id = 'announcement-bar';
+    bar.style.cssText = 'background:' + data.bg_color + ';color:' + data.text_color + ';text-align:center;padding:10px 1rem;font-size:0.875rem;font-weight:600;position:relative;z-index:200;';
+    var msgNode = document.createElement('span');
+    msgNode.textContent = data.message;
+    bar.appendChild(msgNode);
+    if (data.cta_text && data.cta_url) {
+      var safeHref = /^(https?:\/\/|\/)/.test(data.cta_url) ? data.cta_url : '#';
+      var link = document.createElement('a');
+      link.href = safeHref;
+      link.style.cssText = 'color:inherit;text-decoration:underline;margin-left:8px;';
+      link.textContent = data.cta_text + ' →';
+      bar.appendChild(link);
+    }
+    document.body.insertBefore(bar, document.body.firstChild);
+  }
+  try {
+    var cached = sessionStorage.getItem(CACHE_KEY);
+    if (cached) {
+      var entry = JSON.parse(cached);
+      if (Date.now() < entry.exp) { renderBanner(entry.data); return; }
+    }
+  } catch(e) {}
   fetch('/api/banner')
     .then(function(r) { return r.ok ? r.json() : null; })
     .then(function(data) {
-      if (!data || !data.active) return;
-      var bar = document.createElement('div');
-      bar.id = 'announcement-bar';
-      bar.style.cssText = 'background:' + data.bg_color + ';color:' + data.text_color + ';text-align:center;padding:10px 1rem;font-size:0.875rem;font-weight:600;position:relative;z-index:200;';
-      var msgNode = document.createElement('span');
-      msgNode.textContent = data.message;
-      bar.appendChild(msgNode);
-      if (data.cta_text && data.cta_url) {
-        var safeHref = /^(https?:\/\/|\/)/.test(data.cta_url) ? data.cta_url : '#';
-        var link = document.createElement('a');
-        link.href = safeHref;
-        link.style.cssText = 'color:inherit;text-decoration:underline;margin-left:8px;';
-        link.textContent = data.cta_text + ' →';
-        bar.appendChild(link);
-      }
-      document.body.insertBefore(bar, document.body.firstChild);
+      try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: data, exp: Date.now() + CACHE_TTL })); } catch(e) {}
+      renderBanner(data);
     })
     .catch(function() {});
 })();

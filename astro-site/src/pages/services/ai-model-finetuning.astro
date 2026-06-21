@@ -5,7 +5,7 @@ import { getSupabaseAdmin } from "../../lib/supabase";
 
 const fallbackFaqs = [
   { question: "What's the difference between fine-tuning and using a prompt?", answer: "A prompt tells a general-purpose model how to behave in a specific situation. Fine-tuning trains the model on hundreds or thousands of examples so that behavior becomes the model's default — no prompt required. The result is faster responses, lower token costs (shorter or no system prompt needed), and significantly more consistent output. Fine-tuning is worth it when you have a high-volume use case and need the model to perform a specific task reliably, at scale." },
-  { question: "Which models can you fine-tune?", answer: "We fine-tune GPT-4o mini, GPT-3.5 Turbo, and GPT-4 Turbo via the OpenAI API. For open-source options with full data ownership, we fine-tune Llama 3, Mistral, and Mixtral on your own infrastructure. For Claude-based customization, we use a combination of prompt engineering and retrieval augmentation since Anthropic does not currently offer a public fine-tuning API." },
+  { question: "Which models can you fine-tune?", answer: "We fine-tune both proprietary and open-source foundation models. Proprietary models offer convenience and low infrastructure overhead. Open-source models can be fine-tuned on your own infrastructure, keeping your data fully within your environment. We'll recommend the right option based on your use case, data sensitivity, and cost requirements." },
   { question: "How much data do I need to fine-tune a model?", answer: "It depends on the task. For most business use cases — classifying documents, generating responses in a specific format, or writing in a consistent brand tone — we can get strong results with 200–500 high-quality examples. More complex tasks benefit from more data, but quality matters far more than volume. We help you build and curate a training dataset as part of the engagement." },
   { question: "Is our data safe during the fine-tuning process?", answer: "Yes. Your training data is used solely to fine-tune your model and is not used to train any shared or public models. For organizations with strict data policies, we can fine-tune open-source models on your own cloud infrastructure so your data never leaves your environment. We discuss and document your data handling requirements before any data is shared." },
   { question: "What's included after the model is trained?", answer: "We deliver the fine-tuned model along with evaluation results showing exactly how it performs versus the base model, integration documentation for your developers, and 60-day support. For ongoing tasks, we can retrain on new data as your needs evolve — pricing for retraining is typically much lower than the initial engagement." },
@@ -27,14 +27,25 @@ try {
   }
 } catch (err) {}
 
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
 
 <BaseLayout
   title="AI Model Fine-Tuning — Train AI on Your Data, Not the Internet's | Aegis AI"
-  description="We fine-tune GPT-4o, Llama, Mistral, and other foundation models on your proprietary data — so your AI knows your business, speaks your language, and delivers consistent outputs at scale."
+  description="We fine-tune foundation models on your proprietary data so your AI knows your business, speaks your language, and delivers consistent outputs at scale."
   canonicalPath="/services/ai-model-finetuning"
-  ogImage="/assets/og-finetuning.jpg"
+  ogImage="/assets/og-services.jpg"
+  ldJson={[faqLdJson]}
 >
 
 <header class="hero-section">
@@ -124,35 +135,6 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
   </div>
 </section>
 
-<!-- MODELS WE USE -->
-<section class="section-sm" style="background:#e7eeff;" aria-label="Models we fine-tune">
-  <div class="container" style="text-align:center;">
-    <p style="color:#72787e; font-size:0.8125rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:2rem;">Models We Fine-Tune</p>
-    <div style="display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:2rem 2.5rem;">
-      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-        <img src="https://cdn.simpleicons.org/openai/00253b" alt="OpenAI" width="30" height="30" loading="lazy">
-        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">GPT-4o mini</span>
-      </div>
-      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-        <img src="https://cdn.simpleicons.org/openai/00253b" alt="OpenAI GPT-4" width="30" height="30" loading="lazy">
-        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">GPT-3.5 Turbo</span>
-      </div>
-      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-        <img src="https://cdn.simpleicons.org/meta/0082FB" alt="Meta Llama" width="30" height="30" loading="lazy">
-        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">Llama 3</span>
-      </div>
-      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-        <img src="https://cdn.simpleicons.org/mistral/FF7000" alt="Mistral AI" width="30" height="30" loading="lazy">
-        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">Mistral</span>
-      </div>
-      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-        <img src="https://cdn.simpleicons.org/mistral/FF7000" alt="Mixtral" width="30" height="30" loading="lazy">
-        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">Mixtral</span>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- PROCESS -->
 <section class="section" aria-labelledby="process-heading">
   <div class="container">
@@ -236,7 +218,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       "@type": "Service",
       "name": "AI Model Fine-Tuning",
       "url": "https://aegisai.ae/services/ai-model-finetuning",
-      "description": "We fine-tune GPT-4o, Llama, Mistral, and other foundation models on your proprietary data — delivering consistent, domain-specific AI performance at scale.",
+      "description": "We fine-tune foundation models on your proprietary data, delivering consistent, domain-specific AI performance at scale.",
       "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://aegisai.ae" },
       "areaServed": "Worldwide",
       "serviceType": "AI Model Fine-Tuning"

@@ -5,10 +5,10 @@ import { getSupabaseAdmin } from "../../lib/supabase";
 
 // Hardcoded fallback FAQ items
 const fallbackFaqs = [
-  { question: "How many people can attend one workshop?", answer: "The AI Foundations workshop fits up to 20 participants. For larger teams, we run multiple sessions. The hands-on programs (AI Power User) are capped at 12 for quality — we'd schedule additional cohorts for larger teams." },
+  { question: "How many people can attend one workshop?", answer: "The AI Foundations workshop fits up to 20 participants. For larger teams, we run multiple sessions. The hands-on programs (AI Power User) are capped at 12 for quality. We'd schedule additional cohorts for larger teams." },
   { question: "Do participants need any prior AI knowledge?", answer: "No. AI Foundations is designed for complete beginners. We run a pre-training assessment so we always start at the right level for your team. You don't need to know anything about AI." },
   { question: "Can we get materials in our preferred language?", answer: "Yes. All materials are fully customizable by language. We support English as default and can accommodate other languages upon request. We'll confirm delivery language during your onboarding call." },
-  { question: "Can training be combined with AI system development?", answer: "Yes — and this is our recommended approach. When we build you a custom AI system, team training is included in Core System and Transformation packages. This ensures adoption is high from day one." },
+  { question: "Can training be combined with AI system development?", answer: "Yes, and this is our recommended approach. When we build you a custom AI system, team training is included in Core System and Transformation packages. This ensures adoption is high from day one." },
 ];
 
 let faqItems = fallbackFaqs;
@@ -29,6 +29,16 @@ try {
   // Fallback to hardcoded content on error
 }
 
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
 
@@ -38,6 +48,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
   canonicalPath="/services/ai-training"
   arPath="/ar/services/ai-training"
   ogImage="/assets/og-ai-training.jpg"
+  ldJson={[faqLdJson]}
 >
 
 <!-- ── HERO ── -->
@@ -59,7 +70,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       <span class="gradient-text">We Make Sure They Do.</span>
     </h1>
     <p style="color: #42474e; font-size: 1.125rem; line-height: 1.75; max-width: 40rem; margin: 0 auto 2.5rem;">
-      Industry research shows that most AI implementations fail not because the technology doesn't work — but because teams don't adopt it. Our hands-on workshops fix that — tailored to your industry, your tools, and your team.
+      Industry research shows that most AI implementations fail not because the technology doesn't work, but because teams don't adopt it. Our hands-on workshops fix that, tailored to your industry and your team.
     </p>
     <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;">
       <button onclick="openModal(this)" data-source="training_hero" class="btn-primary" style="font-size: 1rem;">Request Training Quote →</button>
@@ -117,7 +128,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         <p style="color: #42474e; line-height: 1.65;">"Our managers are nervous AI will replace their jobs."</p>
       </div>
     </div>
-    <p style="color: #006875; text-align: center; font-weight: 700; font-size: 1.125rem; margin-top: 3rem;">Our workshops solve all three — hands-on, role-specific, tailored to your industry.</p>
+    <p style="color: #006875; text-align: center; font-weight: 700; font-size: 1.125rem; margin-top: 3rem;">Our workshops solve all three: hands-on, role-specific, and tailored to your industry.</p>
   </div>
 </section>
 
@@ -139,7 +150,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         <h3 style="margin-bottom: .375rem;">AI Foundations</h3>
         <p class="program-price">For all employees · up to 20 people</p>
         <p style="color: #42474e; line-height: 1.7; margin-bottom: 1.25rem;">Every employee learns what AI is, which tools help their daily work, how to write effective prompts, and how to stay safe with AI.</p>
-        <div class="check-row"><svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span style="color: #42474e; font-size: .9rem;">What AI is (and isn't) — no jargon</span></div>
+        <div class="check-row"><svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span style="color: #42474e; font-size: .9rem;">What AI is (and isn't), explained simply</span></div>
         <div class="check-row"><svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span style="color: #42474e; font-size: .9rem;">Best AI tools for your role</span></div>
         <div class="check-row"><svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span style="color: #42474e; font-size: .9rem;">Prompt writing fundamentals</span></div>
         <div class="check-row"><svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span style="color: #42474e; font-size: .9rem;">AI safety, privacy, and data compliance</span></div>
@@ -171,7 +182,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         <p style="color: #42474e; line-height: 1.7; margin-bottom: 1.25rem;">Deep-dive training for your internal AI champions — the people who will train others and maintain AI systems going forward.</p>
         <div class="check-row"><svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span style="color: #42474e; font-size: .9rem;">Advanced prompting techniques</span></div>
         <div class="check-row"><svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span style="color: #42474e; font-size: .9rem;">Building AI workflows without coding</span></div>
-        <div class="check-row"><svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span style="color: #42474e; font-size: .9rem;">Tool integration (Make.com, n8n, Zapier)</span></div>
+        <div class="check-row"><svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span style="color: #42474e; font-size: .9rem;">Automation tool integration</span></div>
         <div class="check-row"><svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span style="color: #42474e; font-size: .9rem;">Project: build a real AI workflow for your company</span></div>
         <p style="color: #72787e; font-size: .85rem; margin-top: 1rem; font-style: italic;">Outcome: Internal AI champions who can train others</p>
       </div>
@@ -267,7 +278,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       "description": "Hands-on AI training workshops for global teams. Role-specific programs tailored to your industry, tools, and team — on-site or remote.",
       "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://aegisai.ae" },
       "areaServed": "Worldwide",
-      "offers": { "@type": "Offer", "description": "AI Foundations Workshop — pricing customized to your team size and program." },
+      "offers": { "@type": "Offer", "description": "AI Foundations Workshop: pricing customized to your team size and program." },
       "serviceType": "AI Training"
     },
     {

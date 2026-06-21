@@ -4,7 +4,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getSupabaseAdmin } from "../../lib/supabase";
 
 const fallbackFaqs = [
-  { question: "What's the difference between an AI agent and a chatbot?", answer: "A chatbot responds to questions. An AI agent takes actions. Agents can browse the web, write and send emails, update your CRM, book meetings, run searches, call APIs, and chain multiple steps together — all without waiting to be told what to do next. They're autonomous problem-solvers, not just answer machines." },
+  { question: "What's the difference between an AI agent and a chatbot?", answer: "A chatbot responds to questions. An AI agent takes actions. Agents can browse the web, write and send emails, update your CRM, book meetings, run searches, call APIs, and chain multiple steps together without waiting to be told what to do next. They're autonomous problem-solvers, not just answer machines." },
   { question: "How reliable are AI agents at making decisions?", answer: "We design agents with clear guardrails, approval checkpoints for high-stakes actions, and human-in-the-loop controls where needed. Agents handle the high-volume, low-risk decisions automatically; anything requiring human judgment routes to a person for approval. Reliability increases over time as agents learn from feedback." },
   { question: "Can agents work with our existing tools?", answer: "Yes. We build agents that connect to your existing systems via API — CRM, email, calendar, databases, Slack, and more. The agent acts as a smart layer on top of your current stack, not a replacement for it." },
   { question: "Is there a risk of agents doing something wrong?", answer: "We build comprehensive logging, rollback capabilities, and action limits into every agent. Every action the agent takes is recorded and reviewable. For mission-critical workflows, we add a human approval step before irreversible actions are executed." },
@@ -28,6 +28,16 @@ try {
   // Fallback to hardcoded content on error
 }
 
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
 
@@ -36,7 +46,8 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
   description="AI that doesn't just answer — it acts. We build autonomous AI agents that reason through multi-step tasks, make decisions, and execute without constant human oversight."
   canonicalPath="/services/ai-agents"
   arPath="/ar/services/ai-agents"
-  ogImage="/assets/og-ai-agents.jpg"
+  ogImage="/assets/og-services.jpg"
+  ldJson={[faqLdJson]}
 >
 
 <header class="hero-section">
@@ -50,9 +61,9 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       <span class="material-symbols-outlined" style="font-size:18px;">smart_toy</span>
       AI Agents &amp; Agentic Systems
     </div>
-    <h1>AI That Thinks, Decides, and Acts — <span class="gradient-text">Without Waiting for Instructions.</span></h1>
+    <h1>AI That Thinks, Decides, and Acts <span class="gradient-text">Without Waiting for Instructions.</span></h1>
     <p style="color:#42474e; font-size:1.125rem; max-width:640px; margin:1.5rem auto 2.5rem; line-height:1.8;">
-      Most AI just responds. Agents take initiative. They reason through complex problems, use tools, make decisions, and complete multi-step tasks — autonomously, at scale, 24/7.
+      Most AI just responds. Agents take initiative. They reason through complex problems, use tools, make decisions, and complete multi-step tasks autonomously, at scale, 24/7.
     </p>
     <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
       <button onclick="openModal(this)" data-source="agents_hero" class="btn-primary">Build Your First Agent</button>
@@ -68,7 +79,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     <div style="position:relative; z-index:1; display:grid; grid-template-columns:repeat(3,1fr); gap:3rem; text-align:center; padding:0 2rem; max-width:800px; margin:0 auto;">
       <div>
         <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">24/7</p>
-        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">Agents run around the clock — no breaks, no off days</p>
+        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">Agents run around the clock, no breaks, no off days</p>
       </div>
       <div>
         <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">Multi-step</p>
@@ -120,7 +131,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">build_circle</span></div>
         <h3>Custom Agentic Workflows</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Multi-agent systems where specialized agents collaborate — one researches, one writes, one reviews, one publishes — coordinated by an orchestrating agent.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Multi-agent systems where specialized agents collaborate: one researches, one writes, one reviews, one publishes, all coordinated by an orchestrating agent.</p>
       </div>
     </div>
   </div>
@@ -195,7 +206,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
 <div class="cta-band">
   <div style="position:relative; z-index:1; text-align:center;">
     <h2 style="color:#fff; font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Deploy Your First AI Agent?</h2>
-    <p style="color:rgba(255,255,255,0.55); font-size:1.125rem; max-width:36rem; margin:0 auto 2.5rem; line-height:1.7;">Tell us what you want automated. We'll design an agent that handles it — and show you exactly how it works before we build.</p>
+    <p style="color:rgba(255,255,255,0.55); font-size:1.125rem; max-width:36rem; margin:0 auto 2.5rem; line-height:1.7;">Tell us what you want automated. We'll design an agent that handles it and show you exactly how it works before we build.</p>
     <button onclick="openModal(this)" data-source="agents_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
     <p style="color:rgba(255,255,255,0.30); font-size:.875rem; margin-top:1.25rem;">Free · No commitment · 100% refund guarantee</p>
   </div>

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { makeChain, makeLocals, makeRequest } from '../helpers';
 
-vi.mock('../../lib/supabase', () => ({ getSupabaseAdmin: vi.fn() }));
+vi.mock('../../lib/supabase', () => ({ getSupabaseAdmin: vi.fn(), supabaseConfigured: true }));
 
 import { getSupabaseAdmin } from '../../lib/supabase';
 import { GET as LIST, POST } from '../../pages/api/admin/blog/index';

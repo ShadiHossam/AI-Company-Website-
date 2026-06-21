@@ -50,7 +50,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   const SAFE_PATH = /^\/[\w\-/.]*$/;
   if (!SAFE_PATH.test(body.from_path)) {
-    return new Response(JSON.stringify({ error: 'from_path must be a simple relative path starting with /' }), { status: 400 });
+    return new Response(JSON.stringify({ error: 'from_path must start with /' }), { status: 400 });
   }
 
   if (!SAFE_PATH.test(body.to_path)) {

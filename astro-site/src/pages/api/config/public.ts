@@ -17,11 +17,21 @@ const PUBLIC_KEYS = [
   'integration.hubspot_portal_id',
 ];
 
+let configCache: { data: Record<string, string>; exp: number } | null = null;
+const CONFIG_TTL = 300_000; // 5 minutes — same as Cache-Control max-age
+
 export const GET: APIRoute = async () => {
+  const now = Date.now();
+  if (configCache && now < configCache.exp) {
+    return new Response(JSON.stringify(configCache.data), {
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300' },
+    });
+  }
   const supabase = getSupabaseAdmin();
   const { data } = await supabase.from('site_config').select('key, value').in('key', PUBLIC_KEYS);
   const config: Record<string, string> = {};
-  (data ?? []).forEach(r => { if (r.value) config[r.key] = r.value; });
+  (data ?? []).forEach((r: { key: string; value: string }) => { if (r.value) config[r.key] = r.value; });
+  configCache = { data: config, exp: now + CONFIG_TTL };
   return new Response(JSON.stringify(config), {
     headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300' },
   });

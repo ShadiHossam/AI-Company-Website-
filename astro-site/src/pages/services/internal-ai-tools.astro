@@ -4,9 +4,9 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getSupabaseAdmin } from "../../lib/supabase";
 
 const fallbackFaqs = [
-  { question: "What data do you train the internal AI on?", answer: "We train on whatever your team actually uses — company wikis, SOPs, policies, product docs, past projects, support tickets, Notion/Confluence pages, Google Drive files, and more. The AI becomes a true company expert, not a generic one." },
-  { question: "Is our company data safe?", answer: "Yes. Your data never leaves your control. We deploy internal AI tools in your own cloud environment (AWS, Azure, GCP) or on-premise. Data is not used to train any external AI models. We configure access controls so employees only see what they're authorized to see." },
-  { question: "Can employees without technical skills use these tools?", answer: "Yes — that's the point. Internal AI tools are designed for non-technical staff. Employees ask questions in plain language and get direct answers. No training required beyond a short onboarding session." },
+  { question: "What data do you train the internal AI on?", answer: "We train on whatever your team actually uses: company wikis, SOPs, policies, product docs, past projects, support tickets, internal documents, and more. The AI becomes a true company expert, not a generic one." },
+  { question: "Is our company data safe?", answer: "Yes. Your data never leaves your control. We deploy internal AI tools in your own cloud environment or on-premise. Data is not used to train any external AI models. We configure access controls so employees only see what they're authorized to see." },
+  { question: "Can employees without technical skills use these tools?", answer: "Yes, that's the point. Internal AI tools are designed for non-technical staff. Employees ask questions in plain language and get direct answers. No training required beyond a short onboarding session." },
   { question: "How do you keep the AI up to date when our docs change?", answer: "We set up automated sync pipelines that continuously update the AI with new or changed documents. The AI's knowledge stays current without any manual effort from your team." },
 ];
 
@@ -28,6 +28,16 @@ try {
   // Fallback to hardcoded content on error
 }
 
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
 
@@ -36,7 +46,8 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
   description="Give your team an AI that actually knows your business. We build internal AI assistants, knowledge bases, and custom dashboards trained on your own data and workflows."
   canonicalPath="/services/internal-ai-tools"
   arPath="/ar/services/internal-ai-tools"
-  ogImage="/assets/og-internal-ai-tools.jpg"
+  ogImage="/assets/og-services.jpg"
+  ldJson={[faqLdJson]}
 >
 
 <header class="hero-section">
@@ -52,7 +63,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     </div>
     <h1>Give Your Team an AI <span class="gradient-text">That Actually Knows Your Business.</span></h1>
     <p style="color:#42474e; font-size:1.125rem; max-width:620px; margin:1.5rem auto 2.5rem; line-height:1.8;">
-      ChatGPT doesn't know your policies, your products, or your processes. We build AI tools trained on your company's own data — so your team gets accurate, context-aware answers instantly.
+      Generic AI tools don't know your policies, your products, or your processes. We build AI tools trained on your company's own data, so your team gets accurate, context-aware answers instantly.
     </p>
     <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
       <button onclick="openModal(this)" data-source="internal_hero" class="btn-primary">Book a Free Discovery Call</button>
@@ -73,7 +84,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         <div style="width:52px; height:52px; border-radius:50%; background:rgba(186,26,26,0.08); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem;">
           <svg viewBox="0 0 24 24" fill="none" class="w-6 h-6" stroke="#ba1a1a" stroke-width="2"><path d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
-        <p style="color:#42474e; line-height:1.65;">"ChatGPT gives us generic answers — it doesn't know how we actually do things here."</p>
+        <p style="color:#42474e; line-height:1.65;">"Generic AI gives us generic answers. It doesn't know how we actually do things here."</p>
       </div>
       <div class="card text-center">
         <div style="width:52px; height:52px; border-radius:50%; background:rgba(245,158,11,0.10); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem;">
@@ -113,7 +124,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">monitoring</span></div>
         <h3>Custom Analytics Dashboards</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Real-time visibility into your business metrics — ask your dashboard questions in plain English and get charts, summaries, and forecasts.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Real-time visibility into your business metrics. Ask your dashboard questions in plain English and get charts, summaries, and forecasts.</p>
       </div>
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">search</span></div>
@@ -147,15 +158,15 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         <div class="process-circle">
           <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">folder_open</span>
         </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Week 1</span>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 1</span>
         <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Data Audit</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We inventory your documents, wikis, and data sources — then identify what to include and how to structure it.</p>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We inventory your documents, wikis, and data sources, then identify what to include and how to structure it.</p>
       </div>
       <div class="process-step">
         <div class="process-circle">
           <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">settings</span>
         </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Weeks 2–3</span>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 2</span>
         <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Build &amp; Configure</h3>
         <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We ingest your data, configure the AI, set access permissions, and build the interface your team will actually use.</p>
       </div>
@@ -163,7 +174,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         <div class="process-circle">
           <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">fact_check</span>
         </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Week 4</span>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 3</span>
         <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Test &amp; Tune</h3>
         <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Your team tests real questions. We tune the responses, fix gaps, and ensure accuracy before launch.</p>
       </div>
@@ -171,7 +182,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         <div class="process-circle">
           <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">rocket_launch</span>
         </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Week 5+</span>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 4</span>
         <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Launch &amp; Update</h3>
         <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Tool goes live with continuous document sync. 90-day support included to expand and refine.</p>
       </div>
@@ -203,7 +214,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
 <div class="cta-band">
   <div style="position:relative; z-index:1; text-align:center;">
     <h2 style="color:#fff; font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Give Your Team AI That Actually Knows Your Business?</h2>
-    <p style="color:rgba(255,255,255,0.55); font-size:1.125rem; max-width:36rem; margin:0 auto 2.5rem; line-height:1.7;">Book a free discovery call. We'll assess your documents, identify the highest-value use cases, and show you what's possible in 4–6 weeks.</p>
+    <p style="color:rgba(255,255,255,0.55); font-size:1.125rem; max-width:36rem; margin:0 auto 2.5rem; line-height:1.7;">Book a free discovery call. We'll assess your documents, identify the highest-value use cases, and show you exactly what we can build.</p>
     <button onclick="openModal(this)" data-source="internal_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
     <p style="color:rgba(255,255,255,0.30); font-size:.875rem; margin-top:1.25rem;">Free · No commitment · Your data stays private</p>
   </div>
@@ -217,7 +228,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       "@type": "Service",
       "name": "Internal AI Tools",
       "url": "https://aegisai.ae/services/internal-ai-tools",
-      "description": "Custom internal AI assistants, knowledge bases, and dashboards trained on your own company data — deployed in your environment with your access controls.",
+      "description": "Custom internal AI assistants, knowledge bases, and dashboards trained on your own company data, deployed in your environment with your access controls.",
       "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://aegisai.ae" },
       "areaServed": "Worldwide",
       "serviceType": "Internal AI Development"

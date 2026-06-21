@@ -5,11 +5,11 @@ import { getSupabaseAdmin } from "../../lib/supabase";
 
 // Hardcoded fallback FAQ items
 const fallbackFaqs = [
-  { question: "How long does custom AI development take?", answer: "Most projects take 8–12 weeks from discovery to launch. Simple automations (one workflow) can go live in 4–6 weeks. We give you a precise timeline after the discovery session." },
-  { question: "Do you work with our existing systems?", answer: "Yes. We integrate with most CRMs, ERPs, WhatsApp Business, HubSpot, Salesforce, Google Workspace, Microsoft 365, and hundreds of other apps via API or automation platforms (Make.com, n8n, Zapier)." },
-  { question: "Where is our data hosted?", answer: "We offer flexible hosting options — cloud (AWS, Azure, GCP) or on-premise. For clients with data residency requirements, we configure deployments to meet your regional compliance needs. All options are discussed during discovery." },
-  { question: "What if we need changes after launch?", answer: "All packages include 90-day post-launch support — bug fixes, small adjustments, and optimization. Beyond that, we offer ongoing support retainers — contact us for details." },
-  { question: "What is the 100% refund guarantee?", answer: "If we deliver your custom AI system and you're not satisfied with the results, we refund 100% of your investment. No fine print, no conditions. It's our promise — and it's why we only take on projects we know we can deliver well." },
+  { question: "How long does custom AI development take?", answer: "Each project is scoped individually. We give you a precise timeline after the discovery session — based on your specific workflows, data, and integration requirements." },
+  { question: "Do you work with our existing systems?", answer: "Yes. We integrate with most CRMs, ERPs, WhatsApp Business, and hundreds of other business apps via API. You keep the tools your team already knows; we add an AI layer on top." },
+  { question: "Where is our data hosted?", answer: "We offer flexible hosting: cloud or on-premise. For clients with data residency requirements, we configure deployments to meet your regional compliance needs. All options are discussed during discovery." },
+  { question: "What if we need changes after launch?", answer: "All packages include 90-day post-launch support: bug fixes, small adjustments, and optimization. Beyond that, we offer ongoing support retainers. Contact us for details." },
+  { question: "What is the 100% refund guarantee?", answer: "If we deliver your custom AI system and you're not satisfied with the results, we refund 100% of your investment. No fine print, no conditions. It's our promise, and it's why we only take on projects we know we can deliver well." },
 ];
 
 let faqItems = fallbackFaqs;
@@ -30,15 +30,26 @@ try {
   // Fallback to hardcoded content on error
 }
 
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
 
 <BaseLayout
   title="Custom AI Development — Chatbots, Automation & AI Systems | Aegis AI"
-  description="We build custom AI systems around your exact workflows — chatbots, automation pipelines, predictive dashboards, and AI agents. 8–12 week delivery. 100% satisfaction guarantee."
+  description="We build custom AI systems around your exact workflows: chatbots, automation pipelines, predictive dashboards, and AI agents. 100% satisfaction guarantee."
   canonicalPath="/services/custom-ai-development"
   arPath="/ar/services/custom-ai-development"
   ogImage="/assets/og-custom-ai.jpg"
+  ldJson={[faqLdJson]}
 >
 
 <header class="hero-section">
@@ -52,9 +63,9 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       <span class="material-symbols-outlined" style="font-size:18px;">code</span>
       Custom AI Systems
     </div>
-    <h1>AI Built Around Your Workflows — <span class="gradient-text">Not the Other Way Around</span></h1>
+    <h1>AI Built Around Your Workflows, <span class="gradient-text">Not the Other Way Around</span></h1>
     <p style="color:#42474e; font-size:1.125rem; max-width:600px; margin:1.5rem auto 2.5rem; line-height:1.8;">
-      Off-the-shelf AI doesn't fit your business. We build AI systems that do exactly what your team needs — and integrate seamlessly with the tools you already use.
+      Off-the-shelf AI doesn't fit your business. We build AI systems that do exactly what your team needs and integrate with the tools you already use.
     </p>
     <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
       <button onclick="openModal(this)" data-source="custom_ai_hero" class="btn-primary">Book a Free Discovery Call</button>
@@ -81,12 +92,12 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">smart_toy</span></div>
         <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Internal AI Assistants</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Trained on your company data, documents, and SOPs — answers your team's questions instantly and accurately.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Trained on your company data, documents, and SOPs. Answers your team's questions instantly and accurately.</p>
       </div>
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">support_agent</span></div>
         <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Customer-Facing Chatbots</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Handles inquiries, bookings, and support 24/7 via your website, WhatsApp, Instagram, and other channels — in any language.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Handles inquiries, bookings, and support 24/7 via your website, WhatsApp, Instagram, and other channels, in any language.</p>
       </div>
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">bolt</span></div>
@@ -101,57 +112,12 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">integration_instructions</span></div>
         <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">CRM &amp; ERP AI Layers</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Add AI intelligence to your existing HubSpot, Salesforce, or custom systems — no replacement needed, just enhancement.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Add AI intelligence to your existing CRM or custom systems without replacing them. Your team keeps working the same way; the system gets smarter.</p>
       </div>
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">description</span></div>
         <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Document Processing AI</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Contracts, invoices, and reports processed automatically — extracts, classifies, and routes data in seconds.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- TECH STACK -->
-<section class="section-sm" style="background:#e7eeff;" aria-label="Technology partners">
-  <div class="container" style="text-align:center;">
-    <p style="color:#72787e; font-size:0.8125rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:2rem;">Technologies We Use</p>
-    <div style="display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:2rem 2.5rem;">
-      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-        <img src="https://cdn.simpleicons.org/openai/00253b" alt="OpenAI" width="30" height="30" loading="lazy">
-        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">OpenAI GPT-4o</span>
-      </div>
-      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-        <img src="https://cdn.simpleicons.org/anthropic/CC785C" alt="Claude AI" width="30" height="30" loading="lazy">
-        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">Claude AI</span>
-      </div>
-      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-        <img src="https://cdn.simpleicons.org/microsoftazure/0078D4" alt="Microsoft Azure AI" width="30" height="30" loading="lazy">
-        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">Microsoft Azure AI</span>
-      </div>
-      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-        <img src="https://cdn.simpleicons.org/googlegemini/8E75B2" alt="Google Gemini" width="30" height="30" loading="lazy">
-        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">Google Gemini</span>
-      </div>
-      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-        <img src="https://cdn.simpleicons.org/langchain/1C3C3C" alt="LangChain" width="30" height="30" loading="lazy">
-        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">LangChain</span>
-      </div>
-      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-        <img src="https://cdn.simpleicons.org/make/6D00CC" alt="Make.com" width="30" height="30" loading="lazy">
-        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">Make.com</span>
-      </div>
-      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-        <img src="https://cdn.simpleicons.org/n8n/EA4B71" alt="n8n" width="30" height="30" loading="lazy">
-        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">n8n</span>
-      </div>
-      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-        <img src="https://cdn.simpleicons.org/zapier/FF4A00" alt="Zapier" width="30" height="30" loading="lazy">
-        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">Zapier</span>
-      </div>
-      <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-        <img src="https://cdn.simpleicons.org/python/3776AB" alt="Python" width="30" height="30" loading="lazy">
-        <span style="color:#00253b; font-weight:600; font-size:0.8125rem;">Python / FastAPI</span>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Contracts, invoices, and reports processed automatically. Extracts, classifies, and routes data in seconds.</p>
       </div>
     </div>
   </div>
@@ -162,7 +128,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
   <div class="container">
     <div class="section-header">
       <div class="section-eyebrow">How It Works</div>
-      <h2 id="process-heading">From Discovery to Launch in 8–12 Weeks</h2>
+      <h2 id="process-heading">From Discovery to Launch</h2>
     </div>
     <div class="process-grid">
       <div class="process-connector"></div>
@@ -170,7 +136,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         <div class="process-circle">
           <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">search</span>
         </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Week 1–2</span>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 1</span>
         <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Discovery</h3>
         <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We map your workflows and identify where AI creates the most value.</p>
       </div>
@@ -178,15 +144,15 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         <div class="process-circle">
           <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">edit</span>
         </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Week 3–5</span>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 2</span>
         <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Design</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Architecture planning, data requirements, and system design — you approve before we build.</p>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Architecture planning, data requirements, and system design. You approve before we build.</p>
       </div>
       <div class="process-step">
         <div class="process-circle">
           <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">code</span>
         </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Week 6–9</span>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 3</span>
         <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Build &amp; Test</h3>
         <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Development, integration, QA testing, and thorough system checks before go-live.</p>
       </div>
@@ -194,7 +160,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         <div class="process-circle">
           <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">rocket_launch</span>
         </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Week 10+</span>
+        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 4</span>
         <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Launch &amp; Support</h3>
         <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">System goes live. 90-day support included. Team training included in most packages.</p>
       </div>
@@ -265,12 +231,12 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       "@type": "Service",
       "name": "Custom AI Development",
       "url": "https://aegisai.ae/services/custom-ai-development",
-      "description": "We build custom AI systems around your exact workflows — chatbots, automation pipelines, predictive dashboards, and CRM/ERP integrations.",
+      "description": "We build custom AI systems around your exact workflows: chatbots, automation pipelines, predictive dashboards, and CRM/ERP integrations.",
       "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://aegisai.ae" },
       "areaServed": "Worldwide",
       "offers": { "@type": "Offer", "description": "Custom AI development — pricing tailored to your project scope. Book a free discovery call for a quote." },
       "serviceType": "AI Development",
-      "termsOfService": "100% satisfaction guarantee — full refund if not happy"
+      "termsOfService": "100% satisfaction guarantee. Full refund if not happy."
     },
     {
       "@type": "BreadcrumbList",

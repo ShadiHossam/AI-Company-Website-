@@ -6,6 +6,11 @@ export default defineConfig({
   output: 'server',
   adapter: vercel(),
   trailingSlash: 'never',
+  compressHTML: true,
+  prefetch: {
+    prefetchAll: true,
+    defaultStrategy: 'hover',
+  },
   integrations: [],
   redirects: {
     '/pages/about':                             '/about',

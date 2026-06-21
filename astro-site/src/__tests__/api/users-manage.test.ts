@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { makeLocals, makeRequest } from '../helpers';
+import { makeChain, makeLocals, makeRequest } from '../helpers';
 
 vi.mock('../../lib/supabase', () => ({ getSupabaseAdmin: vi.fn() }));
 
@@ -9,6 +9,7 @@ import { PATCH as ROLE_PATCH } from '../../pages/api/admin/users/role';
 
 function makeAdminSupabase(deleteResult = { error: null }, updateResult = { data: {}, error: null }) {
   const supabase = {
+    from: vi.fn().mockReturnValue(makeChain({ data: { key: 'admin.role.editor' }, error: null })),
     auth: {
       admin: {
         deleteUser: vi.fn().mockResolvedValue(deleteResult),

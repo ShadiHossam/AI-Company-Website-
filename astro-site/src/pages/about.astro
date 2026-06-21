@@ -9,13 +9,13 @@ const fallbackTeam = [
   {
     name: "Faris Al-Hashemi",
     title: "Founder & CEO",
-    bio: "Faris spent 12 years watching AI projects fail across multiple industries and markets — usually because the system didn't fit the business, or the team wasn't trained to use it. He started Aegis AI to fix that.",
+    bio: "Faris spent 12 years watching AI projects fail across multiple industries and markets. Usually because the system didn't fit the business, or the team wasn't trained to use it. He started Aegis AI to fix that.",
     image_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80&auto=format&fit=crop&crop=face",
   },
   {
     name: "Dr. Elena Rostova",
     title: "Head of Engineering",
-    bio: "Elena has a PhD in Machine Learning and leads our engineering team. She's the reason our AI systems work in production, not just in demos — rigorous about testing before anything goes live.",
+    bio: "Elena has a PhD in Machine Learning and leads our engineering team. She's the reason our AI systems work in production, not just in demos. Rigorous about testing before anything goes live.",
     image_url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80&auto=format&fit=crop&crop=face",
   },
   {
@@ -47,31 +47,41 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
 const pc = await loadPageContent('about');
 const g = (key: string, fallback: string) => getVal(pc, key, fallback);
 
-const aboutSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'AboutPage',
-  name: 'About Aegis AI',
-  url: 'https://aegisai.ae/about',
-  description: 'Aegis AI helps businesses of every size build and adopt AI — with custom development and hands-on team training.',
-  mainEntity: {
-    '@type': 'Organization',
-    name: 'Aegis AI',
-    url: 'https://aegisai.ae',
-    employee: teamMembers.map(m => ({
-      '@type': 'Person',
-      name: m.name,
-      jobTitle: m.title,
-      description: m.bio,
-      ...(m.image_url ? { image: m.image_url } : {}),
-      worksFor: { '@type': 'Organization', name: 'Aegis AI' },
-    })),
+const aboutSchema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    name: 'About Aegis AI',
+    url: 'https://aegisai.ae/about',
+    description: 'Aegis AI helps businesses of every size build and adopt AI, with custom development and hands-on team training.',
+    mainEntity: {
+      '@type': 'Organization',
+      name: 'Aegis AI',
+      url: 'https://aegisai.ae',
+      employee: teamMembers.map(m => ({
+        '@type': 'Person',
+        name: m.name,
+        jobTitle: m.title,
+        description: m.bio,
+        ...(m.image_url ? { image: m.image_url } : {}),
+        worksFor: { '@type': 'Organization', name: 'Aegis AI' },
+      })),
+    },
   },
-};
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://aegisai.ae/' },
+      { '@type': 'ListItem', position: 2, name: 'About', item: 'https://aegisai.ae/about' },
+    ],
+  },
+];
 ---
 
 <BaseLayout
-  title="About Aegis AI — AI That Works for Real Businesses"
-  description="Aegis AI builds custom AI solutions and trains teams to use them. We work with businesses of every size — from SMEs to growing enterprises — across industries and markets."
+  title="About Aegis AI: AI That Works for Real Businesses"
+  description="Aegis AI builds custom AI solutions and trains teams to use them. We work with businesses of every size, from SMEs to growing enterprises, across industries and markets."
   canonicalPath="/about"
   arPath="/ar/about"
   ogImage="/assets/og-about.jpg"
@@ -91,14 +101,14 @@ const aboutSchema = {
       {g('hero_h1', 'Most AI projects fail. We built a company to fix that.')}
     </h1>
     <p style="color:#42474e; font-size:1.125rem; max-width:620px; margin:1.5rem auto 0;">
-      {g('hero_subtext', 'Not a generic platform. Not an enterprise vendor. A real partner that builds AI around how your business actually works — and trains your team to use it from day one.')}
+      {g('hero_subtext', 'Not a generic platform. Not an enterprise vendor. A real partner that builds AI around how your business actually works, and trains your team to use it from day one.')}
     </p>
   </div>
 </header>
 
 <!-- HERO IMAGE -->
 <div style="position:relative; overflow:hidden; height:280px;">
-  <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1400&q=80&auto=format&fit=crop" alt="Global city skyline — Aegis AI works with businesses across markets worldwide" loading="eager" fetchpriority="high" width="1400" height="280" style="width:100%;height:100%;object-fit:cover;object-position:center 60%;" />
+  <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1400&q=80&auto=format&fit=crop" alt="Global city skyline representing Aegis AI work with businesses across markets worldwide" loading="eager" fetchpriority="high" width="1400" height="280" style="width:100%;height:100%;object-fit:cover;object-position:center 60%;" />
   <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(249,249,255,0.50) 0%,rgba(249,249,255,0.05) 100%);"></div>
 </div>
 
@@ -108,11 +118,11 @@ const aboutSchema = {
     <div class="about-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px; max-width:760px; margin:0 auto; text-align:center;">
       <div>
         <p class="stat-number">70%</p>
-        <p style="color:#42474e; font-size:0.875rem; margin:0; line-height:1.6;">of AI implementations globally fail to reach production — not because of bad technology, but because teams weren't ready</p>
+        <p style="color:#42474e; font-size:0.875rem; margin:0; line-height:1.6;">of AI implementations globally fail to reach production, not because of bad technology, but because teams weren't ready</p>
       </div>
       <div>
         <p class="stat-number">$4.4T</p>
-        <p style="color:#42474e; font-size:0.875rem; margin:0; line-height:1.6;">estimated annual value AI could add to the global economy — most of it still unclaimed by small and mid-size businesses</p>
+        <p style="color:#42474e; font-size:0.875rem; margin:0; line-height:1.6;">estimated annual value AI could add to the global economy, most of it still unclaimed by small and mid-size businesses</p>
       </div>
       <div>
         <p class="stat-number">3–5×</p>
@@ -134,12 +144,12 @@ const aboutSchema = {
         <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(0,227,253,0.06);"></div>
         <p style="color:#00e3fd; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.12em; font-weight:700; margin-bottom:1rem;">Mission</p>
         <p style="color:#fff; font-size:1.125rem; font-weight:700; line-height:1.6; margin-bottom:1rem;">Make AI practical and profitable for businesses of every size.</p>
-        <p style="color:rgba(255,255,255,0.60); font-size:0.9375rem; line-height:1.7; margin:0;">Not just the ones with enterprise budgets and internal data science teams. Every business deserves access to AI that actually works — built around their workflows, their people, and their goals.</p>
+        <p style="color:rgba(255,255,255,0.60); font-size:0.9375rem; line-height:1.7; margin:0;">Not just the ones with enterprise budgets and internal data science teams. Every business deserves access to AI that actually works, built around their workflows, their people, and their goals.</p>
       </div>
       <div style="background:#f0f3ff; border:1px solid rgba(0,37,59,0.08); border-radius:20px; padding:2.25rem; position:relative; overflow:hidden;">
         <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(0,227,253,0.08);"></div>
         <p style="color:#006875; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.12em; font-weight:700; margin-bottom:1rem;">Vision</p>
-        <p style="color:#00253b; font-size:1.125rem; font-weight:700; line-height:1.6; margin-bottom:1rem;">A world where any business owner can compete with the biggest players — using AI.</p>
+        <p style="color:#00253b; font-size:1.125rem; font-weight:700; line-height:1.6; margin-bottom:1rem;">A world where any business owner can compete with the biggest players, using AI.</p>
         <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin:0;">Anywhere in the world. Any industry. Without needing a technical co-founder or an in-house engineering team to make it happen.</p>
       </div>
     </div>
@@ -153,9 +163,9 @@ const aboutSchema = {
       <div>
         <div class="section-eyebrow" style="text-align:left; margin-bottom:1rem;">Our Story</div>
         <h2 id="story-heading" style="text-align:left; font-size:2rem; margin-bottom:1.25rem;">Built After Watching AI Projects Fail</h2>
-        <p style="color:#42474e; line-height:1.8; margin-bottom:1rem;">We founded Aegis AI after watching dozens of promising AI projects fail — not because the technology was wrong, but because the people using it weren't ready, and the systems were built for someone else's business.</p>
-        <p style="color:#42474e; line-height:1.8; margin-bottom:1rem;">We saw enterprise AI vendors charging millions to large organisations while small and mid-size businesses across industries were left out entirely — still running on spreadsheets and gut feel in 2025.</p>
-        <p style="color:#42474e; line-height:1.8;">We decided to do it differently. We build AI that's custom to your workflows, and we train your team to actually use it. That's our promise — backed by a full refund if we don't deliver.</p>
+        <p style="color:#42474e; line-height:1.8; margin-bottom:1rem;">We founded Aegis AI after watching dozens of promising AI projects fail, not because the technology was wrong, but because the people using it weren't ready, and the systems were built for someone else's business.</p>
+        <p style="color:#42474e; line-height:1.8; margin-bottom:1rem;">We saw enterprise AI vendors charging millions to large organisations while small and mid-size businesses across industries were left out entirely, still running on spreadsheets and gut feel in 2025.</p>
+        <p style="color:#42474e; line-height:1.8;">We decided to do it differently. We build AI that's custom to your workflows, and we train your team to actually use it. That's our promise, backed by a full refund if we don't deliver.</p>
       </div>
       <div>
         <div style="background:#f0f3ff; border:1px solid rgba(0,37,59,0.08); border-radius:20px; padding:2rem;">
@@ -178,13 +188,13 @@ const aboutSchema = {
             <div class="timeline-dot">03</div>
             <div>
               <p style="font-weight:700; color:#00253b; margin-bottom:0.375rem;">Multilingual from Day One</p>
-              <p style="color:#42474e; font-size:0.875rem; line-height:1.6; margin:0;">We deliver in the language your team works in. Training materials, support, and documentation — adapted to your workforce from the start.</p>
+              <p style="color:#42474e; font-size:0.875rem; line-height:1.6; margin:0;">We deliver in the language your team works in. Training materials, support, and documentation, adapted to your workforce from the start.</p>
             </div>
           </div>
           <div class="timeline-item" style="margin-bottom:0;">
             <div class="timeline-dot">04</div>
             <div>
-              <p style="font-weight:700; color:#00253b; margin-bottom:0.375rem;">A Full Refund Guarantee — No Fine Print</p>
+              <p style="font-weight:700; color:#00253b; margin-bottom:0.375rem;">A Full Refund Guarantee: No Fine Print</p>
               <p style="color:#42474e; font-size:0.875rem; line-height:1.6; margin:0;">If you're not satisfied with what we build, we refund 100% of your investment. Period.</p>
             </div>
           </div>
@@ -202,9 +212,9 @@ const aboutSchema = {
       <h2 id="owner-heading" style="color:#fff; font-size:clamp(1.375rem,2.5vw,1.75rem); font-weight:800; margin-bottom:0;">If you're running a business right now, you already feel it.</h2>
     </div>
     <div style="background:rgba(255,255,255,0.05); border:1px solid rgba(0,227,253,0.15); border-radius:20px; padding:2rem 2.5rem;">
-      <p style="color:rgba(255,255,255,0.80); font-size:0.9375rem; line-height:1.8; margin-bottom:1rem;">Decisions that used to take a day now need to happen in an hour. Your customers expect faster replies, faster delivery, faster everything. Your margins are tighter than they were three years ago. And somewhere in your industry, a competitor just started using AI — and they're getting faster without hiring more people.</p>
+      <p style="color:rgba(255,255,255,0.80); font-size:0.9375rem; line-height:1.8; margin-bottom:1rem;">Decisions that used to take a day now need to happen in an hour. Your customers expect faster replies, faster delivery, faster everything. Your margins are tighter than they were three years ago. And somewhere in your industry, a competitor just started using AI, and they're getting faster without hiring more people.</p>
       <p style="color:rgba(255,255,255,0.80); font-size:0.9375rem; line-height:1.8; margin-bottom:1rem;">That's not a technology problem. That's a business problem. And it's solvable.</p>
-      <p style="color:rgba(255,255,255,0.80); font-size:0.9375rem; line-height:1.8; margin-bottom:1.5rem;">We work with business owners who want to grow their company — not get a PhD in machine learning. We handle the technical side. You stay focused on the business. The result is AI that actually moves the needle: more leads handled, less time wasted, better decisions made with the data you already have.</p>
+      <p style="color:rgba(255,255,255,0.80); font-size:0.9375rem; line-height:1.8; margin-bottom:1.5rem;">We work with business owners who want to grow their company, not get a PhD in machine learning. We handle the technical side. You stay focused on the business. The result is AI that actually moves the needle: more leads handled, less time wasted, better decisions made with the data you already have.</p>
       <p style="color:#00e3fd; font-size:0.9375rem; font-weight:700; margin:0;">That's what we build. That's who we build it for.</p>
     </div>
     <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:2rem;" class="owner-outcomes-grid">
@@ -244,12 +254,12 @@ const aboutSchema = {
       <div class="value-card">
         <div class="value-icon"><span class="material-symbols-outlined">trending_up</span></div>
         <h3 style="font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem;">Results Before Revenue</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin:0;">We won't sell you AI you don't need. If it doesn't make business sense for you, we'll tell you — even if it costs us a sale.</p>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin:0;">We won't sell you AI you don't need. If it doesn't make business sense for you, we'll tell you, even if it costs us a sale.</p>
       </div>
       <div class="value-card">
         <div class="value-icon"><span class="material-symbols-outlined">home</span></div>
         <h3 style="font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem;">Built for Your Market</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin:0;">We adapt to your local context — language, regulations, workforce, and business norms. Our solutions are shaped around how your market actually works.</p>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin:0;">We adapt to your local context: language, regulations, workforce, and business norms. Our solutions are shaped around how your market actually works.</p>
       </div>
       <div class="value-card">
         <div class="value-icon"><span class="material-symbols-outlined">group</span></div>

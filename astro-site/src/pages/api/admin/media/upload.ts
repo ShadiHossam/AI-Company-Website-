@@ -58,22 +58,14 @@ export const POST: APIRoute = async ({ locals, request }) => {
   const timestamp = Date.now();
   const filename = `${timestamp}-${safeName}`;
 
-  const arrayBuffer = await file.arrayBuffer();
-
-  // Validate file type by magic bytes (not client-controlled MIME type)
-  const bytes = new Uint8Array(arrayBuffer.slice(0, 12));
-  const isJpeg = bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF;
-  const isPng = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47;
-  const isGif = bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38;
-  const isWebp = bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46
-    && bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;
-  const isAvif = bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70;
-  if (!isJpeg && !isPng && !isGif && !isWebp && !isAvif) {
-    return new Response(JSON.stringify({ error: 'Only image files (JPEG, PNG, GIF, WebP, AVIF) are allowed' }), {
+  if (!file.type.startsWith('image/')) {
+    return new Response(JSON.stringify({ error: 'Only image files are allowed' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
     });
   }
+
+  const arrayBuffer = await file.arrayBuffer();
 
   const supabase = getSupabaseAdmin();
 
@@ -87,11 +79,15 @@ export const POST: APIRoute = async ({ locals, request }) => {
 
   // Auto-create the bucket on first use if it doesn't exist yet
   if (uploadError && uploadError.message.toLowerCase().includes('bucket not found')) {
-    await supabase.storage.createBucket('media', { public: true });
-    const retry = await supabase.storage
-      .from('media')
-      .upload(filename, arrayBuffer, { contentType: file.type, upsert: false });
-    uploadError = retry.error;
+    try {
+      await supabase.storage.createBucket('media', { public: true });
+      const retry = await supabase.storage
+        .from('media')
+        .upload(filename, arrayBuffer, { contentType: file.type, upsert: false });
+      uploadError = retry.error;
+    } catch {
+      // bucket creation failed, keep original upload error
+    }
   }
 
   if (uploadError) {
@@ -122,7 +118,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
   if (dbError) {
     console.error('[media/upload] db error:', dbError.message);
     await supabase.storage.from('media').remove([filename]);
-    return new Response(JSON.stringify({ error: 'Failed to save file record' }), {
+    return new Response(JSON.stringify({ error: 'DB insert failed' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
