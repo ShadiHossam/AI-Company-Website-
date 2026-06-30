@@ -1,0 +1,257 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+
+const { count: unreadNotifs } = await supabase
+  .from('notifications')
+  .select('*', { count: 'exact', head: true })
+  .eq('read', false);
+
+const { data: categories } = await supabase
+  .from('blog_categories')
+  .select('*')
+  .order('sort_order', { ascending: true })
+  .order('name', { ascending: true });
+
+// Count posts per category
+const { data: postCounts } = await supabase
+  .from('blog_posts')
+  .select('category');
+
+const countMap: Record<string, number> = {};
+for (const p of postCounts ?? []) {
+  if (p.category) countMap[p.category] = (countMap[p.category] ?? 0) + 1;
+}
+---
+
+<AdminLayout title="Blog Categories" user={user} unreadCount={unreadNotifs ?? 0}>
+
+  <div class="flex items-center gap-3 mb-6">
+    <a href="/admin/blog" class="btn btn-ghost btn-sm">← Blog</a>
+    <div>
+      <h1 style="font-size:1.375rem; font-weight:800; color:var(--text-primary);">Categories</h1>
+      <p class="text-muted text-sm" style="margin-top:2px;">{categories?.length ?? 0} categor{categories?.length !== 1 ? 'ies' : 'y'}</p>
+    </div>
+    <div style="margin-left:auto;">
+      <a href="/admin/blog/tags" class="btn btn-ghost btn-sm">Manage Tags →</a>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 340px; gap:1.5rem; align-items:start;">
+
+    <!-- Category list -->
+    <div class="card">
+      <div style="padding:1.25rem 1.5rem; border-bottom:1px solid var(--border);">
+        <span style="font-weight:700; font-size:0.95rem;">All Categories</span>
+      </div>
+      {!categories || categories.length === 0 ? (
+        <div style="padding:3rem; text-align:center; color:var(--text-muted); font-size:0.875rem;">
+          No categories yet. Create the first one.
+        </div>
+      ) : (
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Slug</th>
+                <th style="text-align:center;">Posts</th>
+                <th>Order</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="categories-body">
+              {categories.map(cat => (
+                <tr id={`cat-${cat.id}`}>
+                  <td>
+                    <div style="font-weight:600; font-size:0.875rem;">{cat.name}</div>
+                    {cat.description && <div class="text-xs text-muted">{cat.description}</div>}
+                  </td>
+                  <td><code style="font-size:0.75rem; color:var(--text-muted);">{cat.slug}</code></td>
+                  <td style="text-align:center;">
+                    <span style="font-size:0.875rem; color:var(--text-muted);">{countMap[cat.name] ?? 0}</span>
+                  </td>
+                  <td><span style="font-size:0.875rem; color:var(--text-muted);">{cat.sort_order}</span></td>
+                  <td>
+                    <div class="flex gap-2">
+                      <button
+                        class="btn btn-ghost btn-sm edit-cat-btn"
+                        data-id={cat.id}
+                        data-name={cat.name}
+                        data-slug={cat.slug}
+                        data-description={cat.description ?? ''}
+                        data-order={cat.sort_order}
+                      >Edit</button>
+                      <button
+                        class="btn btn-ghost btn-sm delete-cat-btn"
+                        data-id={cat.id}
+                        data-name={cat.name}
+                        style="color:#f87171;"
+                      >Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+
+    <!-- Create / Edit form -->
+    <div class="card" style="position:sticky; top:1.5rem;">
+      <div style="padding:1.25rem 1.5rem; border-bottom:1px solid var(--border);">
+        <span id="form-title" style="font-weight:700; font-size:0.95rem;">New Category</span>
+      </div>
+      <div style="padding:1.5rem;">
+        <form id="cat-form">
+          <input type="hidden" id="edit-id" value="" />
+
+          <div class="form-group mb-4">
+            <label class="form-label">Name <span style="color:var(--danger);">*</span></label>
+            <input id="cat-name" type="text" class="form-input" placeholder="AI Automation" required />
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label">Slug</label>
+            <input id="cat-slug" type="text" class="form-input" placeholder="ai-automation" />
+            <span class="text-xs text-muted" style="margin-top:4px; display:block;">Auto-generated if blank</span>
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label">Description</label>
+            <textarea id="cat-desc" class="form-textarea" placeholder="Optional short description" style="min-height:70px;"></textarea>
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label">Sort Order</label>
+            <input id="cat-order" type="number" class="form-input" value="0" min="0" />
+          </div>
+
+          <div class="flex gap-2 items-center">
+            <button type="submit" id="submit-btn" class="btn btn-primary">Create</button>
+            <button type="button" id="cancel-edit-btn" class="btn btn-ghost" style="display:none;">Cancel</button>
+            <span id="form-msg" style="display:none; font-size:0.875rem;"></span>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="toast" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;background:#1e2a40;border:1px solid var(--border);color:var(--text-primary);padding:0.75rem 1.25rem;border-radius:8px;font-size:0.875rem;z-index:9999;"></div>
+</AdminLayout>
+
+<script>
+  function toast(msg: string, ok = true) {
+    const t = document.getElementById('toast') as HTMLElement;
+    t.textContent = msg;
+    t.style.borderColor = ok ? 'rgba(74,222,128,0.3)' : 'rgba(248,113,113,0.3)';
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3500);
+  }
+
+  function slugify(str: string): string {
+    return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+
+  const form       = document.getElementById('cat-form') as HTMLFormElement;
+  const editIdEl   = document.getElementById('edit-id') as HTMLInputElement;
+  const nameEl     = document.getElementById('cat-name') as HTMLInputElement;
+  const slugEl     = document.getElementById('cat-slug') as HTMLInputElement;
+  const descEl     = document.getElementById('cat-desc') as HTMLTextAreaElement;
+  const orderEl    = document.getElementById('cat-order') as HTMLInputElement;
+  const formTitle  = document.getElementById('form-title') as HTMLElement;
+  const submitBtn  = document.getElementById('submit-btn') as HTMLButtonElement;
+  const cancelBtn  = document.getElementById('cancel-edit-btn') as HTMLButtonElement;
+  const formMsg    = document.getElementById('form-msg') as HTMLElement;
+
+  nameEl.addEventListener('input', () => {
+    if (!editIdEl.value) slugEl.value = slugify(nameEl.value);
+  });
+
+  function enterEdit(id: string, name: string, slug: string, desc: string, order: number) {
+    editIdEl.value = id;
+    nameEl.value   = name;
+    slugEl.value   = slug;
+    descEl.value   = desc;
+    orderEl.value  = String(order);
+    formTitle.textContent = 'Edit Category';
+    submitBtn.textContent = 'Save Changes';
+    cancelBtn.style.display = 'block';
+    nameEl.focus();
+  }
+
+  function resetForm() {
+    editIdEl.value = '';
+    form.reset();
+    orderEl.value = '0';
+    formTitle.textContent = 'New Category';
+    submitBtn.textContent = 'Create';
+    cancelBtn.style.display = 'none';
+    formMsg.style.display = 'none';
+  }
+
+  cancelBtn.addEventListener('click', resetForm);
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const isEdit  = !!editIdEl.value;
+    const payload = {
+      name:        nameEl.value.trim(),
+      slug:        slugEl.value.trim() || undefined,
+      description: descEl.value.trim() || undefined,
+      sort_order:  parseInt(orderEl.value, 10) || 0,
+    };
+
+    submitBtn.disabled    = true;
+    submitBtn.textContent = isEdit ? 'Saving…' : 'Creating…';
+
+    try {
+      const url    = isEdit ? `/api/admin/blog/categories/${editIdEl.value}` : '/api/admin/blog/categories';
+      const method = isEdit ? 'PATCH' : 'POST';
+      const res    = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const json   = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Failed');
+
+      toast(isEdit ? 'Category updated' : 'Category created');
+      resetForm();
+      window.location.reload();
+    } catch (err: any) {
+      formMsg.textContent    = `✗ ${err.message}`;
+      formMsg.style.color    = '#f87171';
+      formMsg.style.display  = 'block';
+      toast(err.message, false);
+    } finally {
+      submitBtn.disabled    = false;
+      submitBtn.textContent = isEdit ? 'Save Changes' : 'Create';
+    }
+  });
+
+  // Edit buttons
+  document.querySelectorAll<HTMLButtonElement>('.edit-cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      enterEdit(btn.dataset.id!, btn.dataset.name!, btn.dataset.slug!, btn.dataset.description!, Number(btn.dataset.order));
+    });
+  });
+
+  // Delete buttons
+  document.querySelectorAll<HTMLButtonElement>('.delete-cat-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const name = btn.dataset.name!;
+      if (!confirm(`Delete category "${name}"? Posts using it will keep the text value.`)) return;
+      try {
+        const res = await fetch(`/api/admin/blog/categories/${btn.dataset.id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed');
+        document.getElementById(`cat-${btn.dataset.id}`)?.remove();
+        toast('Category deleted');
+      } catch {
+        toast('Error deleting category', false);
+      }
+    });
+  });
+</script>

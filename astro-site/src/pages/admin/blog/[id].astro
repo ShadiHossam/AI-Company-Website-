@@ -2,6 +2,7 @@
 export const prerender = false;
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { getSupabaseAdmin } from '../../../lib/supabase';
+import { marked } from 'marked';
 
 const user = Astro.locals.user!;
 const supabase = getSupabaseAdmin();
@@ -24,11 +25,25 @@ if (!post) {
 
 const createdAt = new Date(post.created_at).toLocaleString('en-AE', { dateStyle: 'medium', timeStyle: 'short' });
 const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle: 'medium', timeStyle: 'short' });
+
+// Load initial HTML for TipTap: prefer body_html, fall back to converting body_markdown
+const initialHtml: string = post.body_html || (post.body_markdown ? await marked.parse(post.body_markdown) : '');
+
+const [{ data: dbCategories }, { data: dbTags }, { data: postTagRows }] = await Promise.all([
+  supabase.from('blog_categories').select('id, name').order('sort_order', { ascending: true }).order('name', { ascending: true }),
+  supabase.from('blog_tags').select('id, name').order('name', { ascending: true }),
+  supabase.from('blog_post_tags').select('tag_id').eq('post_id', id!),
+]);
+
+const categories = dbCategories ?? [];
+const tags = dbTags ?? [];
+const postTagIds = new Set((postTagRows ?? []).map((r: { tag_id: string }) => r.tag_id));
 ---
 
 <AdminLayout title="Edit Post" user={user} unreadCount={unreadNotifs ?? 0}>
   <Fragment slot="head">
-    <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css" />
+    <link rel="stylesheet" href="/blog-editor.css" />
+    <script src="/tiptap-bundle.js"></script>
   </Fragment>
 
   <div class="flex items-center gap-3 mb-6">
@@ -38,7 +53,7 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
     </a>
     <h1 style="font-size:1.375rem; font-weight:800; color:var(--text-primary); flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">{post.title}</h1>
     <span class={`badge ${post.status === 'published' ? 'badge-published' : post.status === 'draft' ? 'badge-draft' : ''}`}
-      style={post.status === 'archived' ? 'background:rgba(245,158,11,0.12);color:#fbbf24;' : ''}
+      style={post.status === 'archived' ? 'background:rgba(245,158,11,0.12);color:#fbbf24;' : post.status === 'scheduled' ? 'background:rgba(96,165,250,0.12);color:#60a5fa;' : ''}
     >
       {post.status}
     </span>
@@ -76,20 +91,35 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
           <div class="grid-2" style="gap:1rem;">
             <div class="form-group">
               <label class="form-label" for="category">Category</label>
-              <input id="category" name="category" type="text" class="form-input" required value={post.category} list="category-suggestions" />
-              <datalist id="category-suggestions">
-                <option value="AI Automation" />
-                <option value="AI Training" />
-                <option value="Case Studies" />
-                <option value="Industry Insights" />
-                <option value="Product Updates" />
-              </datalist>
+              {categories.length > 0 ? (
+                <select id="category" name="category" class="form-select" required>
+                  <option value="">Select a category…</option>
+                  {categories.map(c => <option value={c.name} selected={c.name === post.category}>{c.name}</option>)}
+                </select>
+              ) : (
+                <input id="category" name="category" type="text" class="form-input" required value={post.category} />
+              )}
             </div>
             <div class="form-group">
               <label class="form-label" for="author_name">Author</label>
               <input id="author_name" name="author_name" type="text" class="form-input" value={post.author_name ?? 'Aegis AI'} />
             </div>
           </div>
+
+          {tags.length > 0 && (
+            <div class="form-group" style="margin-top:1rem;">
+              <label class="form-label">Tags</label>
+              <div style="display:flex; flex-wrap:wrap; gap:0.5rem; padding:0.625rem; background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius-sm);" id="tags-picker">
+                {tags.map(t => (
+                  <label style="display:inline-flex; align-items:center; gap:0.375rem; padding:0.25rem 0.625rem; background:var(--bg-hover); border:1px solid var(--border); border-radius:20px; cursor:pointer; font-size:0.8125rem; user-select:none;">
+                    <input type="checkbox" name="tags" value={t.id} checked={postTagIds.has(t.id)} style="accent-color:var(--accent); width:13px; height:13px;" />
+                    {t.name}
+                  </label>
+                ))}
+              </div>
+              <a href="/admin/blog/tags" class="text-xs" style="color:var(--accent); margin-top:4px; display:block;">Manage tags →</a>
+            </div>
+          )}
         </div>
 
         <!-- SEO / Meta -->
@@ -118,10 +148,49 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
           </div>
         </div>
 
-        <!-- Body / Preview -->
+        <!-- Body Editor -->
         <div class="card">
-          <label class="form-label" style="margin-bottom:0.75rem; display:block;">Body (Markdown)</label>
-          <textarea id="body_markdown" name="body_markdown">{post.body_markdown}</textarea>
+          <label class="form-label" style="margin-bottom:0.75rem; display:block;">Body</label>
+          <!-- TipTap toolbar -->
+          <div id="editor-toolbar">
+            <select id="tb-heading" title="Block type">
+              <option value="paragraph">¶ Para</option>
+              <option value="2">H2</option>
+              <option value="3">H3</option>
+              <option value="4">H4</option>
+            </select>
+            <div class="tb-sep"></div>
+            <button type="button" class="tb-btn" data-cmd="bold" title="Bold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z"/><path d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z"/></svg></button>
+            <button type="button" class="tb-btn" data-cmd="italic" title="Italic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg></button>
+            <button type="button" class="tb-btn" data-cmd="underline" title="Underline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v7a6 6 0 006 6 6 6 0 006-6V3"/><line x1="4" y1="21" x2="20" y2="21"/></svg></button>
+            <button type="button" class="tb-btn" data-cmd="strike" title="Strikethrough"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="12" x2="20" y2="12"/><path d="M12 3c-2.21 0-4 1.57-4 3.5 0 2.5 4 3 4 5.5 0 1.5-1.34 2.5-3 2.5"/></svg></button>
+            <div class="tb-sep"></div>
+            <button type="button" class="tb-btn" data-cmd="link" title="Link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></button>
+            <button type="button" class="tb-btn" data-cmd="image" title="Insert image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></button>
+            <div class="tb-sep"></div>
+            <button type="button" class="tb-btn" data-cmd="bulletList" title="Bullet list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg></button>
+            <button type="button" class="tb-btn" data-cmd="orderedList" title="Numbered list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></button>
+            <div class="tb-sep"></div>
+            <button type="button" class="tb-btn" data-cmd="blockquote" title="Blockquote"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg></button>
+            <button type="button" class="tb-btn" data-cmd="codeBlock" title="Code block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>
+            <button type="button" class="tb-btn" data-cmd="horizontalRule" title="Horizontal rule" style="font-size:1.1rem;font-weight:700;">—</button>
+            <div class="tb-sep"></div>
+            <button type="button" class="tb-btn" data-cmd="alignLeft" title="Align left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/></svg></button>
+            <button type="button" class="tb-btn" data-cmd="alignCenter" title="Align center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"/><line x1="17" y1="12" x2="7" y2="12"/><line x1="19" y1="18" x2="5" y2="18"/></svg></button>
+            <button type="button" class="tb-btn" data-cmd="alignRight" title="Align right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="7" y2="18"/></svg></button>
+            <div class="tb-sep"></div>
+            <button type="button" class="tb-btn" data-cmd="undo" title="Undo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg></button>
+            <button type="button" class="tb-btn" data-cmd="redo" title="Redo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.13-9.36L23 10"/></svg></button>
+            <div class="tb-sep"></div>
+            <button type="button" class="tb-btn" data-cmd="clearFormat" title="Clear formatting"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.375 2.625a2.121 2.121 0 013 3L12 15l-4 1 1-4z"/><line x1="22" y1="2" x2="2" y2="22"/></svg></button>
+          </div>
+          <!-- TipTap editor (pre-populated with existing content) -->
+          <div id="tiptap-editor" class="tiptap-editor" set:html={initialHtml}></div>
+          <div id="editor-stats-bar" style="display:flex;gap:1.25rem;padding:0.5rem 0 0;font-size:0.75rem;color:var(--text-dim);">
+            <span><span id="stat-words">0</span> words</span>
+            <span><span id="stat-read">0</span> min read</span>
+            <span><span id="stat-chars">0</span> chars</span>
+          </div>
         </div>
 
         <!-- Arabic Translation -->
@@ -239,14 +308,17 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
             <label class="form-label" for="status">Status</label>
             <select id="status" name="status" class="form-select">
               <option value="draft" selected={post.status === 'draft'}>Draft</option>
+              <option value="scheduled" selected={post.status === 'scheduled'}>Scheduled</option>
               <option value="published" selected={post.status === 'published'}>Published</option>
               <option value="archived" selected={post.status === 'archived'}>Archived</option>
             </select>
           </div>
 
-          <div class="form-group mb-4">
+          <div class="form-group mb-4" id="pub-date-wrap" style={post.status === 'scheduled' ? '' : 'display:none;'}>
             <label class="form-label" for="pub_date">Publish Date</label>
-            <input id="pub_date" name="pub_date" type="date" class="form-input" value={post.pub_date ?? ''} />
+            <input id="pub_date" name="pub_date" type="date" class="form-input" value={post.pub_date ?? ''}
+              required={post.status === 'scheduled'} />
+            <span class="text-xs text-muted" style="margin-top:4px;display:block;">Post goes live on this date</span>
           </div>
 
           <button type="submit" id="submit-btn" class="btn btn-primary" style="width:100%; justify-content:center; margin-bottom:0.5rem;">
@@ -300,6 +372,25 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
           </div>
         </div>
 
+        <!-- Key Takeaways card -->
+        <div class="card mb-4">
+          <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem; cursor:pointer;" id="kt-toggle">
+            <div class="card-title" style="font-size:0.8125rem; flex:1; margin:0;">Key Takeaways</div>
+            <svg id="kt-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:var(--text-muted);transition:transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div id="kt-body">
+            <div id="kt-list" style="display:flex; flex-direction:column; gap:0.375rem; margin-bottom:0.75rem;"></div>
+            <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
+              <input id="kt-input" type="text" class="form-input" placeholder="Add a point…" style="font-size:0.8125rem; flex:1;" />
+              <button type="button" id="kt-add-btn" class="btn btn-secondary btn-sm">+</button>
+            </div>
+            <div style="display:flex; gap:0.5rem;">
+              <button type="button" id="kt-from-sel-btn" class="btn btn-ghost btn-sm" style="font-size:0.75rem; flex:1;" title="Convert selected editor text to key takeaways">From selection</button>
+              <button type="button" id="kt-insert-btn" class="btn btn-ghost btn-sm" style="font-size:0.75rem; flex:1;" title="Insert key takeaways block into the post body">Insert block</button>
+            </div>
+          </div>
+        </div>
+
         <!-- Version History card -->
         <div class="card mb-4" id="version-history-card">
           <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem; cursor:pointer;" id="version-history-toggle">
@@ -325,6 +416,24 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
     </div>
   </form>
 
+  <!-- Media Picker Modal -->
+  <div id="media-picker-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:600; align-items:flex-end; justify-content:center; padding:0;">
+    <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg) var(--radius-lg) 0 0; width:100%; max-height:75vh; display:flex; flex-direction:column; overflow:hidden;">
+      <div style="padding:1rem 1.25rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:0.75rem; flex-shrink:0;">
+        <span style="font-weight:700; font-size:0.95rem;">Media Library</span>
+        <input id="picker-search" type="text" placeholder="Search…" class="form-input" style="flex:1; max-width:260px; font-size:0.8125rem; padding:0.3rem 0.6rem;" />
+        <label class="btn btn-secondary btn-sm" style="cursor:pointer;">
+          Upload new
+          <input id="picker-file-input" type="file" accept="image/*" style="display:none;" />
+        </label>
+        <button id="picker-close" class="btn btn-ghost btn-sm">✕</button>
+      </div>
+      <div id="picker-grid" style="padding:1rem; overflow-y:auto; flex:1; display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:0.75rem;">
+        <div class="text-muted text-sm" style="grid-column:1/-1; text-align:center; padding:2rem;">Loading…</div>
+      </div>
+    </div>
+  </div>
+
   <!-- Preview overlay -->
   <div id="preview-overlay" style="display:none; position:fixed; inset:0; z-index:500; background:var(--bg-page); overflow-y:auto; padding:2rem 1rem;">
     <div style="max-width:780px; margin:0 auto;">
@@ -343,111 +452,291 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
 </AdminLayout>
 
 <script>
-  import EasyMDE from 'easymde';
-  import { marked } from 'marked';
+  // ─── TipTap init ──────────────────────────────────────────────────────────
+  const T = (window as any).TipTap;
+  const editorEl = document.getElementById('tiptap-editor') as HTMLElement;
+
+  // Capture initial content from server-rendered innerHTML, then clear
+  const initialContent = editorEl.innerHTML;
+  editorEl.innerHTML = '';
 
   const postId = (document.getElementById('post-form') as HTMLFormElement).dataset.postId!;
-
-  let editor: InstanceType<typeof EasyMDE> | null = null;
-  const bodyTextarea = document.getElementById('body_markdown') as HTMLTextAreaElement;
-  try {
-    editor = new EasyMDE({
-      element: bodyTextarea,
-      autofocus: false,
-      spellChecker: false,
-      minHeight: '500px',
-      toolbar: [
-        'bold', 'italic', 'heading', '|',
-        'quote', 'unordered-list', 'ordered-list', '|',
-        'link', 'image', 'code', '|',
-        'preview', 'side-by-side', 'fullscreen', '|',
-        'guide',
-      ],
-    });
-  } catch (err) {
-    console.warn('EasyMDE failed to load, falling back to plain textarea:', err);
-  }
-
-  function getBodyValue(): string {
-    return editor ? editor.value() : bodyTextarea.value;
-  }
-
-  // Auto-save
   const saveIndicator = document.getElementById('save-indicator')!;
-  let autoSaveTimer: ReturnType<typeof setTimeout> | null = null;
-  let seoTimer: ReturnType<typeof setTimeout> | null = null;
 
-  function scheduleSEO() {
-    if (seoTimer) clearTimeout(seoTimer);
-    seoTimer = setTimeout(() => runSEOAnalysis(), 300);
+  const editor = new T.Editor({
+    element: editorEl,
+    extensions: [
+      T.StarterKit.configure({ heading: { levels: [2, 3, 4] }, history: { depth: 100 } }),
+      T.Link.configure({ openOnClick: false, HTMLAttributes: { rel: 'noopener noreferrer' } }),
+      T.Image.configure({ inline: false, allowBase64: true }),
+      T.Underline,
+      T.TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      T.TextStyle,
+      T.Color,
+      T.Highlight.configure({ multicolor: true }),
+      T.Placeholder.configure({ placeholder: 'Write your post here…' }),
+      T.Table.configure({ resizable: true }),
+      T.TableRow, T.TableCell, T.TableHeader,
+      T.CharacterCount,
+      T.Typography,
+      T.Subscript, T.Superscript,
+    ],
+    content: initialContent,
+    autofocus: false,
+    onCreate() { updateStatsBar(); setTimeout(() => runSEOAnalysis(), 600); },
+    onUpdate() { updateStatsBar(); scheduleSEO(); scheduleAutoSave(); },
+    onSelectionUpdate() { updateToolbarState(); },
+  });
+
+  // ─── Toolbar ──────────────────────────────────────────────────────────────
+  function updateToolbarState() {
+    const sel = document.getElementById('tb-heading') as HTMLSelectElement | null;
+    if (sel) {
+      if (editor.isActive('heading', { level: 2 })) sel.value = '2';
+      else if (editor.isActive('heading', { level: 3 })) sel.value = '3';
+      else if (editor.isActive('heading', { level: 4 })) sel.value = '4';
+      else sel.value = 'paragraph';
+    }
+    document.querySelectorAll<HTMLButtonElement>('#editor-toolbar .tb-btn[data-cmd]').forEach(btn => {
+      const cmd = btn.dataset.cmd!;
+      const checks: Record<string, () => boolean> = {
+        bold: () => editor.isActive('bold'), italic: () => editor.isActive('italic'),
+        underline: () => editor.isActive('underline'), strike: () => editor.isActive('strike'),
+        bulletList: () => editor.isActive('bulletList'), orderedList: () => editor.isActive('orderedList'),
+        blockquote: () => editor.isActive('blockquote'), codeBlock: () => editor.isActive('codeBlock'),
+        alignLeft: () => editor.isActive({ textAlign: 'left' }),
+        alignCenter: () => editor.isActive({ textAlign: 'center' }),
+        alignRight: () => editor.isActive({ textAlign: 'right' }),
+      };
+      btn.classList.toggle('active', checks[cmd] ? checks[cmd]() : false);
+    });
   }
 
-  const formFields = document.querySelectorAll('#post-form input, #post-form textarea, #post-form select');
+  (document.getElementById('tb-heading') as HTMLSelectElement | null)?.addEventListener('change', function(this: HTMLSelectElement) {
+    if (this.value === 'paragraph') editor.chain().focus().setParagraph().run();
+    else editor.chain().focus().setHeading({ level: parseInt(this.value) }).run();
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('#editor-toolbar .tb-btn[data-cmd]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      switch (btn.dataset.cmd) {
+        case 'bold': editor.chain().focus().toggleBold().run(); break;
+        case 'italic': editor.chain().focus().toggleItalic().run(); break;
+        case 'underline': editor.chain().focus().toggleUnderline().run(); break;
+        case 'strike': editor.chain().focus().toggleStrike().run(); break;
+        case 'bulletList': editor.chain().focus().toggleBulletList().run(); break;
+        case 'orderedList': editor.chain().focus().toggleOrderedList().run(); break;
+        case 'alignLeft': editor.chain().focus().setTextAlign('left').run(); break;
+        case 'alignCenter': editor.chain().focus().setTextAlign('center').run(); break;
+        case 'alignRight': editor.chain().focus().setTextAlign('right').run(); break;
+        case 'blockquote': editor.chain().focus().toggleBlockquote().run(); break;
+        case 'codeBlock': editor.chain().focus().toggleCodeBlock().run(); break;
+        case 'horizontalRule': editor.chain().focus().setHorizontalRule().run(); break;
+        case 'clearFormat': editor.chain().focus().clearNodes().unsetAllMarks().run(); break;
+        case 'undo': editor.chain().focus().undo().run(); break;
+        case 'redo': editor.chain().focus().redo().run(); break;
+        case 'link': promptLink(); break;
+        case 'image': promptImage(); break;
+      }
+      updateToolbarState();
+    });
+  });
+
+  function promptLink() {
+    const prev = editor.getAttributes('link').href || '';
+    const url = prompt('Link URL:', prev || 'https://');
+    if (url === null) return;
+    if (!url) { editor.chain().focus().unsetLink().run(); return; }
+    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+  }
+
+  function promptImage() {
+    openMediaPicker();
+  }
+
+  // ─── Media Picker ──────────────────────────────────────────────────────────
+  const pickerModal     = document.getElementById('media-picker-modal')!;
+  const pickerGrid      = document.getElementById('picker-grid')!;
+  const pickerSearch    = document.getElementById('picker-search') as HTMLInputElement;
+  const pickerClose     = document.getElementById('picker-close')!;
+  const pickerFileInput = document.getElementById('picker-file-input') as HTMLInputElement;
+
+  let pickerItems: any[] = [];
+  let pickerUsage: Record<string, number> = {};
+  let pickerLoaded = false;
+
+  pickerClose.addEventListener('click', closeMediaPicker);
+  pickerModal.addEventListener('click', (e) => { if (e.target === pickerModal) closeMediaPicker(); });
+
+  pickerFileInput.addEventListener('change', async () => {
+    const f = pickerFileInput.files?.[0];
+    if (f) { closeMediaPicker(); await uploadAndInsertImage(f); }
+    pickerFileInput.value = '';
+  });
+
+  pickerSearch.addEventListener('input', () => {
+    const q = pickerSearch.value.toLowerCase();
+    renderPickerGrid(q ? pickerItems.filter(i => i.filename.toLowerCase().includes(q) || (i.alt_text ?? '').toLowerCase().includes(q)) : pickerItems);
+  });
+
+  function openMediaPicker() {
+    pickerModal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    if (!pickerLoaded) loadPickerItems();
+  }
+
+  function closeMediaPicker() {
+    pickerModal.style.display = 'none';
+    document.body.style.overflow = '';
+    pickerSearch.value = '';
+  }
+
+  async function loadPickerItems() {
+    try {
+      const [mediaRes, usageRes] = await Promise.all([
+        fetch('/api/admin/media?page=1'),
+        fetch('/api/admin/media/usage'),
+      ]);
+      const { data } = await mediaRes.json();
+      const { usage } = await usageRes.json();
+      pickerItems  = data ?? [];
+      pickerUsage  = usage ?? {};
+      pickerLoaded = true;
+      renderPickerGrid(pickerItems);
+    } catch {
+      pickerGrid.innerHTML = '<div class="text-muted text-sm" style="grid-column:1/-1;text-align:center;padding:2rem;">Failed to load media</div>';
+    }
+  }
+
+  function renderPickerGrid(items: any[]) {
+    if (items.length === 0) {
+      pickerGrid.innerHTML = '<div class="text-muted text-sm" style="grid-column:1/-1;text-align:center;padding:2rem;">No images found</div>';
+      return;
+    }
+    pickerGrid.innerHTML = '';
+    items.forEach(item => {
+      const used = pickerUsage[item.id] ?? 0;
+      const card = document.createElement('div');
+      card.style.cssText = 'position:relative; border:2px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; cursor:pointer; transition:border-color 0.15s, transform 0.15s;';
+      card.innerHTML = `
+        ${used > 0
+          ? `<div style="position:absolute;top:4px;right:4px;z-index:2;font-size:0.6rem;font-weight:700;padding:2px 5px;border-radius:3px;background:rgba(74,222,128,0.2);color:#4ade80;border:1px solid rgba(74,222,128,0.3);">Used</div>`
+          : `<div style="position:absolute;top:4px;right:4px;z-index:2;font-size:0.6rem;font-weight:700;padding:2px 5px;border-radius:3px;background:rgba(255,255,255,0.08);color:var(--text-muted);border:1px solid rgba(255,255,255,0.1);">Unused</div>`
+        }
+        <div style="height:100px;overflow:hidden;background:var(--bg-hover);">
+          <img src="${item.public_url}" alt="${item.alt_text ?? item.filename}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" />
+        </div>
+        <div style="padding:0.375rem 0.5rem;">
+          <div style="font-size:0.7rem;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.filename}</div>
+        </div>`;
+      card.addEventListener('mouseenter', () => { card.style.borderColor = 'var(--accent)'; card.style.transform = 'translateY(-2px)'; });
+      card.addEventListener('mouseleave', () => { card.style.borderColor = ''; card.style.transform = ''; });
+      card.addEventListener('click', () => {
+        const alt = item.alt_text || item.filename;
+        editor.chain().focus().setImage({ src: item.public_url, alt }).run();
+        closeMediaPicker();
+        showEditorNotification('Image inserted');
+      });
+      pickerGrid.appendChild(card);
+    });
+  }
+
+  async function uploadAndInsertImage(file: File) {
+    showEditorNotification('Uploading…');
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+      const res = await fetch('/api/admin/media/upload', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (res.ok && json.public_url) {
+        editor.chain().focus().setImage({ src: json.public_url, alt: json.filename || '' }).run();
+        showEditorNotification('Image inserted');
+      } else {
+        showEditorNotification('Upload failed: ' + (json.error ?? 'error'));
+      }
+    } catch { showEditorNotification('Upload failed'); }
+  }
+
+  editorEl.addEventListener('paste', async (e: ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        const f = item.getAsFile();
+        if (f) await uploadAndInsertImage(f);
+        return;
+      }
+    }
+  });
+
+  editorEl.addEventListener('drop', async (e: DragEvent) => {
+    const f = e.dataTransfer?.files?.[0];
+    if (f?.type.startsWith('image/')) { e.preventDefault(); await uploadAndInsertImage(f); }
+  });
+
+  function showEditorNotification(msg: string, ms = 2500) {
+    let el = document.getElementById('editor-notification');
+    if (!el) { el = document.createElement('div'); el.id = 'editor-notification'; document.body.appendChild(el); }
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el!.classList.remove('show'), ms);
+  }
+
+  // ─── Stats bar ────────────────────────────────────────────────────────────
+  const statWordsEl = document.getElementById('stat-words')!;
+  const statReadEl  = document.getElementById('stat-read')!;
+  const statCharsEl = document.getElementById('stat-chars')!;
+  function updateStatsBar() {
+    const text = editor.getText();
+    const wc = text.trim() ? text.trim().split(/\s+/).length : 0;
+    statWordsEl.textContent = wc.toLocaleString();
+    statReadEl.textContent = String(Math.max(1, Math.round(wc / 200)));
+    statCharsEl.textContent = (editor.storage.characterCount?.characters() ?? text.length).toLocaleString();
+  }
+
+  // ─── Autosave ─────────────────────────────────────────────────────────────
+  let autoSaveTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function scheduleAutoSave() {
+    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(() => doSave(false), 2000);
+  }
 
   async function doSave(silent = false) {
-    if (!silent) {
-      saveIndicator.textContent = 'Saving…';
-      saveIndicator.style.display = 'block';
-    }
-
-    const payload = buildPayload();
+    if (!silent) { saveIndicator.textContent = 'Saving…'; saveIndicator.style.display = 'block'; }
     try {
       const res = await fetch(`/api/admin/blog/${postId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(buildPayload()),
       });
-      if (res.ok) {
-        if (!silent) {
-          saveIndicator.textContent = 'Saved';
-          saveIndicator.style.color = 'var(--success)';
-          setTimeout(() => {
-            saveIndicator.style.display = 'none';
-            saveIndicator.style.color = '';
-          }, 2000);
-        }
-      } else {
-        if (!silent) {
-          saveIndicator.textContent = 'Save failed';
-          saveIndicator.style.color = 'var(--danger)';
+      if (!silent) {
+        if (res.ok) {
+          saveIndicator.textContent = 'Saved'; saveIndicator.style.color = 'var(--success)';
+          setTimeout(() => { saveIndicator.style.display = 'none'; saveIndicator.style.color = ''; }, 2000);
+        } else {
+          saveIndicator.textContent = 'Save failed'; saveIndicator.style.color = 'var(--danger)';
           setTimeout(() => { saveIndicator.style.display = 'none'; saveIndicator.style.color = ''; }, 3000);
         }
       }
-    } catch {
-      if (!silent) {
-        saveIndicator.style.display = 'none';
-      }
-    }
+    } catch { if (!silent) saveIndicator.style.display = 'none'; }
   }
 
-  formFields.forEach(field => {
-    field.addEventListener('input', () => {
-      if (autoSaveTimer) clearTimeout(autoSaveTimer);
-      autoSaveTimer = setTimeout(() => doSave(false), 2000);
-      scheduleSEO();
-    });
+  // Trigger autosave from form fields too
+  document.querySelectorAll('#post-form input, #post-form textarea, #post-form select').forEach(f => {
+    f.addEventListener('input', () => { scheduleAutoSave(); scheduleSEO(); });
   });
 
-  if (editor) {
-    editor.codemirror.on('change', () => {
-      if (autoSaveTimer) clearTimeout(autoSaveTimer);
-      autoSaveTimer = setTimeout(() => doSave(false), 2000);
-      scheduleSEO();
-    });
-  } else {
-    bodyTextarea.addEventListener('input', () => {
-      if (autoSaveTimer) clearTimeout(autoSaveTimer);
-      autoSaveTimer = setTimeout(() => doSave(false), 2000);
-      scheduleSEO();
-    });
-  }
-
   function buildPayload() {
+    const tagIds = [...document.querySelectorAll<HTMLInputElement>('input[name="tags"]:checked')].map(cb => cb.value);
     return {
       title: (document.getElementById('title') as HTMLInputElement).value.trim(),
       slug: (document.getElementById('slug') as HTMLInputElement).value.trim(),
       description: (document.getElementById('description') as HTMLTextAreaElement).value.trim(),
-      category: (document.getElementById('category') as HTMLInputElement).value.trim(),
+      category: ((document.getElementById('category') as HTMLInputElement | HTMLSelectElement)).value.trim(),
+      tag_ids: tagIds,
       author_name: (document.getElementById('author_name') as HTMLInputElement).value.trim(),
       og_image: (document.getElementById('og_image') as HTMLInputElement).value.trim() || '/assets/og-blog.jpg',
       meta_title: (document.getElementById('meta_title') as HTMLInputElement).value.trim() || null,
@@ -455,7 +744,7 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
       focus_keyword: (document.getElementById('focus_keyword') as HTMLInputElement).value.trim() || null,
       status: (document.getElementById('status') as HTMLSelectElement).value,
       pub_date: (document.getElementById('pub_date') as HTMLInputElement).value || null,
-      body_markdown: getBodyValue(),
+      body_html: editor.getHTML(),
       ar_title: (document.getElementById('ar_title') as HTMLInputElement)?.value.trim() || null,
       ar_description: (document.getElementById('ar_description') as HTMLTextAreaElement)?.value.trim() || null,
       ar_body_markdown: (document.getElementById('ar_body_markdown') as HTMLTextAreaElement)?.value.trim() || null,
@@ -464,118 +753,97 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
     };
   }
 
+  // ─── Scheduled date visibility ────────────────────────────────────────────
+  const statusSelectEl = document.getElementById('status') as HTMLSelectElement;
+  const pubDateWrapEl  = document.getElementById('pub-date-wrap') as HTMLDivElement;
+  const pubDateInputEl = document.getElementById('pub_date') as HTMLInputElement;
+  statusSelectEl.addEventListener('change', () => {
+    const show = statusSelectEl.value === 'scheduled';
+    pubDateWrapEl.style.display = show ? 'block' : 'none';
+    pubDateInputEl.required = show;
+  });
+
+  // ─── Form submit ──────────────────────────────────────────────────────────
   const form = document.getElementById('post-form') as HTMLFormElement;
   const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
   const errorBanner = document.getElementById('error-banner')!;
   const successBanner = document.getElementById('success-banner')!;
 
   function showError(msg: string) {
-    errorBanner.textContent = msg;
-    errorBanner.style.background = 'var(--danger-dim)';
-    errorBanner.style.borderColor = 'rgba(239,68,68,0.3)';
-    errorBanner.style.color = 'var(--danger)';
-    errorBanner.style.padding = '0.75rem 1rem';
-    errorBanner.style.display = 'block';
-    successBanner.style.display = 'none';
+    errorBanner.textContent = msg; successBanner.style.display = 'none';
+    errorBanner.style.cssText = 'display:block;background:var(--danger-dim);border-color:rgba(239,68,68,0.3);color:var(--danger);padding:0.75rem 1rem;';
   }
-
   function showSuccess(msg: string) {
-    successBanner.textContent = msg;
-    successBanner.style.background = 'var(--success-dim)';
-    successBanner.style.borderColor = 'rgba(34,197,94,0.3)';
-    successBanner.style.color = 'var(--success)';
-    successBanner.style.padding = '0.75rem 1rem';
-    successBanner.style.display = 'block';
-    errorBanner.style.display = 'none';
+    successBanner.textContent = msg; errorBanner.style.display = 'none';
+    successBanner.style.cssText = 'display:block;background:var(--success-dim);border-color:rgba(34,197,94,0.3);color:var(--success);padding:0.75rem 1rem;';
     setTimeout(() => { successBanner.style.display = 'none'; }, 3000);
   }
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (autoSaveTimer) clearTimeout(autoSaveTimer);
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Saving…';
-
+    submitBtn.disabled = true; submitBtn.textContent = 'Saving…';
     try {
       const res = await fetch(`/api/admin/blog/${postId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...buildPayload(), _create_version: true }),
       });
       const json = await res.json();
-      if (res.ok) {
-        showSuccess('Post saved successfully.');
-        loadVersions();
-      } else {
-        showError(json.error ?? 'Failed to save post.');
-      }
-    } catch {
-      showError('Network error. Please try again.');
-    } finally {
+      if (res.ok) { showSuccess('Post saved successfully.'); loadVersions(); }
+      else showError(json.error ?? 'Failed to save post.');
+    } catch { showError('Network error. Please try again.'); }
+    finally {
       submitBtn.disabled = false;
       submitBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="20 6 9 17 4 12"/></svg> Save Changes';
     }
   });
 
-  // Publish button
+  // ─── Publish / Archive / Delete ───────────────────────────────────────────
   const publishBtn = document.getElementById('publish-btn') as HTMLButtonElement | null;
   if (publishBtn) {
     publishBtn.addEventListener('click', async () => {
-      publishBtn.disabled = true;
-      publishBtn.textContent = 'Publishing…';
+      publishBtn.disabled = true; publishBtn.textContent = 'Publishing…';
       const today = new Date().toISOString().split('T')[0];
       try {
         const res = await fetch(`/api/admin/blog/${postId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: 'published', pub_date: today, _create_version: true }),
         });
-        if (res.ok) {
-          window.location.reload();
-        } else {
-          const { error } = await res.json();
-          showError(error ?? 'Failed to publish.');
-          publishBtn.disabled = false;
-          publishBtn.textContent = 'Publish Now';
-        }
-      } catch {
-        showError('Network error.');
-        publishBtn.disabled = false;
-        publishBtn.textContent = 'Publish Now';
-      }
+        if (res.ok) { window.location.reload(); }
+        else { const { error } = await res.json(); showError(error ?? 'Failed to publish.'); publishBtn.disabled = false; publishBtn.textContent = 'Publish Now'; }
+      } catch { showError('Network error.'); publishBtn.disabled = false; publishBtn.textContent = 'Publish Now'; }
     });
   }
 
-  // Archive button
   const archiveBtn = document.getElementById('archive-btn') as HTMLButtonElement | null;
   if (archiveBtn) {
     archiveBtn.addEventListener('click', async () => {
       if (!confirm('Archive this post? It will be hidden from the public blog.')) return;
-      archiveBtn.disabled = true;
-      archiveBtn.textContent = 'Archiving…';
+      archiveBtn.disabled = true; archiveBtn.textContent = 'Archiving…';
       try {
         const res = await fetch(`/api/admin/blog/${postId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: 'archived', _create_version: true }),
         });
-        if (res.ok) {
-          window.location.reload();
-        } else {
-          const { error } = await res.json();
-          showError(error ?? 'Failed to archive.');
-          archiveBtn.disabled = false;
-          archiveBtn.textContent = 'Archive';
-        }
-      } catch {
-        showError('Network error.');
-        archiveBtn.disabled = false;
-        archiveBtn.textContent = 'Archive';
-      }
+        if (res.ok) { window.location.reload(); }
+        else { const { error } = await res.json(); showError(error ?? 'Failed to archive.'); archiveBtn.disabled = false; archiveBtn.textContent = 'Archive'; }
+      } catch { showError('Network error.'); archiveBtn.disabled = false; archiveBtn.textContent = 'Archive'; }
     });
   }
 
-  // Preview button
+  document.getElementById('delete-btn')!.addEventListener('click', async () => {
+    const title = (document.getElementById('title') as HTMLInputElement).value;
+    if (!confirm(`Permanently delete "${title}"? This cannot be undone.`)) return;
+    const btn = document.getElementById('delete-btn') as HTMLButtonElement;
+    btn.disabled = true; btn.textContent = 'Deleting…';
+    try {
+      const res = await fetch(`/api/admin/blog/${postId}`, { method: 'DELETE' });
+      if (res.ok) { window.location.href = '/admin/blog'; }
+      else { const { error } = await res.json(); showError(error ?? 'Delete failed.'); btn.disabled = false; btn.textContent = 'Delete Post'; }
+    } catch { showError('Network error.'); btn.disabled = false; btn.textContent = 'Delete Post'; }
+  });
+
+  // ─── Preview overlay ──────────────────────────────────────────────────────
   const previewBtn = document.getElementById('preview-btn') as HTMLButtonElement;
   const previewOverlay = document.getElementById('preview-overlay')!;
   const closePreviewBtn = document.getElementById('close-preview')!;
@@ -583,72 +851,39 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
   const previewContentEl = document.getElementById('preview-content')!;
   const previewStatusBadge = document.getElementById('preview-status-badge')!;
 
-  previewBtn.addEventListener('click', async () => {
-    try {
-      previewTitleEl.textContent = (document.getElementById('title') as HTMLInputElement).value || 'Untitled';
-      previewContentEl.innerHTML = await marked.parse(getBodyValue() || '_No content yet._');
-      const status = (document.getElementById('status') as HTMLSelectElement).value;
-      previewStatusBadge.textContent = status === 'draft' ? 'Draft preview' : status === 'archived' ? 'Archived preview' : '';
-      previewOverlay.style.display = 'block';
-      document.body.style.overflow = 'hidden';
-    } catch (err) {
-      console.error('Preview error:', err);
-    }
+  previewBtn.addEventListener('click', () => {
+    previewTitleEl.textContent = (document.getElementById('title') as HTMLInputElement).value || 'Untitled';
+    previewContentEl.innerHTML = editor.getHTML() || '<p><em>No content yet.</em></p>';
+    const status = (document.getElementById('status') as HTMLSelectElement).value;
+    previewStatusBadge.textContent = status === 'draft' ? 'Draft preview' : status === 'archived' ? 'Archived preview' : '';
+    previewOverlay.style.display = 'block'; document.body.style.overflow = 'hidden';
   });
+  closePreviewBtn.addEventListener('click', () => { previewOverlay.style.display = 'none'; document.body.style.overflow = ''; });
 
-  closePreviewBtn.addEventListener('click', () => {
-    previewOverlay.style.display = 'none';
-    document.body.style.overflow = '';
-  });
-
-  // Delete button
-  const deleteBtn = document.getElementById('delete-btn') as HTMLButtonElement;
-  deleteBtn.addEventListener('click', async () => {
-    const title = (document.getElementById('title') as HTMLInputElement).value;
-    if (!confirm(`Permanently delete "${title}"? This cannot be undone.`)) return;
-    deleteBtn.disabled = true;
-    deleteBtn.textContent = 'Deleting…';
-    try {
-      const res = await fetch(`/api/admin/blog/${postId}`, { method: 'DELETE' });
-      if (res.ok) {
-        window.location.href = '/admin/blog';
-      } else {
-        const { error } = await res.json();
-        showError(error ?? 'Delete failed.');
-        deleteBtn.disabled = false;
-        deleteBtn.textContent = 'Delete Post';
-      }
-    } catch {
-      showError('Network error.');
-      deleteBtn.disabled = false;
-      deleteBtn.textContent = 'Delete Post';
-    }
-  });
-
-  // Version History
-  const versionToggle = document.getElementById('version-history-toggle')!;
-  const versionBody = document.getElementById('version-history-body')!;
+  // ─── Version History ──────────────────────────────────────────────────────
+  const versionToggle  = document.getElementById('version-history-toggle')!;
+  const versionBody    = document.getElementById('version-history-body')!;
   const versionChevron = document.getElementById('version-history-chevron')!;
-  const versionList = document.getElementById('version-list')!;
+  const versionList    = document.getElementById('version-list')!;
   let versionsLoaded = false;
 
   async function loadVersions() {
     try {
       const res = await fetch(`/api/admin/blog/history?post_id=${postId}`);
       const { data } = await res.json();
-      if (!data || data.length === 0) {
+      if (!data || !data.length) {
         versionList.innerHTML = '<div class="text-xs text-muted">No saved versions yet. Click "Save Changes" to create one.</div>';
         return;
       }
-      versionList.innerHTML = data.map((v: { id: string; version_num: number; saved_at: string; title: string; status: string }) => {
+      versionList.innerHTML = data.map((v: { id: string; version_num: number; saved_at: string }) => {
         const d = new Date(v.saved_at).toLocaleString('en-AE', { dateStyle: 'short', timeStyle: 'short' });
-        return `<div style="display:flex; align-items:center; gap:0.5rem; padding:0.375rem 0; border-bottom:1px solid var(--border);">
-          <div style="flex:1; min-width:0;">
-            <div class="text-xs" style="color:var(--text-primary); font-weight:600;">v${v.version_num}</div>
-            <div class="text-xs text-muted" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${d}</div>
+        return `<div style="display:flex;align-items:center;gap:0.5rem;padding:0.375rem 0;border-bottom:1px solid var(--border);">
+          <div style="flex:1;min-width:0;">
+            <div class="text-xs" style="color:var(--text-primary);font-weight:600;">v${v.version_num}</div>
+            <div class="text-xs text-muted">${d}</div>
           </div>
-          <button type="button" class="btn btn-ghost btn-xs ver-preview" data-id="${v.id}" style="padding:2px 6px; font-size:0.7rem;">View</button>
-          <button type="button" class="btn btn-ghost btn-xs ver-restore" data-id="${v.id}" data-num="${v.version_num}" style="padding:2px 6px; font-size:0.7rem; color:var(--accent);">Restore</button>
+          <button type="button" class="btn btn-ghost btn-xs ver-preview" data-id="${v.id}" style="padding:2px 6px;font-size:0.7rem;">View</button>
+          <button type="button" class="btn btn-ghost btn-xs ver-restore" data-id="${v.id}" data-num="${v.version_num}" style="padding:2px 6px;font-size:0.7rem;color:var(--accent);">Restore</button>
         </div>`;
       }).join('');
 
@@ -659,10 +894,9 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
           const { data: ver } = await r.json();
           if (!ver) return;
           previewTitleEl.textContent = ver.title || 'Untitled';
-          previewContentEl.innerHTML = await marked.parse(ver.body_markdown || '_No content._');
-          previewStatusBadge.textContent = `Version ${ver.version_num} preview · ${ver.status}`;
-          previewOverlay.style.display = 'block';
-          document.body.style.overflow = 'hidden';
+          previewContentEl.innerHTML = ver.body_html || ver.body_markdown || '<p><em>No content.</em></p>';
+          previewStatusBadge.textContent = `Version ${ver.version_num} preview`;
+          previewOverlay.style.display = 'block'; document.body.style.overflow = 'hidden';
         });
       });
 
@@ -670,51 +904,34 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
         btn.addEventListener('click', async () => {
           const vId = (btn as HTMLButtonElement).dataset.id!;
           const vNum = (btn as HTMLButtonElement).dataset.num!;
-          if (!confirm(`Restore to version ${vNum}? The current state will be saved as a new version before restoring.`)) return;
-          (btn as HTMLButtonElement).textContent = '…';
-          (btn as HTMLButtonElement).disabled = true;
+          if (!confirm(`Restore to version ${vNum}? Current state will be saved first.`)) return;
+          (btn as HTMLButtonElement).textContent = '…'; (btn as HTMLButtonElement).disabled = true;
           try {
             const r = await fetch('/api/admin/blog/history', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ action: 'restore', post_id: postId, version_id: vId }),
             });
-            if (r.ok) {
-              window.location.reload();
-            } else {
-              const { error } = await r.json();
-              showError(error ?? 'Restore failed.');
-              (btn as HTMLButtonElement).textContent = 'Restore';
-              (btn as HTMLButtonElement).disabled = false;
-            }
-          } catch {
-            showError('Network error.');
-            (btn as HTMLButtonElement).textContent = 'Restore';
-            (btn as HTMLButtonElement).disabled = false;
-          }
+            if (r.ok) { window.location.reload(); }
+            else { const { error } = await r.json(); showError(error ?? 'Restore failed.'); (btn as HTMLButtonElement).textContent = 'Restore'; (btn as HTMLButtonElement).disabled = false; }
+          } catch { showError('Network error.'); (btn as HTMLButtonElement).textContent = 'Restore'; (btn as HTMLButtonElement).disabled = false; }
         });
       });
-    } catch {
-      versionList.innerHTML = '<div class="text-xs text-muted">Failed to load versions.</div>';
-    }
+    } catch { versionList.innerHTML = '<div class="text-xs text-muted">Failed to load versions.</div>'; }
   }
 
   versionToggle.addEventListener('click', () => {
     const isOpen = versionBody.style.display !== 'none';
     versionBody.style.display = isOpen ? 'none' : 'block';
     (versionChevron as SVGElement).style.transform = isOpen ? '' : 'rotate(180deg)';
-    if (!isOpen && !versionsLoaded) {
-      versionsLoaded = true;
-      loadVersions();
-    }
+    if (!isOpen && !versionsLoaded) { versionsLoaded = true; loadVersions(); }
   });
 
   // ─── SEO Analysis ─────────────────────────────────────────────────────────
+  let seoTimer: ReturnType<typeof setTimeout> | null = null;
+  function scheduleSEO() { if (seoTimer) clearTimeout(seoTimer); seoTimer = setTimeout(() => runSEOAnalysis(), 300); }
 
-  async function mdToNodes(md: string) {
-    const html = await marked.parse(md || '');
-    const div = document.createElement('div');
-    div.innerHTML = html;
+  function htmlToNodes(html: string) {
+    const div = document.createElement('div'); div.innerHTML = html;
     return { html, div, text: div.textContent ?? '' };
   }
 
@@ -729,32 +946,25 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
   }
 
   function fleschScore(t: string) {
-    const sents = getSentences(t);
-    const words = t.trim().split(/\s+/).filter(w => w.length > 0);
+    const sents = getSentences(t); const words = t.trim().split(/\s+/).filter(w => w.length > 0);
     if (!sents.length || !words.length) return 0;
     const syls = words.reduce((s, w) => s + countSyllables(w), 0);
     return Math.max(0, Math.min(100, Math.round(206.835 - 1.015 * (words.length / sents.length) - 84.6 * (syls / words.length))));
   }
 
   function readingLevel(s: number) {
-    if (s >= 90) return '5th grade';
-    if (s >= 80) return '6th grade';
-    if (s >= 70) return '7th grade';
-    if (s >= 60) return '8th–9th grade';
-    if (s >= 50) return '10th–12th grade';
-    if (s >= 30) return 'College level';
+    if (s >= 90) return '5th grade'; if (s >= 80) return '6th grade'; if (s >= 70) return '7th grade';
+    if (s >= 60) return '8th–9th grade'; if (s >= 50) return '10th–12th grade'; if (s >= 30) return 'College level';
     return 'Professional/Academic';
   }
 
   function passivePct(t: string) {
-    const sents = getSentences(t);
-    if (!sents.length) return 0;
-    const re = /\b(am|is|are|was|were|be|been|being)\s+\w+ed\b/gi;
-    return Math.round((sents.filter(s => re.test(s)).length / sents.length) * 100);
+    const sents = getSentences(t); if (!sents.length) return 0;
+    return Math.round((sents.filter(s => /\b(am|is|are|was|were|be|been|being)\s+\w+ed\b/gi.test(s)).length / sents.length) * 100);
   }
 
-  function checkLongSections(md: string) {
-    return !md.split(/^#{1,3}\s/m).some(s => countWords(s) > 300);
+  function checkLongSections(html: string) {
+    return !html.split(/<h[23][^>]*>/i).some(s => countWords(s.replace(/<[^>]*>/g, '')) > 300);
   }
 
   function kwDensity(kw: string, t: string) {
@@ -764,14 +974,11 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
     return { count, density: words.length ? count / words.length : 0 };
   }
 
-  function escHtml(s: string) {
-    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
+  function escHtml(s: string) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
   function hlKw(text: string, kw: string) {
     if (!kw) return escHtml(text);
-    const re = new RegExp(`(${kw.replace(/[-.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-    return escHtml(text).replace(re, '<strong>$1</strong>');
+    return escHtml(text).replace(new RegExp(`(${kw.replace(/[-.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), '<strong>$1</strong>');
   }
 
   interface Check { id: string; label: string; detail?: string; status: 'pass' | 'warn' | 'fail'; points: number; }
@@ -783,15 +990,11 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
   }
 
   function renderScore(score: number) {
-    const ring = document.getElementById('seo-score-ring')!;
-    const num = document.getElementById('seo-score-number')!;
-    const lbl = document.getElementById('seo-score-label')!;
-    const tl = document.getElementById('seo-traffic-light')!;
+    const ring = document.getElementById('seo-score-ring')!; const num = document.getElementById('seo-score-number')!;
+    const lbl = document.getElementById('seo-score-label')!; const tl = document.getElementById('seo-traffic-light')!;
     const color = score >= 75 ? '#22c55e' : score >= 50 ? '#f59e0b' : '#ef4444';
-    ring.style.strokeDashoffset = String(125.66 * (1 - score / 100));
-    ring.style.stroke = color;
-    num.textContent = String(score);
-    num.style.color = color;
+    ring.style.strokeDashoffset = String(125.66 * (1 - score / 100)); ring.style.stroke = color;
+    num.textContent = String(score); num.style.color = color;
     lbl.textContent = score >= 75 ? 'Good' : score >= 50 ? 'Needs improvement' : 'Poor';
     tl.textContent = score >= 75 ? '🟢' : score >= 50 ? '🟡' : '🔴';
   }
@@ -802,10 +1005,8 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
       const color = c.status === 'pass' ? 'var(--success)' : c.status === 'warn' ? 'var(--warning)' : 'var(--danger)';
       return `<div style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.5rem 0;border-bottom:1px solid var(--border);">
         <span style="flex-shrink:0;font-size:0.875rem;margin-top:1px;">${icon}</span>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:0.8125rem;color:var(--text-primary);line-height:1.4;">${c.label}</div>
-          ${c.detail ? `<div style="font-size:0.75rem;color:var(--text-muted);margin-top:1px;">${c.detail}</div>` : ''}
-        </div>
+        <div style="flex:1;min-width:0;"><div style="font-size:0.8125rem;color:var(--text-primary);line-height:1.4;">${c.label}</div>
+        ${c.detail ? `<div style="font-size:0.75rem;color:var(--text-muted);margin-top:1px;">${c.detail}</div>` : ''}</div>
         <span style="font-size:0.6875rem;color:${color};font-weight:700;flex-shrink:0;">${c.points}pt</span>
       </div>`;
     }).join('');
@@ -815,10 +1016,9 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
     const tDisp = title.length > 60 ? title.slice(0, 57) + '…' : title;
     const dDisp = desc.length > 160 ? desc.slice(0, 157) + '…' : desc;
     (document.getElementById('serp-breadcrumb') as HTMLElement).textContent = `aegisai.ae › blog › ${slug}`;
-    (document.getElementById('serp-title') as HTMLElement).innerHTML = hlKw(tDisp, kw);
-    (document.getElementById('serp-desc') as HTMLElement).innerHTML = hlKw(dDisp, kw);
-    const tc = document.getElementById('serp-title-counter')!;
-    const dc = document.getElementById('serp-desc-counter')!;
+    (document.getElementById('serp-title') as HTMLElement).innerHTML = tDisp ? hlKw(tDisp, kw) : '<span style="color:#9aa0a6;">Your post title will appear here</span>';
+    (document.getElementById('serp-desc') as HTMLElement).innerHTML = dDisp ? hlKw(dDisp, kw) : '<span style="color:#9aa0a6;">Your meta description will appear here</span>';
+    const tc = document.getElementById('serp-title-counter')!; const dc = document.getElementById('serp-desc-counter')!;
     tc.textContent = `${title.length}/60 title chars`;
     tc.style.color = title.length >= 50 && title.length <= 60 ? 'var(--success)' : title.length > 0 ? 'var(--warning)' : 'var(--text-muted)';
     dc.textContent = `${desc.length}/160 desc chars`;
@@ -830,10 +1030,8 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
     document.getElementById('seo-readability-content')!.innerHTML = `
       <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
         <div style="font-size:2rem;font-weight:800;color:${fc};">${flesch}</div>
-        <div>
-          <div style="font-size:0.875rem;color:var(--text-primary);">Flesch Reading Ease</div>
-          <div style="font-size:0.75rem;color:var(--text-muted);">${readingLevel(flesch)}</div>
-        </div>
+        <div><div style="font-size:0.875rem;color:var(--text-primary);">Flesch Reading Ease</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);">${readingLevel(flesch)}</div></div>
       </div>
       <div style="display:flex;flex-direction:column;gap:0.5rem;">
         <div style="display:flex;justify-content:space-between;font-size:0.8125rem;">
@@ -846,7 +1044,7 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
         </div>
         <div style="margin-top:0.75rem;padding:0.625rem;background:var(--bg-input);border-radius:var(--radius-sm);">
           <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">Score guide</div>
-          <div style="font-size:0.75rem;color:var(--text-muted);">90–100: Very easy (5th grade) · 60–70: Standard (8th–9th) · 30–50: Difficult (College) · 0–30: Very difficult</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">90–100: Very easy · 60–70: Standard · 30–50: College · 0–30: Academic</div>
         </div>
       </div>`;
   }
@@ -865,75 +1063,60 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
     ).join('');
   }
 
-  async function runSEOAnalysis() {
+  function runSEOAnalysis() {
     const title = (document.getElementById('title') as HTMLInputElement).value.trim();
-    const slug = (document.getElementById('slug') as HTMLInputElement).value.trim();
-    const desc = (document.getElementById('description') as HTMLTextAreaElement).value.trim();
+    const slug  = (document.getElementById('slug') as HTMLInputElement).value.trim();
+    const desc  = (document.getElementById('description') as HTMLTextAreaElement).value.trim();
     const metaT = (document.getElementById('meta_title') as HTMLInputElement)?.value.trim() ?? '';
     const metaD = (document.getElementById('meta_description') as HTMLTextAreaElement)?.value.trim() ?? '';
-    const kw = (document.getElementById('focus_keyword') as HTMLInputElement).value.trim().toLowerCase();
-    const md = getBodyValue();
+    const kw    = (document.getElementById('focus_keyword') as HTMLInputElement).value.trim().toLowerCase();
 
-    const { div, text } = await mdToNodes(md);
+    const html = editor.getHTML();
+    const { div, text } = htmlToNodes(html);
     const words = text.trim().split(/\s+/).filter(w => w.length > 0);
     const sents = getSentences(text);
     const wc = words.length;
     const avgSL = sents.length ? Math.round(wc / sents.length) : 0;
-    const flesch = fleschScore(text);
-    const passive = passivePct(text);
+    const flesch = fleschScore(text); const passive = passivePct(text);
     const density = kwDensity(kw, text);
-    const effTitle = metaT || title;
-    const effDesc = metaD || desc;
+    const effTitle = metaT || title; const effDesc = metaD || desc;
 
     const stats = {
-      wc, chars: text.length,
-      readMin: Math.max(1, Math.round(wc / 200)),
-      h1: div.querySelectorAll('h1').length,
-      h2: div.querySelectorAll('h2').length,
-      h3: div.querySelectorAll('h3').length,
-      imgs: (md.match(/!\[/g) ?? []).length,
+      wc, chars: text.length, readMin: Math.max(1, Math.round(wc / 200)),
+      h1: div.querySelectorAll('h1').length, h2: div.querySelectorAll('h2').length, h3: div.querySelectorAll('h3').length,
+      imgs: div.querySelectorAll('img').length,
       internalLinks: [...div.querySelectorAll('a')].filter(a => { const h = a.getAttribute('href') ?? ''; return h.startsWith('/') || h.includes('aegisai.ae'); }).length,
       externalLinks: [...div.querySelectorAll('a')].filter(a => { const h = a.getAttribute('href') ?? ''; return h.startsWith('http') && !h.includes('aegisai.ae'); }).length,
-      paras: div.querySelectorAll('p').length,
-      avgSL,
+      paras: div.querySelectorAll('p').length, avgSL,
     };
 
     const checks: Check[] = [];
-
     if (kw) {
       checks.push({ id: 'kw-title', points: 8, label: 'Keyword in SEO title', status: effTitle.toLowerCase().includes(kw) ? 'pass' : 'fail' });
       checks.push({ id: 'kw-desc', points: 8, label: 'Keyword in meta description', status: effDesc.toLowerCase().includes(kw) ? 'pass' : 'fail' });
-      const kwSlug = kw.replace(/\s+/g, '-');
-      checks.push({ id: 'kw-slug', points: 6, label: 'Keyword in URL slug', detail: `Slug: "${slug}"`, status: slug.includes(kwSlug) ? 'pass' : 'fail' });
-      const first200 = words.slice(0, 200).join(' ').toLowerCase();
-      checks.push({ id: 'kw-intro', points: 8, label: 'Keyword in first paragraph', status: first200.includes(kw) ? 'pass' : 'fail' });
+      checks.push({ id: 'kw-slug', points: 6, label: 'Keyword in URL slug', detail: `Slug: "${slug}"`, status: slug.includes(kw.replace(/\s+/g, '-')) ? 'pass' : 'fail' });
+      checks.push({ id: 'kw-intro', points: 8, label: 'Keyword in first paragraph', status: words.slice(0, 200).join(' ').toLowerCase().includes(kw) ? 'pass' : 'fail' });
       const d = density.density;
       checks.push({ id: 'kw-density', points: 6, label: `Keyword density (${(d * 100).toFixed(1)}%) — ${density.count} uses`, detail: 'Target: 0.5%–3%', status: d >= 0.005 && d <= 0.03 ? 'pass' : d < 0.005 ? 'warn' : 'fail' });
-      const headings = [...div.querySelectorAll('h2,h3')];
-      checks.push({ id: 'kw-heading', points: 5, label: 'Keyword in a subheading', status: headings.some(h => h.textContent?.toLowerCase().includes(kw)) ? 'pass' : 'warn' });
+      checks.push({ id: 'kw-heading', points: 5, label: 'Keyword in a subheading', status: [...div.querySelectorAll('h2,h3')].some(h => h.textContent?.toLowerCase().includes(kw)) ? 'pass' : 'warn' });
     }
-
     const tLen = effTitle.length;
-    checks.push({ id: 'title-len', points: 7, label: `Meta title length (${tLen} chars)`, detail: tLen >= 50 && tLen <= 60 ? 'Perfect' : tLen < 50 ? 'Too short — aim for 50–60' : 'Too long — Google truncates at ~60', status: tLen >= 50 && tLen <= 60 ? 'pass' : tLen >= 40 && tLen <= 70 ? 'warn' : 'fail' });
+    checks.push({ id: 'title-len', points: 7, label: `Meta title length (${tLen} chars)`, detail: tLen >= 50 && tLen <= 60 ? 'Perfect' : tLen < 50 ? 'Too short — aim for 50–60' : 'Too long — truncated at ~60', status: tLen >= 50 && tLen <= 60 ? 'pass' : tLen >= 40 && tLen <= 70 ? 'warn' : 'fail' });
     const dLen = effDesc.length;
-    checks.push({ id: 'desc-len', points: 7, label: `Meta description length (${dLen} chars)`, detail: dLen >= 120 && dLen <= 160 ? 'Perfect' : dLen < 120 ? 'Too short — aim for 120–160' : 'Too long — Google truncates', status: dLen >= 120 && dLen <= 160 ? 'pass' : dLen >= 100 && dLen <= 180 ? 'warn' : 'fail' });
-    if (metaT && title) {
-      checks.push({ id: 'title-diff', points: 4, label: 'Meta title differs from post title', detail: metaT === title ? 'Consider customising for SEO' : undefined, status: metaT !== title ? 'pass' : 'warn' });
-    }
-
-    checks.push({ id: 'wc', points: 8, label: `Word count (${wc.toLocaleString()} words)`, detail: wc >= 1000 ? 'Great for SEO' : wc >= 300 ? 'Good, but 1000+ is better' : 'Minimum 300 words recommended', status: wc >= 1000 ? 'pass' : wc >= 300 ? 'warn' : 'fail' });
+    checks.push({ id: 'desc-len', points: 7, label: `Meta description length (${dLen} chars)`, detail: dLen >= 120 && dLen <= 160 ? 'Perfect' : dLen < 120 ? 'Too short — aim for 120–160' : 'Too long', status: dLen >= 120 && dLen <= 160 ? 'pass' : dLen >= 100 && dLen <= 180 ? 'warn' : 'fail' });
+    if (metaT && title) checks.push({ id: 'title-diff', points: 4, label: 'Meta title differs from post title', status: metaT !== title ? 'pass' : 'warn' });
+    checks.push({ id: 'wc', points: 8, label: `Word count (${wc.toLocaleString()} words)`, detail: wc >= 1000 ? 'Great' : wc >= 300 ? 'Good, aim for 1000+' : 'Min 300 words recommended', status: wc >= 1000 ? 'pass' : wc >= 300 ? 'warn' : 'fail' });
     checks.push({ id: 'image', points: 5, label: 'Contains at least one image', status: stats.imgs >= 1 ? 'pass' : 'fail' });
     checks.push({ id: 'internal', points: 6, label: 'Has internal links', detail: stats.internalLinks === 0 ? 'Link to other aegisai.ae pages' : undefined, status: stats.internalLinks >= 1 ? 'pass' : 'warn' });
     checks.push({ id: 'external', points: 4, label: 'Has outbound links', status: stats.externalLinks >= 1 ? 'pass' : 'warn' });
     checks.push({ id: 'headings', points: 5, label: 'Uses H2/H3 subheadings', status: (stats.h2 + stats.h3) >= 1 ? 'pass' : 'fail' });
-    checks.push({ id: 'sections', points: 4, label: 'No section >300 words without heading', status: checkLongSections(md) ? 'pass' : 'warn' });
+    checks.push({ id: 'sections', points: 4, label: 'No section >300 words without heading', status: checkLongSections(html) ? 'pass' : 'warn' });
     checks.push({ id: 'sent-len', points: 5, label: `Avg sentence length (${avgSL} words)`, status: avgSL < 20 ? 'pass' : avgSL <= 25 ? 'warn' : 'fail' });
     checks.push({ id: 'flesch', points: 4, label: `Flesch reading ease (${flesch}/100)`, detail: readingLevel(flesch), status: flesch > 60 ? 'pass' : flesch >= 30 ? 'warn' : 'fail' });
     checks.push({ id: 'passive', points: 4, label: `Passive voice (${passive}% of sentences)`, status: passive < 10 ? 'pass' : passive < 20 ? 'warn' : 'fail' });
 
     const score = calcScore(checks);
-    renderScore(score);
-    renderChecks(checks);
+    renderScore(score); renderChecks(checks);
     renderSERP(effTitle, effDesc, slug, kw);
     renderReadability(flesch, passive, avgSL);
     renderStats(stats);
@@ -949,7 +1132,6 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
     });
   });
 
-  // Collapse toggle
   let seoOpen = true;
   document.getElementById('seo-panel-toggle')!.addEventListener('click', () => {
     seoOpen = !seoOpen;
@@ -957,95 +1139,101 @@ const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle:
     (document.getElementById('seo-chevron') as SVGElement).style.transform = seoOpen ? '' : 'rotate(-90deg)';
   });
 
-  // Initial analysis on page load
-  runSEOAnalysis();
-
-  // Arabic section toggle
   let arOpen = !!(document.getElementById('ar_title') as HTMLInputElement)?.value;
   document.getElementById('ar-toggle')!.addEventListener('click', () => {
     arOpen = !arOpen;
     (document.getElementById('ar-body') as HTMLElement).style.display = arOpen ? 'block' : 'none';
     (document.getElementById('ar-chevron') as SVGElement).style.transform = arOpen ? '' : 'rotate(-90deg)';
   });
+
+  // ─── Key Takeaways ────────────────────────────────────────────────────────────
+  let ktPoints: string[] = [];
+  let ktOpen = true;
+
+  const ktToggle  = document.getElementById('kt-toggle')!;
+  const ktBody    = document.getElementById('kt-body')!;
+  const ktChevron = document.getElementById('kt-chevron')!;
+  const ktList    = document.getElementById('kt-list')!;
+  const ktInput   = document.getElementById('kt-input') as HTMLInputElement;
+  const ktAddBtn  = document.getElementById('kt-add-btn') as HTMLButtonElement;
+  const ktFromSel = document.getElementById('kt-from-sel-btn') as HTMLButtonElement;
+  const ktInsert  = document.getElementById('kt-insert-btn') as HTMLButtonElement;
+
+  ktToggle.addEventListener('click', () => {
+    ktOpen = !ktOpen;
+    ktBody.style.display = ktOpen ? 'block' : 'none';
+    (ktChevron as unknown as SVGElement).style.transform = ktOpen ? '' : 'rotate(-90deg)';
+  });
+
+  function renderKtList() {
+    ktList.innerHTML = '';
+    ktPoints.forEach((pt, i) => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; align-items:center; gap:0.375rem; padding:0.25rem 0.5rem; background:var(--bg-input); border-radius:var(--radius-sm); font-size:0.8rem; color:var(--text-primary);';
+      row.innerHTML = `<span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${pt.replace(/"/g,'&quot;')}">${pt}</span>
+        <button type="button" data-i="${i}" style="background:none; border:none; cursor:pointer; color:var(--text-muted); padding:0; font-size:0.75rem; flex-shrink:0;" title="Remove">✕</button>`;
+      row.querySelector('button')!.addEventListener('click', () => { ktPoints.splice(i, 1); renderKtList(); });
+      ktList.appendChild(row);
+    });
+  }
+
+  function addKtPoint(text: string) {
+    const t = text.trim();
+    if (t && ktPoints.length < 8) { ktPoints.push(t); renderKtList(); }
+  }
+
+  ktAddBtn.addEventListener('click', () => { addKtPoint(ktInput.value); ktInput.value = ''; ktInput.focus(); });
+  ktInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addKtPoint(ktInput.value); ktInput.value = ''; } });
+
+  ktFromSel.addEventListener('click', () => {
+    const sel = window.getSelection()?.toString().trim();
+    if (sel) {
+      sel.split(/\n+/).filter(l => l.trim()).slice(0, 8 - ktPoints.length).forEach(l => addKtPoint(l));
+    } else {
+      // Fall back to selected editor text
+      const editorText = editor.state.selection.empty ? '' : editor.state.doc.textBetween(
+        editor.state.selection.from, editor.state.selection.to, '\n'
+      );
+      if (editorText.trim()) {
+        editorText.split(/\n+/).filter(l => l.trim()).slice(0, 8 - ktPoints.length).forEach(l => addKtPoint(l));
+      }
+    }
+  });
+
+  ktInsert.addEventListener('click', () => {
+    if (ktPoints.length === 0) return;
+    const html = `<div class="key-takeaways" style="background:rgba(0,227,253,0.07);border-left:3px solid #00e3fd;border-radius:6px;padding:1rem 1.25rem;margin:1.5rem 0;">
+<p style="font-weight:700;margin:0 0 0.625rem;color:#00e3fd;font-size:0.875rem;letter-spacing:0.05em;text-transform:uppercase;">Key Takeaways</p>
+<ul style="margin:0;padding-left:1.25rem;">${ktPoints.map(p => `<li style="margin-bottom:0.375rem;">${p}</li>`).join('')}</ul></div>`;
+    editor.chain().focus().insertContent(html).run();
+  });
 </script>
 
 <style is:global>
-  .EasyMDEContainer .CodeMirror {
-    background: var(--bg-input);
-    color: var(--text-primary);
-    border-color: var(--border);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 0.875rem;
-    line-height: 1.7;
-  }
-  .EasyMDEContainer .editor-toolbar {
-    background: var(--bg-card);
-    border-color: var(--border);
-  }
-  .EasyMDEContainer .editor-toolbar button {
-    color: var(--text-muted) !important;
-  }
-  .EasyMDEContainer .editor-toolbar button:hover,
-  .EasyMDEContainer .editor-toolbar button.active {
-    background: var(--bg-hover);
-    border-color: var(--border);
-    color: var(--text-primary) !important;
-  }
-  .EasyMDEContainer .editor-toolbar i.separator { border-color: var(--border); }
-  .EasyMDEContainer .CodeMirror-cursor { border-color: var(--text-primary); }
-  .EasyMDEContainer .editor-preview {
-    background: var(--bg-input);
-    color: var(--text-primary);
-  }
-  .EasyMDEContainer .editor-preview-side {
-    background: var(--bg-input);
-    color: var(--text-primary);
-    border-color: var(--border);
-  }
-  .EasyMDEContainer .CodeMirror-scroll { min-height: 500px; }
-  .EasyMDEContainer { border-radius: var(--radius-sm); overflow: hidden; }
-
-  /* Preview overlay prose styles */
-  #preview-content h1, #preview-content h2, #preview-content h3,
-  #preview-content h4, #preview-content h5, #preview-content h6 {
-    color: var(--text-primary); margin-top: 1.75rem; margin-bottom: 0.5rem; font-weight: 700; line-height: 1.3;
-  }
-  #preview-content h1 { font-size: 1.875rem; }
-  #preview-content h2 { font-size: 1.5rem; }
-  #preview-content h3 { font-size: 1.25rem; }
-  #preview-content p { margin-bottom: 1rem; }
-  #preview-content ul, #preview-content ol { padding-left: 1.5rem; margin-bottom: 1rem; }
-  #preview-content li { margin-bottom: 0.25rem; }
-  #preview-content code { background: var(--bg-hover); padding: 2px 6px; border-radius: 4px; font-size: 0.85em; font-family: ui-monospace, monospace; }
-  #preview-content pre { background: var(--bg-hover); padding: 1rem; border-radius: 8px; overflow-x: auto; margin-bottom: 1rem; }
-  #preview-content pre code { background: none; padding: 0; }
-  #preview-content blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--text-muted); margin-bottom: 1rem; }
-  #preview-content a { color: var(--accent); text-decoration: underline; }
-  #preview-content strong { font-weight: 700; }
-  #preview-content em { font-style: italic; }
-  #preview-content hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
-  #preview-content table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
-  #preview-content th, #preview-content td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; }
-  #preview-content th { background: var(--bg-hover); font-weight: 600; }
-  #preview-content img { max-width: 100%; border-radius: 8px; }
+  /* Preview overlay prose */
+  #preview-content h2, #preview-content h3, #preview-content h4 { color:var(--text-primary); margin-top:1.75rem; margin-bottom:0.5rem; font-weight:700; line-height:1.3; }
+  #preview-content h2 { font-size:1.5rem; } #preview-content h3 { font-size:1.25rem; }
+  #preview-content p { margin-bottom:1rem; }
+  #preview-content ul, #preview-content ol { padding-left:1.5rem; margin-bottom:1rem; }
+  #preview-content li { margin-bottom:0.25rem; }
+  #preview-content code { background:var(--bg-hover); padding:2px 6px; border-radius:4px; font-size:0.85em; font-family:ui-monospace,monospace; }
+  #preview-content pre { background:var(--bg-hover); padding:1rem; border-radius:8px; overflow-x:auto; margin-bottom:1rem; }
+  #preview-content pre code { background:none; padding:0; }
+  #preview-content blockquote { border-left:3px solid var(--accent); padding-left:1rem; color:var(--text-muted); margin-bottom:1rem; }
+  #preview-content a { color:var(--accent); text-decoration:underline; }
+  #preview-content strong { font-weight:700; } #preview-content em { font-style:italic; }
+  #preview-content hr { border:none; border-top:1px solid var(--border); margin:1.5rem 0; }
+  #preview-content table { width:100%; border-collapse:collapse; margin-bottom:1rem; }
+  #preview-content th, #preview-content td { border:1px solid var(--border); padding:0.5rem 0.75rem; }
+  #preview-content th { background:var(--bg-hover); font-weight:600; }
+  #preview-content img { max-width:100%; border-radius:8px; }
 
   /* SEO Analysis Panel */
-  .seo-tab {
-    padding: 0.5rem 0.875rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    background: none;
-    border: none;
-    border-bottom: 2px solid transparent;
-    cursor: pointer;
-    transition: color 0.15s, border-color 0.15s;
-    font-family: var(--font);
-  }
-  .seo-tab:hover { color: var(--text-primary); }
-  .seo-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .seo-tab-content { animation: seo-fade 0.15s ease; }
-  @keyframes seo-fade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
-  #seo-score-ring { transition: stroke-dashoffset 0.6s cubic-bezier(0.4,0,0.2,1), stroke 0.4s ease; }
-  #seo-serp-box strong { font-weight: 700; background: rgba(255,200,0,0.3); border-radius: 2px; }
+  .seo-tab { padding:0.5rem 0.875rem; font-size:0.8rem; font-weight:600; color:var(--text-muted); background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; transition:color 0.15s,border-color 0.15s; font-family:var(--font); }
+  .seo-tab:hover { color:var(--text-primary); }
+  .seo-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+  .seo-tab-content { animation:seo-fade 0.15s ease; }
+  @keyframes seo-fade { from { opacity:0; transform:translateY(3px); } to { opacity:1; transform:none; } }
+  #seo-score-ring { transition:stroke-dashoffset 0.6s cubic-bezier(0.4,0,0.2,1),stroke 0.4s ease; }
+  #seo-serp-box strong { font-weight:700; background:rgba(255,200,0,0.3); border-radius:2px; }
 </style>

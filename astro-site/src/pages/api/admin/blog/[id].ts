@@ -66,7 +66,6 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
   const supabase = getSupabaseAdmin();
 
   const createVersion = body._create_version === true;
-  delete body._create_version;
 
   // Fetch current post to check status transition and optionally snapshot
   const { data: existing } = await supabase
@@ -78,12 +77,26 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
   const newStatus = body.status as string | undefined;
   const isPublishing = newStatus === 'published' && existing?.status !== 'published';
 
-  // Auto-set pub_date when first publishing
-  if (isPublishing && !body.pub_date && !existing?.pub_date) {
-    body.pub_date = new Date().toISOString().split('T')[0];
+  // Allowlist the columns that can be updated — prevents mass assignment
+  const allowedFields = [
+    'title', 'slug', 'description', 'body_html', 'body_markdown', 'category',
+    'status', 'og_image', 'author_name', 'pub_date',
+    'meta_title', 'meta_description', 'focus_keyword',
+    'ar_title', 'ar_description', 'ar_body_markdown',
+    'ar_meta_title', 'ar_meta_description',
+  ] as const;
+
+  const updates: Record<string, unknown> = {};
+  for (const field of allowedFields) {
+    if (field in body) updates[field] = body[field];
   }
 
-  body.updated_at = new Date().toISOString();
+  // Auto-set pub_date when first publishing
+  if (isPublishing && !updates.pub_date && !existing?.pub_date) {
+    updates.pub_date = new Date().toISOString().split('T')[0];
+  }
+
+  updates.updated_at = new Date().toISOString();
 
   // Snapshot the current post as a new version before overwriting
   if (createVersion && existing) {
@@ -102,6 +115,7 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
       slug: existing.slug,
       description: existing.description,
       body_markdown: existing.body_markdown,
+      body_html: existing.body_html,
       category: existing.category,
       og_image: existing.og_image,
       status: existing.status,
@@ -114,7 +128,7 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
 
   const { data, error } = await supabase
     .from('blog_posts')
-    .update(body)
+    .update(updates)
     .eq('id', id!)
     .select()
     .single();
@@ -124,6 +138,17 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
+  }
+
+  // Sync tags if tag_ids provided
+  if (Array.isArray(body.tag_ids)) {
+    const tagIds = body.tag_ids as string[];
+    await supabase.from('blog_post_tags').delete().eq('post_id', id!);
+    if (tagIds.length > 0) {
+      await supabase.from('blog_post_tags').insert(
+        tagIds.map(tag_id => ({ post_id: id!, tag_id }))
+      );
+    }
   }
 
   // Write activity log

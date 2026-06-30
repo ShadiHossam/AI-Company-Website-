@@ -32,10 +32,14 @@ const { data: posts, error } = await query;
       <h1 style="font-size:1.375rem; font-weight:800; color:var(--text-primary);">Blog Posts</h1>
       <p class="text-muted text-sm" style="margin-top:2px;">{posts?.length ?? 0} post{posts?.length !== 1 ? 's' : ''}{statusFilter !== 'all' ? ` (${statusFilter})` : ''}</p>
     </div>
-    <a href="/admin/blog/new" class="btn btn-primary">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      New Post
-    </a>
+    <div class="flex gap-2">
+      <a href="/admin/blog/categories" class="btn btn-ghost btn-sm">Categories</a>
+      <a href="/admin/blog/tags" class="btn btn-ghost btn-sm">Tags</a>
+      <a href="/admin/blog/new" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Post
+      </a>
+    </div>
   </div>
 
   <!-- Status filter tabs -->
@@ -90,7 +94,7 @@ const { data: posts, error } = await query;
                 </td>
                 <td>
                   <span class={`badge ${post.status === 'published' ? 'badge-published' : post.status === 'draft' ? 'badge-draft' : ''}`}
-                    style={post.status === 'archived' ? 'background:rgba(245,158,11,0.12);color:#fbbf24;' : ''}
+                    style={post.status === 'archived' ? 'background:rgba(245,158,11,0.12);color:#fbbf24;' : post.status === 'scheduled' ? 'background:rgba(96,165,250,0.12);color:#60a5fa;' : ''}
                   >
                     {post.status}
                   </span>
@@ -102,6 +106,14 @@ const { data: posts, error } = await query;
                 <td style="text-align:right;">
                   <div class="flex gap-2" style="justify-content:flex-end;">
                     <a href={`/admin/blog/${post.id}`} class="btn btn-ghost btn-sm">Edit</a>
+                    <button
+                      class="btn btn-ghost btn-sm"
+                      data-duplicate-id={post.id}
+                      title="Duplicate as draft"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                      Dupe
+                    </button>
                     {post.status === 'published' && (
                       <a href={`/blog/${post.slug}`} target="_blank" rel="noopener" class="btn btn-ghost btn-sm">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
@@ -128,6 +140,33 @@ const { data: posts, error } = await query;
 </AdminLayout>
 
 <script>
+  document.querySelectorAll<HTMLButtonElement>('[data-duplicate-id]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.duplicateId!;
+      btn.disabled = true;
+      btn.textContent = '…';
+      try {
+        const res = await fetch('/api/admin/blog/duplicate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id }),
+        });
+        const { data, error } = await res.json();
+        if (res.ok && data?.id) {
+          window.location.href = `/admin/blog/${data.id}`;
+        } else {
+          alert(`Duplicate failed: ${error}`);
+          btn.disabled = false;
+          btn.textContent = 'Dupe';
+        }
+      } catch {
+        alert('Network error.');
+        btn.disabled = false;
+        btn.textContent = 'Dupe';
+      }
+    });
+  });
+
   document.querySelectorAll('[data-delete-id]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const id = (btn as HTMLElement).dataset.deleteId!;

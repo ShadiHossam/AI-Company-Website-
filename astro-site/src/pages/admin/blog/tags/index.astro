@@ -1,0 +1,186 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+
+const { count: unreadNotifs } = await supabase
+  .from('notifications')
+  .select('*', { count: 'exact', head: true })
+  .eq('read', false);
+
+const { data: tags } = await supabase
+  .from('blog_tags')
+  .select('*')
+  .order('name', { ascending: true });
+
+// Count posts per tag via junction table
+const { data: tagPostCounts } = await supabase
+  .from('blog_post_tags')
+  .select('tag_id');
+
+const countMap: Record<string, number> = {};
+for (const row of tagPostCounts ?? []) {
+  countMap[row.tag_id] = (countMap[row.tag_id] ?? 0) + 1;
+}
+---
+
+<AdminLayout title="Blog Tags" user={user} unreadCount={unreadNotifs ?? 0}>
+
+  <div class="flex items-center gap-3 mb-6">
+    <a href="/admin/blog" class="btn btn-ghost btn-sm">← Blog</a>
+    <div>
+      <h1 style="font-size:1.375rem; font-weight:800; color:var(--text-primary);">Tags</h1>
+      <p class="text-muted text-sm" style="margin-top:2px;">{tags?.length ?? 0} tag{tags?.length !== 1 ? 's' : ''}</p>
+    </div>
+    <div style="margin-left:auto;">
+      <a href="/admin/blog/categories" class="btn btn-ghost btn-sm">Manage Categories →</a>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 320px; gap:1.5rem; align-items:start;">
+
+    <!-- Tag list -->
+    <div class="card">
+      <div style="padding:1.25rem 1.5rem; border-bottom:1px solid var(--border);">
+        <span style="font-weight:700; font-size:0.95rem;">All Tags</span>
+      </div>
+      {!tags || tags.length === 0 ? (
+        <div style="padding:3rem; text-align:center; color:var(--text-muted); font-size:0.875rem;">
+          No tags yet. Create the first one.
+        </div>
+      ) : (
+        <div style="padding:1.25rem; display:flex; flex-wrap:wrap; gap:0.625rem;" id="tags-container">
+          {tags.map(tag => (
+            <div
+              id={`tag-${tag.id}`}
+              style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.375rem 0.75rem; background:var(--bg-hover); border:1px solid var(--border); border-radius:20px; font-size:0.8125rem;"
+            >
+              <span style="font-weight:600; color:var(--text-primary);">{tag.name}</span>
+              <span style="color:var(--text-muted); font-size:0.75rem;">({countMap[tag.id] ?? 0})</span>
+              <button
+                class="delete-tag-btn"
+                data-id={tag.id}
+                data-name={tag.name}
+                style="background:none; border:none; cursor:pointer; color:var(--text-muted); padding:0; display:flex; align-items:center; line-height:1;"
+                title={`Delete ${tag.name}`}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+
+    <!-- Create form -->
+    <div class="card" style="position:sticky; top:1.5rem;">
+      <div style="padding:1.25rem 1.5rem; border-bottom:1px solid var(--border);">
+        <span style="font-weight:700; font-size:0.95rem;">New Tag</span>
+      </div>
+      <div style="padding:1.5rem;">
+        <form id="tag-form">
+          <div class="form-group mb-4">
+            <label class="form-label">Tag Name <span style="color:var(--danger);">*</span></label>
+            <input id="tag-name" type="text" class="form-input" placeholder="automation" required />
+            <span class="text-xs text-muted" style="margin-top:4px; display:block;">Slug auto-generated from name</span>
+          </div>
+
+          <div class="flex gap-2 items-center">
+            <button type="submit" id="create-tag-btn" class="btn btn-primary">Add Tag</button>
+            <span id="tag-msg" style="display:none; font-size:0.875rem;"></span>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="toast" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;background:#1e2a40;border:1px solid var(--border);color:var(--text-primary);padding:0.75rem 1.25rem;border-radius:8px;font-size:0.875rem;z-index:9999;"></div>
+</AdminLayout>
+
+<script>
+  function toast(msg: string, ok = true) {
+    const t = document.getElementById('toast') as HTMLElement;
+    t.textContent = msg;
+    t.style.borderColor = ok ? 'rgba(74,222,128,0.3)' : 'rgba(248,113,113,0.3)';
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3500);
+  }
+
+  const form     = document.getElementById('tag-form') as HTMLFormElement;
+  const nameEl   = document.getElementById('tag-name') as HTMLInputElement;
+  const createBtn = document.getElementById('create-tag-btn') as HTMLButtonElement;
+  const tagMsg   = document.getElementById('tag-msg') as HTMLElement;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = nameEl.value.trim();
+    if (!name) return;
+
+    createBtn.disabled    = true;
+    createBtn.textContent = 'Adding…';
+
+    try {
+      const res  = await fetch('/api/admin/blog/tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Failed');
+
+      // Append new tag chip to the container
+      const container = document.getElementById('tags-container');
+      if (!container) { window.location.reload(); return; }
+
+      const chip = document.createElement('div');
+      chip.id = `tag-${json.data.id}`;
+      chip.style.cssText = 'display:inline-flex; align-items:center; gap:0.5rem; padding:0.375rem 0.75rem; background:var(--bg-hover); border:1px solid var(--border); border-radius:20px; font-size:0.8125rem;';
+      chip.innerHTML = `
+        <span style="font-weight:600; color:var(--text-primary);">${json.data.name}</span>
+        <span style="color:var(--text-muted); font-size:0.75rem;">(0)</span>
+        <button class="delete-tag-btn" data-id="${json.data.id}" data-name="${json.data.name}"
+          style="background:none; border:none; cursor:pointer; color:var(--text-muted); padding:0; display:flex; align-items:center; line-height:1;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>`;
+      container.appendChild(chip);
+      attachDeleteListener(chip.querySelector('.delete-tag-btn') as HTMLButtonElement);
+
+      form.reset();
+      toast('Tag added');
+    } catch (err: any) {
+      tagMsg.textContent   = `✗ ${err.message}`;
+      tagMsg.style.color   = '#f87171';
+      tagMsg.style.display = 'block';
+      setTimeout(() => { tagMsg.style.display = 'none'; }, 3000);
+      toast(err.message, false);
+    } finally {
+      createBtn.disabled    = false;
+      createBtn.textContent = 'Add Tag';
+    }
+  });
+
+  function attachDeleteListener(btn: HTMLButtonElement) {
+    btn.addEventListener('click', async () => {
+      const name = btn.dataset.name!;
+      if (!confirm(`Delete tag "${name}"? It will be removed from all posts.`)) return;
+      try {
+        const res = await fetch(`/api/admin/blog/tags/${btn.dataset.id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed');
+        document.getElementById(`tag-${btn.dataset.id}`)?.remove();
+        toast('Tag deleted');
+      } catch {
+        toast('Error deleting tag', false);
+      }
+    });
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('.delete-tag-btn').forEach(attachDeleteListener);
+</script>

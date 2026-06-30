@@ -124,6 +124,8 @@ function formatSize(bytes: number): string {
             <div class="thumb-checkbox" style="display:none; position:absolute; top:6px; left:6px; z-index:10;">
               <input type="checkbox" class="item-cb" data-id={item.id} style="width:16px; height:16px; accent-color:var(--accent); cursor:pointer;" />
             </div>
+            <!-- Usage badge (populated client-side) -->
+            <div class="usage-badge" style="display:none; position:absolute; top:6px; right:6px; z-index:10; font-size:0.65rem; font-weight:700; padding:2px 6px; border-radius:4px; letter-spacing:0.02em;"></div>
             <div style="height:140px; overflow:hidden; background:var(--bg-hover);">
               <img
                 src={item.public_url}
@@ -605,4 +607,33 @@ function formatSize(bytes: number): string {
       modalDeleteBtn.textContent = 'Delete';
     }
   });
+
+  // ─── Usage Badges ─────────────────────────────────────────────────────────────
+  (async () => {
+    try {
+      const res = await fetch('/api/admin/media/usage');
+      if (!res.ok) return;
+      const { usage } = await res.json() as { usage: Record<string, number> };
+      document.querySelectorAll<HTMLElement>('.media-thumb').forEach(thumb => {
+        const id = thumb.dataset.id!;
+        const badge = thumb.querySelector<HTMLElement>('.usage-badge');
+        if (!badge) return;
+        const count = usage[id] ?? 0;
+        if (count > 0) {
+          badge.textContent = `Used (${count})`;
+          badge.style.background = 'rgba(74,222,128,0.2)';
+          badge.style.color = '#4ade80';
+          badge.style.border = '1px solid rgba(74,222,128,0.3)';
+        } else {
+          badge.textContent = 'Unused';
+          badge.style.background = 'rgba(255,255,255,0.08)';
+          badge.style.color = 'var(--text-muted)';
+          badge.style.border = '1px solid rgba(255,255,255,0.1)';
+        }
+        badge.style.display = 'block';
+      });
+    } catch {
+      // silently fail — badges are non-critical
+    }
+  })();
 </script>

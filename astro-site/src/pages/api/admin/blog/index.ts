@@ -66,10 +66,10 @@ export const POST: APIRoute = async ({ locals, request }) => {
     });
   }
 
-  const { title, slug, description, body_markdown, category } = body as Record<string, string>;
-  if (!title || !slug || !description || !body_markdown || !category) {
+  const { title, slug, description, body_html, category } = body as Record<string, string>;
+  if (!title || !slug || !description || !body_html || !category) {
     return new Response(
-      JSON.stringify({ error: 'Missing required fields: title, slug, description, body_markdown, category' }),
+      JSON.stringify({ error: 'Missing required fields: title, slug, description, body_html, category' }),
       { status: 400, headers: { 'Content-Type': 'application/json' } }
     );
   }
@@ -81,12 +81,12 @@ export const POST: APIRoute = async ({ locals, request }) => {
     title,
     slug,
     description,
-    body_markdown,
+    body_html,
     category,
     status,
     og_image: (body.og_image as string) ?? '/assets/og-blog.jpg',
     author_name: (body.author_name as string) ?? 'Aegis AI',
-    pub_date: status === 'published' ? ((body.pub_date as string) ?? now) : (body.pub_date as string) ?? null,
+    pub_date: status === 'published' ? ((body.pub_date as string) ?? now) : status === 'scheduled' ? ((body.pub_date as string) ?? null) : (body.pub_date as string) ?? null,
     meta_title: (body.meta_title as string) ?? null,
     meta_description: (body.meta_description as string) ?? null,
     focus_keyword: (body.focus_keyword as string) ?? null,
@@ -109,6 +109,14 @@ export const POST: APIRoute = async ({ locals, request }) => {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
+  }
+
+  // Insert post→tag associations if any
+  const tagIds = Array.isArray(body.tag_ids) ? body.tag_ids as string[] : [];
+  if (tagIds.length > 0) {
+    await supabase.from('blog_post_tags').insert(
+      tagIds.map(tag_id => ({ post_id: data.id, tag_id }))
+    );
   }
 
   // Write activity log if published
