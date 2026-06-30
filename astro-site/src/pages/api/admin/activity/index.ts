@@ -34,7 +34,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
   const { data, error, count } = await query;
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 
   return new Response(JSON.stringify({ data, count, page, pageSize: PAGE_SIZE }), { status: 200 });

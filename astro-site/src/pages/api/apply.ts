@@ -51,6 +51,12 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 });
   }
 
+  // Reject javascript: and data: scheme URLs to prevent stored XSS
+  const dangerousScheme = (url: string) => /^(javascript|data):/i.test(url.trim());
+  if (dangerousScheme(cv_url) || (linkedin_url && dangerousScheme(linkedin_url)) || (portfolio_url && dangerousScheme(portfolio_url))) {
+    return new Response(JSON.stringify({ error: 'Invalid URL scheme' }), { status: 400 });
+  }
+
   const supabase = getSupabaseAdmin();
 
   const { data: inserted, error } = await supabase

@@ -29,9 +29,9 @@ export const GET: APIRoute = async ({ locals, url }) => {
     return new Response(JSON.stringify(data ?? []), {
       headers: { 'Content-Type': 'application/json' },
     });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: msg }), { status: 500 });
+  } catch {
+
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 };
 
@@ -42,7 +42,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
   const supabase = getSupabaseAdmin();
   try {
     const body = await request.json();
-    const { question, answer, section, sort_order = 0, published = true } = body;
+    const { question, answer, question_ar, answer_ar, section, sort_order = 0, published = true } = body;
 
     if (!question || !answer || !section) {
       return new Response(JSON.stringify({ error: 'question, answer, and section are required' }), { status: 400 });
@@ -50,14 +50,14 @@ export const POST: APIRoute = async ({ locals, request }) => {
 
     const { data, error } = await supabase
       .from('faq_items')
-      .insert({ question, answer, section, sort_order, published })
+      .insert({ question, answer, question_ar: question_ar || null, answer_ar: answer_ar || null, section, sort_order, published })
       .select()
       .single();
 
     if (error) throw error;
     return new Response(JSON.stringify(data), { status: 201, headers: { 'Content-Type': 'application/json' } });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: msg }), { status: 500 });
+  } catch {
+
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 };

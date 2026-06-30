@@ -82,6 +82,17 @@ const allSections = [...new Set([...usedSections, ...ALL_SECTIONS])];
                     <label class="form-label">Answer</label>
                     <textarea class="form-textarea faq-a-input" data-id={item.id} rows="4">{item.answer}</textarea>
                   </div>
+                  <div style="border-top:1px dashed var(--border);margin:1rem 0 1rem;padding-top:1rem;">
+                    <div style="font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem;">Arabic Translation (optional)</div>
+                    <div class="form-group mb-3">
+                      <label class="form-label">السؤال بالعربية</label>
+                      <textarea class="form-textarea faq-qar-input" data-id={item.id} rows="2" dir="rtl" style="text-align:right;" placeholder="السؤال بالعربية">{item.question_ar ?? ''}</textarea>
+                    </div>
+                    <div class="form-group mb-3">
+                      <label class="form-label">الإجابة بالعربية</label>
+                      <textarea class="form-textarea faq-aar-input" data-id={item.id} rows="4" dir="rtl" style="text-align:right;" placeholder="الإجابة بالعربية">{item.answer_ar ?? ''}</textarea>
+                    </div>
+                  </div>
                   <div class="flex items-center gap-3 mb-3">
                     <div class="form-group" style="margin:0;flex:0 0 100px;">
                       <label class="form-label">Sort Order</label>
@@ -111,6 +122,15 @@ const allSections = [...new Set([...usedSections, ...ALL_SECTIONS])];
             <div class="form-group mb-3">
               <label class="form-label">Answer</label>
               <textarea class="form-textarea new-faq-a" data-section={section} rows="3" placeholder="Answer text..."></textarea>
+            </div>
+            <div style="border-top:1px dashed var(--border);margin:0.75rem 0;padding-top:0.75rem;">
+              <div style="font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">Arabic Translation (optional)</div>
+              <div class="form-group mb-2">
+                <textarea class="form-textarea new-faq-qar" data-section={section} rows="2" dir="rtl" style="text-align:right;" placeholder="السؤال بالعربية"></textarea>
+              </div>
+              <div class="form-group mb-3">
+                <textarea class="form-textarea new-faq-aar" data-section={section} rows="3" dir="rtl" style="text-align:right;" placeholder="الإجابة بالعربية"></textarea>
+              </div>
             </div>
             <button class="btn btn-secondary btn-sm add-faq-btn" data-section={section}>+ Add Question</button>
           </div>
@@ -181,13 +201,15 @@ const allSections = [...new Set([...usedSections, ...ALL_SECTIONS])];
 
       const q = (document.querySelector(`.faq-q-input[data-id="${id}"]`) as HTMLTextAreaElement).value;
       const a = (document.querySelector(`.faq-a-input[data-id="${id}"]`) as HTMLTextAreaElement).value;
+      const qar = (document.querySelector(`.faq-qar-input[data-id="${id}"]`) as HTMLTextAreaElement)?.value ?? '';
+      const aar = (document.querySelector(`.faq-aar-input[data-id="${id}"]`) as HTMLTextAreaElement)?.value ?? '';
       const sort = parseInt((document.querySelector(`.faq-sort-input[data-id="${id}"]`) as HTMLInputElement).value ?? '0', 10);
       const pub = (document.querySelector(`.faq-pub-input[data-id="${id}"]`) as HTMLInputElement).checked;
 
       const res = await fetch(`/api/admin/content/faq/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q, answer: a, sort_order: sort, published: pub }),
+        body: JSON.stringify({ question: q, answer: a, question_ar: qar, answer_ar: aar, sort_order: sort, published: pub }),
       });
 
       if (res.ok) {
@@ -230,6 +252,8 @@ const allSections = [...new Set([...usedSections, ...ALL_SECTIONS])];
       const section = el.dataset.section!;
       const qEl = document.querySelector(`.new-faq-q[data-section="${section}"]`) as HTMLTextAreaElement;
       const aEl = document.querySelector(`.new-faq-a[data-section="${section}"]`) as HTMLTextAreaElement;
+      const qarEl = document.querySelector(`.new-faq-qar[data-section="${section}"]`) as HTMLTextAreaElement;
+      const aarEl = document.querySelector(`.new-faq-aar[data-section="${section}"]`) as HTMLTextAreaElement;
 
       if (!qEl.value.trim() || !aEl.value.trim()) {
         showMsg('Question and answer are required.', 'error');
@@ -241,7 +265,7 @@ const allSections = [...new Set([...usedSections, ...ALL_SECTIONS])];
       const res = await fetch('/api/admin/content/faq', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: qEl.value, answer: aEl.value, section, sort_order: 0, published: true }),
+        body: JSON.stringify({ question: qEl.value, answer: aEl.value, question_ar: qarEl?.value || null, answer_ar: aarEl?.value || null, section, sort_order: 0, published: true }),
       });
 
       if (res.ok) {
@@ -265,6 +289,8 @@ const allSections = [...new Set([...usedSections, ...ALL_SECTIONS])];
         list.appendChild(div);
         qEl.value = '';
         aEl.value = '';
+        if (qarEl) qarEl.value = '';
+        if (aarEl) aarEl.value = '';
         showMsg('FAQ item added. Reload to edit it.');
       } else {
         showMsg('Add failed.', 'error');

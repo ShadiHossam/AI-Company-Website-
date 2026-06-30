@@ -41,9 +41,9 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
 
     if (error) throw error;
     return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: msg }), { status: 500 });
+  } catch {
+
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 };
 
@@ -56,8 +56,8 @@ export const DELETE: APIRoute = async ({ locals, params, request }) => {
     const { error } = await supabase.from('products').delete().eq('id', params.id!);
     if (error) throw error;
     return new Response(JSON.stringify({ success: true }), { status: 200 });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: msg }), { status: 500 });
+  } catch {
+
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 };

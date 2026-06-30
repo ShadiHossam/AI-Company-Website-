@@ -32,7 +32,11 @@ export const GET: APIRoute = async ({ locals, url }) => {
   if (industry) query = query.eq('industry', industry);
   if (dateFrom) query = query.gte('created_at', dateFrom);
   if (dateTo)   query = query.lte('created_at', dateTo + 'T23:59:59Z');
-  if (search)   query = query.or(`full_name.ilike.%${search}%,company_name.ilike.%${search}%,work_email.ilike.%${search}%`);
+  // Strip characters that could break PostgREST's .or() filter string parsing
+  if (search) {
+    const safeSearch = search.replace(/[%_(),]/g, '');
+    query = query.or(`full_name.ilike.%${safeSearch}%,company_name.ilike.%${safeSearch}%,work_email.ilike.%${safeSearch}%`);
+  }
 
   if (format === 'csv') {
     // Return all records for CSV
@@ -63,19 +67,32 @@ export const GET: APIRoute = async ({ locals, url }) => {
   });
 };
 
+const VALID_LEAD_STATUSES = ['new', 'contacted', 'qualified', 'proposal_sent', 'closed_won', 'closed_lost', 'on_hold'];
+
 // PATCH /api/admin/leads — bulk status update
 export const PATCH: APIRoute = async ({ locals, request }) => {
   if (!locals.user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   if (!CSRF_CHECK(request)) return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
 
-  const { ids, status } = await request.json();
+  let body: { ids?: string[]; status?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 });
+  }
+
+  const { ids, status } = body;
   if (!ids?.length || !status) {
     return new Response(JSON.stringify({ error: 'ids and status required' }), { status: 400 });
   }
 
+  if (!VALID_LEAD_STATUSES.includes(status)) {
+    return new Response(JSON.stringify({ error: `status must be one of: ${VALID_LEAD_STATUSES.join(', ')}` }), { status: 400 });
+  }
+
   const supabase = getSupabaseAdmin();
   const { error } = await supabase.from('leads').update({ status }).in('id', ids);
-  if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  if (error) return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
 
   return new Response(JSON.stringify({ success: true }), { status: 200 });
 };

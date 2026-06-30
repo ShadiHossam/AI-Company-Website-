@@ -9,6 +9,8 @@ const CSRF = (req: Request) => {
   return import.meta.env.DEV || origin === siteUrl;
 };
 
+const ALLOWED_FIELDS = ['company_name', 'logo_url', 'website_url', 'industry', 'show_on_homepage', 'active', 'sort_order'];
+
 export const GET: APIRoute = async ({ locals, params }) => {
   if (!locals.user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
 
@@ -22,9 +24,8 @@ export const GET: APIRoute = async ({ locals, params }) => {
 
     if (error) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404 });
     return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: msg }), { status: 500 });
+  } catch {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 };
 
@@ -34,8 +35,11 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
 
   const supabase = getSupabaseAdmin();
   try {
-    const updates = await request.json();
-    updates.updated_at = new Date().toISOString();
+    const body = await request.json();
+    const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    for (const field of ALLOWED_FIELDS) {
+      if (field in body) updates[field] = body[field];
+    }
 
     const { data, error } = await supabase
       .from('client_logos')
@@ -54,9 +58,8 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
     });
 
     return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: msg }), { status: 500 });
+  } catch {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 };
 
@@ -77,8 +80,7 @@ export const DELETE: APIRoute = async ({ locals, params, request }) => {
     });
 
     return new Response(JSON.stringify({ success: true }), { status: 200 });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: msg }), { status: 500 });
+  } catch {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 };

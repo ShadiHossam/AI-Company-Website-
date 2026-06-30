@@ -191,7 +191,7 @@ describe('PATCH /api/admin/leads (bulk)', () => {
     };
     const res = await PATCH(ctx as any);
     expect(res.status).toBe(500);
-    expect((await res.json()).error).toBe('DB constraint');
+    expect((await res.json()).error).toBe('Internal server error');
   });
 });
 

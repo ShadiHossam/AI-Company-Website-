@@ -57,6 +57,14 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
     return new Response(JSON.stringify({ error: 'message required' }), { status: 400 });
   }
 
+  // Reject javascript: and data: scheme URLs to prevent stored XSS
+  if (body.cta_url) {
+    const scheme = body.cta_url.trim().toLowerCase();
+    if (scheme.startsWith('javascript:') || scheme.startsWith('data:')) {
+      return new Response(JSON.stringify({ error: 'Invalid cta_url scheme' }), { status: 400 });
+    }
+  }
+
   const supabase = getSupabaseAdmin();
 
   const record: Record<string, unknown> = {

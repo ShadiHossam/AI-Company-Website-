@@ -4,6 +4,23 @@ import { supabaseBrowser } from '../../../../lib/supabase-browser';
 
 export const prerender = false;
 
+// Brute-force protection: 10 attempts per IP per 15 minutes
+const loginAttempts = new Map<string, { count: number; resetAt: number }>();
+const LOGIN_LIMIT = 10;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+
+function checkLoginRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = loginAttempts.get(ip);
+  if (!entry || now > entry.resetAt) {
+    loginAttempts.set(ip, { count: 1, resetAt: now + LOGIN_WINDOW_MS });
+    return true;
+  }
+  if (entry.count >= LOGIN_LIMIT) return false;
+  entry.count++;
+  return true;
+}
+
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const origin = request.headers.get('origin');
   const siteUrl = import.meta.env.SITE_URL ?? 'https://aegisai.ae';
@@ -22,6 +39,13 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   if (!email || !password) {
     return new Response(JSON.stringify({ error: 'Email and password required' }), { status: 400 });
+  }
+
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? request.headers.get('x-real-ip')
+    ?? 'unknown';
+  if (!checkLoginRateLimit(ip)) {
+    return new Response(JSON.stringify({ error: 'Too many login attempts. Try again later.' }), { status: 429 });
   }
 
   if (!supabaseBrowser) {

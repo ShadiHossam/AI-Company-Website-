@@ -33,9 +33,15 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
   if (!locals.user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   if (!CSRF_CHECK(request)) return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
 
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 });
+  }
+
   const supabase = getSupabaseAdmin();
-  const body = await request.json();
-  const ALLOWED_FIELDS = ['status', 'internal_notes', 'assigned_to', 'budget_range', 'ai_experience', 'meeting_format', 'preferred_date', 'preferred_time', 'notes'];
+  const ALLOWED_FIELDS = ['status', 'internal_notes', 'assigned_to', 'budget_range', 'ai_experience', 'meeting_format', 'preferred_date', 'preferred_time', 'notes', 'next_action', 'next_action_date', 'estimated_value_aed', 'tags'];
   const updates = Object.fromEntries(Object.entries(body).filter(([k]) => ALLOWED_FIELDS.includes(k)));
 
   // Capture before state for audit log

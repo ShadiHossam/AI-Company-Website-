@@ -58,7 +58,7 @@ describe('GET /api/admin/media', () => {
     const ctx = { locals: makeLocals(), url: new URL('https://aegisai.ae/api/admin/media') };
     const res = await GET(ctx as any);
     expect(res.status).toBe(500);
-    expect((await res.json()).error).toBe('DB fail');
+    expect((await res.json()).error).toBe('Internal server error');
   });
 });
 

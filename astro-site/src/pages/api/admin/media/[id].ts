@@ -92,7 +92,7 @@ export const DELETE: APIRoute = async ({ locals, params, request }) => {
     .eq('id', id!);
 
   if (dbError) {
-    return new Response(JSON.stringify({ error: dbError.message }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });

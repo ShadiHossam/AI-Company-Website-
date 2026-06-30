@@ -29,10 +29,25 @@ export const PATCH: APIRoute = async ({ request, locals, params }) => {
     return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 });
   }
 
+  const SAFE_PATH = /^\/[\w\-/.]*$/;
+  const ALLOWED_STATUS_CODES = [301, 302, 307, 308];
+
   const updates: Record<string, unknown> = {};
   if (body.active !== undefined) updates.active = body.active;
-  if (body.to_path !== undefined) updates.to_path = body.to_path;
-  if (body.status_code !== undefined) updates.status_code = body.status_code;
+
+  if (body.to_path !== undefined) {
+    if (!SAFE_PATH.test(body.to_path)) {
+      return new Response(JSON.stringify({ error: 'to_path must be a simple relative path starting with /' }), { status: 400 });
+    }
+    updates.to_path = body.to_path;
+  }
+
+  if (body.status_code !== undefined) {
+    if (!ALLOWED_STATUS_CODES.includes(body.status_code)) {
+      return new Response(JSON.stringify({ error: `status_code must be one of ${ALLOWED_STATUS_CODES.join(', ')}` }), { status: 400 });
+    }
+    updates.status_code = body.status_code;
+  }
 
   if (Object.keys(updates).length === 0) {
     return new Response(JSON.stringify({ error: 'No updates provided' }), { status: 400 });

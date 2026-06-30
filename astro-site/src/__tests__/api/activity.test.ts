@@ -86,6 +86,6 @@ describe('GET /api/admin/activity', () => {
     };
     const res = await GET(ctx as any);
     expect(res.status).toBe(500);
-    expect((await res.json()).error).toBe('timeout');
+    expect((await res.json()).error).toBe('Internal server error');
   });
 });

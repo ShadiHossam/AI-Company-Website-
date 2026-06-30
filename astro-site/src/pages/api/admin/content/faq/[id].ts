@@ -16,11 +16,13 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
   const supabase = getSupabaseAdmin();
   try {
     const body = await request.json();
-    const { question, answer, section, sort_order, published } = body;
+    const { question, answer, question_ar, answer_ar, section, sort_order, published } = body;
 
     const updates: Record<string, unknown> = {};
     if (question !== undefined) updates.question = question;
     if (answer !== undefined) updates.answer = answer;
+    if (question_ar !== undefined) updates.question_ar = question_ar || null;
+    if (answer_ar !== undefined) updates.answer_ar = answer_ar || null;
     if (section !== undefined) updates.section = section;
     if (sort_order !== undefined) updates.sort_order = sort_order;
     if (published !== undefined) updates.published = published;
@@ -34,9 +36,9 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
 
     if (error) throw error;
     return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: msg }), { status: 500 });
+  } catch {
+
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 };
 
@@ -49,8 +51,8 @@ export const DELETE: APIRoute = async ({ locals, params, request }) => {
     const { error } = await supabase.from('faq_items').delete().eq('id', params.id!);
     if (error) throw error;
     return new Response(JSON.stringify({ success: true }), { status: 200 });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: msg }), { status: 500 });
+  } catch {
+
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 };

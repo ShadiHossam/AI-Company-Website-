@@ -27,9 +27,8 @@ export const GET: APIRoute = async ({ locals, params }) => {
 
     if (error) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404 });
     return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: msg }), { status: 500 });
+  } catch {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 };
 
@@ -60,8 +59,7 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
 
     if (error) throw error;
     return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: msg }), { status: 500 });
+  } catch {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 };

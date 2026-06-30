@@ -18,7 +18,7 @@ const VALID_POST_BODY = {
   title: 'Test Post',
   slug: 'test-post',
   description: 'A test description',
-  body_markdown: '# Hello',
+  body_html: '<h1>Hello</h1>',
   category: 'tech',
   status: 'draft',
 };
@@ -102,11 +102,11 @@ describe('POST /api/admin/blog', () => {
   });
 
   it.each([
-    [{ slug: 'x', description: 'y', body_markdown: 'z', category: 'c' }, 'title missing'],
-    [{ title: 'x', description: 'y', body_markdown: 'z', category: 'c' }, 'slug missing'],
-    [{ title: 'x', slug: 'x', body_markdown: 'z', category: 'c' }, 'description missing'],
-    [{ title: 'x', slug: 'x', description: 'y', category: 'c' }, 'body_markdown missing'],
-    [{ title: 'x', slug: 'x', description: 'y', body_markdown: 'z' }, 'category missing'],
+    [{ slug: 'x', description: 'y', body_html: '<p>z</p>', category: 'c' }, 'title missing'],
+    [{ title: 'x', description: 'y', body_html: '<p>z</p>', category: 'c' }, 'slug missing'],
+    [{ title: 'x', slug: 'x', body_html: '<p>z</p>', category: 'c' }, 'description missing'],
+    [{ title: 'x', slug: 'x', description: 'y', category: 'c' }, 'body_html missing'],
+    [{ title: 'x', slug: 'x', description: 'y', body_html: '<p>z</p>' }, 'category missing'],
   ])('returns 400 for incomplete body (%s)', async (body) => {
     const ctx = { locals: makeLocals(), request: makeRequest(body) };
     const res = await POST(ctx as any);

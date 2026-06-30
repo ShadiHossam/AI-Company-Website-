@@ -1,6 +1,40 @@
 ---
 export const prerender = false;
 import ArBaseLayout from '../../layouts/ArBaseLayout.astro';
+import { getSupabaseAdmin } from '../../lib/supabase';
+
+const supabase = getSupabaseAdmin();
+const { data: dbItems } = await supabase
+  .from('faq_items')
+  .select('id, question_ar, answer_ar, section, sort_order')
+  .not('question_ar', 'is', null)
+  .not('answer_ar', 'is', null)
+  .eq('published', true)
+  .order('section', { ascending: true })
+  .order('sort_order', { ascending: true });
+
+// Group DB items by section
+const AR_SECTION_META: Record<string, { label: string; icon: string }> = {
+  getting_started: { label: 'البدء والتكاليف', icon: 'payments' },
+  guarantee:       { label: 'الضمان والنتائج', icon: 'shield' },
+  technical:       { label: 'التقنية والدعم', icon: 'settings' },
+  custom_ai:       { label: 'الذكاء الاصطناعي المخصص', icon: 'smart_toy' },
+  strategy:        { label: 'الاستراتيجية', icon: 'analytics' },
+  training:        { label: 'التدريب', icon: 'school' },
+  real_estate:     { label: 'العقارات', icon: 'apartment' },
+  retail:          { label: 'التجزئة', icon: 'store' },
+  hospitality:     { label: 'الضيافة', icon: 'hotel' },
+  logistics:       { label: 'اللوجستيات', icon: 'local_shipping' },
+};
+
+const grouped: Record<string, { question_ar: string; answer_ar: string }[]> = {};
+for (const item of dbItems ?? []) {
+  if (!item.question_ar || !item.answer_ar) continue;
+  if (!grouped[item.section]) grouped[item.section] = [];
+  grouped[item.section].push({ question_ar: item.question_ar, answer_ar: item.answer_ar });
+}
+const dbSections = Object.keys(grouped);
+const useDB = dbSections.length > 0;
 
 const ldJson = [
   {
@@ -111,119 +145,144 @@ const ldJson = [
 <section class="section">
   <div class="container faq-container">
 
-    <!-- Section 1: البدء والتكاليف -->
-    <div class="faq-section-block">
-      <h2 class="faq-section-title">
-        <span class="material-symbols-outlined" style="font-size:20px;direction:ltr;" aria-hidden="true">payments</span>
-        البدء والتكاليف
-      </h2>
-      <div class="faq-list">
-        <div class="faq-item">
-          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-            كم تكلّف خدمات الذكاء الاصطناعي من Aegis AI؟
-            <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-          </button>
-          <div class="faq-body">التكلفة تعتمد على نوع الحل وحجم الشركة. مشاريع الأتمتة البسيطة تبدأ من ٨٬٠٠٠ درهم، والأنظمة المخصصة من ١٨٬٠٠٠ درهم، والمشاريع المتكاملة الشاملة من ٣٥٬٠٠٠ درهم. نبني كل مشروع وفق احتياجاتك الفعلية، لا حلول جاهزة بسعر موحّد. <a href="/ar/pricing">تفاصيل الأسعار هنا ←</a></div>
+    {useDB ? dbSections.map(section => {
+      const meta = AR_SECTION_META[section] ?? { label: section, icon: 'help' };
+      return (
+        <div class="faq-section-block">
+          <h2 class="faq-section-title">
+            <span class="material-symbols-outlined" style="font-size:20px;direction:ltr;" aria-hidden="true">{meta.icon}</span>
+            {meta.label}
+          </h2>
+          <div class="faq-list">
+            {grouped[section].map(item => (
+              <div class="faq-item">
+                <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                  {item.question_ar}
+                  <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+                </button>
+                <div class="faq-body">{item.answer_ar}</div>
+              </div>
+            ))}
+          </div>
         </div>
-        <div class="faq-item">
-          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-            كم يستغرق بناء الحل وإطلاقه؟
-            <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-          </button>
-          <div class="faq-body">تعتمد المدة على نوع الحل ومتطلباته. دائماً نبدأ بأعلى نقطة تأثير لترى نتيجة سريعة قبل اكتمال المشروع الكامل.</div>
+      );
+    }) : (
+      <>
+        <!-- Section 1: البدء والتكاليف -->
+        <div class="faq-section-block">
+          <h2 class="faq-section-title">
+            <span class="material-symbols-outlined" style="font-size:20px;direction:ltr;" aria-hidden="true">payments</span>
+            البدء والتكاليف
+          </h2>
+          <div class="faq-list">
+            <div class="faq-item">
+              <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                كم تكلّف خدمات الذكاء الاصطناعي من Aegis AI؟
+                <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+              </button>
+              <div class="faq-body">التكلفة تعتمد على نوع الحل وحجم الشركة. مشاريع الأتمتة البسيطة تبدأ من ٨٬٠٠٠ درهم، والأنظمة المخصصة من ١٨٬٠٠٠ درهم، والمشاريع المتكاملة الشاملة من ٣٥٬٠٠٠ درهم. نبني كل مشروع وفق احتياجاتك الفعلية، لا حلول جاهزة بسعر موحّد. <a href="/ar/pricing">تفاصيل الأسعار هنا ←</a></div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                كم يستغرق بناء الحل وإطلاقه؟
+                <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+              </button>
+              <div class="faq-body">تعتمد المدة على نوع الحل ومتطلباته. دائماً نبدأ بأعلى نقطة تأثير لترى نتيجة سريعة قبل اكتمال المشروع الكامل.</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                ما الحجم الأدنى لشركتي للاستفادة من الذكاء الاصطناعي؟
+                <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+              </button>
+              <div class="faq-body">لا يوجد حد أدنى. عملنا مع شركات من ٥ موظفين وشركات من ٢٠٠+. المعيار الأهم هو: هل لديك عمليات متكررة تستهلك وقت فريقك؟ إذا كانت الإجابة نعم، الذكاء الاصطناعي يساعد بغض النظر عن حجمك.</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                هل هناك عقد طويل الأجل أو التزام شهري؟
+                <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+              </button>
+              <div class="faq-body">لا عقود طويلة ولا رسوم شهرية مخفية. ندفع مقابل المشروع المُحدد بالاتفاق. بعض الأنظمة قد تحتاج رسوم استضافة شهرية منخفضة للبنية التحتية، نوضحها مقدماً بشفافية تامة قبل البدء.</div>
+            </div>
+          </div>
         </div>
-        <div class="faq-item">
-          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-            ما الحجم الأدنى لشركتي للاستفادة من الذكاء الاصطناعي؟
-            <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-          </button>
-          <div class="faq-body">لا يوجد حد أدنى. عملنا مع شركات من ٥ موظفين وشركات من ٢٠٠+. المعيار الأهم هو: هل لديك عمليات متكررة تستهلك وقت فريقك؟ إذا كانت الإجابة نعم، الذكاء الاصطناعي يساعد بغض النظر عن حجمك.</div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-            هل هناك عقد طويل الأجل أو التزام شهري؟
-            <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-          </button>
-          <div class="faq-body">لا عقود طويلة ولا رسوم شهرية مخفية. ندفع مقابل المشروع المُحدد بالاتفاق. بعض الأنظمة قد تحتاج رسوم استضافة شهرية منخفضة للبنية التحتية، نوضحها مقدماً بشفافية تامة قبل البدء.</div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Section 2: التقنية والدعم -->
-    <div class="faq-section-block">
-      <h2 class="faq-section-title">
-        <span class="material-symbols-outlined" style="font-size:20px;direction:ltr;" aria-hidden="true">settings</span>
-        التقنية والدعم
-      </h2>
-      <div class="faq-list">
-        <div class="faq-item">
-          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-            هل يعمل الذكاء الاصطناعي باللغة العربية بشكل صحيح؟
-            <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-          </button>
-          <div class="faq-body">نعم. نبني حلولاً تعمل بالعربية الفصحى والدارجة الإماراتية والخليجية. معظم مشاريعنا تدعم العربية والإنجليزية في نفس النظام، لأن سوق دبي يحتاج كليهما. اللغة العربية ليست إضافة بل جزء أساسي من التصميم.</div>
+        <!-- Section 2: التقنية والدعم -->
+        <div class="faq-section-block">
+          <h2 class="faq-section-title">
+            <span class="material-symbols-outlined" style="font-size:20px;direction:ltr;" aria-hidden="true">settings</span>
+            التقنية والدعم
+          </h2>
+          <div class="faq-list">
+            <div class="faq-item">
+              <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                هل يعمل الذكاء الاصطناعي باللغة العربية بشكل صحيح؟
+                <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+              </button>
+              <div class="faq-body">نعم. نبني حلولاً تعمل بالعربية الفصحى والدارجة الإماراتية والخليجية. معظم مشاريعنا تدعم العربية والإنجليزية في نفس النظام، لأن سوق دبي يحتاج كليهما. اللغة العربية ليست إضافة بل جزء أساسي من التصميم.</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                كيف تتكاملون مع الأنظمة التي نستخدمها حالياً؟
+                <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+              </button>
+              <div class="faq-body">نعمل مع معظم الأنظمة الشائعة، منها Zoho وOdoo وأنظمة نقاط البيع وبرامج إدارة العلاقات والموارد المختلفة. حتى الأنظمة القديمة التي لا تملك API جيداً، نملك طرقاً بديلة للتكامل في معظم الحالات. نفحص هذا معاً في جلسة التشخيص.</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                من يدير النظام بعد الإطلاق؟
+                <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+              </button>
+              <div class="faq-body">هدفنا أن يكون النظام مستقلاً بعد الإطلاق. فريقك يستخدمه بدون الحاجة لمساعدتنا المستمرة. نوفر وثائق واضحة وتدريباً للفريق. لمن يريد دعماً مستمراً، نقدم خدمة متابعة اختيارية بتكلفة شهرية معقولة.</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                ماذا يحدث إذا توقف النظام أو ظهرت مشكلة بعد التسليم؟
+                <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+              </button>
+              <div class="faq-body">خلال ٣٠ يوماً من التسليم، نُصلح أي مشكلة تقنية مجاناً. بعد ذلك، إذا كانت المشكلة من بنائنا وليس من تعديلات أجريتها، نُصلحها بتكلفة رمزية. نحن فريق مقيم في دبي، لسنا شركة تختفي بعد التسليم.</div>
+            </div>
+          </div>
         </div>
-        <div class="faq-item">
-          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-            كيف تتكاملون مع الأنظمة التي نستخدمها حالياً؟
-            <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-          </button>
-          <div class="faq-body">نعمل مع معظم الأنظمة الشائعة، منها Zoho وOdoo وأنظمة نقاط البيع وبرامج إدارة العلاقات والموارد المختلفة. حتى الأنظمة القديمة التي لا تملك API جيداً، نملك طرقاً بديلة للتكامل في معظم الحالات. نفحص هذا معاً في جلسة التشخيص.</div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-            من يدير النظام بعد الإطلاق؟
-            <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-          </button>
-          <div class="faq-body">هدفنا أن يكون النظام مستقلاً بعد الإطلاق. فريقك يستخدمه بدون الحاجة لمساعدتنا المستمرة. نوفر وثائق واضحة وتدريباً للفريق. لمن يريد دعماً مستمراً، نقدم خدمة متابعة اختيارية بتكلفة شهرية معقولة.</div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-            ماذا يحدث إذا توقف النظام أو ظهرت مشكلة بعد التسليم؟
-            <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-          </button>
-          <div class="faq-body">خلال ٣٠ يوماً من التسليم، نُصلح أي مشكلة تقنية مجاناً. بعد ذلك، إذا كانت المشكلة من بنائنا وليس من تعديلات أجريتها، نُصلحها بتكلفة رمزية. نحن فريق مقيم في دبي، لسنا شركة تختفي بعد التسليم.</div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Section 3: الضمان والنتائج -->
-    <div class="faq-section-block">
-      <h2 class="faq-section-title">
-        <span class="material-symbols-outlined" style="font-size:20px;direction:ltr;" aria-hidden="true">shield</span>
-        الضمان والنتائج
-      </h2>
-      <div class="faq-list">
-        <div class="faq-item">
-          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-            ما تفاصيل ضمان الاسترداد ١٠٠٪؟
-            <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-          </button>
-          <div class="faq-body">إذا لم تكن راضياً عن النتيجة خلال ٣٠ يوماً من تسليم المشروع، نردّ ١٠٠٪ من المبلغ المدفوع دون أسئلة. هذا الضمان يشمل جميع مشاريعنا، لأننا واثقون من جودة عملنا ولا نريدك أن تخاطر بأي شيء.</div>
+        <!-- Section 3: الضمان والنتائج -->
+        <div class="faq-section-block">
+          <h2 class="faq-section-title">
+            <span class="material-symbols-outlined" style="font-size:20px;direction:ltr;" aria-hidden="true">shield</span>
+            الضمان والنتائج
+          </h2>
+          <div class="faq-list">
+            <div class="faq-item">
+              <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                ما تفاصيل ضمان الاسترداد ١٠٠٪؟
+                <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+              </button>
+              <div class="faq-body">إذا لم تكن راضياً عن النتيجة خلال ٣٠ يوماً من تسليم المشروع، نردّ ١٠٠٪ من المبلغ المدفوع دون أسئلة. هذا الضمان يشمل جميع مشاريعنا، لأننا واثقون من جودة عملنا ولا نريدك أن تخاطر بأي شيء.</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                كم من الوقت حتى نرى نتائج ملموسة؟
+                <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+              </button>
+              <div class="faq-body">في معظم المشاريع ترى تأثيراً واضحاً في الأسبوع الأول بعد الإطلاق. مشاريع تحسين المسارات والمخزون تُظهر أرقاماً قابلة للقياس فوراً. مشاريع التنبؤ والتحليل تحتاج فترة لتراكم البيانات وإعطاء تنبؤات دقيقة.</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                ما القطاعات التي تعملون فيها؟
+                <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+              </button>
+              <div class="faq-body">نُركّز على أربعة قطاعات رئيسية في دبي والإمارات: العقارات، الضيافة والفنادق، التجزئة، والخدمات اللوجستية. نعمل أيضاً مع شركات في الخدمات المهنية والتعليم والرعاية الصحية. إذا كانت لديك عمليات متكررة، على الأرجح نستطيع مساعدتك.</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                لماذا أختار Aegis AI وليس شركة أخرى؟
+                <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+              </button>
+              <div class="faq-body">ثلاثة أسباب: أولاً، نحن فريق مقيم في دبي يفهم السوق المحلي واللغة العربية من الداخل، لا شركة بعيدة تبيع حلولاً جاهزة. ثانياً، نبني كل شيء مخصصاً لشركتك. ثالثاً، ضماننا ١٠٠٪ يعني أنك لا تخاطر بشيء: إما تحصل على النتيجة أو تستعيد مالك.</div>
+            </div>
+          </div>
         </div>
-        <div class="faq-item">
-          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-            كم من الوقت حتى نرى نتائج ملموسة؟
-            <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-          </button>
-          <div class="faq-body">في معظم المشاريع ترى تأثيراً واضحاً في الأسبوع الأول بعد الإطلاق. مشاريع تحسين المسارات والمخزون تُظهر أرقاماً قابلة للقياس فوراً. مشاريع التنبؤ والتحليل تحتاج فترة لتراكم البيانات وإعطاء تنبؤات دقيقة.</div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-            ما القطاعات التي تعملون فيها؟
-            <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-          </button>
-          <div class="faq-body">نُركّز على أربعة قطاعات رئيسية في دبي والإمارات: العقارات، الضيافة والفنادق، التجزئة، والخدمات اللوجستية. نعمل أيضاً مع شركات في الخدمات المهنية والتعليم والرعاية الصحية. إذا كانت لديك عمليات متكررة، على الأرجح نستطيع مساعدتك.</div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-            لماذا أختار Aegis AI وليس شركة أخرى؟
-            <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-          </button>
-          <div class="faq-body">ثلاثة أسباب: أولاً، نحن فريق مقيم في دبي يفهم السوق المحلي واللغة العربية من الداخل، لا شركة بعيدة تبيع حلولاً جاهزة. ثانياً، نبني كل شيء مخصصاً لشركتك. ثالثاً، ضماننا ١٠٠٪ يعني أنك لا تخاطر بشيء: إما تحصل على النتيجة أو تستعيد مالك.</div>
-        </div>
-      </div>
-    </div>
+      </>
+    )}
 
   </div>
 </section>
