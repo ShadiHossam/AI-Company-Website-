@@ -7,6 +7,10 @@ const supabaseConfigured = (() => {
   return url.length > 0 && !url.includes('placeholder');
 })();
 
+// Mirror/staging deployments (e.g. the o2switch subdomain) must never be indexed —
+// canonical tags alone are a hint, not a directive, so this blocks crawlers outright.
+const isMirrorDeployment = import.meta.env.DEPLOY_TARGET === 'o2switch';
+
 const STATIC_PREFIXES = ['/_astro/', '/assets/', '/favicon', '/_image'];
 const ADMIN_PUBLIC_PATHS = ['/admin/login'];
 const API_PUBLIC_PATHS = ['/api/admin/auth/login', '/api/admin/auth/logout'];
@@ -236,6 +240,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   const response = await next();
+
+  if (isMirrorDeployment) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  }
 
   // Add edge-cache headers for public HTML pages that haven't set their own Cache-Control.
   // Vercel will serve cached HTML from the edge CDN and revalidate in the background.
