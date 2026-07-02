@@ -1,10 +1,13 @@
 import { defineConfig } from 'astro/config';
 import vercel from '@astrojs/vercel';
+import node from '@astrojs/node';
+
+const isO2switch = process.env.DEPLOY_TARGET === 'o2switch';
 
 export default defineConfig({
-  site: 'https://aegisai.ae',
+  site: isO2switch ? 'https://aicompany.usine.site' : 'https://aegisai.ae',
   output: 'server',
-  adapter: vercel(),
+  adapter: isO2switch ? node({ mode: 'standalone' }) : vercel(),
   trailingSlash: 'never',
   compressHTML: true,
   prefetch: {
