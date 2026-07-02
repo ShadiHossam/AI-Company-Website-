@@ -5,6 +5,7 @@ import type { JWTPayload } from '../../lib/jwt';
 // Mock jose so we don't need a real JWT secret or real token
 vi.mock('jose', () => ({
   jwtVerify: vi.fn(),
+  createRemoteJWKSet: vi.fn(() => vi.fn()),
 }));
 
 describe('extractRole', () => {

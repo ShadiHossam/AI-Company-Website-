@@ -1,4 +1,4 @@
-import { jwtVerify } from 'jose';
+import { jwtVerify, createRemoteJWKSet } from 'jose';
 
 export interface JWTPayload {
   sub: string;
@@ -8,9 +8,15 @@ export interface JWTPayload {
   exp: number;
 }
 
+// Supabase signs session tokens with a per-project asymmetric key (ES256) rather than
+// a shared HMAC secret, so verification has to go through its published JWKS rather
+// than a static secret — there is no shared secret to verify against anymore.
+const JWKS = createRemoteJWKSet(
+  new URL(`${import.meta.env.SUPABASE_URL}/auth/v1/.well-known/jwks.json`)
+);
+
 export async function verifyJWT(token: string): Promise<JWTPayload> {
-  const secret = new TextEncoder().encode(import.meta.env.SUPABASE_JWT_SECRET);
-  const { payload } = await jwtVerify(token, secret);
+  const { payload } = await jwtVerify(token, JWKS);
   return payload as unknown as JWTPayload;
 }
 
