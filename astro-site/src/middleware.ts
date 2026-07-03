@@ -11,6 +11,37 @@ const supabaseConfigured = (() => {
 // canonical tags alone are a hint, not a directive, so this blocks crawlers outright.
 const isMirrorDeployment = import.meta.env.DEPLOY_TARGET === 'o2switch';
 
+// Vercel's edge layer applies these from vercel.json, but that file only takes effect
+// on Vercel — the o2switch Node server never reads it, so without this every response
+// there would ship with zero CSP/clickjacking/MIME-sniffing protection. Applied
+// unconditionally so both deploy targets get them (redundant-but-harmless on Vercel,
+// since Response.headers.set() just overwrites the value Vercel already set).
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://connect.facebook.net https://snap.licdn.com https://analytics.tiktok.com https://static.hotjar.com https://script.hotjar.com https://www.clarity.ms https://intercomcdn.com https://widget.intercom.io https://js.crisp.chat https://embed.tawk.to https://js-cdn.hubspot.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' https://fonts.gstatic.com",
+  "img-src 'self' data: blob: https:",
+  "connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://px.ads.linkedin.com https://analytics.tiktok.com https://*.hotjar.com https://*.hotjar.io https://api.intercom.io https://*.crisp.chat https://*.tawk.to https://api.hubspot.com",
+  "frame-src https://td.doubleclick.net https://www.facebook.com https://www.youtube.com",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  // Forces every same-origin request onto HTTPS — correct on Vercel (always valid HTTPS),
+  // but would break the o2switch mirror while it's still serving plain HTTP with no
+  // trusted cert (AutoSSL pending), so it's left out there.
+  ...(isMirrorDeployment ? [] : ['upgrade-insecure-requests']),
+].join('; ');
+
+function applySecurityHeaders(response: Response): void {
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  response.headers.set('Content-Security-Policy', CSP);
+}
+
 const STATIC_PREFIXES = ['/_astro/', '/assets/', '/favicon', '/_image'];
 const ADMIN_PUBLIC_PATHS = ['/admin/login'];
 const API_PUBLIC_PATHS = ['/api/admin/auth/login', '/api/admin/auth/logout'];
@@ -160,9 +191,11 @@ export function __resetCachesForTest() {
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
 
-  // Skip static assets
+  // Skip static assets (still gets security headers — Vercel's edge rule covers these too)
   if (STATIC_PREFIXES.some(p => pathname.startsWith(p))) {
-    return next();
+    const response = await next();
+    applySecurityHeaders(response);
+    return response;
   }
 
   // DB redirect check + maintenance check (public routes only) — both use in-memory caches
@@ -240,6 +273,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   const response = await next();
+
+  applySecurityHeaders(response);
 
   if (isMirrorDeployment) {
     response.headers.set('X-Robots-Tag', 'noindex, nofollow');
