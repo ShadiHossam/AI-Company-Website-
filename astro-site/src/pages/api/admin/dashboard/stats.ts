@@ -43,7 +43,7 @@ export const GET: APIRoute = async ({ locals }) => {
       .eq('status', 'qualified')
       .lt('updated_at', new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString())
       .limit(5),
-    supabase.from('blog_posts').select('status'),
+    supabase.from('blog_posts').select('status').is('deleted_at', null),
     supabase.from('leads').select('status'),
     supabase.from('leads').select('created_at, status').gte('created_at', sevenDaysAgo),
     supabase.from('leads').select('created_at').gte('created_at', thirtyDaysAgo),

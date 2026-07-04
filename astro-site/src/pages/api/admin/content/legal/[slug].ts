@@ -44,11 +44,13 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
   const supabase = getSupabaseAdmin();
   try {
     const body = await request.json();
-    const { sections, last_updated } = body;
+    const { sections, last_updated, ar_title, ar_sections } = body;
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (sections !== undefined) updates.sections = sections;
     if (last_updated !== undefined) updates.last_updated = last_updated;
+    if (ar_title !== undefined) updates.ar_title = ar_title;
+    if (ar_sections !== undefined) updates.ar_sections = ar_sections;
 
     const { data, error } = await supabase
       .from('legal_pages')

@@ -17,6 +17,7 @@ const [{ data: posts }, { count: unreadNotifs }] = await Promise.all([
   supabase
     .from('blog_posts')
     .select('id, title, slug, status, pub_date, category')
+    .is('deleted_at', null)
     .or(`pub_date.gte.${startDate},and(status.eq.draft,created_at.gte.${startDate})`)
     .order('pub_date', { ascending: true }),
   supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false),

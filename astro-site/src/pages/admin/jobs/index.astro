@@ -7,7 +7,7 @@ const user = Astro.locals.user!;
 const supabase = getSupabaseAdmin();
 
 const [{ data: jobs }, { count: unreadNotifs }] = await Promise.all([
-  supabase.from('jobs').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: false }),
+  supabase.from('jobs').select('*').is('deleted_at', null).order('sort_order', { ascending: true }).order('created_at', { ascending: false }),
   supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false),
 ]);
 ---

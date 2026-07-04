@@ -1,0 +1,302 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+
+// Hardcoded fallback products (English, used only if DB is unreachable)
+const fallbackProducts = [
+  {
+    slug: "whatsapp-ai-agent",
+    name: "WhatsApp AI Agent",
+    tagline: "A 24/7 bilingual AI assistant that qualifies leads, books appointments, and handles FAQs directly in WhatsApp. Works in Arabic and English with zero manual effort.",
+    status_badge: "Available Now",
+    feature_tags: ["Lead qualification", "Appointment booking", "FAQ automation", "Arabic + English", "CRM integration"],
+    features: [
+      "Deployed in your WhatsApp Business account and ready for your team",
+      "Trained on your products, services, and pricing",
+      "Hands off to a human agent when a question needs one",
+      "Full analytics dashboard: conversations, conversion rates, drop-off points",
+      "Integrates with your CRM and existing tools",
+    ],
+  },
+  {
+    slug: "operations-dashboard",
+    name: "Operations Dashboard",
+    tagline: "Real-time AI analytics and workflow automation dashboards, connected to your existing tools. Turn raw data into clear decisions without needing a data team.",
+    status_badge: "Available Now",
+    feature_tags: ["Real-time analytics", "Workflow automation", "Custom KPIs", "Multi-source data", "AI insights"],
+    features: [
+      "Connects to your ERP, POS, spreadsheets, and data sources",
+      "AI-generated daily summaries and anomaly alerts sent via WhatsApp or email",
+      "Role-based views for management, operations, and frontline teams",
+      "Automated approval workflows, task routing, and escalation rules",
+      "Mobile-first, works on any device, optimised for managers on the go",
+    ],
+  },
+  {
+    slug: "team-ai-trainer",
+    name: "Team AI Trainer",
+    tagline: "An AI-powered training platform with bilingual content. Measurable upskilling for every department. Track progress, certify employees, and prove ROI on training spend.",
+    status_badge: "Coming Soon",
+    feature_tags: ["Bilingual content", "Progress tracking", "Certifications", "Department-specific", "ROI reporting"],
+    features: [
+      "Courses built around your specific tools, processes, and team roles",
+      "Arabic and English UI with auto-translated content",
+      "AI tutor available 24/7 to answer questions in natural language",
+      "Certification program with verifiable credentials per department",
+      "Manager dashboard showing team adoption, quiz scores, and time-to-proficiency",
+    ],
+  },
+];
+
+let products = fallbackProducts;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('products')
+    .select('slug, name, tagline, description, status_badge, feature_tags, features, sort_order, ar_name, ar_tagline, ar_description, ar_feature_tags, ar_features')
+    .eq('published', true)
+    .is('deleted_at', null)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    products = data.map((p) => ({
+      slug: p.slug,
+      name: p.ar_name || p.name,
+      tagline: p.ar_tagline || p.tagline || p.ar_description || p.description || '',
+      status_badge: p.status_badge || 'Available Now',
+      feature_tags: Array.isArray(p.ar_feature_tags) && p.ar_feature_tags.length > 0
+        ? p.ar_feature_tags
+        : (Array.isArray(p.feature_tags) ? p.feature_tags : []),
+      features: Array.isArray(p.ar_features) && p.ar_features.length > 0
+        ? p.ar_features
+        : (Array.isArray(p.features) ? p.features : []),
+    }));
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const productsSchema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'منتجات الذكاء الاصطناعي من Aegis AI',
+    url: 'https://aegisai.ae/ar/products',
+    itemListElement: products.map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: {
+        '@type': 'SoftwareApplication',
+        name: p.name,
+        description: p.tagline,
+        url: `https://aegisai.ae/ar/products#${p.slug}`,
+        applicationCategory: 'BusinessApplication',
+        operatingSystem: 'Web',
+        provider: { '@type': 'Organization', name: 'Aegis AI', url: 'https://aegisai.ae' },
+      },
+    })),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://aegisai.ae/ar' },
+      { '@type': 'ListItem', position: 2, name: 'المنتجات', item: 'https://aegisai.ae/ar/products' },
+    ],
+  },
+];
+---
+
+<ArBaseLayout
+  title="منتجات ذكاء اصطناعي جاهزة للشركات في دبي | Aegis AI"
+  description="منتجات ذكاء اصطناعي جاهزة للشركات الصغيرة والمتوسطة في دبي: وكيل واتساب ذكي، لوحة تحكم للعمليات، ومنصة تدريب الفرق بالذكاء الاصطناعي. مصممة بلغتين، عربي وإنجليزي."
+  canonicalPath="/ar/products"
+  enPath="/products"
+  ogImage="/assets/og-products.jpg"
+  ldJson={productsSchema}
+>
+
+<!-- ── HERO ── -->
+<header class="hero-section" style="padding-top: 10rem; padding-bottom: 5rem; text-align: center;">
+  <div class="container" style="position: relative; z-index: 1;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#004f58;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التنقل"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span>المنتجات</div>
+    <h1 style="max-width: 48rem; margin: 0 auto 1.5rem;">
+      منتجات ذكاء اصطناعي مصممة لسوق <span class="gradient-text">الإمارات</span>
+    </h1>
+    <p style="color: #42474e; font-size: 1.125rem; line-height: 1.75; max-width: 36rem; margin: 0 auto;">
+      وحدات ذكاء اصطناعي جاهزة للقطاعات التي نخدمها، مصممة خصيصاً لعلامتك التجارية وسير عملك. كل منتج يتكامل مع أدواتك الحالية ويُخصص لفريقك.
+    </p>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1400&q=80&auto=format&fit=crop" alt="منتجات ذكاء اصطناعي لشركات دبي" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- ── PRODUCTS ── -->
+<section class="section-sm">
+  <div class="container">
+
+    {products.map((product, index) => {
+      const isAvailable = product.status_badge?.toLowerCase().includes('available') || product.status_badge === 'متاح الآن';
+      const badgeStyle = isAvailable
+        ? "background: rgba(34,197,94,0.10); border: 1px solid rgba(34,197,94,0.30);"
+        : "background: rgba(0,37,59,0.08); border: 1px solid rgba(0,37,59,0.18);";
+      const dotColor = isAvailable ? "#22c55e" : "#00253b";
+      const textColor = isAvailable ? "#166534" : "#00253b";
+      const badgeLabel = isAvailable ? "متاح الآن" : "قريباً";
+      const ctaLabel = isAvailable ? "ابدأ الآن ←" : "انضم لقائمة الانتظار ←";
+      const dataSource = product.slug === 'whatsapp-ai-agent' ? 'ar_products_whatsapp_agent'
+        : product.slug === 'operations-dashboard' ? 'ar_products_ops_dashboard'
+        : product.slug === 'team-ai-trainer' ? 'ar_products_team_trainer'
+        : `ar_products_${product.slug}`;
+      const isAltLayout = index === 1;
+
+      const iconBg = product.slug === 'whatsapp-ai-agent' ? '' : product.slug === 'operations-dashboard' ? 'background: rgba(0,104,117,0.10);' : 'background: #e7eeff;';
+      const glowBg = product.slug === 'operations-dashboard' ? 'background: rgba(0,104,117,0.12);' : product.slug === 'team-ai-trainer' ? 'background: rgba(0,37,59,0.10);' : '';
+
+      return (
+        <div class="product-panel" style={index === 1 ? "--glow-color: rgba(0,104,117,0.12);" : ""}>
+          <div class="product-glow" style={glowBg}></div>
+          <div class="product-inner" style="position: relative; z-index: 1;">
+            {isAltLayout && (
+              <div class="feature-list-panel" style="order: 0;">
+                {product.features.map((feature: string, fi: number) => (
+                  <div class="feature-list-item" style={fi === product.features.length - 1 ? "margin-bottom: 0;" : ""}>
+                    <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 flex-shrink-0 mt-0.5" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                    <span style="color: #42474e; font-size: .9rem; line-height: 1.6;">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div style={isAltLayout ? "order: 1;" : ""}>
+              <div class="product-icon" style={iconBg}>
+                {product.slug === 'whatsapp-ai-agent' && (
+                  <svg viewBox="0 0 24 24" fill="none" class="w-7 h-7" stroke="#006875" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                )}
+                {product.slug === 'operations-dashboard' && (
+                  <svg viewBox="0 0 24 24" fill="none" class="w-7 h-7" stroke="#006875" stroke-width="1.8"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                )}
+                {product.slug !== 'whatsapp-ai-agent' && product.slug !== 'operations-dashboard' && (
+                  <svg viewBox="0 0 24 24" fill="none" class="w-7 h-7" stroke="#00253b" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                )}
+              </div>
+              <div style={`display: inline-flex; align-items: center; gap: .375rem; ${badgeStyle} border-radius: 100px; padding: .25rem .875rem; margin-bottom: 1rem;`}>
+                <span style={`width: 6px; height: 6px; border-radius: 50%; background: ${dotColor};`}></span>
+                <span style={`font-size: .75rem; font-weight: 700; color: ${textColor}; font-family: 'Inter', sans-serif; letter-spacing: .04em;`}>{badgeLabel}</span>
+              </div>
+              <h2 style="margin-bottom: 1rem;">{product.name}</h2>
+              <p style="color: #42474e; line-height: 1.75; margin-bottom: 1.5rem;">{product.tagline}</p>
+              {product.slug === 'whatsapp-ai-agent' && (
+                <div style="border-radius:16px; overflow:hidden; height:160px; margin-bottom:1.5rem; position:relative;">
+                  <img src="https://images.unsplash.com/photo-1611746869696-d09bce200020?w=800&q=80&auto=format&fit=crop" alt="وكيل واتساب ذكي لتأهيل العملاء المحتملين" loading="lazy" width="800" height="160" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+                  <div style="position:absolute; inset:0; background:linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.20));"></div>
+                </div>
+              )}
+              {product.slug === 'operations-dashboard' && (
+                <div style="border-radius:16px; overflow:hidden; height:160px; margin-bottom:1.5rem; position:relative;">
+                  <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80&auto=format&fit=crop" alt="لوحة تحكم عمليات ذكية وتحليلات أعمال" loading="lazy" width="800" height="160" style="width:100%; height:100%; object-fit:cover; object-position:center 30%;" />
+                  <div style="position:absolute; inset:0; background:linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.20));"></div>
+                </div>
+              )}
+              {product.slug === 'team-ai-trainer' && (
+                <div style="border-radius:16px; overflow:hidden; height:160px; margin-bottom:1.5rem; position:relative;">
+                  <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80&auto=format&fit=crop" alt="منصة تدريب فرق العمل بالذكاء الاصطناعي" loading="lazy" width="800" height="160" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+                  <div style="position:absolute; inset:0; background:linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.20));"></div>
+                </div>
+              )}
+              <div style="margin-bottom: 2rem;">
+                {product.feature_tags.map((tag: string) => (
+                  <span class="feature-tag">{tag}</span>
+                ))}
+              </div>
+              <button onclick="openModal(this)" data-source={dataSource} class="btn-primary">{ctaLabel}</button>
+            </div>
+            {!isAltLayout && (
+              <div class="feature-list-panel">
+                {product.features.map((feature: string, fi: number) => (
+                  <div class="feature-list-item" style={fi === product.features.length - 1 ? "margin-bottom: 0;" : ""}>
+                    <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 flex-shrink-0 mt-0.5" stroke="#006875" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                    <span style="color: #42474e; font-size: .9rem; line-height: 1.6;">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    })}
+
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة لاتخاذ إجراء">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">استشارة تعريفية مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعد لرؤية هذه المنتجات في العمل؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجز عرضاً تجريبياً مجانياً وسنريك بالضبط كيف يناسب كل منتج شركتك، مصمم حسب قطاعك وسير عملك.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني 100%</span>
+          <span class="cta-trust-badge">✓ بدون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_products_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجز عرضاً تجريبياً مجانياً ←</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة لمدة 30 دقيقة · بدون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.product-panel {
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.5);
+      border-radius: 32px;
+      padding: 4rem;
+      box-shadow: 0 20px 40px rgba(0, 59, 92, 0.06);
+      position: relative; overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .product-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+    .product-glow {
+      position: absolute; top: -80px; left: -80px;
+      width: 320px; height: 320px; border-radius: 50%;
+      background: rgba(0,227,253,0.12); filter: blur(60px);
+      pointer-events: none;
+    }
+    .product-icon {
+      width: 56px; height: 56px; border-radius: 16px;
+      background: #e7eeff;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    .feature-tag {
+      display: inline-flex; align-items: center;
+      background: #f0f3ff; color: #42474e;
+      font-size: .8rem; font-weight: 500;
+      padding: .375rem .875rem; border-radius: 8px;
+      margin: .25rem; font-family: 'Inter', sans-serif;
+    }
+    .feature-list-item { display: flex; align-items: flex-start; gap: .75rem; margin-bottom: 1rem; }
+    .feature-list-panel {
+      background: #f0f3ff;
+      border-radius: 20px; padding: 2rem;
+    }
+    @media (max-width: 900px) {
+      .product-inner { grid-template-columns: 1fr; gap: 2rem; }
+      .product-panel { padding: 2.5rem 1.75rem; }
+    }
+</style>

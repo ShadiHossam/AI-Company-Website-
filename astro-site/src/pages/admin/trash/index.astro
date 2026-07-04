@@ -1,0 +1,152 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../lib/supabase';
+import { TRASH_ENTITIES } from '../../api/admin/trash/index';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+
+const { count: unreadNotifs } = await supabase
+  .from('notifications')
+  .select('*', { count: 'exact', head: true })
+  .eq('read', false);
+
+const results = await Promise.all(
+  Object.entries(TRASH_ENTITIES).map(async ([entityType, cfg]) => {
+    const { data } = await supabase
+      .from(cfg.table)
+      .select(`id, deleted_at, ${cfg.titleField}`)
+      .not('deleted_at', 'is', null)
+      .order('deleted_at', { ascending: false });
+
+    return (data ?? []).map((row: any) => ({
+      entity_type: entityType,
+      label: cfg.label,
+      adminPath: cfg.adminPath,
+      id: row.id as string,
+      title: (row[cfg.titleField] ?? '(untitled)') as string,
+      deleted_at: row.deleted_at as string,
+    }));
+  }),
+);
+
+const items = results.flat().sort((a, b) => new Date(b.deleted_at).getTime() - new Date(a.deleted_at).getTime());
+
+function timeAgo(date: string) {
+  const diff = Date.now() - new Date(date).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+---
+
+<AdminLayout title="Trash" user={user} unreadCount={unreadNotifs ?? 0}>
+
+  <div class="flex items-center gap-3 mb-6">
+    <a href="/admin/settings" class="btn btn-ghost btn-sm">← Settings</a>
+    <div>
+      <h1 style="font-size:1.375rem; font-weight:800; color:var(--text-primary);">Trash</h1>
+      <p class="text-muted text-sm" style="margin-top:2px;">{items.length} deleted item{items.length !== 1 ? 's' : ''} · blog posts, jobs, case studies, client logos, team members, testimonials, products</p>
+    </div>
+    {items.length > 0 && (
+      <button id="empty-trash-btn" class="btn btn-sm" style="margin-left:auto;color:#f87171;background:var(--danger-dim);border-color:var(--danger-dim);">Empty Trash</button>
+    )}
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden;">
+    {items.length === 0 ? (
+      <div style="padding:3rem; text-align:center; color:var(--text-muted); font-size:0.875rem;">
+        Trash is empty. Deleted items from Blog, Jobs, Case Studies, Client Logos, Team, Testimonials, and Products will show up here before being permanently removed.
+      </div>
+    ) : (
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Type</th>
+              <th>Deleted</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="trash-body">
+            {items.map(item => (
+              <tr id={`trash-${item.entity_type}-${item.id}`}>
+                <td><div style="font-weight:600; font-size:0.875rem;">{item.title}</div></td>
+                <td><span class="badge" style="background:var(--bg-hover);color:var(--text-muted);">{item.label}</span></td>
+                <td class="text-xs text-muted">{timeAgo(item.deleted_at)}</td>
+                <td>
+                  <div class="flex gap-2">
+                    <button class="btn btn-ghost btn-sm restore-btn" data-entity-type={item.entity_type} data-id={item.id} data-title={item.title}>Restore</button>
+                    <button class="btn btn-ghost btn-sm purge-btn" data-entity-type={item.entity_type} data-id={item.id} data-title={item.title} style="color:#f87171;">Delete Forever</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+
+  <div id="toast" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;background:#1e2a40;border:1px solid var(--border);color:var(--text-primary);padding:0.75rem 1.25rem;border-radius:8px;font-size:0.875rem;z-index:9999;"></div>
+</AdminLayout>
+
+<script>
+  function toast(msg: string, ok = true) {
+    const t = document.getElementById('toast') as HTMLElement;
+    t.textContent = msg;
+    t.style.borderColor = ok ? 'rgba(74,222,128,0.3)' : 'rgba(248,113,113,0.3)';
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3500);
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('.restore-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      try {
+        const res = await fetch('/api/admin/trash/restore', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ entity_type: btn.dataset.entityType, id: btn.dataset.id }),
+        });
+        if (!res.ok) throw new Error('Failed');
+        document.getElementById(`trash-${btn.dataset.entityType}-${btn.dataset.id}`)?.remove();
+        toast(`Restored "${btn.dataset.title}"`);
+      } catch {
+        toast('Error restoring item', false);
+      }
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('.purge-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm(`Permanently delete "${btn.dataset.title}"? This cannot be undone.`)) return;
+      try {
+        const res = await fetch('/api/admin/trash/purge', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ entity_type: btn.dataset.entityType, id: btn.dataset.id }),
+        });
+        if (!res.ok) throw new Error('Failed');
+        document.getElementById(`trash-${btn.dataset.entityType}-${btn.dataset.id}`)?.remove();
+        toast(`Permanently deleted "${btn.dataset.title}"`);
+      } catch {
+        toast('Error deleting item', false);
+      }
+    });
+  });
+
+  document.getElementById('empty-trash-btn')?.addEventListener('click', async () => {
+    if (!confirm('Permanently delete everything in Trash? This cannot be undone.')) return;
+    try {
+      const res = await fetch('/api/admin/trash/empty', { method: 'POST' });
+      if (!res.ok) throw new Error('Failed');
+      window.location.reload();
+    } catch {
+      toast('Error emptying trash', false);
+    }
+  });
+</script>

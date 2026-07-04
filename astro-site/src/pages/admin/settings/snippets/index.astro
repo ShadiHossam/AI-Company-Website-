@@ -1,0 +1,238 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+
+const { count: unreadNotifs } = await supabase
+  .from('notifications')
+  .select('*', { count: 'exact', head: true })
+  .eq('read', false);
+
+const { data: snippets } = await supabase
+  .from('snippets')
+  .select('*')
+  .order('name', { ascending: true });
+---
+
+<AdminLayout title="Snippets" user={user} unreadCount={unreadNotifs ?? 0}>
+
+  <div class="flex items-center gap-3 mb-6">
+    <a href="/admin/settings" class="btn btn-ghost btn-sm">← Settings</a>
+    <div>
+      <h1 style="font-size:1.375rem; font-weight:800; color:var(--text-primary);">Snippets</h1>
+      <p class="text-muted text-sm" style="margin-top:2px;">{snippets?.length ?? 0} snippet{snippets?.length !== 1 ? 's' : ''} · reusable HTML/JS for embeds, CTAs, and tracking scripts</p>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 420px; gap:1.5rem; align-items:start;">
+
+    <!-- Snippet list -->
+    <div class="card">
+      <div style="padding:1.25rem 1.5rem; border-bottom:1px solid var(--border);">
+        <span style="font-weight:700; font-size:0.95rem;">All Snippets</span>
+      </div>
+      {!snippets || snippets.length === 0 ? (
+        <div style="padding:3rem; text-align:center; color:var(--text-muted); font-size:0.875rem;">
+          No snippets yet. Create the first one.
+        </div>
+      ) : (
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="snippets-body">
+              {snippets.map(s => (
+                <tr id={`snippet-${s.id}`}>
+                  <td><div style="font-weight:600; font-size:0.875rem;">{s.name}</div></td>
+                  <td>{s.category
+                    ? <span class="badge" style="background:var(--bg-hover);color:var(--text-muted);">{s.category}</span>
+                    : <span class="text-xs text-muted">—</span>
+                  }</td>
+                  <td>
+                    <div class="flex gap-2">
+                      <button class="btn btn-ghost btn-sm edit-snippet-btn" data-id={s.id} data-name={s.name} data-category={s.category ?? ''} data-code={s.code}>Edit</button>
+                      <button class="btn btn-ghost btn-sm dup-snippet-btn" data-id={s.id}>Duplicate</button>
+                      <button class="btn btn-ghost btn-sm delete-snippet-btn" data-id={s.id} data-name={s.name} style="color:#f87171;">Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+
+    <!-- Create / Edit form -->
+    <div class="card" style="position:sticky; top:1.5rem;">
+      <div style="padding:1.25rem 1.5rem; border-bottom:1px solid var(--border);">
+        <span id="form-title" style="font-weight:700; font-size:0.95rem;">New Snippet</span>
+      </div>
+      <div style="padding:1.5rem;">
+        <form id="snippet-form">
+          <input type="hidden" id="edit-id" value="" />
+
+          <div class="form-group mb-4">
+            <label class="form-label">Name <span style="color:var(--danger);">*</span></label>
+            <input id="snippet-name" type="text" class="form-input" placeholder="LinkedIn Insight Tag" required />
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label">Category</label>
+            <input id="snippet-category" type="text" class="form-input" placeholder="Tracking, CTA, Embed…" />
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label">Code</label>
+            <textarea id="snippet-code" class="form-textarea" style="min-height:160px;font-family:monospace;font-size:0.8rem;" placeholder="<script>...</script>"></textarea>
+          </div>
+
+          <div class="flex gap-2 items-center mb-4">
+            <button type="submit" id="submit-btn" class="btn btn-primary">Create</button>
+            <button type="button" id="cancel-edit-btn" class="btn btn-ghost" style="display:none;">Cancel</button>
+            <button type="button" id="preview-btn" class="btn btn-secondary">Preview</button>
+            <span id="form-msg" style="display:none; font-size:0.875rem;"></span>
+          </div>
+        </form>
+
+        <div id="preview-wrap" style="display:none;">
+          <div class="text-xs text-muted" style="margin-bottom:0.5rem;">Sandboxed preview — scripts run isolated, no access to this page.</div>
+          <iframe id="preview-frame" sandbox="allow-scripts" style="width:100%;height:200px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#fff;"></iframe>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="toast" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;background:#1e2a40;border:1px solid var(--border);color:var(--text-primary);padding:0.75rem 1.25rem;border-radius:8px;font-size:0.875rem;z-index:9999;"></div>
+</AdminLayout>
+
+<script>
+  function toast(msg: string, ok = true) {
+    const t = document.getElementById('toast') as HTMLElement;
+    t.textContent = msg;
+    t.style.borderColor = ok ? 'rgba(74,222,128,0.3)' : 'rgba(248,113,113,0.3)';
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3500);
+  }
+
+  const form        = document.getElementById('snippet-form') as HTMLFormElement;
+  const editIdEl     = document.getElementById('edit-id') as HTMLInputElement;
+  const nameEl        = document.getElementById('snippet-name') as HTMLInputElement;
+  const categoryEl    = document.getElementById('snippet-category') as HTMLInputElement;
+  const codeEl         = document.getElementById('snippet-code') as HTMLTextAreaElement;
+  const formTitle     = document.getElementById('form-title') as HTMLElement;
+  const submitBtn     = document.getElementById('submit-btn') as HTMLButtonElement;
+  const cancelBtn      = document.getElementById('cancel-edit-btn') as HTMLButtonElement;
+  const formMsg        = document.getElementById('form-msg') as HTMLElement;
+  const previewBtn     = document.getElementById('preview-btn') as HTMLButtonElement;
+  const previewWrap    = document.getElementById('preview-wrap') as HTMLElement;
+  const previewFrame   = document.getElementById('preview-frame') as HTMLIFrameElement;
+
+  previewBtn.addEventListener('click', () => {
+    previewWrap.style.display = 'block';
+    previewFrame.srcdoc = codeEl.value;
+  });
+
+  function enterEdit(id: string, name: string, category: string, code: string) {
+    editIdEl.value = id;
+    nameEl.value = name;
+    categoryEl.value = category;
+    codeEl.value = code;
+    formTitle.textContent = 'Edit Snippet';
+    submitBtn.textContent = 'Save Changes';
+    cancelBtn.style.display = 'block';
+    nameEl.focus();
+  }
+
+  function resetForm() {
+    editIdEl.value = '';
+    form.reset();
+    formTitle.textContent = 'New Snippet';
+    submitBtn.textContent = 'Create';
+    cancelBtn.style.display = 'none';
+    formMsg.style.display = 'none';
+    previewWrap.style.display = 'none';
+  }
+
+  cancelBtn.addEventListener('click', resetForm);
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const isEdit = !!editIdEl.value;
+    const payload = {
+      name: nameEl.value.trim(),
+      category: categoryEl.value.trim() || undefined,
+      code: codeEl.value,
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = isEdit ? 'Saving…' : 'Creating…';
+
+    try {
+      const url = isEdit ? `/api/admin/snippets/${editIdEl.value}` : '/api/admin/snippets';
+      const method = isEdit ? 'PATCH' : 'POST';
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Failed');
+
+      toast(isEdit ? 'Snippet updated' : 'Snippet created');
+      resetForm();
+      window.location.reload();
+    } catch (err: any) {
+      formMsg.textContent = `✗ ${err.message}`;
+      formMsg.style.color = '#f87171';
+      formMsg.style.display = 'block';
+      toast(err.message, false);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = isEdit ? 'Save Changes' : 'Create';
+    }
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('.edit-snippet-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      enterEdit(btn.dataset.id!, btn.dataset.name!, btn.dataset.category!, btn.dataset.code!);
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('.dup-snippet-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      try {
+        const res = await fetch('/api/admin/snippets/duplicate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: btn.dataset.id }),
+        });
+        if (!res.ok) throw new Error('Failed');
+        toast('Snippet duplicated');
+        window.location.reload();
+      } catch {
+        toast('Error duplicating snippet', false);
+      }
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('.delete-snippet-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const name = btn.dataset.name!;
+      if (!confirm(`Delete snippet "${name}"?`)) return;
+      try {
+        const res = await fetch(`/api/admin/snippets/${btn.dataset.id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed');
+        document.getElementById(`snippet-${btn.dataset.id}`)?.remove();
+        toast('Snippet deleted');
+      } catch {
+        toast('Error deleting snippet', false);
+      }
+    });
+  });
+</script>

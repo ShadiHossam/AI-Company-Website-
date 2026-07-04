@@ -1,6 +1,35 @@
 ---
 export const prerender = false;
 import ArBaseLayout from '../../layouts/ArBaseLayout.astro';
+import { getSupabaseAdmin } from '../../lib/supabase';
+
+interface TeamMember {
+  name: string;
+  title: string;
+  bio: string | null;
+  image_url: string | null;
+  ar_name: string | null;
+  ar_title: string | null;
+  ar_bio: string | null;
+}
+
+let teamMembers: TeamMember[] = [];
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('team_members')
+    .select('name, title, bio, image_url, ar_name, ar_title, ar_bio, sort_order')
+    .eq('active', true)
+    .is('deleted_at', null)
+    .order('sort_order');
+
+  if (!error && data) {
+    teamMembers = data;
+  }
+} catch (err) {
+  // No team section if the query fails; rest of the page still renders.
+}
 
 const ldJson = [
   {
@@ -124,6 +153,27 @@ const ldJson = [
   </div>
 </section>
 
+{teamMembers.length > 0 && (
+<section class="section">
+  <div class="container">
+    <div style="text-align:center;max-width:600px;margin:0 auto 3rem;">
+      <div class="eyebrow">فريقنا</div>
+      <h2>تعرف على فريق Aegis AI</h2>
+    </div>
+    <div class="team-grid">
+      {teamMembers.map(m => (
+        <div class="team-card">
+          {m.image_url && <img src={m.image_url} alt={m.ar_name ?? m.name} loading="lazy" />}
+          <h3>{m.ar_name ?? m.name}</h3>
+          <p class="team-title">{m.ar_title ?? m.title}</p>
+          {(m.ar_bio ?? m.bio) && <p class="team-bio">{m.ar_bio ?? m.bio}</p>}
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+)}
+
 <!-- What makes us different -->
 <section class="section">
   <div class="container">
@@ -199,14 +249,28 @@ const ldJson = [
     padding: 1.75rem; display: flex; flex-direction: column;
   }
   .diff-card h3 { font-size: 1rem; font-weight: 700; color: #00253b; margin: 0 0 0.5rem; }
+  .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .team-card {
+    background: #fff; border: 1px solid #E2E8F0; border-radius: 16px;
+    padding: 1.75rem; text-align: center;
+  }
+  .team-card img {
+    width: 88px; height: 88px; border-radius: 50%; object-fit: cover;
+    margin: 0 auto 1rem; display: block;
+  }
+  .team-card h3 { font-size: 1rem; font-weight: 700; color: #00253b; margin: 0 0 0.25rem; }
+  .team-title { font-size: 0.875rem; color: #006875; font-weight: 600; margin: 0 0 0.75rem; }
+  .team-bio { font-size: 0.875rem; color: #42474e; line-height: 1.7; margin: 0; }
   @media (max-width: 1024px) { .diff-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 768px) {
     .about-split { grid-template-columns: 1fr; gap: 2rem; }
     .stats-row { grid-template-columns: repeat(2, 1fr); }
     .diff-grid { grid-template-columns: repeat(2, 1fr); }
+    .team-grid { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 480px) {
     .stats-row { grid-template-columns: 1fr; }
     .diff-grid { grid-template-columns: 1fr; }
+    .team-grid { grid-template-columns: 1fr; }
   }
 </style>

@@ -1,0 +1,324 @@
+---
+export const prerender = false;
+import ArBaseLayout from '../../../layouts/ArBaseLayout.astro';
+
+const faqItems = [
+  { question: "كيف يبدو مشروع هندسة الأوامر فعلياً؟", answer: "يعتمد على نقطة انطلاقك. للفرق التي تستخدم الذكاء الاصطناعي بكثافة، نبدأ بمراجعة شاملة للأوامر الحالية: نستعرض ما تستخدمه فعلاً، نحدّد أين يكون المخرج غير ثابت، ونعيد كتابة الأسوأ أداءً. للفرق التي تبني ميزات أو سير عمل جديداً بالذكاء الاصطناعي، ننضم لعملية التصميم مبكراً ونكتب أوامر النظام من الصفر. في الحالتين، تخرج بمكتبة أوامر موثّقة يسهل صيانتها وتحديثها." },
+  { question: "مع أي نماذج ذكاء اصطناعي تعملون؟", answer: "نهندس الأوامر لجميع النماذج الرئيسية، المملوكة ومفتوحة المصدر على حد سواء. لكل نموذج نقاط قوة وسلوكيات وأنماط هندسة مثلى مختلفة. نعرفها جميعاً ونهندس بناءً عليها، فتحصل على أفضل أداء من أي نموذج تستخدمه." },
+  { question: "كم يُكلّف فعلياً الأوامر السيئة؟", answer: "أكثر مما تتصوره معظم الفرق. الأوامر السيئة تُنتج مخرجات غير ثابتة تحتاج تعديلاً يدوياً، مما يُبطل الغرض من استخدام الذكاء الاصطناعي أساساً. كما تجعل النماذج تستهلك رموزاً أكثر من اللازم، فترفع تكلفة الواجهة البرمجية. وتخلق سلوكاً غير متوقّع يُضعف ثقة فريقك بأدوات الذكاء الاصطناعي. مكتبة أوامر مُهندسة جيداً تُقلّص وقت التعديل عادة بنسبة ٦٠ إلى ٨٠٪ وتُخفّض استهلاك الرموز بنسبة ٢٠ إلى ٤٠٪." },
+  { question: "هل يمكنكم كتابة أوامر لقطاعنا أو مجالنا تحديداً؟", answer: "نعم، وهنا تكون هندسة الأوامر المتخصصة بمجال محدد أعلى قيمة. الأوامر العامة تُنتج مخرجات عامة. نبحث في مصطلحات قطاعك، معايير نبرتك، قيود الامتثال، ومتطلبات صيغة المخرج، ثم نهندس أوامر تراعي كل ذلك. القانوني، الصحي، المالي، العقاري، التجارة الإلكترونية: عملنا في كل هذه القطاعات." },
+  { question: "هل تقدّمون تحسيناً مستمراً؟", answer: "نعم. نماذج الذكاء الاصطناعي تتحدّث باستمرار، وقد يحتاج الأمر الذي يعمل بشكل ممتاز اليوم لتعديل بعد تحديث النموذج. نقدّم عقود اشتراك شهرية تغطي اختباراً مستمراً، تحسيناً مع تطور النماذج، ودعماً ذا أولوية عند حدوث خلل. معظم عملائنا يجدونها قيّمة بمجرد أن يروا التحسّن في مخرجات أوامرهم." },
+  { question: "كم يستغرق مشروع هندسة الأوامر؟", answer: "مراجعة الأوامر مع إعادة الكتابة لنظام قائم تستغرق عادة أسبوعاً إلى أسبوعين. بناء مكتبة أوامر كاملة من الصفر لمنتج أو سير عمل جديد بالذكاء الاصطناعي يستغرق أسبوعين إلى أربعة أسابيع حسب النطاق. معظم العملاء يلاحظون تحسناً واضحاً في جودة المخرج خلال أول أسبوع من العمل بأوامر مُحسَّنة. ترتيبات الاشتراك المستمر شهرية، دون حد أدنى للمدة." },
+  { question: "نستخدم أداة أو أداتين فقط من أدوات الذكاء الاصطناعي. هل يستحق الأمر رغم ذلك؟", answer: "غالباً نعم، خصوصاً إذا كانت هاتان الأداتان مواجهتين للعميل أو تُنتجان محتوى يُعدّله فريقك يدوياً بكثرة. العائد من هندسة الأوامر يتناسب طردياً مع الوقت الذي يقضيه فريقك في تصحيح مخرجات الذكاء الاصطناعي. إذا كنت تقضي أكثر من بضع ساعات أسبوعياً في تعديل محتوى مُولَّد بالذكاء الاصطناعي، يُعوّض الاستثمار نفسه بسرعة. أمر نظام واحد مُهندَس جيداً لحالة استخدام مواجهة للعميل قد يُلغي ساعات من التصحيحات الأسبوعية." },
+  { question: "هل يمكنكم مساعدتنا في بناء إرشادات داخلية ليكتب فريقنا أوامر أفضل بنفسه؟", answer: "نعم، وهذا جزء من كل مشروع نُنجزه. نُسلّم مجموعة إرشادات موثّقة خاصة بفريقك وأدواتك، تغطي البنية، تحديد السياق، تعليمات الصيغة، وأشيع أنماط الفشل التي يجب تجنبها. كما نُقدّم جلسة تدريبية نستعرض فيها المبادئ مع فريقك. الهدف أن يصبح فريقك، بعد العمل معنا، أفضل بشكل ملموس في كتابة الأوامر وتحسينها بنفسه." },
+];
+
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "هندسة وتحسين الأوامر (Prompt Engineering) في دبي ودول الخليج | Aegis AI",
+    "url": "https://aegisai.ae/ar/services/prompt-engineering",
+    "inLanguage": "ar",
+    "isPartOf": { "@type": "WebSite", "url": "https://aegisai.ae" }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://aegisai.ae/ar" },
+      { "@type": "ListItem", "position": 2, "name": "الخدمات", "item": "https://aegisai.ae/ar/services" },
+      { "@type": "ListItem", "position": 3, "name": "هندسة وتحسين الأوامر", "item": "https://aegisai.ae/ar/services/prompt-engineering" }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "هندسة وتحسين الأوامر",
+    "description": "نُراجع ونهندس ونحسّن أوامر الذكاء الاصطناعي لأي نموذج، فيحصل فريقك على مخرجات ثابتة وعالية الجودة، بتكلفة أقل ووقت تعديل أقل.",
+    "areaServed": [
+      {"@type": "Country", "name": "United Arab Emirates"},
+      {"@type": "Country", "name": "Saudi Arabia"},
+      {"@type": "Country", "name": "Kuwait"},
+      {"@type": "Country", "name": "Qatar"}
+    ],
+    "provider": { "name": "Aegis AI", "url": "https://aegisai.ae" }
+  },
+  faqLdJson
+];
+---
+
+<ArBaseLayout
+  title="هندسة وتحسين الأوامر (Prompt Engineering) في دبي ودول الخليج | Aegis AI"
+  description="Aegis AI تُراجع وتهندس وتُحسّن أوامر الذكاء الاصطناعي لأي نموذج، للشركات في الإمارات والسعودية والكويت وقطر. مخرجات ثابتة، وقت تعديل أقل، وتكلفة واجهة برمجية أقل."
+  canonicalPath="/ar/services/prompt-engineering"
+  enPath="/services/prompt-engineering"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<!-- 1. Page Hero -->
+<header class="page-hero">
+  <div class="container">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#004f58;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التنقل"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services" style="color:inherit;text-decoration:none;opacity:0.65;">الخدمات</a><span style="opacity:0.4;padding:0 4px;"> / </span>هندسة وتحسين الأوامر</div>
+    <div class="badge badge-cyan" style="margin-bottom:1.5rem;">
+      <span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">tune</span>
+      هندسة الأوامر
+    </div>
+    <h1>ذكاؤك الاصطناعي بجودة<br><span class="gradient-text">الأوامر التي خلفه فقط.</span></h1>
+    <p style="color:#42474e;font-size:1.125rem;max-width:640px;margin:1.5rem auto 2.5rem;line-height:1.8;">
+      معظم الفرق التي تستخدم الذكاء الاصطناعي تترك أداءً كبيراً على الطاولة. المخرجات غير ثابتة، التعديل لا يتوقف، ولا أحد يعرف لماذا ينجح أحياناً ويفشل أحياناً أخرى. هذه مشكلة هندسة أوامر، ونحن نحلّها.
+    </p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_prompt_eng_hero" class="btn-primary">احصل على مراجعة أوامر</button>
+      <a href="#what-we-do" class="btn-outline">شاهد ما نقدّمه ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- 2. Stats Strip -->
+<section style="background:#f8fafc;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:2.5rem 0;">
+  <div class="container">
+    <div class="stats-strip">
+      <div class="stat-item">
+        <div class="stat-number">٦٠–٨٠٪</div>
+        <div class="stat-label">انخفاض في وقت التعديل اليدوي بعد التحسين</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">٢٠–٤٠٪</div>
+        <div class="stat-label">انخفاض في استهلاك رموز الواجهة البرمجية بأوامر أدق وأخف</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">جميع النماذج</div>
+        <div class="stat-label">كل النماذج الرئيسية. نعرف خصائصها ونهندس بناءً عليها</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. What Is Prompt Engineering -->
+<section class="section" aria-labelledby="explain-heading">
+  <div class="container">
+    <div style="max-width:800px;margin:0 auto;">
+      <h2 id="explain-heading" style="margin-bottom:1.5rem;">ما هي هندسة الأوامر؟</h2>
+      <p style="color:#42474e;font-size:1.0625rem;line-height:1.85;margin-bottom:1.25rem;">
+        هندسة الأوامر هي ممارسة تصميم واختبار وتحسين التعليمات التي تُعطيها لنموذج ذكاء اصطناعي، بحيث يُنتج باستمرار المخرج الذي تحتاجه فعلاً. طريقة بناء الأمر، السياق الذي يقدّمه، الصيغة التي يطلبها، والأمثلة التي يتضمّنها، جميعها لها أثر قابل للقياس على جودة واتساق وكفاءة تكلفة مخرجات الذكاء الاصطناعي.
+      </p>
+      <p style="color:#42474e;font-size:1.0625rem;line-height:1.85;margin-bottom:1.25rem;">
+        معظم الشركات التي تستخدم الذكاء الاصطناعي تعمل بأوامر كُتبت بسرعة، لم تُختبر بشكل صحيح، ولم تُوثَّق أبداً. النتيجة مخرجات غير ثابتة تحتاج تعديلاً يدوياً مستمراً، استهلاك رموز مرتفع بسبب أوامر مطوّلة تُثقل السياق دون داعٍ، وسلوك ذكاء اصطناعي غير متوقّع: ممتاز أحياناً، خاطئ أحياناً أخرى، دون فهم واضح للسبب.
+      </p>
+      <p style="color:#42474e;font-size:1.0625rem;line-height:1.85;">
+        هندسة الأوامر الاحترافية تتعامل مع الأوامر كأدوات دقيقة، لا مسودات عابرة. الأمر المُهندَس جيداً يُحدّد دور النموذج، يضبط السياق بكفاءة، يُقيّد صيغة المخرج، يتعامل مع الحالات الاستثنائية بوضوح، وقد اختُبِر على مدخلات حقيقية للتحقق من أدائه. الفرق في جودة المخرج بين أمر كُتب بشكل عابر وآخر مُهندَس غالباً ما يكون كبيراً، وتوفير التكلفة من الأوامر الأدق حقيقي وقابل للقياس على نطاق واسع.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 4. What We Do -->
+<section id="what-we-do" class="section" style="background:#f8fafc;" aria-labelledby="services-heading">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:3rem;">
+      <h2 id="services-heading">ماذا نفعل في مشروع هندسة الأوامر</h2>
+      <p style="color:#42474e;max-width:600px;margin:1rem auto 0;line-height:1.8;">لا نُعيد كتابة الأوامر فقط. نبني نظاماً يستطيع فريقك صيانته وتطويره بنفسه.</p>
+    </div>
+    <div class="feature-grid">
+      <div class="card feature-card">
+        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">search</span>
+        <h3>مراجعة الأوامر</h3>
+        <p>نستعرض كل أمر يستخدمه فريقك حالياً، نُقيّمه من حيث الجودة والاتساق، ونحدّد نقاط الفشل التي تُكلّفك وقتاً ومالاً تحديداً.</p>
+      </div>
+      <div class="card feature-card">
+        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">edit</span>
+        <h3>تصميم أوامر النظام</h3>
+        <p>لمنتجات ووكلاء الذكاء الاصطناعي، أمر النظام هو الأساس. نكتب ونختبر أوامر نظام تُحدّد السلوك، تفرض النبرة، وتمنع المخرجات غير المرغوبة.</p>
+      </div>
+      <div class="card feature-card">
+        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">library_books</span>
+        <h3>بناء مكتبة أوامر</h3>
+        <p>مكتبة أوامر موثّقة ومنظّمة لكل حالة استخدام لدى فريقك. مكتوبة، مُصنّفة بإصدارات، وجاهزة للاستخدام. لا مزيد من المعرفة المحصورة في رأس شخص واحد.</p>
+      </div>
+      <div class="card feature-card">
+        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">science</span>
+        <h3>اختبار A/B وتقييم</h3>
+        <p>نُجري اختبارات مُنظَّمة تُقارن بين نسخ الأوامر عبر سيناريوهات حقيقية، نقيس جودة المخرج بشكل منهجي، ونختار الفائز بناءً على بيانات لا انطباعات.</p>
+      </div>
+      <div class="card feature-card">
+        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">school</span>
+        <h3>تدريب الفريق</h3>
+        <p>يتعلّم فريقك كيف يكتب ويختبر ويُطوّر الأوامر بنفسه. ننقل المعرفة لتتوقف عن الاعتماد علينا في كل مرة يحتاج فيها شيء إلى تحديث.</p>
+      </div>
+      <div class="card feature-card">
+        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">refresh</span>
+        <h3>تحسين مستمر</h3>
+        <p>النماذج تتحدّث. احتياجات العمل تتغيّر. نقدّم عقود اشتراك تُبقي مكتبة أوامرك محدّثة، مُختبرة، ومُحسَّنة مع تطور مشهد الذكاء الاصطناعي.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. Where It Matters Most -->
+<section class="section" aria-labelledby="usecases-heading">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:3rem;">
+      <h2 id="usecases-heading">أين تُحدث هندسة الأوامر أكبر فرق</h2>
+      <p style="color:#42474e;max-width:600px;margin:1rem auto 0;line-height:1.8;">هذه أعلى نقاط البداية تأثيراً، لا قائمة كاملة بما يمكننا تحسينه. إذا لم تكن حالة استخدامك هنا، تواصل معنا.</p>
+    </div>
+    <div class="feature-grid feature-grid-3">
+      <div class="card feature-card">
+        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">support_agent</span>
+        <h3>ذكاء اصطناعي لدعم العملاء</h3>
+        <p>وكلاء دعم يُعطون إجابات مختلفة لنفس السؤال يُدمّرون ثقة العميل. نهندس أوامر تُنتج ردوداً ثابتة ومتماشية مع علامتك في كل مرة.</p>
+      </div>
+      <div class="card feature-card">
+        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">draw</span>
+        <h3>توليد المحتوى</h3>
+        <p>إذا كان محتواك المكتوب بالذكاء الاصطناعي يبدو دائماً كأنه مكتوب بالذكاء الاصطناعي، فأوامرك لا تؤدي عملها. نهندس أوامر تُنتج نصوصاً تبدو إنسانية فعلاً وتطابق صوت علامتك.</p>
+      </div>
+      <div class="card feature-card">
+        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">description</span>
+        <h3>تحليل المستندات</h3>
+        <p>استخراج البيانات الصحيحة من العقود والتقارير ورسائل البريد يتطلب صياغة دقيقة. نهندس أوامر استخراج تجلب بالضبط ما تحتاجه، بالصيغة التي تحتاجها.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. Process -->
+<section class="section" style="background:#f8fafc;" aria-labelledby="process-heading">
+  <div class="container" style="max-width:760px;">
+    <div style="text-align:center;margin-bottom:3rem;">
+      <h2 id="process-heading">كيف يسير مشروع هندسة الأوامر</h2>
+    </div>
+    <div class="process-steps">
+      <div class="process-step">
+        <div class="step-number">١</div>
+        <div class="step-content">
+          <h3>المراجعة</h3>
+          <p>نستعرض أوامرك الحالية، سير عملك، ومخرجاتك، ونُقيّم بدقة ما هو معطّل ولماذا.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-number">٢</div>
+        <div class="step-content">
+          <h3>الهندسة</h3>
+          <p>نُعيد كتابة وبناء أوامرك باستخدام تقنيات هندسة مُثبَتة، مُصمَّمة خصيصاً لنموذجك وحالة استخدامك.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-number">٣</div>
+        <div class="step-content">
+          <h3>اختبار وتحسين</h3>
+          <p>اختبار A/B مُنظَّم عبر سيناريوهات حقيقية. نقيس، نُقارن، ونُحسّن حتى يصل الأداء للمستوى الذي حددناه معاً.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-number">٤</div>
+        <div class="step-content">
+          <h3>تسليم وتدريب</h3>
+          <p>تحصل على مكتبة الأوامر الكاملة، التوثيق، وجلسة تدريب لفريقك لتستطيع صيانتها وتطويرها بنفسك.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div style="text-align:center;margin-bottom:3rem;">
+      <h2 id="faq-heading">أسئلة شائعة</h2>
+    </div>
+    <div class="faq-list">
+      {faqItems.map((item) => (
+        <div class="faq-item">
+          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+            {item.question}
+            <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+          </button>
+          <div class="faq-body">{item.answer}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- 8. Guarantee -->
+<section class="section" style="background:#e7eeff;padding:4rem 0;text-align:center;">
+  <div class="container">
+    <div class="guarantee-badge" style="margin-bottom:1.5rem;">
+      <span class="material-symbols-outlined" style="font-size:18px;direction:ltr;" aria-hidden="true">shield</span>
+      ضمان الاسترداد الكامل، الوحيد في الإمارات
+    </div>
+    <h2 style="margin-bottom:1rem;">إذا لم تكن راضياً، لا تدفع أي شيء.</h2>
+    <p style="color:#42474e;max-width:560px;margin:0 auto 2rem;line-height:1.8;">نبني، تختبر، وإذا لم تكن راضياً تماماً نردّ ١٠٠٪ خلال ٣٠ يوماً من التسليم. بدون أسئلة.</p>
+    <button onclick="openModal(this)" data-source="ar_prompt_eng_guarantee" class="btn-primary">ابدأ بدون مخاطرة</button>
+  </div>
+</section>
+
+<!-- 9. Final CTA Band -->
+<section class="cta-band" style="border-radius:24px;margin:2rem 2rem 4rem;">
+  <div class="container" style="text-align:center;">
+    <h2 style="margin-bottom:1rem;">هل أنت مستعد لإصلاح أوامرك؟</h2>
+    <p style="opacity:0.85;max-width:500px;margin:0 auto 2rem;line-height:1.8;">شاركنا حالات استخدام الذكاء الاصطناعي الحالية لديك. سنقوم بمراجعة مجانية ونُخبرك بالضبط أين يُترك الأداء على الطاولة.</p>
+    <button onclick="openModal(this)" data-source="ar_prompt_eng_cta" class="btn-primary">احصل على مراجعة أوامر مجانية</button>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+  .stats-strip {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+    text-align: center;
+  }
+  .stat-item { min-width: 120px; }
+  .stat-number { font-size: 2rem; font-weight: 800; color: #00253b; line-height: 1.1; }
+  .stat-label { font-size: 0.8125rem; color: #5f6b7a; margin-top: 0.375rem; }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+  .feature-grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .feature-card { display: flex; flex-direction: column; gap: 0.75rem; }
+  .feature-icon { font-size: 2rem; color: #006875; }
+  .feature-card h3 { font-size: 1rem; font-weight: 700; color: #00253b; margin: 0; }
+  .feature-card p { font-size: 0.875rem; color: #42474e; line-height: 1.7; margin: 0; }
+
+  .process-steps { display: flex; flex-direction: column; gap: 2rem; }
+  .process-step { display: flex; gap: 1.5rem; align-items: flex-start; }
+  .step-number {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: #00253b; color: #fff;
+    font-size: 1.125rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-content h3 { font-size: 1.0625rem; font-weight: 700; color: #00253b; margin: 0 0 0.5rem; }
+  .step-content p { font-size: 0.9375rem; color: #42474e; line-height: 1.75; margin: 0; }
+
+  .faq-list { display: flex; flex-direction: column; gap: 0; }
+
+  @media (max-width: 900px) {
+    .feature-grid { grid-template-columns: repeat(2, 1fr); }
+    .feature-grid-3 { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 580px) {
+    .feature-grid, .feature-grid-3 { grid-template-columns: 1fr; }
+    .stats-strip { gap: 1.5rem; }
+  }
+</style>

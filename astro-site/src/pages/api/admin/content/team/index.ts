@@ -17,6 +17,7 @@ export const GET: APIRoute = async ({ locals }) => {
     const { data, error } = await supabase
       .from('team_members')
       .select('*')
+      .is('deleted_at', null)
       .order('sort_order', { ascending: true });
 
     if (error) throw error;
@@ -36,7 +37,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
   const supabase = getSupabaseAdmin();
   try {
     const body = await request.json();
-    const { name, title, bio, image_url, sort_order = 0, active = true } = body;
+    const { name, title, bio, image_url, sort_order = 0, active = true, ar_name, ar_title, ar_bio } = body;
 
     if (!name || !title) {
       return new Response(JSON.stringify({ error: 'name and title are required' }), { status: 400 });
@@ -44,7 +45,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
 
     const { data, error } = await supabase
       .from('team_members')
-      .insert({ name, title, bio, image_url, sort_order, active })
+      .insert({ name, title, bio, image_url, sort_order, active, ar_name, ar_title, ar_bio })
       .select()
       .single();
 

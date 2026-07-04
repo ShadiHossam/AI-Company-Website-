@@ -17,6 +17,8 @@ if (error || !cs) {
 const timelineItems = (cs.timeline_items as { step: string; description: string }[]) ?? [];
 const results = (cs.results as { value: string; label: string }[]) ?? [];
 const mediaSections = (cs.media_sections as { type: string; url: string; caption: string; description: string }[]) ?? [];
+const arTimelineItems = (cs.ar_timeline_items as { step: string; description: string }[]) ?? [];
+const arResults = (cs.ar_results as { value: string; label: string }[]) ?? [];
 ---
 
 <AdminLayout title={`Edit: ${cs.title}`} user={user} unreadCount={unreadNotifs ?? 0}>
@@ -72,7 +74,7 @@ const mediaSections = (cs.media_sections as { type: string; url: string; caption
         <label class="form-label">Solution</label>
         <textarea class="form-textarea" name="solution" rows="4">{cs.solution ?? ''}</textarea>
       </div>
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-4 mb-4">
         <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
           <input type="checkbox" name="featured" checked={cs.featured} style="width:16px;height:16px;accent-color:var(--accent);" />
           <span class="text-sm">Featured</span>
@@ -84,6 +86,32 @@ const mediaSections = (cs.media_sections as { type: string; url: string; caption
         <div class="form-group" style="margin:0;flex:1;max-width:120px;">
           <label class="form-label text-xs">Sort Order</label>
           <input class="form-input" name="sort_order" type="number" value={cs.sort_order ?? 0} />
+        </div>
+      </div>
+
+      <div style="border-top:1px dashed var(--border);margin:1rem 0 1rem;padding-top:1rem;">
+        <div style="font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem;">Arabic Translation (optional)</div>
+        <div class="grid-2 gap-4 mb-4">
+          <div class="form-group">
+            <label class="form-label">العنوان بالعربية</label>
+            <input class="form-input" name="ar_title" type="text" dir="rtl" style="text-align:right;" value={cs.ar_title ?? ''} placeholder="العنوان بالعربية" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">الصناعة بالعربية</label>
+            <input class="form-input" name="ar_industry" type="text" dir="rtl" style="text-align:right;" value={cs.ar_industry ?? ''} placeholder="الصناعة بالعربية" />
+          </div>
+        </div>
+        <div class="form-group mb-4">
+          <label class="form-label">مدة التنفيذ بالعربية</label>
+          <input class="form-input" name="ar_delivery_time" type="text" dir="rtl" style="text-align:right;" value={cs.ar_delivery_time ?? ''} placeholder="6 أسابيع" />
+        </div>
+        <div class="form-group mb-4">
+          <label class="form-label">التحدي بالعربية</label>
+          <textarea class="form-textarea" name="ar_challenge" rows="4" dir="rtl" style="text-align:right;" placeholder="التحدي بالعربية">{cs.ar_challenge ?? ''}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">الحل بالعربية</label>
+          <textarea class="form-textarea" name="ar_solution" rows="4" dir="rtl" style="text-align:right;" placeholder="الحل بالعربية">{cs.ar_solution ?? ''}</textarea>
         </div>
       </div>
     </div>
@@ -105,6 +133,23 @@ const mediaSections = (cs.media_sections as { type: string; url: string; caption
       </div>
     </div>
 
+    <!-- Results editor (Arabic) -->
+    <div class="card mb-4">
+      <div class="flex items-center justify-between mb-4">
+        <div style="font-weight:600;color:var(--text-primary);">النتائج بالعربية (Results, Arabic)</div>
+        <button type="button" id="add-result-ar" class="btn btn-ghost btn-sm">+ Add Result</button>
+      </div>
+      <div id="results-list-ar">
+        {arResults.map((r, i) => (
+          <div class="result-row-ar flex items-center gap-3 mb-3">
+            <input class="form-input" style="flex:0 0 120px;text-align:right;" placeholder="القيمة" dir="rtl" name={`result_value_ar_${i}`} value={r.value} data-result-value-ar />
+            <input class="form-input" style="flex:1;text-align:right;" placeholder="التسمية" dir="rtl" name={`result_label_ar_${i}`} value={r.label} data-result-label-ar />
+            <button type="button" class="btn btn-sm remove-result-ar" style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);flex-shrink:0;">✕</button>
+          </div>
+        ))}
+      </div>
+    </div>
+
     <!-- Timeline editor -->
     <div class="card mb-4">
       <div class="flex items-center justify-between mb-4">
@@ -117,6 +162,23 @@ const mediaSections = (cs.media_sections as { type: string; url: string; caption
             <input class="form-input" style="flex:0 0 160px;" placeholder="Step (e.g. Week 1)" name={`timeline_step_${i}`} value={t.step} data-timeline-step />
             <input class="form-input" style="flex:1;" placeholder="Description" name={`timeline_desc_${i}`} value={t.description} data-timeline-desc />
             <button type="button" class="btn btn-sm remove-timeline" style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);flex-shrink:0;">✕</button>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Timeline editor (Arabic) -->
+    <div class="card mb-4">
+      <div class="flex items-center justify-between mb-4">
+        <div style="font-weight:600;color:var(--text-primary);">الجدول الزمني بالعربية (Timeline, Arabic)</div>
+        <button type="button" id="add-timeline-ar" class="btn btn-ghost btn-sm">+ Add Step</button>
+      </div>
+      <div id="timeline-list-ar">
+        {arTimelineItems.map((t, i) => (
+          <div class="timeline-row-ar flex items-center gap-3 mb-3">
+            <input class="form-input" style="flex:0 0 160px;text-align:right;" placeholder="الخطوة" dir="rtl" name={`timeline_step_ar_${i}`} value={t.step} data-timeline-step-ar />
+            <input class="form-input" style="flex:1;text-align:right;" placeholder="الوصف" dir="rtl" name={`timeline_desc_ar_${i}`} value={t.description} data-timeline-desc-ar />
+            <button type="button" class="btn btn-sm remove-timeline-ar" style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);flex-shrink:0;">✕</button>
           </div>
         ))}
       </div>
@@ -241,6 +303,36 @@ const mediaSections = (cs.media_sections as { type: string; url: string; caption
     attachRemove(div.querySelector('.remove-timeline')!, 'timeline-row');
   });
 
+  // Add result row (Arabic)
+  document.getElementById('add-result-ar')!.addEventListener('click', () => {
+    const list = document.getElementById('results-list-ar')!;
+    const idx = list.querySelectorAll('.result-row-ar').length;
+    const div = document.createElement('div');
+    div.className = 'result-row-ar flex items-center gap-3 mb-3';
+    div.innerHTML = `
+      <input class="form-input" style="flex:0 0 120px;text-align:right;" placeholder="القيمة" dir="rtl" name="result_value_ar_${idx}" data-result-value-ar />
+      <input class="form-input" style="flex:1;text-align:right;" placeholder="التسمية" dir="rtl" name="result_label_ar_${idx}" data-result-label-ar />
+      <button type="button" class="btn btn-sm remove-result-ar" style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);flex-shrink:0;">✕</button>
+    `;
+    list.appendChild(div);
+    attachRemove(div.querySelector('.remove-result-ar')!, 'result-row-ar');
+  });
+
+  // Add timeline row (Arabic)
+  document.getElementById('add-timeline-ar')!.addEventListener('click', () => {
+    const list = document.getElementById('timeline-list-ar')!;
+    const idx = list.querySelectorAll('.timeline-row-ar').length;
+    const div = document.createElement('div');
+    div.className = 'timeline-row-ar flex items-center gap-3 mb-3';
+    div.innerHTML = `
+      <input class="form-input" style="flex:0 0 160px;text-align:right;" placeholder="الخطوة" dir="rtl" name="timeline_step_ar_${idx}" data-timeline-step-ar />
+      <input class="form-input" style="flex:1;text-align:right;" placeholder="الوصف" dir="rtl" name="timeline_desc_ar_${idx}" data-timeline-desc-ar />
+      <button type="button" class="btn btn-sm remove-timeline-ar" style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);flex-shrink:0;">✕</button>
+    `;
+    list.appendChild(div);
+    attachRemove(div.querySelector('.remove-timeline-ar')!, 'timeline-row-ar');
+  });
+
   function attachRemove(btn: HTMLButtonElement, rowClass: string) {
     btn.addEventListener('click', () => btn.closest(`.${rowClass}`)?.remove());
   }
@@ -248,6 +340,8 @@ const mediaSections = (cs.media_sections as { type: string; url: string; caption
   // Attach remove handlers to existing rows
   document.querySelectorAll('.remove-result').forEach(btn => attachRemove(btn as HTMLButtonElement, 'result-row'));
   document.querySelectorAll('.remove-timeline').forEach(btn => attachRemove(btn as HTMLButtonElement, 'timeline-row'));
+  document.querySelectorAll('.remove-result-ar').forEach(btn => attachRemove(btn as HTMLButtonElement, 'result-row-ar'));
+  document.querySelectorAll('.remove-timeline-ar').forEach(btn => attachRemove(btn as HTMLButtonElement, 'timeline-row-ar'));
 
   // Form submit
   document.getElementById('edit-form')!.addEventListener('submit', async (e) => {
@@ -273,6 +367,16 @@ const mediaSections = (cs.media_sections as { type: string; url: string; caption
     const timelineDescs = Array.from(document.querySelectorAll('[data-timeline-desc]')) as HTMLInputElement[];
     const timeline_items = timelineSteps.map((s, i) => ({ step: s.value, description: timelineDescs[i]?.value ?? '' })).filter(t => t.step || t.description);
 
+    // Collect results (Arabic)
+    const resultValuesAr = Array.from(document.querySelectorAll('[data-result-value-ar]')) as HTMLInputElement[];
+    const resultLabelsAr = Array.from(document.querySelectorAll('[data-result-label-ar]')) as HTMLInputElement[];
+    const ar_results = resultValuesAr.map((v, i) => ({ value: v.value, label: resultLabelsAr[i]?.value ?? '' })).filter(r => r.value || r.label);
+
+    // Collect timeline (Arabic)
+    const timelineStepsAr = Array.from(document.querySelectorAll('[data-timeline-step-ar]')) as HTMLInputElement[];
+    const timelineDescsAr = Array.from(document.querySelectorAll('[data-timeline-desc-ar]')) as HTMLInputElement[];
+    const ar_timeline_items = timelineStepsAr.map((s, i) => ({ step: s.value, description: timelineDescsAr[i]?.value ?? '' })).filter(t => t.step || t.description);
+
     // Collect media sections
     const mediaRows = Array.from(document.querySelectorAll('.media-row'));
     const media_sections = mediaRows.map(row => ({
@@ -295,6 +399,13 @@ const mediaSections = (cs.media_sections as { type: string; url: string; caption
       results,
       timeline_items,
       media_sections,
+      ar_title: fd.get('ar_title') as string || null,
+      ar_industry: fd.get('ar_industry') as string || null,
+      ar_delivery_time: fd.get('ar_delivery_time') as string || null,
+      ar_challenge: fd.get('ar_challenge') as string || null,
+      ar_solution: fd.get('ar_solution') as string || null,
+      ar_results,
+      ar_timeline_items,
     };
 
     const res = await fetch(`/api/admin/content/case-studies/${csId}`, {

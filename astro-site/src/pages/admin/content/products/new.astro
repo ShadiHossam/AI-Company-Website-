@@ -1,0 +1,176 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+const { count: unreadNotifs } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false);
+---
+
+<AdminLayout title="New Product" user={user} unreadCount={unreadNotifs ?? 0}>
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <a href="/admin/content/products" class="text-muted text-sm" style="text-decoration:none;">← Products</a>
+      <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-top:0.25rem;">New Product</h1>
+    </div>
+  </div>
+
+  <div class="card" style="max-width:720px;">
+    <div id="form-error" style="display:none;background:var(--danger-dim);border:1px solid var(--danger);color:var(--danger);padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem;"></div>
+
+    <form id="new-product-form">
+      <div class="grid-2 gap-4 mb-4">
+        <div class="form-group">
+          <label class="form-label" for="name">Name *</label>
+          <input class="form-input" id="name" name="name" type="text" required placeholder="AegisIQ" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="slug">Slug *</label>
+          <input class="form-input" id="slug" name="slug" type="text" required placeholder="aegisiq" />
+        </div>
+      </div>
+
+      <div class="form-group mb-4">
+        <label class="form-label" for="tagline">Tagline</label>
+        <input class="form-input" id="tagline" name="tagline" type="text" placeholder="AI that thinks ahead" />
+      </div>
+
+      <div class="form-group mb-4">
+        <label class="form-label" for="description">Description *</label>
+        <textarea class="form-textarea" id="description" name="description" rows="5" required placeholder="Full product description..."></textarea>
+      </div>
+
+      <div class="grid-2 gap-4 mb-4">
+        <div class="form-group">
+          <label class="form-label" for="status_badge">Status Badge</label>
+          <input class="form-input" id="status_badge" name="status_badge" type="text" placeholder="Available Now" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="sort_order">Sort Order</label>
+          <input class="form-input" id="sort_order" name="sort_order" type="number" value="0" />
+        </div>
+      </div>
+
+      <div class="form-group mb-4">
+        <label class="form-label" for="feature_tags">Feature Tags <span class="text-dim text-xs">(comma-separated)</span></label>
+        <input class="form-input" id="feature_tags" name="feature_tags" type="text" placeholder="Real-time, ML-Powered, API-first" />
+      </div>
+
+      <div class="form-group mb-4">
+        <label class="form-label" for="features">Features <span class="text-dim text-xs">(one per line)</span></label>
+        <textarea class="form-textarea" id="features" name="features" rows="6" placeholder={"Automated lead scoring\nReal-time analytics\nCRM integration"}></textarea>
+      </div>
+
+      <div style="border-top:1px dashed var(--border);margin:1.5rem 0;padding-top:1rem;">
+        <div style="font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem;">Arabic Translation (optional)</div>
+
+        <div class="form-group mb-4">
+          <label class="form-label">الاسم</label>
+          <input class="form-input" id="ar_name" name="ar_name" type="text" dir="rtl" style="text-align:right;" placeholder="اسم المنتج" />
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label">الشعار</label>
+          <input class="form-input" id="ar_tagline" name="ar_tagline" type="text" dir="rtl" style="text-align:right;" placeholder="وصف مختصر للمنتج" />
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label">الوصف</label>
+          <textarea class="form-textarea" id="ar_description" name="ar_description" rows="5" dir="rtl" style="text-align:right;" placeholder="الوصف الكامل للمنتج..."></textarea>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label">وسوم الميزات <span class="text-dim text-xs">(comma-separated)</span></label>
+          <input class="form-input" id="ar_feature_tags" name="ar_feature_tags" type="text" dir="rtl" style="text-align:right;" placeholder="فوري، مدعوم بالذكاء الاصطناعي" />
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label">الميزات <span class="text-dim text-xs">(one per line)</span></label>
+          <textarea class="form-textarea" id="ar_features" name="ar_features" rows="6" dir="rtl" style="text-align:right;" placeholder="تسجيل نقاط العملاء المحتملين تلقائياً"></textarea>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4 mb-6">
+        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+          <input type="checkbox" id="published" name="published" style="width:16px;height:16px;accent-color:var(--accent);" />
+          <span class="text-sm">Published</span>
+        </label>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button type="submit" class="btn btn-primary" id="submit-btn">Create Product</button>
+        <a href="/admin/content/products" class="btn btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </div>
+</AdminLayout>
+
+<script>
+  // Auto-generate slug from name
+  const nameInput = document.getElementById('name') as HTMLInputElement;
+  const slugInput = document.getElementById('slug') as HTMLInputElement;
+  let slugManuallyEdited = false;
+
+  slugInput.addEventListener('input', () => { slugManuallyEdited = true; });
+
+  nameInput.addEventListener('input', () => {
+    if (!slugManuallyEdited) {
+      slugInput.value = nameInput.value
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-');
+    }
+  });
+
+  document.getElementById('new-product-form')!.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+    const errorEl = document.getElementById('form-error') as HTMLElement;
+    submitBtn.textContent = 'Creating...';
+    submitBtn.disabled = true;
+    errorEl.style.display = 'none';
+
+    const form = e.target as HTMLFormElement;
+
+    const featureTagsRaw = (form.querySelector('#feature_tags') as HTMLInputElement).value;
+    const featuresRaw = (form.querySelector('#features') as HTMLTextAreaElement).value;
+    const arFeatureTagsRaw = (form.querySelector('#ar_feature_tags') as HTMLInputElement).value;
+    const arFeaturesRaw = (form.querySelector('#ar_features') as HTMLTextAreaElement).value;
+
+    const payload = {
+      name: (form.querySelector('#name') as HTMLInputElement).value,
+      slug: (form.querySelector('#slug') as HTMLInputElement).value,
+      tagline: (form.querySelector('#tagline') as HTMLInputElement).value || null,
+      description: (form.querySelector('#description') as HTMLTextAreaElement).value,
+      status_badge: (form.querySelector('#status_badge') as HTMLInputElement).value || null,
+      sort_order: parseInt((form.querySelector('#sort_order') as HTMLInputElement).value, 10) || 0,
+      feature_tags: featureTagsRaw ? featureTagsRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
+      features: featuresRaw ? featuresRaw.split('\n').map(s => s.trim()).filter(Boolean) : [],
+      published: (form.querySelector('#published') as HTMLInputElement).checked,
+      ar_name: (form.querySelector('#ar_name') as HTMLInputElement).value || null,
+      ar_tagline: (form.querySelector('#ar_tagline') as HTMLInputElement).value || null,
+      ar_description: (form.querySelector('#ar_description') as HTMLTextAreaElement).value || null,
+      ar_feature_tags: arFeatureTagsRaw ? arFeatureTagsRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
+      ar_features: arFeaturesRaw ? arFeaturesRaw.split('\n').map(s => s.trim()).filter(Boolean) : [],
+    };
+
+    const res = await fetch('/api/admin/content/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      window.location.href = `/admin/content/products/${data.id}`;
+    } else {
+      const err = await res.json();
+      errorEl.textContent = err.error ?? 'An error occurred';
+      errorEl.style.display = 'block';
+      submitBtn.textContent = 'Create Product';
+      submitBtn.disabled = false;
+    }
+  });
+</script>

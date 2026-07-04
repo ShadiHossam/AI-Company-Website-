@@ -19,7 +19,7 @@ interface DbPost {
   ar_meta_description: string | null;
   category: string;
   pub_date: string;
-  updated_date?: string | null;
+  updated_at?: string | null;
   author_name?: string | null;
   og_image?: string | null;
 }
@@ -34,9 +34,10 @@ interface RelatedPost {
 const supabase = getSupabaseAdmin();
 const { data: post, error } = await supabase
   .from('blog_posts')
-  .select('id, title, slug, ar_title, ar_description, ar_body_markdown, ar_meta_title, ar_meta_description, category, pub_date, updated_date, author_name, og_image')
+  .select('id, title, slug, ar_title, ar_description, ar_body_markdown, ar_meta_title, ar_meta_description, category, pub_date, updated_at, author_name, og_image')
   .eq('slug', slug!)
   .eq('status', 'published')
+  .is('deleted_at', null)
   .single();
 
 if (error || !post || !post.ar_title) {
@@ -46,7 +47,7 @@ if (error || !post || !post.ar_title) {
 const bodyHtml = post.ar_body_markdown ? await marked(post.ar_body_markdown) : '';
 
 const pubDate = post.pub_date ? new Date(post.pub_date) : new Date();
-const updatedDate = post.updated_date ? new Date(post.updated_date) : undefined;
+const updatedDate = post.updated_at ? new Date(post.updated_at) : undefined;
 const displayDate = updatedDate ?? pubDate;
 const dateStr = displayDate.toLocaleDateString('ar-AE', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -54,6 +55,7 @@ const { data: related } = await supabase
   .from('blog_posts')
   .select('ar_title, title, slug, category')
   .eq('status', 'published')
+  .is('deleted_at', null)
   .eq('category', post.category)
   .neq('slug', slug!)
   .not('ar_title', 'is', null)

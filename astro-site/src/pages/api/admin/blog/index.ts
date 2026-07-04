@@ -25,6 +25,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
   const { data, error, count } = await supabase
     .from('blog_posts')
     .select('*', { count: 'exact' })
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
     .range(from, to);
 

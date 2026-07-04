@@ -17,6 +17,7 @@ export const GET: APIRoute = async ({ locals }) => {
     const { data, error } = await supabase
       .from('case_studies')
       .select('*')
+      .is('deleted_at', null)
       .order('sort_order', { ascending: true });
 
     if (error) throw error;
@@ -36,7 +37,11 @@ export const POST: APIRoute = async ({ locals, request }) => {
   const supabase = getSupabaseAdmin();
   try {
     const body = await request.json();
-    const { title, slug, industry, delivery_time, challenge, solution, featured = false, published = false, media_sections = [] } = body;
+    const {
+      title, slug, industry, delivery_time, challenge, solution, featured = false, published = false, media_sections = [],
+      ar_title = null, ar_industry = null, ar_delivery_time = null, ar_challenge = null, ar_solution = null,
+      ar_timeline_items = null, ar_results = null,
+    } = body;
 
     if (!title || !slug) {
       return new Response(JSON.stringify({ error: 'title and slug are required' }), { status: 400 });
@@ -44,7 +49,10 @@ export const POST: APIRoute = async ({ locals, request }) => {
 
     const { data, error } = await supabase
       .from('case_studies')
-      .insert({ title, slug, industry, delivery_time, challenge, solution, featured, published, media_sections })
+      .insert({
+        title, slug, industry, delivery_time, challenge, solution, featured, published, media_sections,
+        ar_title, ar_industry, ar_delivery_time, ar_challenge, ar_solution, ar_timeline_items, ar_results,
+      })
       .select()
       .single();
 

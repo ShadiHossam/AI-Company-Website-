@@ -21,6 +21,7 @@ export const GET: APIRoute = async ({ locals }) => {
   const { data, error } = await supabase
     .from('jobs')
     .select('*')
+    .is('deleted_at', null)
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: false });
 

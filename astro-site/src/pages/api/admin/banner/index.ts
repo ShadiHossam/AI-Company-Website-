@@ -45,6 +45,9 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
     active?: boolean;
     starts_at?: string | null;
     ends_at?: string | null;
+    ar_message?: string;
+    ar_cta_text?: string;
+    ar_cta_url?: string;
   };
 
   try {
@@ -58,10 +61,12 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
   }
 
   // Reject javascript: and data: scheme URLs to prevent stored XSS
-  if (body.cta_url) {
-    const scheme = body.cta_url.trim().toLowerCase();
-    if (scheme.startsWith('javascript:') || scheme.startsWith('data:')) {
-      return new Response(JSON.stringify({ error: 'Invalid cta_url scheme' }), { status: 400 });
+  for (const url of [body.cta_url, body.ar_cta_url]) {
+    if (url) {
+      const scheme = url.trim().toLowerCase();
+      if (scheme.startsWith('javascript:') || scheme.startsWith('data:')) {
+        return new Response(JSON.stringify({ error: 'Invalid cta_url scheme' }), { status: 400 });
+      }
     }
   }
 
@@ -76,6 +81,9 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
     active: body.active ?? false,
     starts_at: body.starts_at ?? null,
     ends_at: body.ends_at ?? null,
+    ar_message: body.ar_message || null,
+    ar_cta_text: body.ar_cta_text || null,
+    ar_cta_url: body.ar_cta_url || null,
   };
 
   if (body.id) {

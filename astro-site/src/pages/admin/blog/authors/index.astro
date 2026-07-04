@@ -1,0 +1,292 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getSupabaseAdmin } from '../../../../lib/supabase';
+
+const user = Astro.locals.user!;
+const supabase = getSupabaseAdmin();
+
+const { count: unreadNotifs } = await supabase
+  .from('notifications')
+  .select('*', { count: 'exact', head: true })
+  .eq('read', false);
+
+const { data: authors } = await supabase
+  .from('blog_authors')
+  .select('*')
+  .order('sort_order', { ascending: true })
+  .order('name', { ascending: true });
+
+// Count posts per author (matched by name — blog_posts has no author_id FK)
+const { data: postAuthors } = await supabase.from('blog_posts').select('author_name').is('deleted_at', null);
+const countMap: Record<string, number> = {};
+for (const p of postAuthors ?? []) {
+  if (p.author_name) countMap[p.author_name] = (countMap[p.author_name] ?? 0) + 1;
+}
+---
+
+<AdminLayout title="Authors" user={user} unreadCount={unreadNotifs ?? 0}>
+
+  <div class="flex items-center gap-3 mb-6">
+    <a href="/admin/blog" class="btn btn-ghost btn-sm">← Blog</a>
+    <div>
+      <h1 style="font-size:1.375rem; font-weight:800; color:var(--text-primary);">Authors</h1>
+      <p class="text-muted text-sm" style="margin-top:2px;">{authors?.length ?? 0} author{authors?.length !== 1 ? 's' : ''}</p>
+    </div>
+    <div style="margin-left:auto; display:flex; gap:0.5rem;">
+      <a href="/admin/blog/categories" class="btn btn-ghost btn-sm">Categories</a>
+      <a href="/admin/blog/tags" class="btn btn-ghost btn-sm">Tags</a>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 340px; gap:1.5rem; align-items:start;">
+
+    <!-- Author list -->
+    <div class="card">
+      <div style="padding:1.25rem 1.5rem; border-bottom:1px solid var(--border);">
+        <span style="font-weight:700; font-size:0.95rem;">All Authors</span>
+      </div>
+      {!authors || authors.length === 0 ? (
+        <div style="padding:3rem; text-align:center; color:var(--text-muted); font-size:0.875rem;">
+          No authors yet. Create the first one.
+        </div>
+      ) : (
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Slug</th>
+                <th style="text-align:center;">Posts</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="authors-body">
+              {authors.map(a => (
+                <tr id={`author-${a.id}`}>
+                  <td>
+                    <div style="display:flex; align-items:center; gap:0.6rem;">
+                      {a.avatar_url
+                        ? <img src={a.avatar_url} alt="" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+                        : <div style="width:28px;height:28px;border-radius:50%;background:var(--bg-hover);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--text-muted);flex-shrink:0;">{a.name.charAt(0).toUpperCase()}</div>
+                      }
+                      <div>
+                        <div style="font-weight:600; font-size:0.875rem;">{a.name}</div>
+                        {a.email && <div class="text-xs text-muted">{a.email}</div>}
+                      </div>
+                    </div>
+                  </td>
+                  <td><code style="font-size:0.75rem; color:var(--text-muted);">{a.slug}</code></td>
+                  <td style="text-align:center;">
+                    <span style="font-size:0.875rem; color:var(--text-muted);">{countMap[a.name] ?? 0}</span>
+                  </td>
+                  <td>
+                    <div class="flex gap-2">
+                      <button
+                        class="btn btn-ghost btn-sm edit-author-btn"
+                        data-id={a.id}
+                        data-name={a.name}
+                        data-slug={a.slug}
+                        data-bio={a.bio ?? ''}
+                        data-email={a.email ?? ''}
+                        data-avatar={a.avatar_url ?? ''}
+                        data-website={a.website ?? ''}
+                        data-order={a.sort_order}
+                      >Edit</button>
+                      <button
+                        class="btn btn-ghost btn-sm delete-author-btn"
+                        data-id={a.id}
+                        data-name={a.name}
+                        style="color:#f87171;"
+                      >Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+
+    <!-- Create / Edit form -->
+    <div class="card" style="position:sticky; top:1.5rem;">
+      <div style="padding:1.25rem 1.5rem; border-bottom:1px solid var(--border);">
+        <span id="form-title" style="font-weight:700; font-size:0.95rem;">New Author</span>
+      </div>
+      <div style="padding:1.5rem;">
+        <form id="author-form">
+          <input type="hidden" id="edit-id" value="" />
+
+          <div class="form-group mb-4">
+            <label class="form-label">Name <span style="color:var(--danger);">*</span></label>
+            <input id="author-name" type="text" class="form-input" placeholder="Jane Doe" required />
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label">Slug</label>
+            <input id="author-slug" type="text" class="form-input" placeholder="jane-doe" />
+            <span class="text-xs text-muted" style="margin-top:4px; display:block;">Auto-generated if blank</span>
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label">Bio</label>
+            <textarea id="author-bio" class="form-textarea" placeholder="Short author bio" style="min-height:70px;"></textarea>
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label">Email</label>
+            <input id="author-email" type="email" class="form-input" placeholder="jane@aegisai.ae" />
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label">Avatar URL</label>
+            <input id="author-avatar" type="text" class="form-input" placeholder="/uploads/avatar.jpg" />
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label">Website</label>
+            <input id="author-website" type="text" class="form-input" placeholder="https://..." />
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label">Sort Order</label>
+            <input id="author-order" type="number" class="form-input" value="0" min="0" />
+          </div>
+
+          <div class="flex gap-2 items-center">
+            <button type="submit" id="submit-btn" class="btn btn-primary">Create</button>
+            <button type="button" id="cancel-edit-btn" class="btn btn-ghost" style="display:none;">Cancel</button>
+            <span id="form-msg" style="display:none; font-size:0.875rem;"></span>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="toast" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;background:#1e2a40;border:1px solid var(--border);color:var(--text-primary);padding:0.75rem 1.25rem;border-radius:8px;font-size:0.875rem;z-index:9999;"></div>
+</AdminLayout>
+
+<script>
+  function toast(msg: string, ok = true) {
+    const t = document.getElementById('toast') as HTMLElement;
+    t.textContent = msg;
+    t.style.borderColor = ok ? 'rgba(74,222,128,0.3)' : 'rgba(248,113,113,0.3)';
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3500);
+  }
+
+  function slugify(str: string): string {
+    return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+
+  const form       = document.getElementById('author-form') as HTMLFormElement;
+  const editIdEl   = document.getElementById('edit-id') as HTMLInputElement;
+  const nameEl     = document.getElementById('author-name') as HTMLInputElement;
+  const slugEl     = document.getElementById('author-slug') as HTMLInputElement;
+  const bioEl      = document.getElementById('author-bio') as HTMLTextAreaElement;
+  const emailEl    = document.getElementById('author-email') as HTMLInputElement;
+  const avatarEl   = document.getElementById('author-avatar') as HTMLInputElement;
+  const websiteEl  = document.getElementById('author-website') as HTMLInputElement;
+  const orderEl    = document.getElementById('author-order') as HTMLInputElement;
+  const formTitle  = document.getElementById('form-title') as HTMLElement;
+  const submitBtn  = document.getElementById('submit-btn') as HTMLButtonElement;
+  const cancelBtn  = document.getElementById('cancel-edit-btn') as HTMLButtonElement;
+  const formMsg    = document.getElementById('form-msg') as HTMLElement;
+
+  nameEl.addEventListener('input', () => {
+    if (!editIdEl.value) slugEl.value = slugify(nameEl.value);
+  });
+
+  function enterEdit(id: string, name: string, slug: string, bio: string, email: string, avatar: string, website: string, order: number) {
+    editIdEl.value  = id;
+    nameEl.value    = name;
+    slugEl.value    = slug;
+    bioEl.value     = bio;
+    emailEl.value   = email;
+    avatarEl.value  = avatar;
+    websiteEl.value = website;
+    orderEl.value   = String(order);
+    formTitle.textContent = 'Edit Author';
+    submitBtn.textContent = 'Save Changes';
+    cancelBtn.style.display = 'block';
+    nameEl.focus();
+  }
+
+  function resetForm() {
+    editIdEl.value = '';
+    form.reset();
+    orderEl.value = '0';
+    formTitle.textContent = 'New Author';
+    submitBtn.textContent = 'Create';
+    cancelBtn.style.display = 'none';
+    formMsg.style.display = 'none';
+  }
+
+  cancelBtn.addEventListener('click', resetForm);
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const isEdit  = !!editIdEl.value;
+    const payload = {
+      name:       nameEl.value.trim(),
+      slug:       slugEl.value.trim() || undefined,
+      bio:        bioEl.value.trim() || undefined,
+      email:      emailEl.value.trim() || undefined,
+      avatar_url: avatarEl.value.trim() || undefined,
+      website:    websiteEl.value.trim() || undefined,
+      sort_order: parseInt(orderEl.value, 10) || 0,
+    };
+
+    submitBtn.disabled    = true;
+    submitBtn.textContent = isEdit ? 'Saving…' : 'Creating…';
+
+    try {
+      const url    = isEdit ? `/api/admin/blog/authors/${editIdEl.value}` : '/api/admin/blog/authors';
+      const method = isEdit ? 'PATCH' : 'POST';
+      const res    = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const json   = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Failed');
+
+      toast(isEdit ? 'Author updated' : 'Author created');
+      resetForm();
+      window.location.reload();
+    } catch (err: any) {
+      formMsg.textContent    = `✗ ${err.message}`;
+      formMsg.style.color    = '#f87171';
+      formMsg.style.display  = 'block';
+      toast(err.message, false);
+    } finally {
+      submitBtn.disabled    = false;
+      submitBtn.textContent = isEdit ? 'Save Changes' : 'Create';
+    }
+  });
+
+  // Edit buttons
+  document.querySelectorAll<HTMLButtonElement>('.edit-author-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      enterEdit(
+        btn.dataset.id!, btn.dataset.name!, btn.dataset.slug!,
+        btn.dataset.bio!, btn.dataset.email!, btn.dataset.avatar!, btn.dataset.website!,
+        Number(btn.dataset.order),
+      );
+    });
+  });
+
+  // Delete buttons
+  document.querySelectorAll<HTMLButtonElement>('.delete-author-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const name = btn.dataset.name!;
+      if (!confirm(`Delete author "${name}"? Posts using this name will keep the text value.`)) return;
+      try {
+        const res = await fetch(`/api/admin/blog/authors/${btn.dataset.id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed');
+        document.getElementById(`author-${btn.dataset.id}`)?.remove();
+        toast('Author deleted');
+      } catch {
+        toast('Error deleting author', false);
+      }
+    });
+  });
+</script>

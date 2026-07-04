@@ -10,7 +10,7 @@ export function makeChain(result: Record<string, unknown> = { data: null, error:
 
   const methods = [
     'select', 'insert', 'update', 'delete', 'upsert',
-    'eq', 'neq', 'not', 'in', 'gte', 'lte', 'lt', 'or',
+    'eq', 'neq', 'not', 'in', 'is', 'gte', 'lte', 'lt', 'or',
     'order', 'range', 'limit', 'single',
   ];
 

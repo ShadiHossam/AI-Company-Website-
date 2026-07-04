@@ -17,6 +17,7 @@ export const GET: APIRoute = async ({ locals }) => {
     const { data, error } = await supabase
       .from('client_logos')
       .select('*')
+      .is('deleted_at', null)
       .order('sort_order', { ascending: true });
 
     if (error) throw error;
@@ -36,7 +37,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
   const supabase = getSupabaseAdmin();
   try {
     const body = await request.json();
-    const { company_name, logo_url, website_url, industry, show_on_homepage = false, active = true, sort_order = 0 } = body;
+    const { company_name, logo_url, website_url, industry, ar_industry, show_on_homepage = false, active = true, sort_order = 0 } = body;
 
     if (!company_name || !logo_url) {
       return new Response(JSON.stringify({ error: 'company_name and logo_url are required' }), { status: 400 });
@@ -44,7 +45,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
 
     const { data, error } = await supabase
       .from('client_logos')
-      .insert({ company_name, logo_url, website_url, industry, show_on_homepage, active, sort_order })
+      .insert({ company_name, logo_url, website_url, industry, ar_industry, show_on_homepage, active, sort_order })
       .select()
       .single();
 

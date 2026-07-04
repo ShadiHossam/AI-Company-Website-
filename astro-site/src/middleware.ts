@@ -23,7 +23,10 @@ const CSP = [
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https:",
   "connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://px.ads.linkedin.com https://analytics.tiktok.com https://*.hotjar.com https://*.hotjar.io https://api.intercom.io https://*.crisp.chat https://*.tawk.to https://api.hubspot.com",
-  "frame-src https://td.doubleclick.net https://www.facebook.com https://www.youtube.com",
+  // 'self' is required for the sandboxed snippet-preview iframe (admin/settings/snippets) —
+  // safe because that iframe uses sandbox="allow-scripts" with no allow-same-origin, so
+  // embedded content still can't touch this page's DOM, cookies, or storage.
+  "frame-src 'self' https://td.doubleclick.net https://www.facebook.com https://www.youtube.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -110,7 +113,7 @@ const SECTION_ADMIN: Record<string, string[]> = {
   notifications: ['/admin/notifications'],
   seo:           ['/admin/seo'],
   activity:      ['/admin/activity'],
-  settings:      ['/admin/settings'],
+  settings:      ['/admin/settings', '/admin/trash'],
   users:         ['/admin/settings/users'],
 };
 
@@ -126,7 +129,7 @@ const SECTION_API: Record<string, string[]> = {
   notifications: ['/api/admin/notifications'],
   seo:           ['/api/admin/seo'],
   activity:      ['/api/admin/activity'],
-  settings:      ['/api/admin/config', '/api/admin/banner', '/api/admin/redirects'],
+  settings:      ['/api/admin/config', '/api/admin/banner', '/api/admin/redirects', '/api/admin/snippets', '/api/admin/trash'],
   users:         ['/api/admin/users'],
 };
 

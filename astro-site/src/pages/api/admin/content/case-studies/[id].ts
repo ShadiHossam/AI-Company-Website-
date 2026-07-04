@@ -9,7 +9,10 @@ const CSRF = (req: Request) => {
   return import.meta.env.DEV || origin === siteUrl;
 };
 
-const ALLOWED_FIELDS = ['title', 'slug', 'industry', 'delivery_time', 'challenge', 'solution', 'featured', 'published', 'media_sections'];
+const ALLOWED_FIELDS = [
+  'title', 'slug', 'industry', 'delivery_time', 'challenge', 'solution', 'featured', 'published', 'media_sections',
+  'ar_title', 'ar_industry', 'ar_delivery_time', 'ar_challenge', 'ar_solution', 'ar_timeline_items', 'ar_results',
+];
 
 export const GET: APIRoute = async ({ locals, params }) => {
   if (!locals.user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
@@ -69,7 +72,7 @@ export const DELETE: APIRoute = async ({ locals, params, request }) => {
 
   const supabase = getSupabaseAdmin();
   try {
-    const { error } = await supabase.from('case_studies').delete().eq('id', params.id!);
+    const { error } = await supabase.from('case_studies').update({ deleted_at: new Date().toISOString() }).eq('id', params.id!);
     if (error) throw error;
 
     await supabase.from('activity_log').insert({

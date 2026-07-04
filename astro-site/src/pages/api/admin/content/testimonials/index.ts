@@ -17,6 +17,7 @@ export const GET: APIRoute = async ({ locals }) => {
     const { data, error } = await supabase
       .from('testimonials')
       .select('*')
+      .is('deleted_at', null)
       .order('sort_order', { ascending: true });
 
     if (error) throw error;
@@ -36,7 +37,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
   const supabase = getSupabaseAdmin();
   try {
     const body = await request.json();
-    const { client_name, quote, client_title, client_company, client_image_url, industry, published = false, featured = false, sort_order = 0 } = body;
+    const { client_name, quote, client_title, client_company, client_image_url, industry, ar_quote, ar_client_title, published = false, featured = false, sort_order = 0 } = body;
 
     if (!client_name || !quote) {
       return new Response(JSON.stringify({ error: 'client_name and quote are required' }), { status: 400 });
@@ -44,7 +45,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
 
     const { data, error } = await supabase
       .from('testimonials')
-      .insert({ client_name, quote, client_title, client_company, client_image_url, industry, published, featured, sort_order })
+      .insert({ client_name, quote, client_title, client_company, client_image_url, industry, ar_quote, ar_client_title, published, featured, sort_order })
       .select()
       .single();
 

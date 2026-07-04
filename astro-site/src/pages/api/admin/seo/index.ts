@@ -41,6 +41,8 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
     meta_description?: string;
     og_image_url?: string;
     noindex?: boolean;
+    ar_meta_title?: string;
+    ar_meta_description?: string;
   };
 
   try {
@@ -60,6 +62,8 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
     meta_description: body.meta_description ?? null,
     og_image_url: body.og_image_url ?? null,
     noindex: body.noindex ?? false,
+    ar_meta_title: body.ar_meta_title ?? null,
+    ar_meta_description: body.ar_meta_description ?? null,
   });
 
   if (error) {

@@ -19,6 +19,8 @@ if (!isNew) {
 
 const featureTagsValue = isNew ? '' : ((product?.feature_tags as string[]) ?? []).join(', ');
 const featuresValue = isNew ? '' : ((product?.features as string[]) ?? []).join('\n');
+const arFeatureTagsValue = isNew ? '' : ((product?.ar_feature_tags as string[]) ?? []).join(', ');
+const arFeaturesValue = isNew ? '' : ((product?.ar_features as string[]) ?? []).join('\n');
 const pageTitle = isNew ? 'New Product' : `Edit: ${product?.name}`;
 ---
 
@@ -79,6 +81,35 @@ const pageTitle = isNew ? 'New Product' : `Edit: ${product?.name}`;
         <textarea class="form-textarea" name="features" rows="6" placeholder="Automated lead scoring&#10;Real-time analytics&#10;CRM integration">{featuresValue}</textarea>
       </div>
 
+      <div style="border-top:1px dashed var(--border);margin:1.5rem 0;padding-top:1rem;">
+        <div style="font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem;">Arabic Translation (optional)</div>
+
+        <div class="form-group mb-4">
+          <label class="form-label">الاسم</label>
+          <input class="form-input" name="ar_name" type="text" dir="rtl" style="text-align:right;" value={product?.ar_name as string ?? ''} placeholder="اسم المنتج" />
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label">الشعار</label>
+          <input class="form-input" name="ar_tagline" type="text" dir="rtl" style="text-align:right;" value={product?.ar_tagline as string ?? ''} placeholder="وصف مختصر للمنتج" />
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label">الوصف</label>
+          <textarea class="form-textarea" name="ar_description" rows="5" dir="rtl" style="text-align:right;" placeholder="الوصف الكامل للمنتج...">{product?.ar_description as string ?? ''}</textarea>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label">وسوم الميزات <span class="text-dim text-xs">(comma-separated)</span></label>
+          <input class="form-input" name="ar_feature_tags" type="text" dir="rtl" style="text-align:right;" value={arFeatureTagsValue} placeholder="فوري، مدعوم بالذكاء الاصطناعي" />
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label">الميزات <span class="text-dim text-xs">(one per line)</span></label>
+          <textarea class="form-textarea" name="ar_features" rows="6" dir="rtl" style="text-align:right;" placeholder="تسجيل نقاط العملاء المحتملين تلقائياً">{arFeaturesValue}</textarea>
+        </div>
+      </div>
+
       <div class="flex items-center gap-4 mb-6">
         <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
           <input type="checkbox" name="published" checked={isNew ? false : (product?.published as boolean)} style="width:16px;height:16px;accent-color:var(--accent);" />
@@ -113,6 +144,8 @@ const pageTitle = isNew ? 'New Product' : `Edit: ${product?.name}`;
 
     const featureTagsRaw = fd.get('feature_tags') as string;
     const featuresRaw = fd.get('features') as string;
+    const arFeatureTagsRaw = fd.get('ar_feature_tags') as string;
+    const arFeaturesRaw = fd.get('ar_features') as string;
 
     const payload = {
       name: fd.get('name') as string,
@@ -124,6 +157,11 @@ const pageTitle = isNew ? 'New Product' : `Edit: ${product?.name}`;
       features: featuresRaw ? featuresRaw.split('\n').map(s => s.trim()).filter(Boolean) : [],
       sort_order: parseInt(fd.get('sort_order') as string ?? '0', 10),
       published: (form.querySelector('[name="published"]') as HTMLInputElement).checked,
+      ar_name: fd.get('ar_name') as string || null,
+      ar_tagline: fd.get('ar_tagline') as string || null,
+      ar_description: fd.get('ar_description') as string || null,
+      ar_feature_tags: arFeatureTagsRaw ? arFeatureTagsRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
+      ar_features: arFeaturesRaw ? arFeaturesRaw.split('\n').map(s => s.trim()).filter(Boolean) : [],
     };
 
     const url = isNew ? '/api/admin/content/products' : `/api/admin/content/products/${productId}`;

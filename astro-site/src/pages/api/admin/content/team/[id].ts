@@ -16,7 +16,7 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
   const supabase = getSupabaseAdmin();
   try {
     const body = await request.json();
-    const { name, title, bio, image_url, sort_order, active } = body;
+    const { name, title, bio, image_url, sort_order, active, ar_name, ar_title, ar_bio } = body;
 
     const updates: Record<string, unknown> = {};
     if (name !== undefined) updates.name = name;
@@ -25,6 +25,9 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
     if (image_url !== undefined) updates.image_url = image_url;
     if (sort_order !== undefined) updates.sort_order = sort_order;
     if (active !== undefined) updates.active = active;
+    if (ar_name !== undefined) updates.ar_name = ar_name;
+    if (ar_title !== undefined) updates.ar_title = ar_title;
+    if (ar_bio !== undefined) updates.ar_bio = ar_bio;
 
     const { data, error } = await supabase
       .from('team_members')
@@ -47,7 +50,7 @@ export const DELETE: APIRoute = async ({ locals, params, request }) => {
 
   const supabase = getSupabaseAdmin();
   try {
-    const { error } = await supabase.from('team_members').delete().eq('id', params.id!);
+    const { error } = await supabase.from('team_members').update({ deleted_at: new Date().toISOString() }).eq('id', params.id!);
     if (error) throw error;
     return new Response(JSON.stringify({ success: true }), { status: 200 });
   } catch {

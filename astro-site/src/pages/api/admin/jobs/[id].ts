@@ -47,7 +47,7 @@ export const DELETE: APIRoute = async ({ locals, request, params }) => {
   if (!CSRF_CHECK(request)) return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
 
   const supabase = getSupabaseAdmin();
-  const { error } = await supabase.from('jobs').delete().eq('id', params.id!);
+  const { error } = await supabase.from('jobs').update({ deleted_at: new Date().toISOString() }).eq('id', params.id!);
   if (error) return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   return new Response(JSON.stringify({ success: true }), { status: 200 });
 };

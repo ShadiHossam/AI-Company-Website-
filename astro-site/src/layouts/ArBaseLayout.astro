@@ -102,14 +102,16 @@ const ogImageURL = ogImage.startsWith('http') ? ogImage : `https://${COMPANY.dom
     bar.id = 'announcement-bar';
     bar.style.cssText = 'background:' + data.bg_color + ';color:' + data.text_color + ';text-align:center;padding:10px 1rem;font-size:0.875rem;font-weight:600;position:relative;z-index:200;';
     var msgNode = document.createElement('span');
-    msgNode.textContent = data.message;
+    msgNode.textContent = data.ar_message || data.message;
     bar.appendChild(msgNode);
-    if (data.cta_text && data.cta_url) {
-      var safeHref = /^(https?:\/\/|\/)/.test(data.cta_url) ? data.cta_url : '#';
+    var ctaText = data.ar_cta_text || data.cta_text;
+    var ctaUrl = data.ar_cta_url || data.cta_url;
+    if (ctaText && ctaUrl) {
+      var safeHref = /^(https?:\/\/|\/)/.test(ctaUrl) ? ctaUrl : '#';
       var link = document.createElement('a');
       link.href = safeHref;
       link.style.cssText = 'color:inherit;text-decoration:underline;margin-right:8px;';
-      link.textContent = data.cta_text + ' ←';
+      link.textContent = ctaText + ' ←';
       bar.appendChild(link);
     }
     document.body.insertBefore(bar, document.body.firstChild);

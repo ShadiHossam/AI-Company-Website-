@@ -18,7 +18,9 @@ if (error || !page) {
 }
 
 const sections = (page.sections as { heading: string; body: string }[]) ?? [];
+const arSections = (page.ar_sections as { heading: string; body: string }[]) ?? [];
 const previewPath = slug === 'privacy' ? '/privacy' : '/terms';
+const arPreviewPath = slug === 'privacy' ? '/ar/privacy' : '/ar/terms';
 ---
 
 <AdminLayout title={`Edit: ${page.title}`} user={user} unreadCount={unreadNotifs ?? 0}>
@@ -27,7 +29,10 @@ const previewPath = slug === 'privacy' ? '/privacy' : '/terms';
       <a href="/admin/content/legal" class="text-muted text-sm" style="text-decoration:none;">← Legal Pages</a>
       <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-top:0.25rem;">{page.title}</h1>
     </div>
-    <a href={previewPath} target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Preview ↗</a>
+    <div class="flex items-center gap-2">
+      <a href={previewPath} target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Preview ↗</a>
+      <a href={arPreviewPath} target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Preview (AR) ↗</a>
+    </div>
   </div>
 
   <div id="save-banner" style="display:none;background:var(--success-dim);border:1px solid rgba(34,197,94,0.3);color:var(--success);padding:0.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem;">
@@ -42,9 +47,13 @@ const previewPath = slug === 'privacy' ? '/privacy' : '/terms';
       <label class="form-label">Title <span class="text-dim text-xs">(read-only)</span></label>
       <input class="form-input" type="text" value={page.title} readonly style="opacity:0.6;cursor:not-allowed;" />
     </div>
-    <div class="form-group">
+    <div class="form-group mb-3">
       <label class="form-label">Last Updated</label>
       <input class="form-input" type="date" id="last-updated" value={page.last_updated ?? ''} />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Arabic Title <span class="text-dim text-xs">(optional)</span></label>
+      <input class="form-input" type="text" id="ar-title" dir="rtl" style="text-align:right;" value={page.ar_title ?? ''} placeholder="العنوان بالعربية" />
     </div>
   </div>
 
@@ -75,6 +84,39 @@ const previewPath = slug === 'privacy' ? '/privacy' : '/terms';
           <div class="form-group">
             <label class="form-label">Body</label>
             <textarea class="form-textarea section-body" data-index={i} rows="6" placeholder="Section content...">{s.body}</textarea>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <!-- Arabic sections editor -->
+  <div class="card mb-4">
+    <div class="flex items-center justify-between mb-4">
+      <div style="font-weight:600;color:var(--text-primary);">Arabic Sections <span class="text-dim text-xs">(optional — falls back to English if empty)</span></div>
+      <button type="button" id="ar-add-section" class="btn btn-ghost btn-sm">+ Add Section</button>
+    </div>
+
+    <div id="ar-sections-list">
+      {arSections.map((s, i) => (
+        <div class="legal-section-ar" data-index={i} style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;margin-bottom:0.875rem;background:var(--bg-input);">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-muted" style="font-weight:600;">Section {i + 1}</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <button type="button" class="btn btn-ghost btn-sm ar-move-up" data-index={i} title="Move up" style={i === 0 ? 'opacity:0.3;pointer-events:none;' : ''}>↑</button>
+              <button type="button" class="btn btn-ghost btn-sm ar-move-down" data-index={i} title="Move down" style={i === arSections.length - 1 ? 'opacity:0.3;pointer-events:none;' : ''}>↓</button>
+              <button type="button" class="btn btn-sm ar-remove-section" data-index={i} style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);">Remove</button>
+            </div>
+          </div>
+          <div class="form-group mb-3">
+            <label class="form-label">Heading</label>
+            <input class="form-input ar-section-heading" data-index={i} type="text" dir="rtl" style="text-align:right;" value={s.heading} placeholder="عنوان القسم..." />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Body</label>
+            <textarea class="form-textarea ar-section-body" data-index={i} rows="6" dir="rtl" style="text-align:right;" placeholder="محتوى القسم...">{s.body}</textarea>
           </div>
         </div>
       ))}
@@ -161,6 +203,77 @@ const previewPath = slug === 'privacy' ? '/privacy' : '/terms';
     renderSections(sections);
   });
 
+  function getArSections() {
+    const list = document.getElementById('ar-sections-list')!;
+    const sectionEls = list.querySelectorAll('.legal-section-ar');
+    return Array.from(sectionEls).map(el => ({
+      heading: (el.querySelector('.ar-section-heading') as HTMLInputElement).value,
+      body: (el.querySelector('.ar-section-body') as HTMLTextAreaElement).value,
+    }));
+  }
+
+  function renderArSections(sections: { heading: string; body: string }[]) {
+    const list = document.getElementById('ar-sections-list')!;
+    list.innerHTML = sections.map((s, i) => `
+      <div class="legal-section-ar" data-index="${i}" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;margin-bottom:0.875rem;background:var(--bg-input);">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs text-muted" style="font-weight:600;">Section ${i + 1}</span>
+          <div class="flex items-center gap-1">
+            <button type="button" class="btn btn-ghost btn-sm ar-move-up" data-index="${i}" title="Move up" ${i === 0 ? 'style="opacity:0.3;pointer-events:none;"' : ''}>↑</button>
+            <button type="button" class="btn btn-ghost btn-sm ar-move-down" data-index="${i}" title="Move down" ${i === sections.length - 1 ? 'style="opacity:0.3;pointer-events:none;"' : ''}>↓</button>
+            <button type="button" class="btn btn-sm ar-remove-section" data-index="${i}" style="color:var(--danger);background:var(--danger-dim);border-color:var(--danger-dim);">Remove</button>
+          </div>
+        </div>
+        <div class="form-group mb-3">
+          <label class="form-label">Heading</label>
+          <input class="form-input ar-section-heading" data-index="${i}" type="text" dir="rtl" style="text-align:right;" value="${s.heading.replace(/"/g, '&quot;')}" placeholder="عنوان القسم..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Body</label>
+          <textarea class="form-textarea ar-section-body" data-index="${i}" rows="6" dir="rtl" style="text-align:right;" placeholder="محتوى القسم...">${s.body}</textarea>
+        </div>
+      </div>
+    `).join('');
+    attachArHandlers();
+  }
+
+  function attachArHandlers() {
+    document.querySelectorAll('.ar-remove-section').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt((btn as HTMLElement).dataset.index ?? '0', 10);
+        const sections = getArSections();
+        sections.splice(idx, 1);
+        renderArSections(sections);
+      });
+    });
+
+    document.querySelectorAll('.ar-move-up').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt((btn as HTMLElement).dataset.index ?? '0', 10);
+        if (idx === 0) return;
+        const sections = getArSections();
+        [sections[idx - 1], sections[idx]] = [sections[idx], sections[idx - 1]];
+        renderArSections(sections);
+      });
+    });
+
+    document.querySelectorAll('.ar-move-down').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt((btn as HTMLElement).dataset.index ?? '0', 10);
+        const sections = getArSections();
+        if (idx >= sections.length - 1) return;
+        [sections[idx], sections[idx + 1]] = [sections[idx + 1], sections[idx]];
+        renderArSections(sections);
+      });
+    });
+  }
+
+  document.getElementById('ar-add-section')!.addEventListener('click', () => {
+    const sections = getArSections();
+    sections.push({ heading: '', body: '' });
+    renderArSections(sections);
+  });
+
   document.getElementById('save-btn')!.addEventListener('click', async () => {
     const saveBtn = document.getElementById('save-btn') as HTMLButtonElement;
     const saveBanner = document.getElementById('save-banner') as HTMLElement;
@@ -172,11 +285,13 @@ const previewPath = slug === 'privacy' ? '/privacy' : '/terms';
 
     const sections = getSections();
     const last_updated = (document.getElementById('last-updated') as HTMLInputElement).value || null;
+    const ar_title = (document.getElementById('ar-title') as HTMLInputElement).value || null;
+    const ar_sections = getArSections();
 
     const res = await fetch(`/api/admin/content/legal/${slug}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sections, last_updated }),
+      body: JSON.stringify({ sections, last_updated, ar_title, ar_sections }),
     });
 
     if (res.ok) {
@@ -193,4 +308,5 @@ const previewPath = slug === 'privacy' ? '/privacy' : '/terms';
 
   // Attach initial handlers
   attachHandlers();
+  attachArHandlers();
 </script>

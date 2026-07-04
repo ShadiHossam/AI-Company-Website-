@@ -17,6 +17,7 @@ export const GET: APIRoute = async ({ locals }) => {
     const { data, error } = await supabase
       .from('products')
       .select('*')
+      .is('deleted_at', null)
       .order('sort_order', { ascending: true });
 
     if (error) throw error;
@@ -39,15 +40,23 @@ export const POST: APIRoute = async ({ locals, request }) => {
     const {
       slug, name, tagline, description, status_badge,
       feature_tags = [], features = [], sort_order = 0, published = false,
+      ar_name, ar_tagline, ar_description, ar_feature_tags, ar_features,
     } = body;
 
-    if (!slug || !name) {
-      return new Response(JSON.stringify({ error: 'slug and name are required' }), { status: 400 });
+    if (!slug || !name || !description) {
+      return new Response(JSON.stringify({ error: 'slug, name, and description are required' }), { status: 400 });
     }
 
     const { data, error } = await supabase
       .from('products')
-      .insert({ slug, name, tagline, description, status_badge, feature_tags, features, sort_order, published })
+      .insert({
+        slug, name, tagline, description, status_badge, feature_tags, features, sort_order, published,
+        ar_name: ar_name || null,
+        ar_tagline: ar_tagline || null,
+        ar_description: ar_description || null,
+        ar_feature_tags: ar_feature_tags ?? null,
+        ar_features: ar_features ?? null,
+      })
       .select()
       .single();
 

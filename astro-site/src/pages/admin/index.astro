@@ -31,7 +31,7 @@ const [
   supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('read', false),
   supabase.from('leads').select('id, full_name, company_name, status, page_source, created_at, duplicate_email').order('created_at', { ascending: false }).limit(10),
   supabase.from('leads').select('id, full_name, company_name, whatsapp, status').eq('status', 'qualified').lt('updated_at', new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()).limit(5),
-  supabase.from('blog_posts').select('status'),
+  supabase.from('blog_posts').select('status').is('deleted_at', null),
   supabase.from('leads').select('status'),
   supabase.from('leads').select('created_at, status').gte('created_at', sevenDaysAgo),
   supabase.from('leads').select('created_at').gte('created_at', thirtyDaysAgo),
@@ -103,8 +103,6 @@ const sourceValues = sourceEntries.map(([, v]) => v);
 ---
 
 <AdminLayout title="Dashboard" user={user} unreadCount={unreadNotifs ?? 0}>
-
-  <script slot="head" src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" is:inline></script>
 
   <!-- Stats row -->
   <div class="grid-4 mb-4">
@@ -272,7 +270,15 @@ const sourceValues = sourceEntries.map(([, v]) => v);
 
 </AdminLayout>
 
+<script>
+  // Bundled locally (not a CDN) so it isn't blocked by the admin CSP's script-src allowlist.
+  import { Chart } from 'chart.js/auto';
+  window.Chart = Chart;
+  window.dispatchEvent(new Event('chartjs:ready'));
+</script>
 <script define:vars={{ sparkNew, sparkQualified, barLabels, barCounts, sourceLabels, sourceValues, funnelLabels, funnelCounts }}>
+function renderDashboardCharts() {
+  const { Chart } = window;
   // Sparkline defaults
   const sparkDefaults = {
     type: 'line',
@@ -393,4 +399,11 @@ const sourceValues = sourceEntries.map(([, v]) => v);
       },
     });
   }
+}
+
+if (window.Chart) {
+  renderDashboardCharts();
+} else {
+  window.addEventListener('chartjs:ready', renderDashboardCharts, { once: true });
+}
 </script>

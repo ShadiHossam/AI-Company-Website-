@@ -194,7 +194,7 @@ export const DELETE: APIRoute = async ({ locals, params, request }) => {
 
   const { error } = await supabase
     .from('blog_posts')
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq('id', id!);
 
   if (error) {

@@ -12,6 +12,7 @@ export const GET: APIRoute = async () => {
       .from('blog_posts')
       .select('slug, pub_date, updated_date, ar_title')
       .eq('status', 'published')
+      .is('deleted_at', null)
       .order('pub_date', { ascending: false });
 
     if (!error && data) {
