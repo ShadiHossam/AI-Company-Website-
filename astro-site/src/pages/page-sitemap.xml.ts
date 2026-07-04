@@ -15,8 +15,7 @@ const NOW = new Date().toISOString().replace(/\.\d{3}Z$/, '+00:00');
 const PAGES: PageEntry[] = [
   { url: '/',                                  lastmod: NOW, priority: '1.0', changefreq: 'weekly',  arUrl: '/ar' },
   { url: '/services',                          lastmod: NOW, priority: '0.8', changefreq: 'monthly', arUrl: '/ar/services' },
-  { url: '/products',                          lastmod: NOW, priority: '0.8', changefreq: 'monthly' },
-  { url: '/pricing',                           lastmod: NOW, priority: '0.8', changefreq: 'monthly', arUrl: '/ar/pricing' },
+  { url: '/products',                          lastmod: NOW, priority: '0.8', changefreq: 'monthly', arUrl: '/ar/products' },
   { url: '/services/custom-ai-development',   lastmod: NOW, priority: '0.7', changefreq: 'monthly', arUrl: '/ar/services/custom-ai-development' },
   { url: '/services/ai-agents',               lastmod: NOW, priority: '0.7', changefreq: 'monthly', arUrl: '/ar/services/ai-agents' },
   { url: '/services/ai-automation',           lastmod: NOW, priority: '0.7', changefreq: 'monthly', arUrl: '/ar/services/ai-automation' },
@@ -37,16 +36,12 @@ const PAGES: PageEntry[] = [
   { url: '/about',                             lastmod: NOW, priority: '0.6', changefreq: 'monthly', arUrl: '/ar/about' },
   { url: '/blog',                              lastmod: NOW, priority: '0.6', changefreq: 'weekly',  arUrl: '/ar/blog' },
   { url: '/contact',                           lastmod: NOW, priority: '0.6', changefreq: 'monthly', arUrl: '/ar/contact' },
-  { url: '/faq',                               lastmod: NOW, priority: '0.5', changefreq: 'monthly', arUrl: '/ar/faq' },
-  { url: '/careers',                           lastmod: NOW, priority: '0.5', changefreq: 'weekly'  },
-  { url: '/privacy',                           lastmod: NOW, priority: '0.3', changefreq: 'yearly'  },
-  { url: '/terms',                             lastmod: NOW, priority: '0.3', changefreq: 'yearly'  },
+  { url: '/careers',                           lastmod: NOW, priority: '0.5', changefreq: 'weekly',  arUrl: '/ar/careers' },
 ];
 
 const AR_ONLY: PageEntry[] = [
   { url: '/ar',                                  lastmod: NOW, priority: '0.9', changefreq: 'weekly'  },
   { url: '/ar/services',                         lastmod: NOW, priority: '0.8', changefreq: 'monthly' },
-  { url: '/ar/pricing',                          lastmod: NOW, priority: '0.7', changefreq: 'monthly' },
   { url: '/ar/services/custom-ai-development',  lastmod: NOW, priority: '0.7', changefreq: 'monthly' },
   { url: '/ar/services/ai-agents',              lastmod: NOW, priority: '0.7', changefreq: 'monthly' },
   { url: '/ar/services/ai-automation',          lastmod: NOW, priority: '0.7', changefreq: 'monthly' },
@@ -63,15 +58,16 @@ const AR_ONLY: PageEntry[] = [
   { url: '/ar/industries/logistics',            lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
   { url: '/ar/about',                            lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
   { url: '/ar/contact',                          lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
-  { url: '/ar/faq',                              lastmod: NOW, priority: '0.5', changefreq: 'monthly' },
   { url: '/ar/blog',                             lastmod: NOW, priority: '0.6', changefreq: 'weekly'  },
+  { url: '/ar/products',                         lastmod: NOW, priority: '0.8', changefreq: 'monthly' },
+  { url: '/ar/careers',                          lastmod: NOW, priority: '0.5', changefreq: 'weekly'  },
 ];
 
 function urlEntry(page: PageEntry): string {
   const hreflang = page.arUrl
     ? `
     <xhtml:link rel="alternate" hreflang="en-ae" href="${BASE}${page.url}"/>
-    <xhtml:link rel="alternate" hreflang="ar" href="${BASE}${page.arUrl}"/>
+    <xhtml:link rel="alternate" hreflang="ar-ae" href="${BASE}${page.arUrl}"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}${page.url}"/>`
     : '';
   return `  <url>
@@ -89,7 +85,7 @@ function arUrlEntry(page: PageEntry): string {
     <lastmod>${page.lastmod}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority}</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="${BASE}${page.url}"/>
+    <xhtml:link rel="alternate" hreflang="ar-ae" href="${BASE}${page.url}"/>
     <xhtml:link rel="alternate" hreflang="en-ae" href="${BASE}${enUrl}"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}${enUrl}"/>
   </url>`;

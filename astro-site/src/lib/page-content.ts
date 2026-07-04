@@ -94,24 +94,6 @@ export const PAGE_CONFIGS: PageConfig[] = [
       },
     ],
   },
-  {
-    slug: 'pricing',
-    title: 'Pricing',
-    path: '/pricing',
-    description: 'Pricing hero and CTA copy.',
-    sections: [
-      {
-        heading: 'Hero',
-        fields: [
-          { key: 'hero_eyebrow', label: 'Eyebrow Text', type: 'text', default: 'Customized Pricing' },
-          { key: 'hero_h1', label: 'Headline', type: 'textarea', default: 'Every Project is Scoped Specifically for You.' },
-          { key: 'hero_subtext', label: 'Sub-text', type: 'textarea', default: "We don't believe in one-size-fits-all pricing. Your business, workflow complexity, and goals are unique — so your quote will be too. Book a free 30-minute discovery call and we'll give you a clear, honest number." },
-          { key: 'hero_cta_primary', label: 'Primary CTA Text', type: 'text', default: 'Book Free Discovery Call →' },
-          { key: 'hero_cta_secondary', label: 'Secondary CTA Text', type: 'text', default: 'Send Us a Message' },
-        ],
-      },
-    ],
-  },
 ];
 
 const pageContentCache = new Map<string, { data: Record<string, string>; exp: number }>();

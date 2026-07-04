@@ -230,7 +230,7 @@ describe('admin auth guard', () => {
       })),
     });
 
-    const ctx = makeCtx({ pathname: '/admin/content/faq', token: 'editor.token' });
+    const ctx = makeCtx({ pathname: '/admin/content/team', token: 'editor.token' });
     const next = vi.fn().mockResolvedValue(new Response('ok'));
     await onRequest(ctx, next);
 
