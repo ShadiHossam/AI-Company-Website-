@@ -39,7 +39,7 @@ try {
 }
 
 // Fall back to content collection if DB fails or has no posts
-let collectionPosts: Array<{ slug: string; data: { title: string; description: string; category: string; pubDate: Date; ogImage?: string } }> = [];
+let collectionPosts: Array<{ id: string; data: { title: string; description: string; category: string; pubDate: Date; ogImage?: string } }> = [];
 if (dbError || dbPosts.length === 0) {
   try {
     const { getCollection } = await import('astro:content');
@@ -89,9 +89,9 @@ const blogLdJson = [
 
 <header class="hero-section" style="padding:8rem 0 5rem;">
   <div class="container" style="text-align:center;">
-    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#004f58;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span>Blog</div>
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span>Blog</div>
     <h1>AI Blog: <span class="gradient-text">UAE Edition</span></h1>
-    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:1rem auto 0;">
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:560px; margin:1rem auto 0;">
       Practical guides, case studies, and AI strategy insights, built for Dubai's SMEs, written in plain English (and Arabic).
     </p>
   </div>
@@ -113,30 +113,32 @@ const blogLdJson = [
 
     {useDb ? (
       <div>
-        <div id="posts-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px;">
+        <div id="posts-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:28px;">
           {dbPosts.map(post => (
             <article class="blog-card" data-category={post.category}>
               {post.og_image ? (
-                <img src={post.og_image} alt={post.title} class="blog-card-img" loading="lazy" />
+                <div class="blog-card-media">
+                  <img src={post.og_image} alt={post.title} class="blog-card-img" loading="lazy" />
+                </div>
               ) : (
                 <div class="blog-card-placeholder">
                   <span class="material-symbols-outlined" style="font-size:40px; color:#c2c7ce;">edit_note</span>
                 </div>
               )}
               <div class="blog-card-body">
-                <div style="margin-bottom:0.875rem; display:flex; align-items:center; gap:8px; justify-content:space-between;">
+                <div class="blog-card-meta">
                   <span class="tag tag-teal">{post.category}</span>
                   {post.pub_date && (
-                    <span style="font-size:0.75rem; color:#72787e;">
+                    <span class="blog-card-date">
                       {new Date(post.pub_date).toLocaleDateString('en-AE', { year: 'numeric', month: 'short', day: 'numeric' })}
                     </span>
                   )}
                 </div>
-                <h3 style="font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem; line-height:1.4;">
-                  <a href={`/blog/${post.slug}`} style="color:inherit; text-decoration:none;">{post.title}</a>
+                <h3 class="blog-card-title">
+                  <a href={`/blog/${post.slug}`}>{post.title}</a>
                 </h3>
-                <p style="color:#72787e; font-size:0.875rem; line-height:1.6; margin:0 0 1rem;">{post.description}</p>
-                <a href={`/blog/${post.slug}`} style="font-size:0.8125rem; font-weight:600; color:#006875; text-decoration:none; margin-top:auto;">
+                <p class="blog-card-excerpt">{post.description}</p>
+                <a href={`/blog/${post.slug}`} class="blog-card-link">
                   Read more →
                 </a>
               </div>
@@ -145,28 +147,30 @@ const blogLdJson = [
         </div>
       </div>
     ) : collectionPosts.length > 0 ? (
-      <div id="posts-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px;">
+      <div id="posts-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:28px;">
         {collectionPosts.map(post => (
           <article class="blog-card" data-category={post.data.category}>
             {post.data.ogImage ? (
-              <img src={post.data.ogImage} alt={post.data.title} class="blog-card-img" loading="lazy" />
+              <div class="blog-card-media">
+                <img src={post.data.ogImage} alt={post.data.title} class="blog-card-img" loading="lazy" />
+              </div>
             ) : (
               <div class="blog-card-placeholder">
                 <span class="material-symbols-outlined" style="font-size:40px; color:#c2c7ce;">edit_note</span>
               </div>
             )}
             <div class="blog-card-body">
-              <div style="margin-bottom:0.875rem; display:flex; align-items:center; gap:8px; justify-content:space-between;">
+              <div class="blog-card-meta">
                 <span class="tag tag-teal">{post.data.category}</span>
-                <span style="font-size:0.75rem; color:#72787e;">
+                <span class="blog-card-date">
                   {post.data.pubDate.toLocaleDateString('en-AE', { year: 'numeric', month: 'short', day: 'numeric' })}
                 </span>
               </div>
-              <h3 style="font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem; line-height:1.4;">
-                <a href={`/blog/${post.slug}`} style="color:inherit; text-decoration:none;">{post.data.title}</a>
+              <h3 class="blog-card-title">
+                <a href={`/blog/${post.id}`}>{post.data.title}</a>
               </h3>
-              <p style="color:#72787e; font-size:0.875rem; line-height:1.6; margin:0 0 1rem;">{post.data.description}</p>
-              <a href={`/blog/${post.slug}`} style="font-size:0.8125rem; font-weight:600; color:#006875; text-decoration:none; margin-top:auto;">
+              <p class="blog-card-excerpt">{post.data.description}</p>
+              <a href={`/blog/${post.id}`} class="blog-card-link">
                 Read more →
               </a>
             </div>
@@ -175,15 +179,15 @@ const blogLdJson = [
       </div>
     ) : (
       <div>
-        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:28px;">
           <article class="blog-card" style="opacity:0.60;">
             <div class="blog-card-placeholder">
               <span class="material-symbols-outlined" style="font-size:40px; color:#c2c7ce;">edit_note</span>
             </div>
             <div class="blog-card-body">
-              <div style="margin-bottom:0.875rem;"><span class="tag tag-coming">Coming Soon</span></div>
-              <h3 style="font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem; line-height:1.4;">UAE AI Strategy 2031: What It Means for Your Business</h3>
-              <p style="color:#72787e; font-size:0.875rem; line-height:1.6; margin:0;">A practical breakdown of the UAE National AI Strategy and how SMEs can align their AI investments with national priorities.</p>
+              <div class="blog-card-meta"><span class="tag tag-coming">Coming Soon</span></div>
+              <h3 class="blog-card-title">UAE AI Strategy 2031: What It Means for Your Business</h3>
+              <p class="blog-card-excerpt" style="margin-bottom:0;">A practical breakdown of the UAE National AI Strategy and how SMEs can align their AI investments with national priorities.</p>
             </div>
           </article>
 
@@ -192,9 +196,9 @@ const blogLdJson = [
               <span class="material-symbols-outlined" style="font-size:40px; color:#c2c7ce;">edit_note</span>
             </div>
             <div class="blog-card-body">
-              <div style="margin-bottom:0.875rem;"><span class="tag tag-coming">Coming Soon</span></div>
-              <h3 style="font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem; line-height:1.4;">Arabic AI Chatbots: A Complete Guide for UAE Businesses</h3>
-              <p style="color:#72787e; font-size:0.875rem; line-height:1.6; margin:0;">Everything you need to know about deploying Arabic-language AI: accuracy, dialect handling, and integration with UAE customer channels.</p>
+              <div class="blog-card-meta"><span class="tag tag-coming">Coming Soon</span></div>
+              <h3 class="blog-card-title">Arabic AI Chatbots: A Complete Guide for UAE Businesses</h3>
+              <p class="blog-card-excerpt" style="margin-bottom:0;">Everything you need to know about deploying Arabic-language AI: accuracy, dialect handling, and integration with UAE customer channels.</p>
             </div>
           </article>
         </div>
@@ -207,17 +211,42 @@ const blogLdJson = [
 </BaseLayout>
 
 <style>
-.blog-card { background:#fff; border:1px solid rgba(0,37,59,0.08); border-radius:24px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 20px 40px rgba(0,59,92,0.04); transition:transform .25s, box-shadow .25s; }
-    .blog-card:hover { transform:translateY(-4px); box-shadow:0 24px 56px rgba(0,59,92,0.10); }
-    .blog-card-img { width:100%; height:200px; object-fit:cover; }
-    .blog-card-placeholder { height:200px; background:#e7eeff; display:flex; align-items:center; justify-content:center; }
-    .blog-card-body { padding:1.5rem; flex:1; display:flex; flex-direction:column; }
-    .tag { display:inline-flex; align-items:center; padding:3px 12px; border-radius:100px; font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; }
-    .tag-coming { background:rgba(245,158,11,0.12); color:#d97706; border:1px solid rgba(245,158,11,0.25); }
-    .tag-teal { background:rgba(0,104,117,0.10); color:#004f58; border:1px solid rgba(0,104,117,0.20); }
-    .filter-btn { padding:6px 18px; border-radius:100px; font-size:0.8125rem; font-weight:600; cursor:pointer; border:1px solid rgba(0,37,59,0.18); background:#fff; color:#42474e; transition:all .18s; }
-    .filter-btn:hover { border-color:#006875; color:#006875; }
-    .filter-btn.active { background:#006875; color:#fff; border-color:#006875; }
+.blog-card {
+  background:#fff; border:1px solid rgba(0,37,59,0.08); border-radius:var(--radius-lg);
+  overflow:hidden; display:flex; flex-direction:column;
+  box-shadow:var(--shadow-card);
+  transition:transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s;
+}
+.blog-card:hover { transform:translateY(-5px); border-color:rgba(0,104,117,0.16); box-shadow:var(--shadow-card-hover); }
+.blog-card-media { height:200px; overflow:hidden; position:relative; }
+.blog-card-media::after {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(0,37,59,0.10), transparent 40%);
+  pointer-events:none;
+}
+.blog-card-img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .6s var(--ease); }
+.blog-card:hover .blog-card-img { transform:scale(1.05); }
+.blog-card-placeholder { height:200px; background:linear-gradient(135deg,#e7eeff,#f0f8ff); display:flex; align-items:center; justify-content:center; }
+.blog-card-body { padding:1.625rem 1.625rem 1.5rem; flex:1; display:flex; flex-direction:column; }
+.blog-card-meta { margin-bottom:0.875rem; display:flex; align-items:center; gap:8px; justify-content:space-between; }
+.blog-card-date { font-size:0.75rem; color:#72787e; font-variant-numeric:tabular-nums; }
+.blog-card-title { font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem; line-height:1.42; letter-spacing:-0.015em; }
+.blog-card-title a { color:inherit; text-decoration:none; transition:color .2s; }
+.blog-card-title a:hover { color:#006875; }
+.blog-card-excerpt { color:#72787e; font-size:0.875rem; line-height:1.65; margin:0 0 1.125rem; }
+.blog-card-link { font-size:0.8125rem; font-weight:700; color:#006875; text-decoration:none; margin-top:auto; align-self:flex-start; transition:transform .25s var(--ease), color .2s; }
+.blog-card-link:hover { color:#004f58; transform:translateX(3px); }
+.tag { display:inline-flex; align-items:center; padding:3px 12px; border-radius:100px; font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; }
+.tag-coming { background:rgba(245,158,11,0.12); color:#d97706; border:1px solid rgba(245,158,11,0.25); }
+.tag-teal { background:rgba(0,104,117,0.10); color:#004f58; border:1px solid rgba(0,104,117,0.20); }
+.filter-btn {
+  padding:7px 18px; border-radius:100px; font-size:0.8125rem; font-weight:600; cursor:pointer;
+  border:1px solid rgba(0,37,59,0.16); background:#fff; color:#42474e;
+  box-shadow:0 1px 2px rgba(0,37,59,0.04);
+  transition:color .2s, border-color .2s, background .2s, transform .2s var(--ease), box-shadow .2s var(--ease);
+}
+.filter-btn:hover { border-color:#006875; color:#006875; transform:translateY(-1px); box-shadow:0 1px 2px rgba(0,37,59,0.05), 0 6px 14px rgba(0,59,92,0.08); }
+.filter-btn.active { background:#006875; color:#fff; border-color:#006875; box-shadow:0 1px 2px rgba(0,37,59,0.10), 0 6px 16px rgba(0,104,117,0.26); }
 </style>
 
 <script>

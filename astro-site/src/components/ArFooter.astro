@@ -87,6 +87,7 @@ import { COMPANY } from '../config/company';
             <li><a href="/ar/about"   class="col-link">من نحن</a></li>
             <li><a href="/ar/results" class="col-link">النتائج</a></li>
             <li><a href="/ar/blog"    class="col-link">المدونة</a></li>
+            <li><a href="/ar/careers" class="col-link">الوظائف</a></li>
             <li><a href="/ar/contact" class="col-link">تواصل معنا</a></li>
             <li><a href="/" class="col-link" lang="en">English Version</a></li>
           </ul>
@@ -123,9 +124,9 @@ import { COMPANY } from '../config/company';
       <div class="footer-bottom">
         <p class="copyright">© <span id="copyright-year"></span> {COMPANY.name}. جميع الحقوق محفوظة.</p>
         <div class="legal-links">
-          <a href="/privacy" class="legal-link">سياسة الخصوصية</a>
+          <a href="/ar/privacy" class="legal-link">سياسة الخصوصية</a>
           <span class="legal-sep"></span>
-          <a href="/terms" class="legal-link">شروط الخدمة</a>
+          <a href="/ar/terms" class="legal-link">شروط الخدمة</a>
           <span class="legal-sep"></span>
           <button onclick="window.openCookieSettings && window.openCookieSettings()" class="legal-link legal-btn">إعدادات ملفات تعريف الارتباط</button>
         </div>
@@ -157,11 +158,24 @@ import { COMPANY } from '../config/company';
   }
 
   .footer-inner {
+    position: relative;
     background:
-      radial-gradient(ellipse 70% 40% at 50% 0%, rgba(0,227,253,0.05) 0%, transparent 60%),
-      radial-gradient(ellipse 40% 60% at 100% 100%, rgba(0,227,253,0.03) 0%, transparent 50%);
+      radial-gradient(ellipse 70% 40% at 50% 0%, rgba(0,227,253,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 100% 100%, rgba(0,227,253,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse 50% 50% at 0% 20%, rgba(0,104,117,0.10) 0%, transparent 55%);
     padding: 4rem 0 0;
   }
+  .footer-inner::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: linear-gradient(180deg, black, transparent 75%);
+    pointer-events: none;
+  }
+  .footer-inner > .container { position: relative; }
 
   .footer-grid {
     display: grid;
@@ -190,13 +204,16 @@ import { COMPANY } from '../config/company';
   .logo-icon {
     width: 2rem;
     height: 2rem;
-    background: #00e3fd;
+    background: linear-gradient(135deg, #00e3fd, #00b8d4);
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0,227,253,0.25);
+    transition: transform .3s var(--ease);
   }
+  .brand-logo:hover .logo-icon { transform: rotate(6deg) scale(1.06); }
   .logo-text {
     color: #fff;
     font-weight: 700;
@@ -227,13 +244,14 @@ import { COMPANY } from '../config/company';
     color: rgba(255,255,255,0.55);
     background: rgba(255,255,255,0.04);
     cursor: pointer;
-    transition: color 0.2s, border-color 0.2s, background 0.2s;
+    transition: color 0.2s, border-color 0.2s, background 0.2s, transform .2s var(--ease);
     text-decoration: none;
   }
   .social-btn:hover {
     color: #00e3fd;
     border-color: rgba(0,227,253,0.4);
-    background: rgba(0,227,253,0.08);
+    background: rgba(0,227,253,0.10);
+    transform: translateY(-2px);
   }
 
   .col-heading {
@@ -316,7 +334,7 @@ import { COMPANY } from '../config/company';
   }
 
   .copyright {
-    color: rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.55);
     font-size: 0.8125rem;
     margin: 0;
   }
@@ -329,7 +347,7 @@ import { COMPANY } from '../config/company';
     justify-content: center;
   }
   .legal-link {
-    color: rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.55);
     font-size: 0.8125rem;
     text-decoration: none;
     transition: color 0.15s;
@@ -342,6 +360,12 @@ import { COMPANY } from '../config/company';
     line-height: inherit;
   }
   .legal-link:hover { color: rgba(255,255,255,0.65); }
+
+  /* Keyboard focus on dark footer surfaces */
+  .social-btn:focus-visible, .col-link:focus-visible, .legal-link:focus-visible,
+  a.contact-value:focus-visible, .brand-logo:focus-visible {
+    outline: 2px solid #00e3fd; outline-offset: 3px; border-radius: 6px;
+  }
 
   .legal-sep {
     display: block;

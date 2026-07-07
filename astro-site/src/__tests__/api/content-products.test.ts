@@ -14,7 +14,7 @@ function makeSupabase(result: Record<string, unknown>) {
   return { supabase, chain };
 }
 
-const VALID_PRODUCT = { slug: 'ai-engine', name: 'AI Engine' };
+const VALID_PRODUCT = { slug: 'ai-engine', name: 'AI Engine', description: 'An AI engine.' };
 
 describe('GET /api/admin/content/products', () => {
   beforeEach(() => vi.clearAllMocks());
@@ -60,11 +60,11 @@ describe('POST /api/admin/content/products', () => {
     expect(res.status).toBe(403);
   });
 
-  it('returns 400 when slug or name is missing', async () => {
+  it('returns 400 when slug, name, or description is missing', async () => {
     const ctx = { locals: makeLocals(), request: makeRequest({ name: 'Missing Slug' }) };
     const res = await POST(ctx as any);
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toBe('slug and name are required');
+    expect((await res.json()).error).toBe('slug, name, and description are required');
   });
 
   it('creates product and returns 201', async () => {

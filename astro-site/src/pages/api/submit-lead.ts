@@ -1,12 +1,13 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../lib/supabase';
 import { sendAdminNotification, sendLeadAutoReply } from '../../lib/resend';
+import { isTrustedOrigin } from '../../lib/trusted-origin';
 
 export const prerender = false;
 
 // In-memory IP rate limit store — resets per cold start, good enough for serverless
 const ipHits = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT = 3;
+const RATE_LIMIT = 5;
 const RATE_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 
 function checkRateLimit(ip: string): boolean {
@@ -23,9 +24,7 @@ function checkRateLimit(ip: string): boolean {
 
 export const POST: APIRoute = async ({ request }) => {
   // CSRF: only accept requests from our own origin
-  const origin = request.headers.get('origin');
-  const siteUrl = import.meta.env.SITE_URL ?? 'https://aegisai.ae';
-  if (!import.meta.env.DEV && origin !== siteUrl) {
+  if (!isTrustedOrigin(request)) {
     return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
   }
 

@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../lib/supabase';
 import { sendApplicationNotification } from '../../lib/resend';
+import { isTrustedOrigin } from '../../lib/trusted-origin';
 
 export const prerender = false;
 
@@ -20,14 +21,8 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
-const CSRF_CHECK = (req: Request) => {
-  const origin = req.headers.get('origin') ?? '';
-  const siteUrl = import.meta.env.SITE_URL ?? 'https://aegisai.ae';
-  return import.meta.env.DEV || origin === siteUrl;
-};
-
 export const POST: APIRoute = async ({ request }) => {
-  if (!CSRF_CHECK(request)) {
+  if (!isTrustedOrigin(request)) {
     return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
   }
 

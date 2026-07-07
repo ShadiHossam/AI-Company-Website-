@@ -90,9 +90,9 @@ let CollectionContent: any = null;
 
 if (!dbPost) {
   try {
-    const { getCollection } = await import('astro:content');
+    const { getCollection, render } = await import('astro:content');
     const posts = await getCollection('blog');
-    const found = posts.find(p => p.slug === slug);
+    const found = posts.find(p => p.id === slug);
     if (found) {
       collectionTitle = found.data.title;
       collectionDescription = found.data.description;
@@ -104,14 +104,14 @@ if (!dbPost) {
       collectionAuthorName = found.data.authorName;
       collectionKeyPoints = found.data.keyPoints ?? [];
 
-      const rendered = await found.render();
+      const rendered = await render(found);
       CollectionContent = rendered.Content;
 
       // Related posts from content collection (same category)
       relatedPosts = posts
-        .filter(p => p.slug !== slug && p.data.category === collectionCategory)
+        .filter(p => p.id !== slug && p.data.category === collectionCategory)
         .slice(0, 3)
-        .map(p => ({ title: p.data.title, slug: p.slug, category: p.data.category }));
+        .map(p => ({ title: p.data.title, slug: p.id, category: p.data.category }));
     } else {
       return Astro.redirect('/blog');
     }

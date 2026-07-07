@@ -87,6 +87,10 @@ function closeModal() {
   if (!modal) return;
   modal.classList.remove('open');
   document.body.style.overflow = '';
+  // Undo the success-screen swap from submitForm() so reopening starts clean on step 1.
+  document.getElementById('step-success')?.classList.add('hidden');
+  const ind = document.getElementById('step-indicator');
+  if (ind) ind.style.display = '';
   goToStep(1);
 }
 
@@ -96,8 +100,27 @@ function handleOverlayClick(e: MouseEvent) {
 
 document.addEventListener('keydown', (e: KeyboardEvent) => { if (e.key === 'Escape') closeModal(); });
 
+// The modal's step divs aren't a real <form>, so the `required` attribute on
+// its inputs never triggers native browser validation on its own — enforce it
+// here before letting the user advance past a step with empty required fields.
+function validateStep(n: number): boolean {
+  const container = document.getElementById('step-' + n);
+  if (!container) return true;
+  const fields = container.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+    'input[required], select[required], textarea[required]'
+  );
+  for (const field of fields) {
+    if (!field.checkValidity()) {
+      field.reportValidity();
+      return false;
+    }
+  }
+  return true;
+}
+
 let currentStep = 1;
 function goToStep(n: number) {
+  if (n > currentStep && !validateStep(currentStep)) return;
   document.getElementById('step-' + currentStep)?.classList.add('hidden');
   [1, 2, 3].forEach(i => {
     const dot = document.getElementById('dot-' + i);
@@ -167,6 +190,35 @@ window.addEventListener('scroll', () => {
 if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   document.querySelectorAll('[data-aos]').forEach(el => el.removeAttribute('data-aos'));
 }
+
+// Progressive-enhancement scroll reveal: tags common content blocks with
+// .js-reveal (CSS-only fade/rise) and flips .is-visible as they enter view.
+// No-op under prefers-reduced-motion; never hides content if JS fails
+// because the reveal class is only ever added here, not in markup.
+(function initScrollReveal() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (!('IntersectionObserver' in window)) return;
+
+  const selectors = [
+    '.section-header', '.service-card', '.pain-card', '.industry-card',
+    '.process-step', '.testimonial-card', '.faq-item', '.compare-wrap',
+    '.cta-band', '.card', '.surface-card'
+  ];
+  const targets = document.querySelectorAll<HTMLElement>(selectors.join(','));
+  if (!targets.length) return;
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target as HTMLElement;
+      el.style.transitionDelay = `${Math.min(i % 3, 2) * 80}ms`;
+      requestAnimationFrame(() => el.classList.add('is-visible'));
+      io.unobserve(el);
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+
+  targets.forEach((el) => { el.classList.add('js-reveal'); io.observe(el); });
+})();
 
 function subscribeToMailchimp(email: string, onSuccess: () => void) {
   // Mailchimp URL is stored in site_config and rendered into the page as a data attribute
