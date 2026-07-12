@@ -44,9 +44,33 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
   </div>
 </header>
 
+<!-- BANNER IMAGE -->
+<div style="position:relative; overflow:hidden; height:220px;">
+  <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&q=80&auto=format&fit=crop" alt="Aegis AI team in a consulting session discussing client data practices" loading="lazy" width="1400" height="220" style="width:100%;height:100%;object-fit:cover;object-position:center 35%;" />
+  <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(249,249,255,0.55) 0%,rgba(249,249,255,0) 45%),linear-gradient(to top,rgba(0,19,32,0.25) 0%,transparent 55%);"></div>
+</div>
+
 <main class="section">
-  <div class="container" style="max-width:760px;">
-    <div class="prose">
+  <div class="container" style="max-width:1100px;">
+    <div class="legal-layout">
+
+      <!-- TABLE OF CONTENTS (desktop sidebar) -->
+      <aside class="legal-toc" aria-label="Table of contents">
+        <div class="legal-toc-card">
+          <p class="legal-toc-label">On this page</p>
+          <nav id="legal-toc-nav"></nav>
+        </div>
+      </aside>
+
+      <div style="max-width:760px;">
+
+        <!-- JUMP NAV (mobile) -->
+        <details class="legal-toc-mobile">
+          <summary>On this page</summary>
+          <nav id="legal-toc-nav-mobile"></nav>
+        </details>
+
+        <div class="prose" id="legal-prose">
 
       {dynamicSections ? (
         dynamicSections.map((section) => (
@@ -200,6 +224,9 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         </>
       )}
 
+        </div>
+      </div>
+
     </div>
   </div>
 </main>
@@ -207,7 +234,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
 </BaseLayout>
 
 <style>
-.prose h2 { font-size: 1.375rem; font-weight: 700; color: #00253b; border-bottom: 1px solid rgba(0,37,59,0.10); padding-bottom: 0.625rem; margin-bottom: 1rem; margin-top: 0; }
+.prose h2 { font-size: 1.375rem; font-weight: 700; color: #00253b; border-bottom: 1px solid rgba(0,37,59,0.10); padding-bottom: 0.625rem; margin-bottom: 1rem; margin-top: 0; scroll-margin-top: 90px; }
     .prose p { color: #42474e; line-height: 1.8; margin-bottom: 0.875rem; }
     .prose ul { color: #42474e; padding-left: 1.5rem; line-height: 1.8; }
     .prose li { margin-bottom: 0.5rem; }
@@ -216,4 +243,62 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     .prose a { color: #006875; text-decoration: underline; }
     .contact-box { background: #f0f3ff; border: 1px solid rgba(0,37,59,0.10); border-radius: 12px; padding: 1.25rem; margin-top: 1rem; }
     .contact-box p { margin: 0 0 0.375rem; color: #42474e; font-size: 0.9rem; }
+
+    /* Legal layout: sticky TOC sidebar + prose column */
+    .legal-layout { display: grid; grid-template-columns: 240px 1fr; gap: 3rem; align-items: start; justify-content: center; }
+    .legal-toc { position: sticky; top: 96px; }
+    .legal-toc-card { background: #fff; border: 1px solid rgba(0,37,59,0.08); border-radius: 16px; padding: 1.25rem; box-shadow: var(--shadow-card); }
+    .legal-toc-label { font-size: 0.6875rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: #006875; margin: 0 0 0.875rem; }
+    .legal-toc-link { display: block; padding: 6px 8px; margin-bottom: 2px; border-radius: 8px; font-size: 0.8125rem; line-height: 1.4; color: #72787e; text-decoration: none; transition: background 0.15s, color 0.15s; }
+    .legal-toc-link:hover { background: rgba(0,104,117,0.06); color: #006875; }
+    .legal-toc-link.active { background: rgba(0,227,253,0.10); color: #00253b; font-weight: 600; }
+    .legal-toc-mobile { display: none; background: #fff; border: 1px solid rgba(0,37,59,0.08); border-radius: 12px; padding: 0.5rem 1rem; margin-bottom: 1.5rem; }
+    .legal-toc-mobile summary { cursor: pointer; font-weight: 700; color: #00253b; padding: 0.625rem 0; font-size: 0.9375rem; list-style: none; display: flex; align-items: center; justify-content: space-between; }
+    .legal-toc-mobile summary::-webkit-details-marker { display: none; }
+    .legal-toc-mobile summary::after { content: '+'; font-size: 1.125rem; color: #006875; }
+    .legal-toc-mobile[open] summary::after { content: '\2212'; }
+    .legal-toc-mobile nav { padding-bottom: 0.75rem; }
+    @media (max-width: 900px) {
+      .legal-layout { grid-template-columns: 1fr; gap: 0; }
+      .legal-toc { display: none; }
+      .legal-toc-mobile { display: block; }
+    }
 </style>
+
+<script>
+  const prose = document.getElementById('legal-prose');
+  const navDesktop = document.getElementById('legal-toc-nav');
+  const navMobile = document.getElementById('legal-toc-nav-mobile');
+
+  function slugify(text: string): string {
+    return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  }
+
+  if (prose && (navDesktop || navMobile)) {
+    const headings = Array.from(prose.querySelectorAll('h2'));
+    headings.forEach((h, idx) => {
+      if (!h.id) h.id = slugify(h.textContent ?? '') || `section-${idx}`;
+      const label = h.textContent ?? '';
+      const linkHtml = `<a class="legal-toc-link" href="#${h.id}" data-section="${h.id}">${label}</a>`;
+      if (navDesktop) navDesktop.insertAdjacentHTML('beforeend', linkHtml);
+      if (navMobile) navMobile.insertAdjacentHTML('beforeend', linkHtml);
+    });
+
+    const links = document.querySelectorAll<HTMLAnchorElement>('.legal-toc-link[data-section]');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const id = (entry.target as HTMLElement).id;
+          links.forEach((l) => l.classList.toggle('active', l.getAttribute('data-section') === id));
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+    headings.forEach((h) => observer.observe(h));
+
+    // Close the mobile jump-nav after a link is tapped
+    const mobileDetails = document.querySelector('.legal-toc-mobile') as HTMLDetailsElement | null;
+    navMobile?.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a') && mobileDetails) mobileDetails.open = false;
+    });
+  }
+</script>

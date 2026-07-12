@@ -119,6 +119,9 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       <h2 id="services-heading">What We Do in a Prompt Engineering Engagement</h2>
       <p style="color:#42474e; font-size:1.0625rem;">We don't just rewrite prompts. We build a system your team can maintain and improve on their own.</p>
     </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1509228468518-180dd4864904?w=1200&q=80&auto=format&fit=crop" alt="Prompt evaluation criteria mapped out on a whiteboard during an Aegis AI audit session" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
     <div class="feature-ledger">
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">search</span></div>
@@ -183,6 +186,53 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     </div>
   </div>
 </section>
+
+<!-- BEFORE / AFTER (interactive toggle) -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="ba-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="ba-heading">Same Task, Rewritten Prompt</h2>
+      <p>Toggle between a typical first-draft prompt and the engineered version we'd ship instead.</p>
+    </div>
+    <div class="pe-ba-grid">
+      <div style="border-radius:24px; overflow:hidden; box-shadow:0 24px 56px rgba(0,59,92,0.10); min-height:260px;">
+        <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1200&q=80&auto=format&fit=crop" alt="Close-up of prompt test results on a developer's monitor during optimization" loading="lazy" width="1200" height="800" style="width:100%; height:100%; object-fit:cover; display:block;" />
+      </div>
+      <div class="card" style="padding:2rem;">
+        <div class="pe-ba-toggle" role="tablist" aria-label="Compare prompt versions">
+          <button class="pe-ba-btn is-active" role="tab" id="pe-tab-before" aria-selected="true" aria-controls="pe-panel-before" data-pe-toggle="before">Before</button>
+          <button class="pe-ba-btn" role="tab" id="pe-tab-after" aria-selected="false" aria-controls="pe-panel-after" data-pe-toggle="after">After</button>
+        </div>
+        <p style="color:#72787e; font-size:0.8125rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin:1.5rem 0 0.75rem;">Task: summarise a support ticket</p>
+        <div role="tabpanel" id="pe-panel-before" aria-labelledby="pe-tab-before" data-pe-panel="before">
+          <p class="pe-ba-prompt">"Summarize this ticket."</p>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-top:1rem;">No format, no length limit, no priority signal. Output length and tone vary every time, so agents cannot scan summaries quickly.</p>
+        </div>
+        <div role="tabpanel" id="pe-panel-after" aria-labelledby="pe-tab-after" data-pe-panel="after" hidden>
+          <p class="pe-ba-prompt">"Summarize this support ticket in 2 sentences: state the customer's issue, then the requested outcome. Flag as Urgent if it mentions a refund, cancellation, or legal complaint. Use plain language, no jargon."</p>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-top:1rem;">Fixed length, defined structure, explicit escalation rule. Every summary reads the same way, so agents triage in seconds.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+(function () {
+  var toggles = document.querySelectorAll('[data-pe-toggle]');
+  var panels = document.querySelectorAll('[data-pe-panel]');
+  toggles.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      toggles.forEach(function (t) { t.classList.remove('is-active'); t.setAttribute('aria-selected', 'false'); });
+      panels.forEach(function (p) { p.hidden = true; });
+      btn.classList.add('is-active');
+      btn.setAttribute('aria-selected', 'true');
+      var panel = document.querySelector('[data-pe-panel="' + btn.getAttribute('data-pe-toggle') + '"]');
+      if (panel) panel.hidden = false;
+    });
+  });
+})();
+</script>
 
 <!-- PROCESS -->
 <section class="section" style="background:#e7eeff;" aria-labelledby="process-heading">
@@ -298,6 +348,12 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
 .process-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#00253b,#006875); box-shadow:0 0 0 6px #fff, 0 0 0 8px rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; position:relative; z-index:1; }
 .process-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2rem; position:relative; }
 .process-connector { position:absolute; top:27px; left:calc(12.5% + 28px); right:calc(12.5% + 28px); height:2px; background:linear-gradient(90deg,#00e3fd,rgba(0,37,59,0.20)); }
+.pe-ba-grid { display:grid; grid-template-columns:1fr 1.1fr; gap:1.5rem; align-items:stretch; }
+.pe-ba-toggle { display:flex; gap:0.5rem; background:#f0f3ff; border-radius:12px; padding:4px; }
+.pe-ba-btn { flex:1; padding:0.625rem 1rem; border:none; background:none; border-radius:8px; font-weight:600; font-size:0.875rem; color:#42474e; cursor:pointer; transition:background .2s, color .2s; font-family:inherit; }
+.pe-ba-btn.is-active { background:#fff; color:#00253b; box-shadow:0 2px 8px rgba(0,37,59,0.10); }
+.pe-ba-prompt { background:#f9f9ff; border:1px solid rgba(0,37,59,0.08); border-radius:12px; padding:1rem 1.25rem; font-family:monospace; font-size:0.875rem; color:#00253b; line-height:1.7; }
+@media(max-width:900px) { .pe-ba-grid { grid-template-columns:1fr; } }
 .faq-item { border-top:1px solid rgba(0,37,59,0.10); }
 .faq-btn { display:flex; justify-content:space-between; align-items:center; width:100%; text-align:left; padding:1.1rem 0; font-weight:600; color:#00253b; cursor:pointer; background:none; border:none; font-family:inherit; font-size:0.95rem; }
 .faq-body { display:none; padding-bottom:1rem; color:#42474e; font-size:0.9rem; line-height:1.7; }

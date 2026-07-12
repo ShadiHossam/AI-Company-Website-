@@ -155,6 +155,50 @@ const ldJson = [
   </div>
 </section>
 
+<!-- 3b. Buyer Journey Tabs (interactive) -->
+<section class="section" style="padding-top:0;">
+  <div class="container">
+    <h2 style="text-align:center;margin-bottom:0.75rem;">أين يتدخل الذكاء الاصطناعي في رحلة العميل</h2>
+    <p style="text-align:center;color:#42474e;margin-bottom:2.5rem;max-width:560px;margin-inline:auto;">اختر مرحلة من رحلة العميل لترى كيف يعمل الروبوت فيها.</p>
+    <div class="re-tabs" data-re-tabs>
+      <div class="re-tabs-nav" role="tablist" aria-label="مراحل رحلة العميل">
+        <button type="button" class="re-tab-btn active" data-re-tab="inquiry" role="tab" aria-selected="true">أول استفسار</button>
+        <button type="button" class="re-tab-btn" data-re-tab="match" role="tab" aria-selected="false">مطابقة العقار</button>
+        <button type="button" class="re-tab-btn" data-re-tab="viewing" role="tab" aria-selected="false">حجز المعاينة</button>
+      </div>
+      <div class="re-tabs-body">
+        <div class="re-tab-panel active" data-re-panel="inquiry">
+          <div class="re-tab-img">
+            <img src="https://images.unsplash.com/photo-1560184897-ae75f418493e?w=800&q=80&auto=format&fit=crop" alt="عميل يستلم مفاتيح شقته الجديدة من الوكيل العقاري" loading="lazy" width="800" height="500" />
+          </div>
+          <div class="re-tab-text">
+            <h3>ردّ فوري على أول رسالة</h3>
+            <p>الروبوت يرد خلال ثوانٍ على أي استفسار يصل عبر واتساب أو الموقع، يفهم الميزانية والموقع المطلوب، ولا يترك العميل ينتظر.</p>
+          </div>
+        </div>
+        <div class="re-tab-panel" data-re-panel="match">
+          <div class="re-tab-img">
+            <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&auto=format&fit=crop" alt="فيلا حديثة في دبي معروضة على منصة عقارية" loading="lazy" width="800" height="500" />
+          </div>
+          <div class="re-tab-text">
+            <h3>اقتراح العقارات المناسبة</h3>
+            <p>يطابق الروبوت طلب العميل مع مخزون العقارات المتاح، ويرسل خيارات مناسبة فعلاً، لا قائمة عشوائية من كل ما هو معروض.</p>
+          </div>
+        </div>
+        <div class="re-tab-panel" data-re-panel="viewing">
+          <div class="re-tab-img">
+            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80&auto=format&fit=crop" alt="صالة معيشة عصرية في شقة معروضة للمعاينة" loading="lazy" width="800" height="500" />
+          </div>
+          <div class="re-tab-text">
+            <h3>حجز موعد المعاينة تلقائياً</h3>
+            <p>عند جاهزية العميل، يحجز الروبوت موعد المعاينة مباشرة في تقويم الوكيل المناسب، ويرسل تذكيراً للطرفين قبل الموعد.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- 4. Case Study -->
 <section class="section" style="background:#f0f4ff;padding:4rem 0;">
   <div class="container">
@@ -380,6 +424,68 @@ const ldJson = [
     .re-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
     .case-results { grid-template-columns: 1fr; }
   }
+  .re-tabs { max-width: 980px; margin: 0 auto; }
+  .re-tabs-nav {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .re-tab-btn {
+    background: #f0f3ff;
+    border: 1px solid rgba(0,37,59,0.10);
+    color: #42474e;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    padding: 0.7rem 1.5rem;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: background .2s, color .2s, border-color .2s;
+    font-family: inherit;
+  }
+  .re-tab-btn:hover { background: #e7eeff; }
+  .re-tab-btn.active {
+    background: #00253b;
+    color: #fff;
+    border-color: #00253b;
+  }
+  .re-tab-btn:focus-visible { outline: 2px solid #006875; outline-offset: 2px; }
+  .re-tab-panel { display: none; }
+  .re-tab-panel.active {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    align-items: center;
+  }
+  .re-tab-img { border-radius: 20px; overflow: hidden; box-shadow: 0 16px 40px rgba(0,59,92,0.10); }
+  .re-tab-img img { width: 100%; height: 320px; object-fit: cover; display: block; }
+  .re-tab-text h3 { margin-bottom: 0.75rem; }
+  .re-tab-text p { color: #42474e; line-height: 1.8; margin: 0; }
+  @media (max-width: 760px) {
+    .re-tab-panel.active { grid-template-columns: 1fr; }
+    .re-tab-img img { height: 220px; }
+  }
 </style>
+
+<script>
+  (function () {
+    const wrap = document.querySelector('[data-re-tabs]');
+    if (!wrap) return;
+    const btns = wrap.querySelectorAll('.re-tab-btn');
+    const panels = wrap.querySelectorAll('.re-tab-panel');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-re-tab');
+        btns.forEach((b) => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+        panels.forEach((p) => p.classList.remove('active'));
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        const targetPanel = wrap.querySelector('[data-re-panel="' + target + '"]');
+        if (targetPanel) targetPanel.classList.add('active');
+      });
+    });
+  })();
+</script>
 
 </ArBaseLayout>

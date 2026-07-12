@@ -27,6 +27,33 @@ try {
 }
 
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const stripHtml = (str: string) => str.replace(/<[^>]+>/g, '').trim();
+
+const staticToc = [
+  '1. التعريفات',
+  '2. الإقرار والموافقة',
+  '3. الخدمات المقدمة',
+  '4. سياسة ضمان الاسترداد 100٪',
+  '5. رسوم واجهات برمجة الطرف الثالث والاشتراكات',
+  '6. حقوق الملكية الفكرية',
+  '7. مسؤوليات العميل',
+  '8. روابط لمواقع أخرى',
+  '9. الإنهاء',
+  '10. إخلاء المسؤولية "كما هي" و"كما هو متاح"',
+  '11. تحديد المسؤولية',
+  '12. تسوية النزاعات',
+  '13. القانون الحاكم والاختصاص القضائي',
+  '14. مستخدمو الاتحاد الأوروبي',
+  '15. قابلية الفصل والتنازل',
+  '16. الترجمة',
+  '17. التغييرات على هذه الشروط',
+  '18. تواصل معنا',
+];
+
+const tocItems = dynamicSections
+  ? dynamicSections.map((s, i) => ({ id: `section-${i}`, label: stripHtml(s.heading) }))
+  : staticToc.map((label, i) => ({ id: `section-${i}`, label }));
 ---
 
 <ArBaseLayout
@@ -48,20 +75,39 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
   </div>
 </header>
 
+<!-- BANNER IMAGE -->
+<div style="position:relative;overflow:hidden;height:220px;">
+  <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1400&q=80&auto=format&fit=crop" alt="توقيع اتفاقية خدمات مكتوبة تحدد شروط التعاقد مع Aegis AI" loading="eager" fetchpriority="high" width="1400" height="220" style="width:100%;height:100%;object-fit:cover;object-position:center 30%;" />
+  <div style="position:absolute;inset:0;background:rgba(0,37,59,0.10);"></div>
+</div>
+
+<!-- MOBILE JUMP NAV -->
+<div class="toc-mobile">
+  <div class="container">
+    <label for="toc-select" class="toc-mobile-label">الانتقال إلى قسم</label>
+    <select id="toc-select" class="toc-select">
+      {tocItems.map(item => (
+        <option value={`#${item.id}`}>{item.label}</option>
+      ))}
+    </select>
+  </div>
+</div>
+
 <main class="section">
-  <div class="container" style="max-width:760px;">
+  <div class="container" style="max-width:1060px;">
+    <div class="legal-layout">
     <div class="prose">
 
       {dynamicSections ? (
-        dynamicSections.map((section) => (
-          <section>
+        dynamicSections.map((section, i) => (
+          <section id={`section-${i}`}>
             <h2 set:html={section.heading}></h2>
             <p set:html={section.body}></p>
           </section>
         ))
       ) : (
         <>
-          <section>
+          <section id="section-0">
             <h2>1. التعريفات</h2>
             <p>تنطبق التعريفات التالية في جميع أنحاء شروط الخدمة هذه.</p>
             <ul>
@@ -75,14 +121,14 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
             </ul>
           </section>
 
-          <section>
+          <section id="section-1">
             <h2>2. الإقرار والموافقة</h2>
             <p>تحكم شروط الخدمة هذه استخدامك لخدمتنا وتشكل اتفاقية ملزمة قانونياً بينك وبين Aegis AI. بدخولك إلى الموقع أو حجزك لاستشارة أو تعاقدك على خدماتنا، فإنك تقر بأنك قرأت هذه الشروط وفهمتها وتوافق على الالتزام بها بالكامل.</p>
             <p>تقر بأن عمرك 18 عاماً على الأقل. إذا كنت تستخدم الخدمة نيابة عن شركة أو مؤسسة، فإنك تقر بأن لديك الصلاحية لإلزام تلك الجهة بهذه الشروط.</p>
             <p>إذا كنت لا توافق على أي جزء من هذه الشروط، يجب عليك التوقف عن استخدام الموقع وخدماتنا فوراً. الوصول إلى الخدمة مشروط أيضاً بموافقتك على <a href="/ar/privacy">سياسة الخصوصية</a> الخاصة بنا، والتي توضح كيفية جمع بياناتك الشخصية وحمايتها واستخدامها.</p>
           </section>
 
-          <section>
+          <section id="section-2">
             <h2>3. الخدمات المقدمة</h2>
             <p>تقدم Aegis AI خدمات استشارات تقنية مصممة للشركات الصغيرة والمتوسطة في دبي والإمارات، متخصصة في:</p>
             <ul>
@@ -93,7 +139,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
             <p>سيتم تحديد جميع المخرجات والجداول الزمنية وشروط الدفع في بيان نطاق عمل (SOW) أو اتفاقية خدمة موقعة منفصلة، والتي تكون لها الأولوية على هذه الشروط العامة في حال وجود تعارض.</p>
           </section>
 
-          <section>
+          <section id="section-3">
             <h2>4. سياسة ضمان الاسترداد 100٪</h2>
             <div class="guarantee-box">
               <p class="title">ضمان خالٍ من المخاطر بالكامل</p>
@@ -107,19 +153,19 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
             </div>
           </section>
 
-          <section>
+          <section id="section-4">
             <h2>5. رسوم واجهات برمجة الطرف الثالث والاشتراكات</h2>
             <p>ما لم يُنص صراحة في بيان نطاق العمل، لا تشمل رسوم المشروع رسوم استخدام الطرف الثالث المباشرة (مثل رسوم واجهات برمجة نماذج الذكاء الاصطناعي، أو البنية التحتية السحابية، أو منصات الأتمتة، أو واجهات الرسائل). يتم إعداد هذه الرسوم مباشرة على حسابات الفوترة الخاصة بالعميل أو تُحسب بشفافية دون أي هامش ربح.</p>
             <p>تشمل مشاريع التطوير لدينا <strong>90 يوماً من الدعم المجاني بعد الإطلاق</strong> (إصلاح الأخطاء ومراقبة الأداء). التحديثات المستمرة وباقات الاشتراك التشغيلي ووحدات التدريب الإضافية تخضع لاتفاقيات شهرية منفصلة.</p>
           </section>
 
-          <section>
+          <section id="section-5">
             <h2>6. حقوق الملكية الفكرية</h2>
             <p>ما لم يُتفق على خلاف ذلك في بيان نطاق عمل موقع، يُمنح العميل عند السداد الكامل والنهائي لجميع الفواتير ترخيصاً دائماً وعالمياً وغير حصري وغير قابل للتحويل لاستخدام البرمجيات وسير العمل والإعدادات المخصصة المطورة خصيصاً لمؤسسته.</p>
             <p>تحتفظ Aegis AI بجميع الحقوق في وحداتها البرمجية الجاهزة والأطر الأساسية ومنهجيات التدريب ووكلاء الذكاء الاصطناعي المملوكة التي طُوّرت قبل أو خارج نطاق بيان العمل المحدد. جميع محتوى الموقع (بما في ذلك النصوص والرسومات والشعارات والتصميم) هو ملكية فكرية حصرية لـ Aegis AI ولا يجوز إعادة إنتاجه دون موافقة كتابية مسبقة.</p>
           </section>
 
-          <section>
+          <section id="section-6">
             <h2>7. مسؤوليات العميل</h2>
             <p>لضمان تسليم المشروع في وقته، توافق على تقديم:</p>
             <ul>
@@ -130,66 +176,66 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
             <p>التأخيرات الناتجة عن عدم توفير الوصول أو البيانات أو الردود لفترة طويلة قد تؤدي إلى تعديل الجداول الزمنية النهائية للإطلاق. لا تتحمل Aegis AI مسؤولية تأخيرات التسليم الناتجة عن تأخيرات من جانب العميل.</p>
           </section>
 
-          <section>
+          <section id="section-7">
             <h2>8. روابط لمواقع أخرى</h2>
             <p>قد يحتوي موقعنا على روابط لمواقع أو خدمات تابعة لأطراف ثالثة لا تملكها Aegis AI أو تتحكم بها. لا نتحمل أي مسؤولية عن محتوى أو سياسات خصوصية أو ممارسات أي موقع تابع لطرف ثالث. لا نضمن عروض أي من هذه الجهات أو الأفراد أو مواقعهم.</p>
             <p>ننصحك بشدة بقراءة الشروط والأحكام وسياسات الخصوصية لأي مواقع تابعة لطرف ثالث تزورها. لا تتحمل Aegis AI مسؤولية أي خسارة أو ضرر ناتج عن استخدامك أو اعتمادك على أي محتوى أو سلع أو خدمات متاحة عبر هذه الروابط.</p>
           </section>
 
-          <section>
+          <section id="section-8">
             <h2>9. الإنهاء</h2>
             <p>نحتفظ بالحق في إنهاء أو تعليق وصولك إلى الموقع وخدماتنا فوراً، دون إشعار مسبق أو مسؤولية، لأي سبب، بما في ذلك مخالفتك لشروط الخدمة هذه.</p>
             <p>عند الإنهاء، يتوقف حقك في استخدام الخدمة فوراً. إذا رغبت في إنهاء علاقتك معنا، يمكنك ببساطة التوقف عن استخدام الموقع. بالنسبة للمشاريع النشطة، تخضع بنود الإنهاء والرسوم المرتبطة بها لبيان نطاق العمل الموقع.</p>
           </section>
 
-          <section>
+          <section id="section-9">
             <h2>10. إخلاء المسؤولية "كما هي" و"كما هو متاح"</h2>
             <p>يُقدَّم الموقع ومحتواه على أساس "كما هو" و"كما هو متاح" دون أي ضمانات من أي نوع، صريحة أو ضمنية، بما في ذلك على سبيل المثال لا الحصر الضمانات الضمنية للتسويق أو الملاءمة لغرض معين أو عدم الانتهاك.</p>
             <p>لا تضمن Aegis AI أن الموقع سيكون متواصلاً أو خالياً من الأخطاء أو الفيروسات أو أي مكونات ضارة أخرى. لا نضمن دقة أو اكتمال أو فائدة أي معلومات على الموقع، وأنت تعتمد على هذه المعلومات على مسؤوليتك الخاصة بالكامل.</p>
             <p>لا تسمح بعض الأنظمة القضائية باستثناء الضمانات الضمنية، لذا قد لا تنطبق بعض القيود المذكورة أعلاه عليك.</p>
           </section>
 
-          <section>
+          <section id="section-10">
             <h2>11. تحديد المسؤولية</h2>
             <p>إلى أقصى حد يسمح به القانون الإماراتي المعمول به، لن تتحمل Aegis AI ومديروها وموظفوها وشركاؤها ووكلاؤها وموردوها أو الشركات التابعة لها المسؤولية عن أي أضرار غير مباشرة أو عرضية أو خاصة أو تبعية (بما في ذلك خسارة الأرباح أو الإيرادات أو البيانات أو السمعة التجارية أو انقطاع الأعمال) الناتجة عن وصولك إلى الموقع أو خدماتنا أو استخدامها أو عدم القدرة على استخدامها.</p>
             <p>لا تتجاوز مسؤوليتنا الإجمالية تجاهك عن أي مطالبة ناشئة عن هذه الشروط أو الخدمة القيمة الأكبر بين (أ) إجمالي الرسوم التي دفعتها لـ Aegis AI بموجب بيان نطاق العمل المعمول به أو (ب) 500 درهم إماراتي.</p>
           </section>
 
-          <section>
+          <section id="section-11">
             <h2>12. تسوية النزاعات</h2>
             <p>إذا كان لديك مخاوف أو نزاع بشأن الخدمة، فإنك توافق على محاولة حل النزاع ودياً أولاً بالتواصل معنا على <strong>hello@aegisai.ae</strong>. سنبذل جهوداً معقولة لحل النزاعات ودياً خلال 30 يوماً من استلام الإشعار الكتابي.</p>
             <p>إذا لم يتم التوصل إلى حل ودي، يوافق الطرفان على إحالة النزاع إلى الوساطة قبل اللجوء إلى التقاضي. إذا فشلت الوساطة، يُحل النزاع وفقاً للقانون الحاكم والاختصاص القضائي المحدد في القسم 13 أدناه.</p>
           </section>
 
-          <section>
+          <section id="section-12">
             <h2>13. القانون الحاكم والاختصاص القضائي</h2>
             <p>تخضع شروط الخدمة هذه وأي نزاع أو مطالبة ناشئة عنها أو مرتبطة بها لقوانين <strong>إمارة دبي</strong> والقوانين الاتحادية لـ<strong>دولة الإمارات العربية المتحدة</strong>، دون اعتبار لتعارض أحكام القانون.</p>
             <p>توافق على أن أي إجراء أو دعوى قانونية تتعلق باستخدامك للخدمة تُرفع حصرياً أمام محاكم إمارة دبي، وتُقر بخضوعك لاختصاصها القضائي بشكل نهائي.</p>
           </section>
 
-          <section>
+          <section id="section-13">
             <h2>14. مستخدمو الاتحاد الأوروبي</h2>
             <p>إذا كنت مستهلكاً مقيماً في الاتحاد الأوروبي، فإنك تستفيد من أي أحكام إلزامية بموجب قانون البلد الذي تقيم فيه. لا يؤثر أي شيء في شروط الخدمة هذه على حقوقك كمستهلك في الاعتماد على هذه الأحكام القانونية المحلية الإلزامية.</p>
           </section>
 
-          <section>
+          <section id="section-14">
             <h2>15. قابلية الفصل والتنازل</h2>
             <p>إذا اعتُبر أي بند من شروط الخدمة هذه غير صالح أو غير قابل للتنفيذ من قبل محكمة مختصة، تظل باقي البنود سارية المفعول بالكامل. سيُعدَّل أي بند غير صالح أو غير قابل للتنفيذ إلى الحد الأدنى اللازم لجعله صالحاً وقابلاً للتنفيذ.</p>
             <p>عدم إنفاذنا لأي حق أو بند من هذه الشروط لا يشكل تنازلاً عن ذلك الحق أو البند. لا يكون التنازل سارياً إلا إذا كان مكتوباً وموقعاً من ممثل مفوض حسب الأصول لدى Aegis AI.</p>
           </section>
 
-          <section>
+          <section id="section-15">
             <h2>16. الترجمة</h2>
             <p>قد تُترجم شروط الخدمة هذه إلى العربية أو لغات أخرى للتسهيل. في حال وجود أي تعارض أو تباين بين النسخة الإنجليزية وأي ترجمة، تسود <strong>النسخة الإنجليزية الأصلية</strong>.</p>
           </section>
 
-          <section>
+          <section id="section-16">
             <h2>17. التغييرات على هذه الشروط</h2>
             <p>نحتفظ بالحق في تعديل أو استبدال شروط الخدمة هذه في أي وقت وفق تقديرنا المطلق. إذا كان التعديل جوهرياً، سنقدم إشعاراً لا يقل عن <strong>30 يوماً</strong> قبل سريان الشروط الجديدة، من خلال تحديث تاريخ "آخر تحديث" أعلى هذه الصفحة، وعند الاقتضاء عبر إشعار بالبريد الإلكتروني.</p>
             <p>يُحدَّد ما يشكل تغييراً جوهرياً وفق تقديرنا المطلق. استمرارك في الوصول إلى خدمتنا أو استخدامها بعد سريان أي تعديلات يعني موافقتك على الالتزام بالشروط المُعدَّلة.</p>
           </section>
 
-          <section>
+          <section id="section-17">
             <h2>18. تواصل معنا</h2>
             <p>إذا كانت لديك أي أسئلة بشأن شروط الخدمة هذه أو ترغب في حل شكوى بخصوص خدماتنا، يُرجى التواصل معنا على:</p>
             <div class="contact-box">
@@ -203,10 +249,31 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       )}
 
     </div>
+
+    <aside class="toc-aside">
+      <div class="card toc-card">
+        <div class="toc-title">محتويات الصفحة</div>
+        <nav aria-label="محتويات شروط الخدمة">
+          {tocItems.map(item => (
+            <a href={`#${item.id}`} class="toc-link">{item.label}</a>
+          ))}
+        </nav>
+      </div>
+    </aside>
+
+    </div>
   </div>
 </main>
 
 </ArBaseLayout>
+
+<script>
+  const tocSelect = document.getElementById('toc-select') as HTMLSelectElement | null;
+  tocSelect?.addEventListener('change', () => {
+    const id = tocSelect.value;
+    if (id) document.querySelector(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+</script>
 
 <style>
 .prose h2 { font-size: 1.375rem; font-weight: 700; color: #00253b; border-bottom: 1px solid rgba(0,37,59,0.10); padding-bottom: 0.625rem; margin-bottom: 1rem; margin-top: 0; }
@@ -214,7 +281,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     .prose ul { color: #42474e; padding-right: 1.5rem; line-height: 1.8; }
     .prose li { margin-bottom: 0.5rem; }
     .prose strong { color: #111c2d; }
-    .prose section { margin-bottom: 2.5rem; }
+    .prose section { margin-bottom: 2.5rem; scroll-margin-top: calc(var(--topbar-h,80px) + 1rem); }
     .prose a { color: #006875; text-decoration: underline; }
     .guarantee-box { background: rgba(0,104,117,0.06); border: 1px solid rgba(0,104,117,0.20); border-radius: 12px; padding: 1.25rem; margin: 1rem 0; }
     .guarantee-box p { color: #42474e; margin: 0 0 0.5rem; }
@@ -222,4 +289,20 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     .guarantee-box ul { color: #42474e; font-size: 0.875rem; }
     .contact-box { background: #f0f3ff; border: 1px solid rgba(0,37,59,0.10); border-radius: 12px; padding: 1.25rem; margin-top: 1rem; }
     .contact-box p { margin: 0 0 0.375rem; color: #42474e; font-size: 0.9rem; }
+    .legal-layout { display: grid; grid-template-columns: minmax(0,760px) 240px; gap: 3rem; align-items: start; }
+    .prose { min-width: 0; }
+    .toc-aside { position: sticky; top: calc(var(--topbar-h,80px) + 1.5rem); }
+    .toc-card { padding: 1.25rem; }
+    .toc-title { font-size: 0.8125rem; font-weight: 700; color: #42474e; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.875rem; }
+    .toc-aside nav { display: flex; flex-direction: column; gap: 2px; max-height: 60vh; overflow-y: auto; }
+    .toc-link { display: block; padding: 6px 8px; margin-inline-start: -8px; border-radius: 8px; font-size: 0.8125rem; color: #42474e; text-decoration: none; line-height: 1.5; transition: background .15s, color .15s; }
+    .toc-link:hover { background: rgba(0,104,117,0.08); color: #006875; }
+    .toc-mobile { display: none; background: #fff; border-bottom: 1px solid rgba(0,37,59,0.08); padding: 0.875rem 0; }
+    .toc-mobile-label { display: block; font-size: 0.75rem; font-weight: 700; color: #72787e; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.375rem; }
+    .toc-select { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(0,37,59,0.16); background: #fff; color: #00253b; font-size: 0.9rem; font-weight: 600; }
+    @media (max-width: 900px) {
+      .legal-layout { grid-template-columns: 1fr; }
+      .toc-aside { display: none; }
+      .toc-mobile { display: block; }
+    }
 </style>

@@ -176,6 +176,87 @@ const ldJson = [
   </div>
 </section>
 
+<!-- BUYER JOURNEY TABS -->
+<section class="section" aria-labelledby="re-journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="re-journey-heading">One buyer, one journey, no dropped ball</h2>
+      <p>Pick a stage to see what the AI handles while your agents focus on the people, not the paperwork.</p>
+    </div>
+    <div data-re-journey>
+      <div class="journey-tablist" role="tablist" aria-label="Buyer journey stages">
+        <button class="journey-tab is-active" role="tab" id="re-tab-0" aria-selected="true" aria-controls="re-panel-0">Inquiry</button>
+        <button class="journey-tab" role="tab" id="re-tab-1" aria-selected="false" aria-controls="re-panel-1" tabindex="-1">Viewing</button>
+        <button class="journey-tab" role="tab" id="re-tab-2" aria-selected="false" aria-controls="re-panel-2" tabindex="-1">Closing</button>
+      </div>
+      <div class="journey-panel" role="tabpanel" id="re-panel-0" aria-labelledby="re-tab-0">
+        <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80&auto=format&fit=crop" alt="Modern Dubai villa exterior listed on a property portal" loading="lazy" width="800" height="560" />
+        <div>
+          <h3>The first reply decides whether the lead is still yours</h3>
+          <p>A new inquiry lands on a portal, WhatsApp, or your website at any hour. The AI is already on it.</p>
+          <ul class="journey-list">
+            <li>Replies in under 2 minutes in Arabic or English, whichever the buyer used first</li>
+            <li>Asks the qualifying questions an agent would: budget, area, timeline, financing status</li>
+            <li>Scores the lead and routes it to the right agent while intent is still highest</li>
+          </ul>
+        </div>
+      </div>
+      <div class="journey-panel" role="tabpanel" id="re-panel-1" aria-labelledby="re-tab-1" hidden>
+        <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80&auto=format&fit=crop" alt="Bright modern living room in a Dubai apartment prepared for a viewing" loading="lazy" width="800" height="560" />
+        <div>
+          <h3>Viewings get booked without ten messages back and forth</h3>
+          <p>Once a lead is qualified, the AI keeps momentum going toward a confirmed viewing.</p>
+          <ul class="journey-list">
+            <li>Checks agent and unit availability and proposes times automatically</li>
+            <li>Sends confirmations, reminders, and directions so no-shows drop</li>
+            <li>Surfaces comparable listings the buyer is likely to want to see in the same trip</li>
+          </ul>
+        </div>
+      </div>
+      <div class="journey-panel" role="tabpanel" id="re-panel-2" aria-labelledby="re-tab-2" hidden>
+        <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80&auto=format&fit=crop" alt="Real estate agent handing over keys to a buyer after closing in Dubai" loading="lazy" width="800" height="560" />
+        <div>
+          <h3>Closing is where document AI earns its keep</h3>
+          <p>Once an offer is accepted, the paperwork usually slows everything down. The AI keeps it moving.</p>
+          <ul class="journey-list">
+            <li>Extracts and checks data from SPAs, NOCs, and title deeds against RERA and DLD requirements</li>
+            <li>Flags missing fields or mismatched details before they cause a delay at transfer</li>
+            <li>Keeps buyer, seller, and agent updated on status without a manual status-chasing call</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<script is:inline>
+(function () {
+  var root = document.querySelector('[data-re-journey]');
+  if (!root) return;
+  var tabs = Array.prototype.slice.call(root.querySelectorAll('[role="tab"]'));
+  var panels = Array.prototype.slice.call(root.querySelectorAll('[role="tabpanel"]'));
+  function activate(i) {
+    tabs.forEach(function (t, j) {
+      var on = i === j;
+      t.classList.toggle('is-active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      t.tabIndex = on ? 0 : -1;
+      panels[j].hidden = !on;
+    });
+  }
+  tabs.forEach(function (t, i) {
+    t.addEventListener('click', function () { activate(i); });
+    t.addEventListener('keydown', function (e) {
+      var next = e.key === 'ArrowRight' ? i + 1 : e.key === 'ArrowLeft' ? i - 1 : null;
+      if (next === null) return;
+      e.preventDefault();
+      next = (next + tabs.length) % tabs.length;
+      activate(next);
+      tabs[next].focus();
+    });
+  });
+})();
+</script>
+
 <!-- KEY AI APPLICATIONS -->
 <section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
   <div class="container">
@@ -349,4 +430,19 @@ const ldJson = [
     .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
     @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
     @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } .stat-grid { grid-template-columns:1fr; } }
+
+    /* Buyer journey tabs */
+    .journey-tablist { display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:2rem; border-bottom:1px solid rgba(0,37,59,0.12); }
+    .journey-tab { background:none; border:none; cursor:pointer; padding:0.875rem 1.25rem; font-family:inherit; font-size:0.9375rem; font-weight:700; color:#72787e; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .2s, border-color .2s; }
+    .journey-tab:hover { color:#006875; }
+    .journey-tab.is-active { color:#00253b; border-bottom-color:#00e3fd; }
+    .journey-tab:focus-visible { outline:2px solid #006875; outline-offset:2px; border-radius:6px; }
+    .journey-panel { display:grid; grid-template-columns:280px 1fr; gap:2.5rem; align-items:center; }
+    .journey-panel img { width:100%; height:220px; object-fit:cover; border-radius:20px; box-shadow:var(--shadow-card); }
+    .journey-panel h3 { margin-bottom:0.75rem; }
+    .journey-panel > p { color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem; }
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+    @media(max-width:768px) { .journey-panel { grid-template-columns:1fr; } .journey-panel img { height:200px; } }
 </style>

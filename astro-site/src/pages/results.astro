@@ -131,6 +131,8 @@ try {
 
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 
+const resultIndustries = [...new Set(caseStudies.map((cs) => cs.industry).filter(Boolean))];
+
 const resultsSchema = [
   {
     '@context': 'https://schema.org',
@@ -218,8 +220,15 @@ const resultsSchema = [
       <h2 id="cases-heading">Projects That Delivered</h2>
     </div>
 
+    <div class="industry-filter-row" id="industry-filter-row">
+      <button type="button" class="industry-filter-btn active" data-filter="all">All Industries</button>
+      {resultIndustries.map((ind) => (
+        <button type="button" class="industry-filter-btn" data-filter={ind}>{ind}</button>
+      ))}
+    </div>
+
     {caseStudies.map((cs, index) => (
-      <div class="case-card" style={index === caseStudies.length - 1 ? "margin-bottom:0;" : ""}>
+      <div class="case-card" data-industry={cs.industry} style={index === caseStudies.length - 1 ? "margin-bottom:0;" : ""}>
         <div class="case-header">
           <div style="display:flex; flex-wrap:wrap; align-items:flex-start; gap:1rem; justify-content:space-between;">
             <div>
@@ -303,6 +312,9 @@ const resultsSchema = [
     <div class="section-header">
       <h2 id="industries-heading">Industries We've Delivered Results In</h2>
     </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1200&q=80&auto=format&fit=crop" alt="Business team reviewing AI project results and performance data" loading="lazy" width="1200" height="340" style="width:100%; height:clamp(200px, 28vw, 340px); object-fit:cover; display:block;" />
+    </div>
     <div class="results-industries-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:20px; max-width:840px; margin:0 auto;">
       <a href="/industries/real-estate" class="industry-link-card">
         <div class="industry-link-icon"><span class="material-symbols-outlined">home</span></div>
@@ -352,10 +364,29 @@ const resultsSchema = [
   </div>
 </section>
 
+<script>
+  const filterRow = document.getElementById('industry-filter-row');
+  filterRow?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement)?.closest<HTMLElement>('.industry-filter-btn');
+    if (!btn) return;
+    filterRow.querySelectorAll('.industry-filter-btn').forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    const filter = btn.dataset.filter;
+    document.querySelectorAll<HTMLElement>('.case-card').forEach((card) => {
+      const match = filter === 'all' || card.dataset.industry === filter;
+      card.style.display = match ? '' : 'none';
+    });
+  });
+</script>
+
 </BaseLayout>
 
 <style>
 .case-card { background:#fff; border:1px solid rgba(0,37,59,0.08); border-radius:24px; overflow:hidden; box-shadow:0 20px 40px rgba(0,59,92,0.04); margin-bottom:2rem; }
+    .industry-filter-row { display:flex; flex-wrap:wrap; gap:.625rem; justify-content:center; margin-bottom:2rem; }
+    .industry-filter-btn { background:#fff; border:1px solid rgba(0,37,59,0.14); color:#42474e; font-size:.875rem; font-weight:600; padding:.5rem 1.25rem; border-radius:100px; cursor:pointer; transition:all .2s; font-family:'Plus Jakarta Sans', sans-serif; }
+    .industry-filter-btn:hover { border-color:rgba(0,227,253,0.45); color:#006875; }
+    .industry-filter-btn.active { background:#00253b; border-color:#00253b; color:#fff; }
     .case-header { background:linear-gradient(135deg,#00253b,#006875); padding:2rem; }
     .case-body { padding:2rem; }
     .result-pill { background:rgba(0,104,117,0.06); border:1px solid rgba(0,104,117,0.12); border-radius:16px; padding:1rem 1.25rem; text-align:center; }

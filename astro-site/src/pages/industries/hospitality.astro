@@ -176,6 +176,87 @@ const ldJson = [
   </div>
 </section>
 
+<!-- GUEST JOURNEY TABS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="journey-heading">One guest journey, handled end to end</h2>
+      <p>Pick a stage to see what the AI takes care of while your team works the floor.</p>
+    </div>
+    <div data-hosp-journey>
+      <div class="journey-tablist" role="tablist" aria-label="Guest journey stages">
+        <button class="journey-tab is-active" role="tab" id="journey-tab-0" aria-selected="true" aria-controls="journey-panel-0">Before arrival</button>
+        <button class="journey-tab" role="tab" id="journey-tab-1" aria-selected="false" aria-controls="journey-panel-1" tabindex="-1">During the stay</button>
+        <button class="journey-tab" role="tab" id="journey-tab-2" aria-selected="false" aria-controls="journey-panel-2" tabindex="-1">After checkout</button>
+      </div>
+      <div class="journey-panel" role="tabpanel" id="journey-panel-0" aria-labelledby="journey-tab-0">
+        <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=80&auto=format&fit=crop" alt="Pool deck of a Dubai beachfront resort where guests arrive for their stay" loading="lazy" width="800" height="560" />
+        <div>
+          <h3>The booking becomes a relationship before check-in</h3>
+          <p>From the confirmation email to the airport pickup, the concierge AI opens the conversation early, in the guest's own language.</p>
+          <ul class="journey-list">
+            <li>Instant answers on check-in times, transfers, visa letters, and dress codes, without a call to the desk</li>
+            <li>Early check-in and room upgrade offers sent at the moment guests are planning, not at the counter</li>
+            <li>Preferences, allergies, and special occasions collected before the guest lands, then written to the PMS profile</li>
+          </ul>
+        </div>
+      </div>
+      <div class="journey-panel" role="tabpanel" id="journey-panel-1" aria-labelledby="journey-tab-1" hidden>
+        <img src="https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80&auto=format&fit=crop" alt="Prepared king room in a Dubai five-star hotel, set up to the guest's saved preferences" loading="lazy" width="800" height="560" />
+        <div>
+          <h3>Requests answered in seconds, not after the third ring</h3>
+          <p>During the stay, the AI is the first responder for routine requests, and the fastest path to a human when it matters.</p>
+          <ul class="journey-list">
+            <li>Room service, spa bookings, and restaurant reservations handled by chat, tied into your PMS and POS</li>
+            <li>Housekeeping and engineering requests routed to the right team with status tracking, so nothing gets lost on a call sheet</li>
+            <li>Complaints flagged to the duty manager in real time, while the guest is still on property and the problem is still fixable</li>
+          </ul>
+        </div>
+      </div>
+      <div class="journey-panel" role="tabpanel" id="journey-panel-2" aria-labelledby="journey-tab-2" hidden>
+        <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80&auto=format&fit=crop" alt="Hotel restaurant table set for dinner service, part of the ancillary revenue AI helps grow" loading="lazy" width="800" height="560" />
+        <div>
+          <h3>Checkout is the start of the next booking</h3>
+          <p>Most hotels go silent after the invoice. The AI keeps working the relationship.</p>
+          <ul class="journey-list">
+            <li>Review requests timed and targeted to guests whose stay went well, protecting your TripAdvisor and Google scores</li>
+            <li>Post-stay feedback mined for recurring operational issues and reported to the GM weekly</li>
+            <li>Return-stay offers matched to each guest's past preferences and travel pattern, sent when they are likely to book again</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<script is:inline>
+(function () {
+  var root = document.querySelector('[data-hosp-journey]');
+  if (!root) return;
+  var tabs = Array.prototype.slice.call(root.querySelectorAll('[role="tab"]'));
+  var panels = Array.prototype.slice.call(root.querySelectorAll('[role="tabpanel"]'));
+  function activate(i) {
+    tabs.forEach(function (t, j) {
+      var on = i === j;
+      t.classList.toggle('is-active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      t.tabIndex = on ? 0 : -1;
+      panels[j].hidden = !on;
+    });
+  }
+  tabs.forEach(function (t, i) {
+    t.addEventListener('click', function () { activate(i); });
+    t.addEventListener('keydown', function (e) {
+      var next = e.key === 'ArrowRight' ? i + 1 : e.key === 'ArrowLeft' ? i - 1 : null;
+      if (next === null) return;
+      e.preventDefault();
+      next = (next + tabs.length) % tabs.length;
+      activate(next);
+      tabs[next].focus();
+    });
+  });
+})();
+</script>
+
 <!-- KEY AI APPLICATIONS (RENAMED) -->
 <section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
   <div class="container">
@@ -349,4 +430,19 @@ const ldJson = [
     .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
     @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
     @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } .stat-grid { grid-template-columns:1fr; } }
+
+    /* Guest journey tabs */
+    .journey-tablist { display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:2rem; border-bottom:1px solid rgba(0,37,59,0.12); }
+    .journey-tab { background:none; border:none; cursor:pointer; padding:0.875rem 1.25rem; font-family:inherit; font-size:0.9375rem; font-weight:700; color:#72787e; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .2s, border-color .2s; }
+    .journey-tab:hover { color:#006875; }
+    .journey-tab.is-active { color:#00253b; border-bottom-color:#00e3fd; }
+    .journey-tab:focus-visible { outline:2px solid #006875; outline-offset:2px; border-radius:6px; }
+    .journey-panel { display:grid; grid-template-columns:280px 1fr; gap:2.5rem; align-items:center; }
+    .journey-panel img { width:100%; height:220px; object-fit:cover; border-radius:20px; box-shadow:var(--shadow-card); }
+    .journey-panel h3 { margin-bottom:0.75rem; }
+    .journey-panel > p { color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem; }
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+    @media(max-width:768px) { .journey-panel { grid-template-columns:1fr; } .journey-panel img { height:200px; } }
 </style>

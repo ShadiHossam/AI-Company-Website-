@@ -76,6 +76,24 @@ try {
 
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 
+const productsFaqs = [
+  { question: "Are these off-the-shelf tools or custom builds?", answer: "Both, depending on the product. Each one starts as a working platform, we then customise it to your brand, your workflows, and your data before it goes live. You're not getting a generic template with your logo on it." },
+  { question: "Can we combine more than one product?", answer: "Yes. Many clients run the WhatsApp AI Agent alongside the Operations Dashboard, so leads captured on WhatsApp flow straight into the same reporting view your managers already use. We'll map out how the products connect during discovery." },
+  { question: "How long does it take to go live?", answer: "The WhatsApp AI Agent and Operations Dashboard typically launch within a few weeks of kickoff, depending on how many systems we're integrating with. We'll give you a specific timeline on the discovery call once we understand your setup." },
+  { question: "What if our team isn't technical?", answer: "That's the normal case, not the exception. Every product ships with training for the people who'll use it day to day, in plain language, in the language your team works in." },
+  { question: "Is Team AI Trainer available now?", answer: "It's currently in development. Join the waitlist and we'll reach out as soon as it's ready, with early access for businesses already working with us on other products." },
+];
+
+const productsFaqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: productsFaqs.map((f) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
 const productsSchema = [
   {
     '@context': 'https://schema.org',
@@ -96,6 +114,7 @@ const productsSchema = [
       },
     })),
   },
+  productsFaqLdJson,
   {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -228,6 +247,32 @@ const productsSchema = [
       );
     })}
 
+  </div>
+</section>
+
+<!-- PRODUCTS IN CONTEXT IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1400&q=80&auto=format&fit=crop" alt="Dashboard analytics screens used by a UAE business team to track AI product performance" loading="lazy" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.30));"></div>
+</div>
+
+<!-- PRODUCTS FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="products-faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="products-faq-heading">Questions About Our Products</h2>
+    </div>
+    <div>
+      {productsFaqs.map((item) => (
+        <div class="faq-item">
+          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+            {item.question}
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">{item.answer}</div>
+        </div>
+      ))}
+    </div>
   </div>
 </section>
 

@@ -119,6 +119,9 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       <h2 id="architecture-heading">What Every Agent We Build Includes</h2>
       <p style="color:#42474e; font-size:1.0625rem;">These aren't optional add-ons. They're the baseline for any agent we ship to production.</p>
     </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&q=80&auto=format&fit=crop" alt="Aegis AI engineers scoping agent guardrails on a whiteboard during a planning session in Dubai" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
     <div class="feature-ledger">
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" style="color:#006875; font-size:24px;">verified_user</span></div>
@@ -195,6 +198,79 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     </div>
   </div>
 </section>
+
+<!-- AGENT RUN WALKTHROUGH (interactive) -->
+<section class="section" style="background:#fff;" aria-labelledby="walkthrough-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="walkthrough-heading">What an Agent Run Actually Looks Like</h2>
+      <p>Pick a scenario and step through the actions a deployed agent takes, in order, with no one touching a keyboard.</p>
+    </div>
+    <div data-cab-tabs>
+      <div class="cab-tablist" role="tablist" aria-label="Example agent runs">
+        <button class="cab-tab is-active" role="tab" id="cab-tab-sales" aria-selected="true" aria-controls="cab-panel-sales" data-cab-tab="sales">Sales Outreach</button>
+        <button class="cab-tab" role="tab" id="cab-tab-support" aria-selected="false" aria-controls="cab-panel-support" data-cab-tab="support">Support Ticket</button>
+        <button class="cab-tab" role="tab" id="cab-tab-research" aria-selected="false" aria-controls="cab-panel-research" data-cab-tab="research">Market Research</button>
+      </div>
+      <div class="cab-demo-grid">
+        <div class="card" style="padding:2rem;">
+          <div role="tabpanel" id="cab-panel-sales" aria-labelledby="cab-tab-sales" data-cab-panel="sales">
+            <ol class="cab-log">
+              <li><span class="cab-step-num">1</span>Reads the new lead that landed in your CRM at 2:14 am</li>
+              <li><span class="cab-step-num">2</span>Searches the company's website and LinkedIn for context</li>
+              <li><span class="cab-step-num">3</span>Scores the lead against your qualification criteria</li>
+              <li><span class="cab-step-num">4</span>Drafts a personalised outreach email in your tone</li>
+              <li><span class="cab-step-num">5</span>Queues the draft for a one-click human approval</li>
+              <li><span class="cab-step-num">6</span>Logs every step, with reasoning, in the audit trail</li>
+            </ol>
+          </div>
+          <div role="tabpanel" id="cab-panel-support" aria-labelledby="cab-tab-support" data-cab-panel="support" hidden>
+            <ol class="cab-log">
+              <li><span class="cab-step-num">1</span>Picks up a ticket about a delayed order</li>
+              <li><span class="cab-step-num">2</span>Pulls the order record and live carrier tracking status</li>
+              <li><span class="cab-step-num">3</span>Confirms the delay is real and checks your refund policy</li>
+              <li><span class="cab-step-num">4</span>Drafts a reply with the new delivery date and a goodwill credit</li>
+              <li><span class="cab-step-num">5</span>Sends it, updates the ticket, and tags the order for monitoring</li>
+              <li><span class="cab-step-num">6</span>Escalates to a human only if the customer replies unhappy</li>
+            </ol>
+          </div>
+          <div role="tabpanel" id="cab-panel-research" aria-labelledby="cab-tab-research" data-cab-panel="research" hidden>
+            <ol class="cab-log">
+              <li><span class="cab-step-num">1</span>Receives a brief: size up meal-kit delivery across the UAE</li>
+              <li><span class="cab-step-num">2</span>Runs structured searches across news, reports, and filings</li>
+              <li><span class="cab-step-num">3</span>Reads the sources and extracts the relevant figures</li>
+              <li><span class="cab-step-num">4</span>Cross-checks numbers that disagree and flags the gaps</li>
+              <li><span class="cab-step-num">5</span>Writes a structured summary with linked citations</li>
+              <li><span class="cab-step-num">6</span>Delivers the report to your inbox before the 9 am standup</li>
+            </ol>
+          </div>
+        </div>
+        <div style="border-radius:24px; overflow:hidden; box-shadow:0 24px 56px rgba(0,59,92,0.10); min-height:280px;">
+          <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&q=80&auto=format&fit=crop" alt="Development team in a Dubai office monitoring live AI agent runs on their screens" loading="lazy" width="1200" height="800" style="width:100%; height:100%; object-fit:cover; display:block;" />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+(function () {
+  document.querySelectorAll('[data-cab-tabs]').forEach(function (root) {
+    var tabs = root.querySelectorAll('[data-cab-tab]');
+    var panels = root.querySelectorAll('[data-cab-panel]');
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        tabs.forEach(function (t) { t.classList.remove('is-active'); t.setAttribute('aria-selected', 'false'); });
+        panels.forEach(function (p) { p.hidden = true; });
+        tab.classList.add('is-active');
+        tab.setAttribute('aria-selected', 'true');
+        var panel = root.querySelector('[data-cab-panel="' + tab.getAttribute('data-cab-tab') + '"]');
+        if (panel) panel.hidden = false;
+      });
+    });
+  });
+})();
+</script>
 
 <!-- WHY OUR AGENTS -->
 <section class="section" style="background:#f0f3ff;" aria-labelledby="why-heading">

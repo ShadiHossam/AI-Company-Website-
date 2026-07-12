@@ -137,6 +137,16 @@ if (!dbPost) {
     arPath={dbPost.ar_title ? `/ar/blog/${dbPost.slug}` : undefined}
   >
     <Fragment set:html={bodyHtml} />
+    <div class="native-share-widget" id="native-share-widget">
+      <div class="nsw-text">
+        <strong>Found this useful?</strong>
+        <span>Share it with your team.</span>
+      </div>
+      <button type="button" class="nsw-btn" id="native-share-btn">
+        <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;">ios_share</span>
+        <span id="native-share-btn-label">Share this article</span>
+      </button>
+    </div>
   </ArticleLayout>
 ) : (
   <ArticleLayout
@@ -153,5 +163,69 @@ if (!dbPost) {
     relatedPosts={relatedPosts}
   >
     {CollectionContent && <CollectionContent />}
+    <div class="native-share-widget" id="native-share-widget">
+      <div class="nsw-text">
+        <strong>Found this useful?</strong>
+        <span>Share it with your team.</span>
+      </div>
+      <button type="button" class="nsw-btn" id="native-share-btn">
+        <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;">ios_share</span>
+        <span id="native-share-btn-label">Share this article</span>
+      </button>
+    </div>
   </ArticleLayout>
 )}
+
+<style>
+  .native-share-widget {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+    background: linear-gradient(135deg, rgba(0,227,253,0.06), rgba(0,104,117,0.03));
+    border: 1px solid rgba(0,104,117,0.14); border-radius: 16px;
+    padding: 1.25rem 1.5rem; margin: 2.5rem 0 0;
+  }
+  .nsw-text { display: flex; flex-direction: column; gap: 2px; }
+  .nsw-text strong { color: #00253b; font-size: 0.9375rem; }
+  .nsw-text span { color: #42474e; font-size: 0.8125rem; }
+  .nsw-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #00253b; color: #fff; font-weight: 700; font-size: 0.875rem;
+    padding: 11px 20px; border-radius: 9px; border: none; cursor: pointer;
+    font-family: inherit; transition: background 0.2s, transform 0.15s;
+    flex-shrink: 0;
+  }
+  .nsw-btn:hover { background: #003a57; transform: translateY(-1px); }
+  .nsw-btn:focus-visible { outline: 3px solid #006875; outline-offset: 3px; }
+</style>
+
+<script>
+  const shareBtn = document.getElementById('native-share-btn');
+  const shareLabel = document.getElementById('native-share-btn-label');
+
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      const shareData = { title: document.title, url: window.location.href };
+
+      if (navigator.share) {
+        try {
+          await navigator.share(shareData);
+          return;
+        } catch {
+          // user cancelled the native share sheet, fall through to clipboard
+        }
+      }
+
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        if (shareLabel) {
+          const original = shareLabel.textContent;
+          shareLabel.textContent = 'Link copied!';
+          setTimeout(() => {
+            if (shareLabel) shareLabel.textContent = original;
+          }, 2000);
+        }
+      } catch {
+        // clipboard access unavailable, nothing more we can do silently
+      }
+    });
+  }
+</script>

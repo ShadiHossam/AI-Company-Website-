@@ -93,12 +93,61 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
   </div>
 </section>
 
+<!-- OFF-THE-SHELF VS CUSTOM (interactive toggle) -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="cad-compare-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="cad-compare-heading">Off-the-Shelf AI vs. Custom AI</h2>
+      <p>Same question, two answers. Toggle between them to see the difference context makes.</p>
+    </div>
+    <div class="cad-compare-grid">
+      <div style="border-radius:24px; overflow:hidden; box-shadow:0 24px 56px rgba(0,59,92,0.10); min-height:260px;">
+        <img src="https://images.unsplash.com/photo-1611746869696-d09bce200020?w=1200&q=80&auto=format&fit=crop" alt="Business owner reviewing an AI assistant response on a laptop in Dubai" loading="lazy" width="1200" height="800" style="width:100%; height:100%; object-fit:cover; display:block;" />
+      </div>
+      <div class="card" style="padding:2rem;">
+        <div class="cad-toggle" role="tablist" aria-label="Compare AI answers">
+          <button class="cad-toggle-btn is-active" role="tab" id="cad-tab-generic" aria-selected="true" aria-controls="cad-panel-generic" data-cad-toggle="generic">Off-the-Shelf AI</button>
+          <button class="cad-toggle-btn" role="tab" id="cad-tab-custom" aria-selected="false" aria-controls="cad-panel-custom" data-cad-toggle="custom">Custom AI</button>
+        </div>
+        <p style="color:#72787e; font-size:0.8125rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin:1.5rem 0 0.75rem;">Question asked</p>
+        <p style="color:#00253b; font-size:1rem; font-weight:600; margin-bottom:1.5rem;">"What's our return policy for items bought during a sale?"</p>
+        <div role="tabpanel" id="cad-panel-generic" aria-labelledby="cad-tab-generic" data-cad-panel="generic">
+          <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">"Return policies vary by retailer. Most stores allow returns within 30 days of purchase, though sale items are sometimes excluded. Please check with the specific store for their exact policy."</p>
+        </div>
+        <div role="tabpanel" id="cad-panel-custom" aria-labelledby="cad-tab-custom" data-cad-panel="custom" hidden>
+          <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">"Sale items can be returned within 14 days with the receipt, for store credit only. Regular-priced items get a full 30-day refund. Since your order shipped on the 3rd, you have until the 17th to return it. Want me to start the return now?"</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+(function () {
+  var toggles = document.querySelectorAll('[data-cad-toggle]');
+  var panels = document.querySelectorAll('[data-cad-panel]');
+  toggles.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      toggles.forEach(function (t) { t.classList.remove('is-active'); t.setAttribute('aria-selected', 'false'); });
+      panels.forEach(function (p) { p.hidden = true; });
+      btn.classList.add('is-active');
+      btn.setAttribute('aria-selected', 'true');
+      var panel = document.querySelector('[data-cad-panel="' + btn.getAttribute('data-cad-toggle') + '"]');
+      if (panel) panel.hidden = false;
+    });
+  });
+})();
+</script>
+
 <!-- WHAT WE BUILD -->
 <section id="what-we-build" class="section" aria-labelledby="build-heading">
   <div class="container">
     <div class="section-header">
       <h2 id="build-heading">What We Build For You</h2>
       <p style="color:#42474e; font-size:1.0625rem;">Common categories of AI systems we build, not an exhaustive list. All built to your workflows and integrated with your existing tools. If your idea doesn't fit any of these, tell us what you need.</p>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&q=80&auto=format&fit=crop" alt="Aegis AI engineer connecting a custom AI system to a client's business tools via API" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
     </div>
     <div class="builds-grid">
       <div class="card">
@@ -328,6 +377,10 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     .builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
     .process-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2rem; position:relative; }
     .process-connector { position:absolute; top:27px; left:calc(12.5% + 28px); right:calc(12.5% + 28px); height:2px; background:linear-gradient(90deg,#00e3fd,rgba(0,37,59,0.20)); }
-    @media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } }
+    .cad-compare-grid { display:grid; grid-template-columns:1fr 1.1fr; gap:1.5rem; align-items:stretch; }
+    .cad-toggle { display:flex; gap:0.5rem; background:#f0f3ff; border-radius:12px; padding:4px; }
+    .cad-toggle-btn { flex:1; padding:0.625rem 1rem; border:none; background:none; border-radius:8px; font-weight:600; font-size:0.875rem; color:#42474e; cursor:pointer; transition:background .2s, color .2s; font-family:inherit; }
+    .cad-toggle-btn.is-active { background:#fff; color:#00253b; box-shadow:0 2px 8px rgba(0,37,59,0.10); }
+    @media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } .cad-compare-grid { grid-template-columns:1fr; } }
     @media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
 </style>

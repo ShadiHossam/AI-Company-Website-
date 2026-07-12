@@ -150,6 +150,50 @@ const ldJson = [
   </div>
 </section>
 
+<!-- 3b. Inventory Lifecycle Tabs (interactive) -->
+<section class="section" style="padding-top:0;">
+  <div class="container">
+    <h2 style="text-align:center;margin-bottom:0.75rem;">أين يتدخل الذكاء الاصطناعي في دورة المخزون</h2>
+    <p style="text-align:center;color:#42474e;margin-bottom:2.5rem;max-width:560px;margin-inline:auto;">اختر مرحلة من دورة المخزون لترى كيف يعمل النظام فيها.</p>
+    <div class="retail-tabs" data-retail-tabs>
+      <div class="retail-tabs-nav" role="tablist" aria-label="مراحل دورة المخزون">
+        <button type="button" class="retail-tab-btn active" data-retail-tab="floor" role="tab" aria-selected="true">أرضية المتجر</button>
+        <button type="button" class="retail-tab-btn" data-retail-tab="shelf" role="tab" aria-selected="false">تتبع الرفوف</button>
+        <button type="button" class="retail-tab-btn" data-retail-tab="reorder" role="tab" aria-selected="false">إعادة الطلب</button>
+      </div>
+      <div class="retail-tabs-body">
+        <div class="retail-tab-panel active" data-retail-panel="floor">
+          <div class="retail-tab-img">
+            <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80&auto=format&fit=crop" alt="واجهة متجر تجزئة في مجمع تجاري بدبي" loading="lazy" width="800" height="500" />
+          </div>
+          <div class="retail-tab-text">
+            <h3>صورة موحدة لكل فرع</h3>
+            <p>كل فرع يظهر على لوحة واحدة: المبيعات، المخزون، وحركة العملاء، لحظياً، دون انتظار تقرير نهاية اليوم.</p>
+          </div>
+        </div>
+        <div class="retail-tab-panel" data-retail-panel="shelf">
+          <div class="retail-tab-img">
+            <img src="https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=800&q=80&auto=format&fit=crop" alt="رفوف متجر تجزئة مرتبة بمنتجات متنوعة" loading="lazy" width="800" height="500" />
+          </div>
+          <div class="retail-tab-text">
+            <h3>تتبع كل منتج على الرف</h3>
+            <p>يعرف النظام كمية كل منتج في كل رف وفرع، ويكشف الفجوات بين المخزون المسجَّل والمخزون الفعلي قبل أن تصبح مشكلة.</p>
+          </div>
+        </div>
+        <div class="retail-tab-panel" data-retail-panel="reorder">
+          <div class="retail-tab-img">
+            <img src="https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=800&q=80&auto=format&fit=crop" alt="رف ملابس في متجر جاهز لإعادة التزويد بالمخزون" loading="lazy" width="800" height="500" />
+          </div>
+          <div class="retail-tab-text">
+            <h3>طلب شراء تلقائي عند الحاجة</h3>
+            <p>عندما يقترب منتج من النفاد، يُرسل النظام طلب إعادة تزويد للمورد المناسب مباشرة، دون انتظار أحد يلاحظ النقص.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- 4. Case Study -->
 <section class="section" style="background:#f0f4ff;padding:4rem 0;">
   <div class="container">
@@ -375,6 +419,68 @@ const ldJson = [
     .retail-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
     .case-results { grid-template-columns: 1fr; }
   }
+  .retail-tabs { max-width: 980px; margin: 0 auto; }
+  .retail-tabs-nav {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .retail-tab-btn {
+    background: #f0f3ff;
+    border: 1px solid rgba(0,37,59,0.10);
+    color: #42474e;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    padding: 0.7rem 1.5rem;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: background .2s, color .2s, border-color .2s;
+    font-family: inherit;
+  }
+  .retail-tab-btn:hover { background: #e7eeff; }
+  .retail-tab-btn.active {
+    background: #00253b;
+    color: #fff;
+    border-color: #00253b;
+  }
+  .retail-tab-btn:focus-visible { outline: 2px solid #006875; outline-offset: 2px; }
+  .retail-tab-panel { display: none; }
+  .retail-tab-panel.active {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    align-items: center;
+  }
+  .retail-tab-img { border-radius: 20px; overflow: hidden; box-shadow: 0 16px 40px rgba(0,59,92,0.10); }
+  .retail-tab-img img { width: 100%; height: 320px; object-fit: cover; display: block; }
+  .retail-tab-text h3 { margin-bottom: 0.75rem; }
+  .retail-tab-text p { color: #42474e; line-height: 1.8; margin: 0; }
+  @media (max-width: 760px) {
+    .retail-tab-panel.active { grid-template-columns: 1fr; }
+    .retail-tab-img img { height: 220px; }
+  }
 </style>
+
+<script>
+  (function () {
+    const wrap = document.querySelector('[data-retail-tabs]');
+    if (!wrap) return;
+    const btns = wrap.querySelectorAll('.retail-tab-btn');
+    const panels = wrap.querySelectorAll('.retail-tab-panel');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-retail-tab');
+        btns.forEach((b) => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+        panels.forEach((p) => p.classList.remove('active'));
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        const targetPanel = wrap.querySelector('[data-retail-panel="' + target + '"]');
+        if (targetPanel) targetPanel.classList.add('active');
+      });
+    });
+  })();
+</script>
 
 </ArBaseLayout>

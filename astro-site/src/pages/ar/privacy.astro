@@ -27,6 +27,29 @@ try {
 }
 
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const stripHtml = (str: string) => str.replace(/<[^>]+>/g, '').trim();
+
+const staticToc = [
+  '1. التعريفات',
+  '2. نظرة عامة',
+  '3. المعلومات التي نجمعها',
+  '4. كيف نستخدم بياناتك',
+  '5. أمن البيانات',
+  '6. مشاركة البيانات مع أطراف ثالثة',
+  '7. الاحتفاظ بالبيانات',
+  '8. حقوقك بموجب القانون الإماراتي',
+  '9. ملفات تعريف الارتباط وتقنيات التتبع',
+  '10. نقل البيانات دولياً',
+  '11. روابط لمواقع أخرى',
+  '12. مستخدمو الاتحاد الأوروبي وGDPR',
+  '13. التغييرات على سياسة الخصوصية',
+  '14. تواصل معنا',
+];
+
+const tocItems = dynamicSections
+  ? dynamicSections.map((s, i) => ({ id: `section-${i}`, label: stripHtml(s.heading) }))
+  : staticToc.map((label, i) => ({ id: `section-${i}`, label }));
 ---
 
 <ArBaseLayout
@@ -48,20 +71,39 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
   </div>
 </header>
 
+<!-- BANNER IMAGE -->
+<div style="position:relative;overflow:hidden;height:220px;">
+  <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=80&auto=format&fit=crop" alt="مكتب Aegis AI في دبي حيث تُدار عمليات حماية البيانات والخصوصية" loading="eager" fetchpriority="high" width="1400" height="220" style="width:100%;height:100%;object-fit:cover;object-position:center 30%;" />
+  <div style="position:absolute;inset:0;background:rgba(0,37,59,0.10);"></div>
+</div>
+
+<!-- MOBILE JUMP NAV -->
+<div class="toc-mobile">
+  <div class="container">
+    <label for="toc-select" class="toc-mobile-label">الانتقال إلى قسم</label>
+    <select id="toc-select" class="toc-select">
+      {tocItems.map(item => (
+        <option value={`#${item.id}`}>{item.label}</option>
+      ))}
+    </select>
+  </div>
+</div>
+
 <main class="section">
-  <div class="container" style="max-width:760px;">
+  <div class="container" style="max-width:1060px;">
+    <div class="legal-layout">
     <div class="prose">
 
       {dynamicSections ? (
-        dynamicSections.map((section) => (
-          <section>
+        dynamicSections.map((section, i) => (
+          <section id={`section-${i}`}>
             <h2 set:html={section.heading}></h2>
             <p set:html={section.body}></p>
           </section>
         ))
       ) : (
         <>
-          <section>
+          <section id="section-0">
             <h2>1. التعريفات</h2>
             <p>تنطبق التعريفات التالية في جميع أنحاء سياسة الخصوصية هذه:</p>
             <ul>
@@ -74,13 +116,13 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
             </ul>
           </section>
 
-          <section>
+          <section id="section-1">
             <h2>2. نظرة عامة</h2>
             <p>في <strong>Aegis AI</strong>، نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية. توضح سياسة الخصوصية هذه كيفية جمع معلوماتك الشخصية واستخدامها وتخزينها ومشاركتها عند زيارتك لموقعنا أو استخدامك نظام الحجز أو تعاملك مع خدماتنا في تطوير الذكاء الاصطناعي المخصص والاستشارات والتدريب في دولة الإمارات.</p>
             <p>بدخولك إلى موقعنا واستخدامك لخدماتنا، فإنك تقر بأنك قرأت هذه السياسة وفهمتها، وتوافق على معالجة معلوماتك الشخصية كما هو موضح فيها. إذا كنت لا توافق على شروط هذه السياسة، يُرجى التوقف عن استخدام موقعنا فوراً.</p>
           </section>
 
-          <section>
+          <section id="section-2">
             <h2>3. المعلومات التي نجمعها</h2>
             <p>قد نجمع ونعالج الفئات التالية من بياناتك الشخصية:</p>
             <ul>
@@ -94,7 +136,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
             <p>نجمع هذه البيانات عند تعبئتك لنموذج حجز الاستشارة، أو تواصلك المباشر معنا، أو تصفحك للموقع. نحن لا نجمع بيانات شخصية عن قصد من أفراد تقل أعمارهم عن 18 عاماً.</p>
           </section>
 
-          <section>
+          <section id="section-3">
             <h2>4. كيف نستخدم بياناتك</h2>
             <p>نعالج بياناتك الشخصية فقط عندما يكون لدينا أساس قانوني للقيام بذلك، سواء موافقتك أو مصالحنا التجارية المشروعة أو التزام قانوني. على وجه التحديد، نستخدم بياناتك من أجل:</p>
             <ul>
@@ -108,7 +150,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
             </ul>
           </section>
 
-          <section>
+          <section id="section-4">
             <h2>5. أمن البيانات</h2>
             <p>طبّقنا تدابير أمنية تقنية وتنظيمية لحماية بياناتك الشخصية من الفقدان أو الوصول أو التعديل أو الإفصاح أو الإتلاف غير المصرح به. تشمل هذه التدابير:</p>
             <ul>
@@ -120,7 +162,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
             <p>رغم اتخاذنا كل احتياط معقول لحماية بياناتك، لا توجد طريقة نقل أو تخزين إلكتروني آمنة بنسبة 100٪. في حال وقوع خرق للبيانات قد يشكل خطراً على حقوقك، سنبلغك والجهات المعنية وفق القانون الإماراتي.</p>
           </section>
 
-          <section>
+          <section id="section-5">
             <h2>6. مشاركة البيانات مع أطراف ثالثة</h2>
             <p>نحن لا نبيع أو نؤجر أو نتاجر ببياناتك الشخصية لأغراض تسويقية. قد نشارك معلوماتك مع شركاء تقنيين موثوقين يساعدوننا في إدارة أعمالنا، بموجب اتفاقيات سرية صارمة، ومن ذلك:</p>
             <ul>
@@ -132,7 +174,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
             <p>قد نفصح أيضاً عن بياناتك الشخصية إذا طلبت ذلك جهات إنفاذ القانون الإماراتية أو أمر قضائي، أو لحماية حقوق وسلامة Aegis AI أو عملائنا. في جميع الحالات، لن نفصح إلا عن الحد الأدنى الضروري من المعلومات.</p>
           </section>
 
-          <section>
+          <section id="section-6">
             <h2>7. الاحتفاظ بالبيانات</h2>
             <p>نحتفظ ببياناتك الشخصية فقط للمدة اللازمة لتحقيق الأغراض التي جُمعت من أجلها، بما يشمل أي متطلبات محاسبية أو تنظيمية.</p>
             <p>كإرشاد عام:</p>
@@ -144,7 +186,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
             <p>بعد انتهاء مدة الاحتفاظ المطبقة، يتم حذف بياناتك أو إخفاء هويتها بشكل آمن.</p>
           </section>
 
-          <section>
+          <section id="section-7">
             <h2>8. حقوقك بموجب القانون الإماراتي</h2>
             <p>بموجب <strong>قانون حماية البيانات الشخصية الإماراتي (المرسوم بقانون اتحادي رقم 45 لسنة 2021)</strong>، لديك الحقوق التالية بشأن بياناتك الشخصية:</p>
             <ul>
@@ -159,7 +201,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
             <p>لممارسة أي من هذه الحقوق، يُرجى التواصل مع مسؤول حماية البيانات لدينا على <strong>hello@aegisai.ae</strong>. سنرد على الطلبات الموثقة خلال 30 يوماً.</p>
           </section>
 
-          <section>
+          <section id="section-8">
             <h2>9. ملفات تعريف الارتباط وتقنيات التتبع</h2>
             <p>يستخدم موقعنا ملفات تعريف الارتباط وتقنيات تتبع مشابهة لتحسين التصفح وتحليل حركة الزوار وتقديم تجربة مخصصة. نستخدم الأنواع التالية:</p>
             <ul>
@@ -170,28 +212,28 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
             <p>يمكنك ضبط متصفحك لرفض جميع ملفات تعريف الارتباط أو تنبيهك عند إرسالها، لكن تعطيلها قد يحد من قدرتك على استخدام بعض الميزات التفاعلية للموقع، مثل نموذج حجز الاستشارة متعدد الخطوات.</p>
           </section>
 
-          <section>
+          <section id="section-9">
             <h2>10. نقل البيانات دولياً</h2>
             <p>قد يكون بعض مزودي الخدمة الموثوقين لدينا خارج دولة الإمارات العربية المتحدة. عند نقل بياناتك الشخصية دولياً، نتخذ خطوات لضمان وجود ضمانات كافية لحماية بياناتك بما يتوافق مع متطلبات قانون حماية البيانات الإماراتي، وأن الدولة المستقبِلة توفر مستوى ملائماً من الحماية.</p>
           </section>
 
-          <section>
+          <section id="section-10">
             <h2>11. روابط لمواقع أخرى</h2>
             <p>قد يحتوي موقعنا على روابط لمواقع تابعة لأطراف ثالثة. تنطبق سياسة الخصوصية هذه على موقعنا فقط. لا نتحمل أي مسؤولية عن محتوى أو ممارسات الخصوصية لأي موقع تابع لطرف ثالث، ونشجعك على مراجعة سياسة الخصوصية لكل موقع تزوره.</p>
           </section>
 
-          <section>
+          <section id="section-11">
             <h2>12. مستخدمو الاتحاد الأوروبي وGDPR</h2>
             <p>إذا كنت تصل إلى موقعنا من المنطقة الاقتصادية الأوروبية، فإنك تستفيد من حقوق إضافية لحماية البيانات بموجب <strong>اللائحة العامة لحماية البيانات (GDPR)</strong>، بما في ذلك الحق في تقديم شكوى لدى السلطة الرقابية المحلية. تشمل الأسس القانونية لمعالجتنا لبيانات المقيمين في الاتحاد الأوروبي الموافقة وتنفيذ العقود والمصالح المشروعة.</p>
           </section>
 
-          <section>
+          <section id="section-12">
             <h2>13. التغييرات على سياسة الخصوصية</h2>
             <p>قد نُحدّث سياسة الخصوصية هذه من وقت لآخر لتعكس تغييرات في ممارساتنا أو المتطلبات القانونية أو خدماتنا. سنُخطرك بأي تغييرات جوهرية من خلال تحديث تاريخ "آخر تحديث" أعلى هذه الصفحة، وعند الاقتضاء عبر إشعار بريد إلكتروني.</p>
             <p>نشجعك على مراجعة سياسة الخصوصية هذه بشكل دوري. استمرارك في استخدام الموقع بعد نشر التغييرات يُعد قبولاً منك للسياسة المحدثة.</p>
           </section>
 
-          <section>
+          <section id="section-13">
             <h2>14. تواصل معنا</h2>
             <p>إذا كانت لديك أي أسئلة أو مخاوف بشأن سياسة الخصوصية هذه أو كيفية معالجة معلوماتك الشخصية، يُرجى التواصل مع مسؤول حماية البيانات لدينا على:</p>
             <div class="contact-box">
@@ -205,10 +247,31 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
       )}
 
     </div>
+
+    <aside class="toc-aside">
+      <div class="card toc-card">
+        <div class="toc-title">محتويات الصفحة</div>
+        <nav aria-label="محتويات سياسة الخصوصية">
+          {tocItems.map(item => (
+            <a href={`#${item.id}`} class="toc-link">{item.label}</a>
+          ))}
+        </nav>
+      </div>
+    </aside>
+
+    </div>
   </div>
 </main>
 
 </ArBaseLayout>
+
+<script>
+  const tocSelect = document.getElementById('toc-select') as HTMLSelectElement | null;
+  tocSelect?.addEventListener('change', () => {
+    const id = tocSelect.value;
+    if (id) document.querySelector(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+</script>
 
 <style>
 .prose h2 { font-size: 1.375rem; font-weight: 700; color: #00253b; border-bottom: 1px solid rgba(0,37,59,0.10); padding-bottom: 0.625rem; margin-bottom: 1rem; margin-top: 0; }
@@ -216,8 +279,24 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     .prose ul { color: #42474e; padding-right: 1.5rem; line-height: 1.8; }
     .prose li { margin-bottom: 0.5rem; }
     .prose strong { color: #111c2d; }
-    .prose section { margin-bottom: 2.5rem; }
+    .prose section { margin-bottom: 2.5rem; scroll-margin-top: calc(var(--topbar-h,80px) + 1rem); }
     .prose a { color: #006875; text-decoration: underline; }
     .contact-box { background: #f0f3ff; border: 1px solid rgba(0,37,59,0.10); border-radius: 12px; padding: 1.25rem; margin-top: 1rem; }
     .contact-box p { margin: 0 0 0.375rem; color: #42474e; font-size: 0.9rem; }
+    .legal-layout { display: grid; grid-template-columns: minmax(0,760px) 240px; gap: 3rem; align-items: start; }
+    .prose { min-width: 0; }
+    .toc-aside { position: sticky; top: calc(var(--topbar-h,80px) + 1.5rem); }
+    .toc-card { padding: 1.25rem; }
+    .toc-title { font-size: 0.8125rem; font-weight: 700; color: #42474e; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.875rem; }
+    .toc-aside nav { display: flex; flex-direction: column; gap: 2px; max-height: 60vh; overflow-y: auto; }
+    .toc-link { display: block; padding: 6px 8px; margin-inline-start: -8px; border-radius: 8px; font-size: 0.8125rem; color: #42474e; text-decoration: none; line-height: 1.5; transition: background .15s, color .15s; }
+    .toc-link:hover { background: rgba(0,104,117,0.08); color: #006875; }
+    .toc-mobile { display: none; background: #fff; border-bottom: 1px solid rgba(0,37,59,0.08); padding: 0.875rem 0; }
+    .toc-mobile-label { display: block; font-size: 0.75rem; font-weight: 700; color: #72787e; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.375rem; }
+    .toc-select { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(0,37,59,0.16); background: #fff; color: #00253b; font-size: 0.9rem; font-weight: 600; }
+    @media (max-width: 900px) {
+      .legal-layout { grid-template-columns: 1fr; }
+      .toc-aside { display: none; }
+      .toc-mobile { display: block; }
+    }
 </style>

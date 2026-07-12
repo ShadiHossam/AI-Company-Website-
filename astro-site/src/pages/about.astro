@@ -48,7 +48,24 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
 const pc = await loadPageContent('about');
 const g = (key: string, fallback: string) => getVal(pc, key, fallback);
 
+const aboutFaqs = [
+  { question: "Do you build the AI, or do you train our team?", answer: "Both, in one engagement. We build the system around your actual workflows, then train the people who will use it every day. Most AI projects fail at the handover point, so we don't hand over and leave. Your team is using the system confidently before we call the project done." },
+  { question: "Do you only work with Dubai companies?", answer: "We're based in Dubai and most of our clients are in the UAE, but we work with businesses in other markets too. Discovery calls, builds, and training all work remotely. If you're in Dubai, we're happy to meet in person." },
+  { question: "How big does our company need to be?", answer: "There's no minimum. We work with businesses from a handful of employees up to several hundred. Every project is scoped and priced for your size and your goals, so a 10-person company gets a 10-person-company project, not a stripped-down enterprise contract." },
+  { question: "What happens on the first call?", answer: "You talk, we listen. In 30 minutes we'll understand your business, point out the two or three places where AI would actually pay off, and tell you honestly if it wouldn't. The call is free and there's no follow-up pressure either way." },
+  { question: "How does the refund guarantee work?", answer: "If you're not satisfied with the AI system we build, we refund 100% of your investment. No conditions, no partial refunds, no fine print. We can offer this because we scope carefully and only take on projects we're confident will deliver." },
+];
+
 const aboutSchema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: aboutFaqs.map((f) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
   {
     '@context': 'https://schema.org',
     '@type': 'AboutPage',
@@ -210,6 +227,10 @@ const aboutSchema = [
         </div>
       ))}
     </div>
+    <div class="team-photo-row">
+      <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&q=80&auto=format&fit=crop" alt="Aegis AI engineers working side by side on a client build at our Dubai workspace" loading="lazy" width="600" height="300" />
+      <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1200&q=80&auto=format&fit=crop" alt="Whiteboard planning session mapping an AI rollout for a UAE client team" loading="lazy" width="600" height="300" />
+    </div>
   </div>
 </section>
 
@@ -314,6 +335,27 @@ const aboutSchema = [
   </div>
 </section>
 
+<!-- FAQ: WORKING WITH US -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="about-faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="about-faq-heading">Questions People Ask Before Working With Us</h2>
+      <p>Short, honest answers. If yours isn't here, ask us on the call.</p>
+    </div>
+    <div>
+      {aboutFaqs.map((item) => (
+        <div class="faq-item">
+          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+            {item.question}
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">{item.answer}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
 <!-- FINAL CTA -->
 <section class="section" style="background:#e7eeff;">
   <div class="container">
@@ -347,6 +389,8 @@ const aboutSchema = [
     .team-card h3 { font-size:1rem; font-weight:700; color:#00253b; margin:0 0 0.25rem; }
     .team-title { font-size:0.875rem; color:#006875; font-weight:600; margin:0 0 0.75rem; }
     .team-bio { font-size:0.875rem; color:#42474e; line-height:1.7; margin:0; }
+    .team-photo-row { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-top:1.5rem; }
+    .team-photo-row img { width:100%; height:260px; object-fit:cover; border-radius:20px; display:block; box-shadow:0 20px 40px rgba(0,59,92,0.06); }
     @media(max-width:900px) {
       .about-story-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
       .about-mv-grid { grid-template-columns: 1fr !important; }

@@ -126,36 +126,62 @@ const ldJson = [
       <h2>ما نؤتمته في شركتك</h2>
       <p style="color:#42474e;max-width:560px;margin:1rem auto 0;line-height:1.8;">بصفتنا وكالة الذكاء الاصطناعي في دبي، نُغطي كل عملية متكررة في شركتك: من التقارير إلى متابعة العملاء.</p>
     </div>
+    <div class="auto-tabs" id="auto-tabs" role="tablist" aria-label="تصفية الأتمتة حسب القسم">
+      <button class="auto-tab active" data-cat="all" type="button">الكل</button>
+      <button class="auto-tab" data-cat="sales" type="button">المبيعات والعملاء</button>
+      <button class="auto-tab" data-cat="finance" type="button">المالية والعمليات</button>
+      <button class="auto-tab" data-cat="stock" type="button">المخزون والمستندات</button>
+    </div>
     <div class="feature-grid">
-      <div class="card feature-card">
+      <div class="card feature-card" data-cat="finance">
         <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">summarize</span>
         <h3>أتمتة التقارير</h3>
         <p>تقارير المبيعات والأداء والمخزون تُنشأ وتُرسل تلقائياً في الوقت المحدد، دون أن يلمسها أحد.</p>
       </div>
-      <div class="card feature-card">
+      <div class="card feature-card" data-cat="sales">
         <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">forward_to_inbox</span>
         <h3>أتمتة المراسلات</h3>
         <p>ردود ومتابعات ورسائل تذكير مُرسَلة بالتوقيت الصحيح ولكل عميل بحسب وضعه، دون تدخل يدوي.</p>
       </div>
-      <div class="card feature-card">
+      <div class="card feature-card" data-cat="finance">
         <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">sync_alt</span>
         <h3>مزامنة البيانات</h3>
         <p>بيانات شركتك متزامنة تلقائياً بين CRM وERP وجداول البيانات، لا إدخال مزدوج ولا أخطاء يدوية.</p>
       </div>
-      <div class="card feature-card">
+      <div class="card feature-card" data-cat="sales">
         <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">person_search</span>
         <h3>متابعة العملاء</h3>
         <p>كل عميل محتمل يحصل على متابعة في الوقت المناسب تلقائياً، لا أحد يسقط من الشبكة.</p>
       </div>
-      <div class="card feature-card">
+      <div class="card feature-card" data-cat="stock">
         <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">receipt_long</span>
         <h3>معالجة الفواتير</h3>
         <p>استلام الفواتير، مطابقتها، وتحديثها في النظام تلقائياً. توفير ساعات من العمل الورقي أسبوعياً.</p>
       </div>
-      <div class="card feature-card">
+      <div class="card feature-card" data-cat="stock">
         <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">inventory_2</span>
         <h3>تحديث المخزون</h3>
         <p>مستويات المخزون تُحدَّث في الوقت الحقيقي، وتنبيهات إعادة الطلب تُرسَل تلقائياً عند الوصول للحد الأدنى.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Industry examples -->
+<section class="section" style="background:#f0f3ff;">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:2.5rem;">
+      <h2>الأتمتة في العمل، بحسب القطاع</h2>
+      <p style="color:#42474e;max-width:560px;margin:1rem auto 0;line-height:1.8;">صورتان من مشاريع حقيقية: مستودع توزيع ومتجر تجزئة، كلاهما يُدار جزئياً بالأتمتة اليوم.</p>
+    </div>
+    <div class="industry-imgs">
+      <div class="industry-img">
+        <img src="https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&q=80&auto=format&fit=crop" alt="مستودع توزيع في الإمارات يعتمد على تحديث المخزون الآلي" loading="lazy" width="800" height="480" />
+        <div class="industry-img-cap">مستودع توزيع، مزامنة مخزون آلية</div>
+      </div>
+      <div class="industry-img">
+        <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80&auto=format&fit=crop" alt="موظف تجزئة يخدم عميلاً بينما تعمل الأتمتة في الخلفية" loading="lazy" width="800" height="480" />
+        <div class="industry-img-cap">متجر تجزئة، فواتير ومتابعة عملاء آلية</div>
       </div>
     </div>
   </div>
@@ -308,6 +334,25 @@ const ldJson = [
 
 </ArBaseLayout>
 
+<script define:vars={{ pageId: 'ai-automation' }}>
+  (function () {
+    const wrap = document.getElementById('auto-tabs');
+    if (!wrap) return;
+    const buttons = wrap.querySelectorAll('.auto-tab');
+    const cards = document.querySelectorAll('.feature-grid .card[data-cat]');
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        buttons.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        const cat = btn.getAttribute('data-cat');
+        cards.forEach((card) => {
+          card.style.display = cat === 'all' || card.getAttribute('data-cat') === cat ? '' : 'none';
+        });
+      });
+    });
+  })();
+</script>
+
 <style>
   .stats-strip {
     display: flex;
@@ -361,11 +406,32 @@ const ldJson = [
 
   .faq-list { display: flex; flex-direction: column; gap: 0; }
 
+  .auto-tabs { display: flex; flex-wrap: wrap; gap: 0.625rem; justify-content: center; margin-bottom: 2.5rem; }
+  .auto-tab {
+    font-size: 0.875rem; font-weight: 600; padding: 0.5rem 1.25rem;
+    border-radius: 100px; border: 1px solid rgba(0,37,59,0.14);
+    background: #fff; color: #42474e; cursor: pointer;
+    transition: all .2s var(--ease); font-family: inherit;
+  }
+  .auto-tab:hover { border-color: rgba(0,104,117,0.4); color: #006875; }
+  .auto-tab.active { background: #00253b; border-color: #00253b; color: #fff; }
+
+  .industry-imgs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+  .industry-img { border-radius: 20px; overflow: hidden; position: relative; height: 260px; }
+  .industry-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .industry-img-cap {
+    position: absolute; bottom: 1rem; right: 1rem;
+    background: rgba(0,37,59,0.82); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 10px;
+    padding: 0.5rem 0.875rem; font-size: 0.75rem; color: rgba(255,255,255,0.9);
+  }
+
   @media (max-width: 900px) { .feature-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 580px) {
     .feature-grid { grid-template-columns: 1fr; }
     .results-row { flex-direction: column; }
     .results-divider { display: none; }
     .stats-strip { gap: 1.5rem; }
+    .industry-imgs { grid-template-columns: 1fr; }
   }
 </style>

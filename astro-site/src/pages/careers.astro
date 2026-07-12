@@ -18,6 +18,24 @@ try {
 
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 
+const careersFaqs = [
+  { question: "What does the interview process look like?", answer: "Usually two conversations. The first is about you: what you've built, what you're curious about, how you think through problems. The second is a practical exercise close to real work, not a whiteboard trivia round. We try to move fast, most candidates hear back within a week of each stage." },
+  { question: "Can I work remotely?", answer: "Yes. We're a globally distributed team and most roles are remote-friendly. If you're in Dubai, you're welcome to work from our office as much or as little as you like. What matters is the work you ship, not the chair you sit in." },
+  { question: "Do I need a specific degree or years of experience?", answer: "No. We hire for what you can actually do. Show us something you've built, a project you've shipped, or a problem you've solved, and we'll take it seriously regardless of your background or how many years are on your CV." },
+  { question: "What's the pay and review structure?", answer: "Pay is benchmarked to market rate for the work, reviewed annually. We don't do vague equity promises instead of real compensation. If you're doing great work, that shows up in your pay, not just in a compliment." },
+  { question: "I don't see a role that matches me. Should I still apply?", answer: "Yes. We read every application that comes in, even for roles that aren't posted. If you believe in what we're building and can show us real work, send it to careers@aegisai.ae and tell us why you'd be a fit." },
+];
+
+const careersFaqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: careersFaqs.map((f) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
 const careersSchema = jobs.length > 0 ? {
   '@context': 'https://schema.org',
   '@type': 'ItemList',
@@ -39,6 +57,8 @@ const careersSchema = jobs.length > 0 ? {
     },
   })),
 } : undefined;
+
+const careersLdJson = careersSchema ? [careersSchema, careersFaqLdJson] : [careersFaqLdJson];
 ---
 
 <BaseLayout
@@ -46,7 +66,7 @@ const careersSchema = jobs.length > 0 ? {
   description="Aegis AI is an AI agency in Dubai hiring across the UAE. We hire creative, self-driven minds, no minimum age, no red tape. If you build, learn, and create, we want you."
   canonicalPath="/careers"
   arPath="/ar/careers"
-  ldJson={careersSchema}
+  ldJson={careersLdJson}
 >
 
 <!-- HERO -->
@@ -124,11 +144,15 @@ const careersSchema = jobs.length > 0 ? {
     </div>
 
     <!-- No-age callout -->
-    <div style="text-align:center;">
+    <div style="text-align:center; margin-bottom:3rem;">
       <span style="display:inline-flex; align-items:center; gap:8px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.28); border-radius:100px; padding:8px 20px; color:#004f58; font-size:.9375rem; font-weight:600;">
         <span class="material-symbols-outlined" style="font-size:18px;">verified</span>
         No degree required. No minimum age. Just show us what you can do.
       </span>
+    </div>
+
+    <div style="border-radius:24px; overflow:hidden; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1400&q=80&auto=format&fit=crop" alt="Aegis AI team members working together on a project at our Dubai office" loading="lazy" width="1400" height="360" style="width:100%; height:clamp(220px,32vw,360px); object-fit:cover; display:block;" />
     </div>
   </div>
 </section>
@@ -153,16 +177,12 @@ const careersSchema = jobs.length > 0 ? {
     <div style="text-align:center; margin-bottom:2.5rem;">
       <h2>Built for People Who <span class="gradient-text">Do Great Work</span></h2>
     </div>
-    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1rem;" class="careers-grid-4">
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1rem;" class="careers-grid-4" id="perks-grid">
       {[
         { icon: 'payments', label: 'Competitive Pay', desc: 'Real money benchmarked to what great work is worth, reviewed every year' },
         { icon: 'menu_book', label: 'Learning Budget', desc: 'Annual budget for courses, books, tools, and anything that makes you sharper' },
         { icon: 'wb_sunny', label: 'Flexible Hours', desc: 'Work when you do your best thinking. We care about output, not schedules' },
         { icon: 'laptop_mac', label: 'Latest Equipment', desc: 'Top-spec machine of your choice, set up the way you want it' },
-        { icon: 'trending_up', label: 'Clear Growth Path', desc: 'Transparent ladder, honest feedback, and a team that wants you to level up' },
-        { icon: 'lightbulb', label: 'Your Ideas Matter', desc: "Bring an idea. If it's good, we'll build it together and you'll own a piece of it" },
-        { icon: 'public', label: 'Work from Anywhere', desc: 'Remote-friendly and globally distributed. Your timezone is not a barrier' },
-        { icon: 'volunteer_activism', label: 'We Have Your Back', desc: 'We stand behind everything we ship, and everyone on the team' },
       ].map(p => (
         <div class="stat-pill" style="flex-direction:column;align-items:flex-start;gap:.5rem;padding:1.25rem;">
           <span class="material-symbols-outlined" style="color:#006875;font-size:22px;">{p.icon}</span>
@@ -170,6 +190,43 @@ const careersSchema = jobs.length > 0 ? {
             <div style="font-weight:700;font-size:.9375rem;color:#00253b;">{p.label}</div>
             <div style="font-size:.8125rem;color:#42474e;margin-top:.25rem;line-height:1.5;">{p.desc}</div>
           </div>
+        </div>
+      ))}
+      {[
+        { icon: 'trending_up', label: 'Clear Growth Path', desc: 'Transparent ladder, honest feedback, and a team that wants you to level up' },
+        { icon: 'lightbulb', label: 'Your Ideas Matter', desc: "Bring an idea. If it's good, we'll build it together and you'll own a piece of it" },
+        { icon: 'public', label: 'Work from Anywhere', desc: 'Remote-friendly and globally distributed. Your timezone is not a barrier' },
+        { icon: 'volunteer_activism', label: 'We Have Your Back', desc: 'We stand behind everything we ship, and everyone on the team' },
+      ].map(p => (
+        <div class="stat-pill perk-extra" style="flex-direction:column;align-items:flex-start;gap:.5rem;padding:1.25rem;">
+          <span class="material-symbols-outlined" style="color:#006875;font-size:22px;">{p.icon}</span>
+          <div>
+            <div style="font-weight:700;font-size:.9375rem;color:#00253b;">{p.label}</div>
+            <div style="font-size:.8125rem;color:#42474e;margin-top:.25rem;line-height:1.5;">{p.desc}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+    <div style="text-align:center; margin-top:1.75rem;">
+      <button type="button" id="perks-toggle-btn" class="btn-outline" style="font-size:.875rem; padding:.625rem 1.5rem;">Show 4 More Perks ↓</button>
+    </div>
+  </div>
+</section>
+
+<!-- CAREERS FAQ -->
+<section class="section" style="padding:4.5rem 0;" aria-labelledby="careers-faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div style="text-align:center; margin-bottom:2.5rem;">
+      <h2 id="careers-faq-heading">Questions <span class="gradient-text">Candidates Ask Us</span></h2>
+    </div>
+    <div>
+      {careersFaqs.map((item) => (
+        <div class="faq-item">
+          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+            {item.question}
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">{item.answer}</div>
         </div>
       ))}
     </div>
@@ -270,6 +327,16 @@ const careersSchema = jobs.length > 0 ? {
   </section>
 )}
 
+<script>
+  const perksToggleBtn = document.getElementById('perks-toggle-btn');
+  perksToggleBtn?.addEventListener('click', () => {
+    const grid = document.getElementById('perks-grid');
+    if (!grid) return;
+    const expanded = grid.classList.toggle('expanded');
+    perksToggleBtn.textContent = expanded ? 'Show Fewer Perks ↑' : 'Show 4 More Perks ↓';
+  });
+</script>
+
 </BaseLayout>
 
 <style>
@@ -286,6 +353,9 @@ const careersSchema = jobs.length > 0 ? {
     transition: box-shadow .3s var(--ease), transform .3s var(--ease);
   }
   .stat-pill:hover { box-shadow: 0 18px 40px rgba(0,59,92,0.10); transform: translateY(-3px); }
+
+  .perk-extra { display: none; }
+  #perks-grid.expanded .perk-extra { display: flex; }
 
   .job-card {
     display: flex;

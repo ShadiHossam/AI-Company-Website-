@@ -8,6 +8,24 @@ export const prerender = false;
 const pc = await loadPageContent('contact');
 const g = (key: string, fallback: string) => getVal(pc, key, fallback);
 
+const contactFaqs = [
+  { question: "How fast will you respond?", answer: "WhatsApp messages get a reply within 4 hours during business hours. Emails and form submissions get a same business day response. If you book a specific time slot in the form, we'll confirm it directly." },
+  { question: "What should I prepare before the call?", answer: "Nothing formal. It helps if you can roughly describe the task or process that's eating your team's time, but you don't need numbers, a deck, or a technical brief. We'll ask the right questions on the call." },
+  { question: "Is the consultation really free, no strings attached?", answer: "Yes. The 30-minute call costs nothing and carries no obligation. If AI doesn't make sense for your business right now, we'll tell you that directly instead of pushing a sale." },
+  { question: "Can we talk in Arabic?", answer: "Yes. Our team is available in Arabic and English. Tell us your preference when you book, or just message us on WhatsApp in whichever language you're comfortable with." },
+  { question: "Do you meet in person in Dubai?", answer: "Yes. Select \"In-Person\" as the meeting format in the booking form and we'll arrange a time to meet at our Business Bay office, or we can visit your premises depending on the project." },
+];
+
+const contactFaqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: contactFaqs.map((f) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
 const contactLdJson = [
   {
     '@context': 'https://schema.org',
@@ -43,6 +61,7 @@ const contactLdJson = [
       },
     },
   },
+  contactFaqLdJson,
   {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -360,6 +379,27 @@ const contactLdJson = [
         <h3 style="font-weight:700; color:#00253b;">Clear Next Step</h3>
         <p style="color:#42474e; font-size:0.875rem; line-height:1.6;">You leave with a clear picture of what's possible, what it costs, and how long it takes. No vague proposals.</p>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT FAQ -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="contact-faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="contact-faq-heading">Before You Reach Out</h2>
+      <p>Quick answers to the questions we get most.</p>
+    </div>
+    <div>
+      {contactFaqs.map((item) => (
+        <div class="faq-item">
+          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+            {item.question}
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">{item.answer}</div>
+        </div>
+      ))}
     </div>
   </div>
 </section>
