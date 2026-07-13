@@ -7,8 +7,12 @@ Source: Fable-model UX/UI audit of the Aegis AI Astro site (EN + AR), covering f
 
 Two independent problems, confirmed page-by-page across the site:
 
-1. **Imagery**: most images are generic stock photos with no informational value (decorative "dividers," repeated hero banners), and in two places (Results, Logistics) captions describe a real product screenshot ("the route-optimisation dashboard," "the demand forecasting dashboard") over an image that isn't one. Team/office photos on About and Careers are stock but captioned as if authentic ("our Dubai office," "Aegis AI team members").
+1. **Imagery**: most images are generic stock photos with no informational value (decorative "dividers," repeated hero banners). Several pages (About, Careers, Contact, and their Arabic mirrors) caption stock photos as if they show the real office/team ("our Dubai office," "Aegis AI team members").
 2. **Interactivity**: the site has zero sliders, carousels, or calculators. What interactivity exists (homepage picker, per-service tabs, contact wizard) is real but shallow (one click deep) or duplicated by hand across pages instead of shared.
+
+**Correction after checking the live database (2026-07-13):** the original audit flagged `results.astro`/`industries/logistics.astro` case-study captions as claiming to show real dashboard screenshots over mismatched stock photos. Checking the live Supabase `case_studies` table shows `media_sections` is empty for all published rows (no Logistics case study exists in the DB at all), and `testimonials` is also empty — both pages are currently rendering from hardcoded fallback arrays in the `.astro` files, and that fallback data never reaches production while the DB returns rows. This is dead code, not a live trust problem; fixing it is a hygiene item, not urgent.
+
+Separately, the live `team_members` table **is** populated and contains fabricated names (Faris Al-Hashemi, Dr. Elena Rostova, Tareq Al-Mansoori) with stock face photos, matching the code's fallback exactly. Raised with the user directly; decision: leave `team_members` untouched, handled separately outside this work.
 
 User decision on imagery: no real assets will be supplied. Replace/fix using better-matched stock imagery sourced the same way the codebase already does (Unsplash-style URLs), and correct any caption that overclaims. No simulated/animated demo UI — that's out of scope for this pass.
 
@@ -17,14 +21,17 @@ User decision on imagery: no real assets will be supplied. Replace/fix using bet
 Four phases, each independently shippable:
 
 ### Phase 1 — Trust fix (imagery honesty)
-- `results.astro`: replace or re-caption case-study images so nothing claims to be a dashboard/screenshot it isn't.
-- `industries/logistics.astro`: same fix for the "route-optimisation dashboard" caption.
-- `about.astro`: replace the two "team working" photos and the office-corridor divider; if team headshots fall back to stock, replace fallback with initials (matches existing avatar-fallback pattern already used elsewhere on the site) rather than a stock face.
-- `careers.astro`, `jobs/[slug].astro`: replace the stock photo captioned as "Aegis AI team members... Dubai office" (reused in both places) with a better-matched generic stock image and non-claiming caption, or remove the banner.
-- `contact.astro`: replace stock office photo/caption to stop claiming it's "Aegis AI Dubai office."
-- `ar/` equivalents of the above where the same images/captions are mirrored.
+Scoped to what's actually live, per the database check above. `team_members` is explicitly excluded (handled separately by the user).
 
-No new components needed. Straightforward find-and-replace of `src`/`alt` per file.
+- `about.astro`: delete the two "team working" stock photos (`team-photo-row`) and the office-corridor divider image — pure filler, no identity claims, safe to remove outright.
+- `careers.astro`: delete the stock photo captioned "Aegis AI team members... Dubai office," and the "colleagues in a modern office" quote-band background image.
+- `jobs/[slug].astro`: delete the same reused banner (identical image/caption to careers.astro).
+- `contact.astro`: delete the stock photo captioned "Aegis AI Dubai office and team workspace."
+- `ar/services.astro`: delete the orphan two-photo grid (no caption, no heading, no link — the clearest case of "added just to add an image").
+- `ar/about.astro`: delete the mirrored office photo with the same "our team" claim.
+- `results.astro` fallback array: low-priority hygiene fix (not urgent — this code doesn't render while the DB returns rows). Swap the Logistics case study's port-yard photo (miscaptioned as "the route-optimisation dashboard") for a verified real dashboard photo, and soften the WhatsApp case study's caption since its image is a messaging-app-icon grid, not a conversation screenshot.
+
+No new components needed. Straightforward deletions and one verified image swap.
 
 ### Phase 2 — Shared services components (refactor, no visual change)
 Extract from the 12 duplicated services pages into `src/components/`:
