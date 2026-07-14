@@ -476,7 +476,9 @@ git commit -m "fix(ar/contact): remove stock photo falsely captioned as our Duba
 **Files:**
 - Modify: `astro-site/src/pages/ar/privacy.astro:74-78`
 
-Discovered during Task 4's code-quality review: same `photo-1497366216548` image, false claim (Arabic: "مكتب Aegis AI في دبي حيث تُدار عمليات حماية البيانات والخصوصية" — "Aegis AI office in Dubai where data protection and privacy operations are managed"), same `fetchpriority="high"` LCP pattern. Note: the English `privacy.astro` does NOT have this image at all — this is an AR-only inconsistency to clean up.
+Discovered during Task 4's code-quality review: same `photo-1497366216548` image, false claim (Arabic: "مكتب Aegis AI في دبي حيث تُدار عمليات حماية البيانات والخصوصية" — "Aegis AI office in Dubai where data protection and privacy operations are managed"), same `fetchpriority="high"` LCP pattern.
+
+**Correction (found during Task 10's own code-quality review):** the English `privacy.astro` does NOT have *this specific* image, but it has a different dishonest banner of its own (`photo-1454165804606`, alt "Aegis AI team in a consulting session discussing client data practices" — see Task 12 below). So this is not "an AR-only inconsistency being resolved for parity" as originally framed — both language versions had their own separate false-photo problem on this page, and Task 10 only fixes the Arabic one. Task 12 fixes the English one.
 
 - [ ] **Step 1: Confirm current content**
 
@@ -559,6 +561,53 @@ Run: `npm run dev`, open `/services/internal-ai-tools`, confirm the section abov
 ```bash
 git add astro-site/src/pages/services/internal-ai-tools.astro
 git commit -m "fix(internal-ai-tools): remove stock photo falsely captioned as our Dubai office"
+```
+
+---
+
+### Task 12: Remove the false "team in consulting session" banner from `privacy.astro` (English)
+
+**Files:**
+- Modify: `astro-site/src/pages/privacy.astro:47-51`
+
+Discovered during Task 10's code-quality review: while checking whether removing the AR-only banner improved EN/AR parity, the reviewer found the English `privacy.astro` has its own separate dishonest banner — a stock photo captioned as if it shows real Aegis AI staff.
+
+- [ ] **Step 1: Confirm current content**
+
+Run: `grep -n -B3 -A2 "1454165804606" "astro-site/src/pages/privacy.astro"`
+Expected: matches this block (currently lines 47-51):
+
+```astro
+<!-- BANNER IMAGE -->
+<div style="position:relative; overflow:hidden; height:220px;">
+  <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&q=80&auto=format&fit=crop" alt="Aegis AI team in a consulting session discussing client data practices" loading="lazy" width="1400" height="220" style="width:100%;height:100%;object-fit:cover;object-position:center 35%;" />
+  <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(249,249,255,0.55) 0%,rgba(249,249,255,0) 45%),linear-gradient(to top,rgba(0,19,32,0.25) 0%,transparent 55%);"></div>
+</div>
+```
+
+- [ ] **Step 2: Delete the block**
+
+Replace with nothing (pure deletion, same approach as Task 10's Arabic fix — this now brings EN and AR privacy pages into actual parity: neither has a banner image).
+
+- [ ] **Step 3: Verify removal**
+
+Run: `grep -n "1454165804606\|BANNER IMAGE" "astro-site/src/pages/privacy.astro"`
+Expected: no matches.
+
+- [ ] **Step 4: Type-check and build**
+
+Run: `cd astro-site && npm run check && npm run build`
+Expected: both succeed (or `build` alone if `check` hits the pre-existing memory limit).
+
+- [ ] **Step 5: Visual check**
+
+Run: `npm run dev`, open `/privacy`, confirm the header flows directly into the table-of-contents/legal-text content with no broken gap.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add astro-site/src/pages/privacy.astro
+git commit -m "fix(privacy): remove stock photo falsely captioned as our team"
 ```
 
 ---
