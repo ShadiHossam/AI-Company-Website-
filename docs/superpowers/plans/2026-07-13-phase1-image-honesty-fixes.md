@@ -612,6 +612,135 @@ git commit -m "fix(privacy): remove stock photo falsely captioned as our team"
 
 ---
 
+### Task 13: Sitewide sweep — remaining "Aegis AI team/engineers in Dubai" false-caption images
+
+**Discovered while closing out Task 11/12's reviews**: a full-repo grep for the pattern `alt="...Aegis AI...(team|engineers|colleagues)..."` (and its Arabic equivalent `فريق Aegis`) turned up 10 more files with the same violation already fixed elsewhere in this plan — same stock-photo-claims-to-be-real-staff problem, scattered across the services template and its Arabic mirror. This is one consolidated task covering all 10, since each fix is mechanically identical to a pattern already established and reviewed (Tasks 1/2/4/9/11).
+
+**Files and exact fixes:**
+
+1. **`astro-site/src/pages/terms.astro:47-50`** — pure deletion (same shape as the already-fixed `privacy.astro`/`contact.astro` banners):
+
+```astro
+<!-- BANNER IMAGE -->
+<div style="position:relative; overflow:hidden; height:220px;">
+  <img src="https://images.unsplash.com/photo-1551434678-e076c223a692?w=1400&q=80&auto=format&fit=crop" alt="Aegis AI team reviewing project agreements in the office" loading="lazy" width="1400" height="220" style="width:100%;height:100%;object-fit:cover;object-position:center 35%;" />
+  <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(249,249,255,0.55) 0%,rgba(249,249,255,0) 45%),linear-gradient(to top,rgba(0,19,32,0.25) 0%,transparent 55%);"></div>
+</div>
+```
+Delete the whole block.
+
+2. **`astro-site/src/pages/services.astro:171-176`** (the "DUBAI BANNER") — this one is NOT a pure deletion: the image sits behind a stat-grid overlay that's already 74%-opaque, so remove only the `<img>` and make the overlay fully opaque instead of adding a new gradient:
+
+Current:
+```astro
+<!-- DUBAI BANNER -->
+<div style="width:100%; height:300px; overflow:hidden; position:relative;">
+  <img src="https://images.unsplash.com/photo-1546412414-e1885259563a?w=1400&q=80&auto=format&fit=crop" alt="Sheikh Zayed Road skyline in Dubai, where the Aegis AI team is based" loading="lazy" width="1400" height="300" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 60%;" />
+  <div style="width:100%; height:100%; background:rgba(0,25,42,0.74); display:flex; align-items:center; justify-content:center; position:relative;">
+```
+Replace with:
+```astro
+<!-- DUBAI BANNER -->
+<div style="width:100%; height:300px; overflow:hidden; position:relative;">
+  <div style="width:100%; height:100%; background:#00192a; display:flex; align-items:center; justify-content:center; position:relative;">
+```
+(delete the `<img>` line; change the overlay div's `background:rgba(0,25,42,0.74)` to solid `background:#00192a` — same RGB values, now fully opaque since there's no photo underneath to show through). Everything inside this div (the stat grid) is untouched.
+
+3. **`astro-site/src/pages/services.astro:404-408`** — pure deletion (standalone card):
+```astro
+    <div class="deciding-strip">
+      <div class="deciding-img-wrap">
+        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=700&q=80&auto=format&fit=crop" alt="Aegis AI team in Dubai discussing which service fits a client's business" loading="lazy" width="700" height="460" />
+      </div>
+```
+Delete only the `<div class="deciding-img-wrap">...</div>` (the `<img>` and its immediate wrapper) — check what follows (likely a sibling `deciding-content` div) to confirm the `.deciding-strip` parent still makes sense as a single-column layout after this removal; if `.deciding-strip` is a CSS grid expecting two children, note it in your report rather than guessing.
+
+4. **`astro-site/src/pages/services/claude-agent-builds.astro:121-124`** — pure deletion (standalone card, same shape as Task 2's first `careers.astro` block):
+```astro
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&q=80&auto=format&fit=crop" alt="Aegis AI engineers scoping agent guardrails on a whiteboard during a planning session in Dubai" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+```
+Delete the whole block.
+
+5. **`astro-site/src/pages/services/custom-gpt-development.astro:121-124`** — pure deletion, same shape:
+```astro
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200&q=80&auto=format&fit=crop" alt="Aegis AI team scoping a custom AI assistant build for a Dubai client" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+```
+Delete the whole block.
+
+6. **`astro-site/src/pages/services/internal-ai-tools.astro:130-133`** — pure deletion, same shape (note: this is a DIFFERENT image from the one already removed in Task 11, higher up the same file):
+```astro
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&q=80&auto=format&fit=crop" alt="Aegis AI engineers configuring an internal knowledge base tool at a Dubai workspace" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+```
+Delete the whole block.
+
+7. **`astro-site/src/pages/services/vibe-coding.astro:218-220`** — NOT a pure deletion: this is one column of a `display:grid; grid-template-columns:1.2fr 1fr` two-column layout (`.vc-timeline-outer` — check the `<style>` block for the exact class/selector, it may be scoped or inline; find it before editing). Remove only the `<img>` and give the wrapper a solid gradient so the grid column doesn't render as an empty box:
+
+Current:
+```astro
+      <div style="border-radius:20px; overflow:hidden; box-shadow:0 20px 44px rgba(0,59,92,0.10); min-height:220px;">
+        <img src="https://images.unsplash.com/photo-1546412414-a38a6f0f2fd0?w=1000&q=80&auto=format&fit=crop" alt="Sheikh Zayed Road skyline in Dubai, home base for Aegis AI's engineering team" loading="lazy" width="1000" height="700" style="width:100%; height:100%; object-fit:cover; display:block;" />
+      </div>
+```
+Replace with:
+```astro
+      <div style="border-radius:20px; overflow:hidden; box-shadow:0 20px 44px rgba(0,59,92,0.10); min-height:220px; background:linear-gradient(135deg,#006875,#00253b);"></div>
+```
+
+8. **`astro-site/src/pages/ar/jobs/[slug].astro:95-99`** — pure deletion (same shape as the already-fixed English `jobs/[slug].astro`):
+```astro
+<!-- WORKPLACE PHOTO -->
+<div style="position:relative;overflow:hidden;height:220px;">
+  <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1400&q=80&auto=format&fit=crop" alt="فريق Aegis AI يعمل معاً في بيئة تعاونية بمكتب دبي" loading="eager" fetchpriority="high" width="1400" height="220" style="width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
+  <div style="position:absolute;inset:0;background:rgba(0,37,59,0.10);"></div>
+</div>
+```
+Delete the whole block.
+
+9. **`astro-site/src/pages/ar/services/ai-agents.astro:250-252`** — pure deletion:
+```astro
+    <div style="border-radius:24px;overflow:hidden;margin-bottom:2.5rem;box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1100&q=80&auto=format&fit=crop" alt="فريق Aegis AI يراقب أداء الوكيل الذكي أثناء الإطلاق" loading="lazy" width="1100" height="320" style="width:100%;height:clamp(180px,26vw,320px);object-fit:cover;display:block;" />
+    </div>
+```
+Delete the whole block.
+
+10. **`astro-site/src/pages/ar/services/vibe-coding.astro:281-283`** — same two-column-grid situation as item 7 (English vibe-coding), confirmed via CSS: `.vcar-timeline-outer { display:grid;grid-template-columns:1.2fr 1fr; }` and `.vcar-timeline-img { border-radius:20px;overflow:hidden;box-shadow:0 20px 44px rgba(0,59,92,0.10);min-height:220px; }` (both in this file's `<style>` block). Remove only the `<img>`, add the solid gradient to the CSS class itself (not inline, since this one uses a real class) so both the tab-switching JS and responsive breakpoint rule (`@media` block redefining `.vcar-timeline-img { min-height:200px;max-height:260px; }`) keep working unchanged:
+
+Current:
+```astro
+      <div class="vcar-timeline-img">
+        <img src="https://images.unsplash.com/photo-1546412414-a38a6f0f2fd0?w=1000&q=80&auto=format&fit=crop" alt="أفق شارع الشيخ زايد في دبي حيث يعمل فريق Aegis AI الهندسي" loading="lazy" width="1000" height="700" style="width:100%;height:100%;object-fit:cover;display:block;" />
+      </div>
+```
+Replace with:
+```astro
+      <div class="vcar-timeline-img"></div>
+```
+And in the `<style>` block, find `.vcar-timeline-img { border-radius:20px;overflow:hidden;box-shadow:0 20px 44px rgba(0,59,92,0.10);min-height:220px; }` and add a background:
+```astro
+.vcar-timeline-img { border-radius:20px;overflow:hidden;box-shadow:0 20px 44px rgba(0,59,92,0.10);min-height:220px;background:linear-gradient(135deg,#006875,#00253b); }
+```
+
+**Verification (apply to all 10 files):**
+
+- [ ] `grep -rn "1551434678\|1546412414\|1522071820081\|1552664730\|1600880292203\|1522202176988\|1521737604893" astro-site/src/pages/terms.astro astro-site/src/pages/services.astro astro-site/src/pages/services/claude-agent-builds.astro astro-site/src/pages/services/custom-gpt-development.astro astro-site/src/pages/services/internal-ai-tools.astro astro-site/src/pages/services/vibe-coding.astro "astro-site/src/pages/ar/jobs/[slug].astro" astro-site/src/pages/ar/services/ai-agents.astro astro-site/src/pages/ar/services/vibe-coding.astro` — expected: no matches (each photo ID should be gone from its respective file; note some of these IDs are legitimately still used elsewhere on OTHER pages not in this list — only check the 10 files above).
+- [ ] `cd astro-site && npm run check && npm run build` — both succeed (or `build` alone if `check` hits the known memory limit).
+- [ ] `npm run dev`, spot-check `/terms`, `/services`, `/services/vibe-coding`, `/ar/services/vibe-coding` — confirm no broken layout, especially the two-column timeline grids (items 7 and 10) and the `.deciding-strip` section (item 3).
+- [ ] Commit (one commit is fine for this consolidated task, or split per file if that's cleaner to review — implementer's choice):
+
+```bash
+git add astro-site/src/pages/terms.astro astro-site/src/pages/services.astro astro-site/src/pages/services/claude-agent-builds.astro astro-site/src/pages/services/custom-gpt-development.astro astro-site/src/pages/services/internal-ai-tools.astro astro-site/src/pages/services/vibe-coding.astro "astro-site/src/pages/ar/jobs/[slug].astro" astro-site/src/pages/ar/services/ai-agents.astro astro-site/src/pages/ar/services/vibe-coding.astro
+git commit -m "fix: remove remaining stock photos falsely captioned as Aegis AI team/engineers"
+```
+
+---
+
 ## Notes for whoever picks up Phase 2+
 
 - `team_members` (fabricated names/bios/stock photos, live in Supabase) is untouched by design — out of scope, user is handling separately. Don't fix it as a "drive-by" while touching nearby files.
