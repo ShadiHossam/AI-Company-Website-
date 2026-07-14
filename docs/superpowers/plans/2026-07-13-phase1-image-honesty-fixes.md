@@ -370,6 +370,60 @@ git commit -m "fix(results): correct fallback case-study image/caption mismatch 
 
 ---
 
+### Task 8: Remove the mirrored quote-band photo from `ar/careers.astro`
+
+**Files:**
+- Modify: `astro-site/src/pages/ar/careers.astro:170-173`
+
+Discovered during Task 2's code-quality review: this page has the exact same `photo-1600880292203` quote-band pattern as the English `careers.astro` (fixed in Task 2), with an Arabic caption ("زملاء يعملون معاً في مكتب حديث" — "colleagues working together in a modern office"). Not part of the original audit's page sample, but it's the same violation and the same fix applies.
+
+- [ ] **Step 1: Confirm current content**
+
+Run: `grep -n -B3 -A3 "1600880292203" "astro-site/src/pages/ar/careers.astro"`
+Expected: shows a `<!-- QUOTE BAND -->` wrapper (currently lines 170-173) matching the English page's pre-fix structure:
+
+```astro
+<!-- QUOTE BAND -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1600&q=80&auto=format&fit=crop" alt="زملاء يعملون معاً في مكتب حديث" loading="lazy" width="1600" height="360" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(135deg,rgba(0,104,117,0.18),rgba(0,37,59,0.35));"></div>
+```
+
+- [ ] **Step 2: Remove the `<img>`, add the same solid gradient used in the English fix**
+
+Replace with:
+
+```astro
+<!-- QUOTE BAND -->
+<div style="position:relative; overflow:hidden; background:linear-gradient(135deg,#006875,#00253b);">
+  <div style="position:absolute; inset:0; background:linear-gradient(135deg,rgba(0,104,117,0.18),rgba(0,37,59,0.35));"></div>
+```
+
+Same gradient stops as Task 2 (`#006875` / `#00253b`) — these are the RGB values already used in the overlay gradient one line below, kept consistent across both language versions of the page.
+
+- [ ] **Step 3: Verify removal**
+
+Run: `grep -n "1600880292203" "astro-site/src/pages/ar/careers.astro"`
+Expected: no matches.
+
+- [ ] **Step 4: Type-check and build**
+
+Run: `cd astro-site && npm run check && npm run build`
+Expected: both succeed (or `build` alone if `check` hits the pre-existing memory limit).
+
+- [ ] **Step 5: Visual check**
+
+Run: `npm run dev`, open `/ar/careers`, confirm the quote band still reads clearly in RTL against the new gradient, no broken layout.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add astro-site/src/pages/ar/careers.astro
+git commit -m "fix(ar/careers): remove stock photo falsely captioned as our office"
+```
+
+---
+
 ## Notes for whoever picks up Phase 2+
 
 - `team_members` (fabricated names/bios/stock photos, live in Supabase) is untouched by design — out of scope, user is handling separately. Don't fix it as a "drive-by" while touching nearby files.
