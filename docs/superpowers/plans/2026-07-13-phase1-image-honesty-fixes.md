@@ -424,6 +424,145 @@ git commit -m "fix(ar/careers): remove stock photo falsely captioned as our offi
 
 ---
 
+### Task 9: Remove the same false office banner from `ar/contact.astro`
+
+**Files:**
+- Modify: `astro-site/src/pages/ar/contact.astro:66-70`
+
+Discovered during Task 4's code-quality review: same `photo-1497366216548` image, same false claim (Arabic: "مكتب Aegis AI في دبي وفريق العمل" — "Aegis AI office in Dubai and the team"), same `fetchpriority="high"` LCP pattern as the English `contact.astro` fixed in Task 4.
+
+- [ ] **Step 1: Confirm current content**
+
+Run: `grep -n -B3 -A2 "1497366216548" "astro-site/src/pages/ar/contact.astro"`
+Expected: matches this block (currently lines 66-70):
+
+```astro
+<!-- IMAGE BANNER -->
+<div style="position:relative; overflow:hidden; height:240px;">
+  <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=80&auto=format&fit=crop" alt="مكتب Aegis AI في دبي وفريق العمل" loading="eager" fetchpriority="high" width="1400" height="240" style="width:100%; height:100%; object-fit:cover; object-position:center 30%;" />
+  <div style="position:absolute; inset:0; background:rgba(0,104,117,0.08);"></div>
+</div>
+```
+
+- [ ] **Step 2: Delete the block**
+
+Replace with nothing (pure deletion, matching Task 4's approach for the English page).
+
+- [ ] **Step 3: Verify removal**
+
+Run: `grep -n "1497366216548\|IMAGE BANNER" "astro-site/src/pages/ar/contact.astro"`
+Expected: no matches.
+
+- [ ] **Step 4: Type-check and build**
+
+Run: `cd astro-site && npm run check && npm run build`
+Expected: both succeed (or `build` alone if `check` hits the pre-existing memory limit).
+
+- [ ] **Step 5: Visual check**
+
+Run: `npm run dev`, open `/ar/contact`, confirm the header flows directly into the main content with no broken gap, RTL layout unaffected.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add astro-site/src/pages/ar/contact.astro
+git commit -m "fix(ar/contact): remove stock photo falsely captioned as our Dubai office"
+```
+
+---
+
+### Task 10: Remove the same false office banner from `ar/privacy.astro`
+
+**Files:**
+- Modify: `astro-site/src/pages/ar/privacy.astro:74-78`
+
+Discovered during Task 4's code-quality review: same `photo-1497366216548` image, false claim (Arabic: "مكتب Aegis AI في دبي حيث تُدار عمليات حماية البيانات والخصوصية" — "Aegis AI office in Dubai where data protection and privacy operations are managed"), same `fetchpriority="high"` LCP pattern. Note: the English `privacy.astro` does NOT have this image at all — this is an AR-only inconsistency to clean up.
+
+- [ ] **Step 1: Confirm current content**
+
+Run: `grep -n -B3 -A2 "1497366216548" "astro-site/src/pages/ar/privacy.astro"`
+Expected: matches this block (currently lines 74-78):
+
+```astro
+<!-- BANNER IMAGE -->
+<div style="position:relative;overflow:hidden;height:220px;">
+  <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=80&auto=format&fit=crop" alt="مكتب Aegis AI في دبي حيث تُدار عمليات حماية البيانات والخصوصية" loading="eager" fetchpriority="high" width="1400" height="220" style="width:100%;height:100%;object-fit:cover;object-position:center 30%;" />
+  <div style="position:absolute;inset:0;background:rgba(0,37,59,0.10);"></div>
+</div>
+```
+
+- [ ] **Step 2: Delete the block**
+
+Replace with nothing.
+
+- [ ] **Step 3: Verify removal**
+
+Run: `grep -n "1497366216548\|BANNER IMAGE" "astro-site/src/pages/ar/privacy.astro"`
+Expected: no matches.
+
+- [ ] **Step 4: Type-check and build**
+
+Run: `cd astro-site && npm run check && npm run build`
+Expected: both succeed (or `build` alone if `check` hits the pre-existing memory limit).
+
+- [ ] **Step 5: Visual check**
+
+Run: `npm run dev`, open `/ar/privacy`, confirm the header flows directly into the legal-text content with no broken gap.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add astro-site/src/pages/ar/privacy.astro
+git commit -m "fix(ar/privacy): remove stock photo falsely captioned as our Dubai office"
+```
+
+---
+
+### Task 11: Remove the same false office photo from `services/internal-ai-tools.astro`
+
+**Files:**
+- Modify: `astro-site/src/pages/services/internal-ai-tools.astro:249-251`
+
+Discovered during Task 4's code-quality review: same `photo-1497366216548` image, false claim ("Aegis AI Dubai office where internal AI tools are built for client teams"). Unlike Tasks 4/9/10, this one is not the page's LCP hero (it's `loading="lazy"`, mid-page), styled as a standalone rounded-corner card similar to the block removed in Task 2 from `careers.astro`.
+
+- [ ] **Step 1: Confirm current content**
+
+Run: `grep -n -B3 "1497366216548" "astro-site/src/pages/services/internal-ai-tools.astro"`
+Expected: matches this block (currently lines 249-251):
+
+```astro
+    <div style="border-radius:20px; overflow:hidden; margin-top:2rem; box-shadow:0 20px 44px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80&auto=format&fit=crop" alt="Aegis AI Dubai office where internal AI tools are built for client teams" loading="lazy" width="1200" height="320" style="width:100%; height:clamp(180px, 24vw, 320px); object-fit:cover; display:block;" />
+    </div>
+```
+
+- [ ] **Step 2: Delete the block**
+
+Replace with nothing (pure deletion — standalone card, no surrounding gradient/overlay to preserve).
+
+- [ ] **Step 3: Verify removal**
+
+Run: `grep -n "1497366216548" "astro-site/src/pages/services/internal-ai-tools.astro"`
+Expected: no matches.
+
+- [ ] **Step 4: Type-check and build**
+
+Run: `cd astro-site && npm run check && npm run build`
+Expected: both succeed (or `build` alone if `check` hits the pre-existing memory limit).
+
+- [ ] **Step 5: Visual check**
+
+Run: `npm run dev`, open `/services/internal-ai-tools`, confirm the section above flows cleanly into whatever follows with no orphaned gap.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add astro-site/src/pages/services/internal-ai-tools.astro
+git commit -m "fix(internal-ai-tools): remove stock photo falsely captioned as our Dubai office"
+```
+
+---
+
 ## Notes for whoever picks up Phase 2+
 
 - `team_members` (fabricated names/bios/stock photos, live in Supabase) is untouched by design — out of scope, user is handling separately. Don't fix it as a "drive-by" while touching nearby files.
