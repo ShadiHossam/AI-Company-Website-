@@ -2,6 +2,7 @@
 export const prerender = false;
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getSupabaseAdmin } from "../../lib/supabase";
+import FaqAccordion from "../../components/FaqAccordion.astro";
 
 const fallbackFaqs = [
   { question: "What exactly is a custom AI assistant?", answer: "A custom AI assistant is a language model configured specifically for your business. You define its purpose, provide knowledge files (your docs, SOPs, product info), and optionally connect it to external systems via API. It behaves according to your rules, knows your content, and can be shared with your team or customers, all without your team writing a single line of code." },
@@ -264,17 +265,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     <div class="section-header">
       <h2 id="faq-heading">Frequently Asked Questions</h2>
     </div>
-    <div>
-      {faqItems.map((item) => (
-        <div class="faq-item">
-          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-            {item.question}
-            <span class="faq-icon">+</span>
-          </button>
-          <div class="faq-body">{item.answer}</div>
-        </div>
-      ))}
-    </div>
+    <FaqAccordion items={faqItems} />
   </div>
 </section>
 
@@ -344,12 +335,6 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
 .cgd-flip-back { background:linear-gradient(135deg,#00253b,#006875); color:#fff; transform:rotateY(180deg); }
 @media(max-width:900px) { .cgd-flip-grid { grid-template-columns:1fr 1fr; } }
 @media(max-width:600px) { .cgd-flip-grid { grid-template-columns:1fr; } }
-.faq-item { border-top:1px solid rgba(0,37,59,0.10); }
-.faq-btn { display:flex; justify-content:space-between; align-items:center; width:100%; text-align:left; padding:1.1rem 0; font-weight:600; color:#00253b; cursor:pointer; background:none; border:none; font-family:inherit; font-size:0.95rem; }
-.faq-body { display:none; padding-bottom:1rem; color:#42474e; font-size:0.9rem; line-height:1.7; }
-.faq-body.open { display:block; }
-.faq-icon { transition:transform 0.25s; font-size:1.1rem; color:#006875; }
-.faq-icon.open { transform:rotate(45deg); }
 @media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } }
 @media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
 </style>

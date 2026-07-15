@@ -2,6 +2,7 @@
 export const prerender = false;
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getSupabaseAdmin } from "../../lib/supabase";
+import FaqAccordion from "../../components/FaqAccordion.astro";
 
 const fallbackFaqs = [
   { question: "What kinds of processes can you automate with AI?", answer: "We automate any workflow that involves repetitive data handling, approvals, communications, or routing, including email processing, invoice extraction, lead follow-up, report generation, data entry between systems, and multi-step approval chains. If your team does it manually and it follows a pattern, we can automate it." },
@@ -316,17 +317,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     <div class="section-header">
       <h2 id="faq-heading">Frequently Asked Questions</h2>
     </div>
-    <div>
-      {faqItems.map((item) => (
-        <div class="faq-item">
-          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-            {item.question}
-            <span class="faq-icon">+</span>
-          </button>
-          <div class="faq-body">{item.answer}</div>
-        </div>
-      ))}
-    </div>
+    <FaqAccordion items={faqItems} />
   </div>
 </section>
 
@@ -386,12 +377,6 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
 .stat-item { text-align:center; }
 .stat-num { font-size:2.5rem; font-weight:800; color:#00e3fd; line-height:1; margin-bottom:0.5rem; }
 .stat-label { color:rgba(255,255,255,0.55); font-size:0.875rem; line-height:1.6; }
-.faq-item { border-top:1px solid rgba(0,37,59,0.10); }
-.faq-btn { display:flex; justify-content:space-between; align-items:center; width:100%; text-align:left; padding:1.1rem 0; font-weight:600; color:#00253b; cursor:pointer; background:none; border:none; font-family:inherit; font-size:0.95rem; }
-.faq-body { display:none; padding-bottom:1rem; color:#42474e; font-size:0.9rem; line-height:1.7; }
-.faq-body.open { display:block; }
-.faq-icon { transition:transform 0.25s; font-size:1.1rem; color:#006875; }
-.faq-icon.open { transform:rotate(45deg); }
 @media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } .stat-strip { grid-template-columns:1fr; } .stat-divider { display:none; } }
 @media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
 </style>

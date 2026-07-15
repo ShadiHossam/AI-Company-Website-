@@ -2,6 +2,7 @@
 export const prerender = false;
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getSupabaseAdmin } from "../../lib/supabase";
+import FaqAccordion from "../../components/FaqAccordion.astro";
 
 const fallbackFaqs = [
   { question: "We already have a CRM. Can you add AI to it without replacing it?", answer: "Yes, that's exactly what AI integration is for. We add an AI layer on top of your existing CRM or custom system. Your team keeps working in the same system they know; it just gets smarter: auto-enriching contacts, predicting deal health, surfacing the right follow-up actions." },
@@ -263,17 +264,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     <div class="section-header">
       <h2 id="faq-heading">Frequently Asked Questions</h2>
     </div>
-    <div>
-      {faqItems.map((item) => (
-        <div class="faq-item">
-          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-            {item.question}
-            <span class="faq-icon">+</span>
-          </button>
-          <div class="faq-body">{item.answer}</div>
-        </div>
-      ))}
-    </div>
+    <FaqAccordion items={faqItems} />
   </div>
 </section>
 
@@ -363,12 +354,6 @@ document.querySelectorAll('[data-scenario-tabs]').forEach((wrap) => {
 .stat-num { font-size:2.5rem; font-weight:800; color:#00e3fd; line-height:1; margin-bottom:0.5rem; }
 .stat-label { color:rgba(255,255,255,0.55); font-size:0.875rem; line-height:1.6; }
 .tech-pill { display:inline-block; background:#fff; border:1px solid #dde3ea; border-radius:100px; padding:0.375rem 1rem; font-size:0.8125rem; font-weight:600; color:#00253b; }
-.faq-item { border-top:1px solid rgba(0,37,59,0.10); }
-.faq-btn { display:flex; justify-content:space-between; align-items:center; width:100%; text-align:left; padding:1.1rem 0; font-weight:600; color:#00253b; cursor:pointer; background:none; border:none; font-family:inherit; font-size:0.95rem; }
-.faq-body { display:none; padding-bottom:1rem; color:#42474e; font-size:0.9rem; line-height:1.7; }
-.faq-body.open { display:block; }
-.faq-icon { transition:transform 0.25s; font-size:1.1rem; color:#006875; }
-.faq-icon.open { transform:rotate(45deg); }
 @media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } .stat-strip { grid-template-columns:1fr; } .stat-divider { display:none; } .explain-split { grid-template-columns:1fr; } .explain-img-wrap img { min-height:220px; } }
 @media(max-width:700px) { .ba-grid { grid-template-columns:1fr; gap:1.25rem; } .scenario-tabs { padding:1.5rem; } }
 @media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }

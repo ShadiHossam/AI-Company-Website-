@@ -2,6 +2,7 @@
 export const prerender = false;
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getSupabaseAdmin } from "../../lib/supabase";
+import FaqAccordion from "../../components/FaqAccordion.astro";
 
 const fallbackFaqs = [
   { question: "What does a prompt engineering engagement actually look like?", answer: "It depends on your starting point. For teams already using AI heavily, we start with a prompt audit: reviewing your existing prompts, identifying where output quality is inconsistent, and rewriting the worst offenders. For teams building AI features or workflows, we join the design process early and write the system prompts from scratch. Either way, you end up with a documented prompt library that's easy to maintain and update." },
@@ -284,17 +285,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     <div class="section-header">
       <h2 id="faq-heading">Frequently Asked Questions</h2>
     </div>
-    <div>
-      {faqItems.map((item) => (
-        <div class="faq-item">
-          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-            {item.question}
-            <span class="faq-icon">+</span>
-          </button>
-          <div class="faq-body">{item.answer}</div>
-        </div>
-      ))}
-    </div>
+    <FaqAccordion items={faqItems} />
   </div>
 </section>
 
@@ -354,12 +345,6 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
 .pe-ba-btn.is-active { background:#fff; color:#00253b; box-shadow:0 2px 8px rgba(0,37,59,0.10); }
 .pe-ba-prompt { background:#f9f9ff; border:1px solid rgba(0,37,59,0.08); border-radius:12px; padding:1rem 1.25rem; font-family:monospace; font-size:0.875rem; color:#00253b; line-height:1.7; }
 @media(max-width:900px) { .pe-ba-grid { grid-template-columns:1fr; } }
-.faq-item { border-top:1px solid rgba(0,37,59,0.10); }
-.faq-btn { display:flex; justify-content:space-between; align-items:center; width:100%; text-align:left; padding:1.1rem 0; font-weight:600; color:#00253b; cursor:pointer; background:none; border:none; font-family:inherit; font-size:0.95rem; }
-.faq-body { display:none; padding-bottom:1rem; color:#42474e; font-size:0.9rem; line-height:1.7; }
-.faq-body.open { display:block; }
-.faq-icon { transition:transform 0.25s; font-size:1.1rem; color:#006875; }
-.faq-icon.open { transform:rotate(45deg); }
 @media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } }
 @media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
 </style>

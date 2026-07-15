@@ -2,6 +2,7 @@
 export const prerender = false;
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getSupabaseAdmin } from "../../lib/supabase";
+import FaqAccordion from "../../components/FaqAccordion.astro";
 
 const fallbackFaqs = [
   { question: "What data do you train the internal AI on?", answer: "We train on whatever your team actually uses: company wikis, SOPs, policies, product docs, past projects, support tickets, internal documents, and more. The AI becomes a true company expert, not a generic one." },
@@ -313,17 +314,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     <div class="section-header">
       <h2 id="faq-heading">Frequently Asked Questions</h2>
     </div>
-    <div>
-      {faqItems.map((item) => (
-        <div class="faq-item">
-          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-            {item.question}
-            <span class="faq-icon">+</span>
-          </button>
-          <div class="faq-body">{item.answer}</div>
-        </div>
-      ))}
-    </div>
+    <FaqAccordion items={faqItems} />
   </div>
 </section>
 
@@ -387,12 +378,6 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
 .iat-q-list li { padding:1rem 0; border-bottom:1px solid rgba(0,37,59,0.08); color:#00253b; font-weight:600; font-size:0.9375rem; }
 .iat-q-list li:last-child { border-bottom:none; }
 @media(max-width:768px) { .iat-dept-grid { grid-template-columns:1fr; } .iat-dept-tabs { flex-direction:row; flex-wrap:wrap; } .iat-dept-tab { flex:1 1 auto; } }
-.faq-item { border-top:1px solid rgba(0,37,59,0.10); }
-.faq-btn { display:flex; justify-content:space-between; align-items:center; width:100%; text-align:left; padding:1.1rem 0; font-weight:600; color:#00253b; cursor:pointer; background:none; border:none; font-family:inherit; font-size:0.95rem; }
-.faq-body { display:none; padding-bottom:1rem; color:#42474e; font-size:0.9rem; line-height:1.7; }
-.faq-body.open { display:block; }
-.faq-icon { transition:transform 0.25s; font-size:1.1rem; color:#006875; }
-.faq-icon.open { transform:rotate(45deg); }
 @media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } }
 @media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
 </style>
