@@ -4,8 +4,11 @@ import node from '@astrojs/node';
 
 const isO2switch = process.env.DEPLOY_TARGET === 'o2switch';
 
+// o2switch now hosts both lenooai.com (production) and aicompany.usine.site (staging)
+// under the same Node adapter, so `site` can no longer be inferred from DEPLOY_TARGET
+// alone — each app sets its own SITE_URL env var (see node-selector.json on the server).
 export default defineConfig({
-  site: isO2switch ? 'https://aicompany.usine.site' : 'https://aegisai.ae',
+  site: process.env.SITE_URL || 'https://lenooai.com',
   output: 'server',
   adapter: isO2switch ? node({ mode: 'standalone' }) : vercel(),
   trailingSlash: 'never',

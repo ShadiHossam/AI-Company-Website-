@@ -1,9 +1,9 @@
 export const COMPANY = {
   name: "Aegis AI",
-  domain: "aegisai.ae",
+  domain: "lenooai.com",
   phone: "+971 4 321 8888",
   whatsapp: "971501234567",
-  email: "hello@aegisai.ae",
+  email: "hello@lenooai.com",
   address: "Business Bay, Dubai, UAE",
   hours: "Sun–Thu · 9:00 am–6:00 pm GST",
   linkedinSlug: "aegis-ai-dubai",

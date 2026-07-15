@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../lib/supabase';
 
-const BASE = 'https://aegisai.ae';
+const BASE = 'https://lenooai.com';
 
 export const GET: APIRoute = async () => {
   let entries = '';
