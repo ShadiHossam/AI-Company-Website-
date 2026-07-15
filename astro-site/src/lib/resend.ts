@@ -27,7 +27,7 @@ export async function sendAdminNotification(lead: LeadData, adminEmail: string):
   const source = lead.page_source ? ` (via ${esc(lead.page_source.replace(/_/g, ' '))})` : '';
   const safeWhatsapp = (lead.whatsapp ?? '').replace(/\D/g, '');
   await resend.emails.send({
-    from: 'Aegis AI Leads <noreply@aegisai.ae>',
+    from: 'Aegis AI Leads <noreply@lenooai.com>',
     to: adminEmail,
     subject: `New Lead: ${lead.full_name} from ${lead.company_name}`,
     html: `
@@ -43,7 +43,7 @@ export async function sendAdminNotification(lead: LeadData, adminEmail: string):
           <tr><td style="padding:8px; font-weight:bold;">Meeting</td><td style="padding:8px;">${esc(lead.meeting_format ?? '—')} · ${esc(lead.preferred_date ?? '—')} ${esc(lead.preferred_time ?? '')}</td></tr>
         </table>
         <p style="margin-top:24px;">
-          <a href="https://aegisai.ae/admin/leads/${esc(lead.id)}" style="background:#00e3fd; color:#0a0f1a; padding:10px 20px; text-decoration:none; border-radius:6px; font-weight:bold;">View Lead in Admin →</a>
+          <a href="https://lenooai.com/admin/leads/${esc(lead.id)}" style="background:#00e3fd; color:#0a0f1a; padding:10px 20px; text-decoration:none; border-radius:6px; font-weight:bold;">View Lead in Admin →</a>
         </p>
         <p style="color:#666; font-size:12px;">Quick actions:
           <a href="https://wa.me/${safeWhatsapp}">Open WhatsApp</a> ·
@@ -60,7 +60,7 @@ export async function sendLeadAutoReply(lead: LeadData, companyPhone: string, co
     ? `<p><strong>Meeting type:</strong> ${esc(lead.meeting_format)}${lead.preferred_date ? ` · ${esc(lead.preferred_date)}` : ''}${lead.preferred_time ? ` · ${esc(lead.preferred_time)}` : ''}</p>`
     : '';
   await resend.emails.send({
-    from: 'Aegis AI <hello@aegisai.ae>',
+    from: 'Aegis AI <hello@lenooai.com>',
     to: lead.work_email,
     subject: `We've received your consultation request — Aegis AI`,
     html: `
@@ -85,7 +85,7 @@ export async function sendLeadAutoReply(lead: LeadData, companyPhone: string, co
           </ul>
           <p style="color:#666; font-size:13px; margin-top:32px; border-top:1px solid #e5e7eb; padding-top:16px;">
             Aegis AI · Dubai, UAE · Sun – Thu, 9am – 6pm GST<br>
-            <a href="https://aegisai.ae/privacy" style="color:#999;">Privacy Policy</a>
+            <a href="https://lenooai.com/privacy" style="color:#999;">Privacy Policy</a>
           </p>
         </div>
       </div>
@@ -99,7 +99,7 @@ export async function sendApplicationNotification(
 ): Promise<void> {
   const resend = getResend();
   await resend.emails.send({
-    from: 'Aegis AI Careers <noreply@aegisai.ae>',
+    from: 'Aegis AI Careers <noreply@lenooai.com>',
     to: adminEmail,
     subject: `New Application: ${esc(app.full_name)} for ${esc(app.job_title)}`,
     html: `
@@ -113,7 +113,7 @@ export async function sendApplicationNotification(
           ${app.linkedin_url ? `<tr><td style="padding:8px; font-weight:bold;">LinkedIn</td><td style="padding:8px;"><a href="${esc(app.linkedin_url)}">${esc(app.linkedin_url)}</a></td></tr>` : ''}
         </table>
         <p style="margin-top:24px; display:flex; gap:12px;">
-          <a href="https://aegisai.ae/admin/applications" style="background:#00e3fd; color:#0a0f1a; padding:10px 20px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;">View in Admin →</a>
+          <a href="https://lenooai.com/admin/applications" style="background:#00e3fd; color:#0a0f1a; padding:10px 20px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;">View in Admin →</a>
           <a href="${esc(app.cv_url)}" style="background:#f0f3ff; color:#00253b; padding:10px 20px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block; margin-left:8px;">Download CV →</a>
         </p>
       </div>
@@ -125,10 +125,10 @@ export async function sendStaleLeadDigest(leads: LeadData[], adminEmail: string)
   if (!leads.length) return;
   const resend = getResend();
   const rows = leads.map(l =>
-    `<tr><td style="padding:8px;">${esc(l.full_name)}</td><td style="padding:8px;">${esc(l.company_name)}</td><td style="padding:8px;"><a href="https://wa.me/${(l.whatsapp ?? '').replace(/\D/g, '')}">WhatsApp</a></td><td style="padding:8px;"><a href="https://aegisai.ae/admin/leads/${esc(l.id)}">View</a></td></tr>`
+    `<tr><td style="padding:8px;">${esc(l.full_name)}</td><td style="padding:8px;">${esc(l.company_name)}</td><td style="padding:8px;"><a href="https://wa.me/${(l.whatsapp ?? '').replace(/\D/g, '')}">WhatsApp</a></td><td style="padding:8px;"><a href="https://lenooai.com/admin/leads/${esc(l.id)}">View</a></td></tr>`
   ).join('');
   await resend.emails.send({
-    from: 'Aegis AI <noreply@aegisai.ae>',
+    from: 'Aegis AI <noreply@lenooai.com>',
     to: adminEmail,
     subject: `⏰ ${leads.length} lead${leads.length > 1 ? 's' : ''} need follow-up — Aegis AI`,
     html: `
@@ -143,7 +143,7 @@ export async function sendStaleLeadDigest(leads: LeadData[], adminEmail: string)
           </tr></thead>
           <tbody>${rows}</tbody>
         </table>
-        <p><a href="https://aegisai.ae/admin/leads" style="background:#00e3fd; color:#0a0f1a; padding:10px 20px; text-decoration:none; border-radius:6px; font-weight:bold;">View All Leads →</a></p>
+        <p><a href="https://lenooai.com/admin/leads" style="background:#00e3fd; color:#0a0f1a; padding:10px 20px; text-decoration:none; border-radius:6px; font-weight:bold;">View All Leads →</a></p>
       </div>
     `,
   });

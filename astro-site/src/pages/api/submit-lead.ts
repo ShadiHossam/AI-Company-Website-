@@ -135,7 +135,7 @@ export const POST: APIRoute = async ({ request }) => {
       await sendLeadAutoReply(
         lead,
         cfg['company.phone'] ?? '+971 4 321 8888',
-        cfg['company.email'] ?? 'hello@aegisai.ae',
+        cfg['company.email'] ?? 'hello@lenooai.com',
         cfg['company.whatsapp'] ?? '971501234567',
       );
 

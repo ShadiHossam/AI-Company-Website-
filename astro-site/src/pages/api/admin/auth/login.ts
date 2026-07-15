@@ -23,7 +23,7 @@ function checkLoginRateLimit(ip: string): boolean {
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const origin = request.headers.get('origin');
-  const siteUrl = import.meta.env.SITE_URL ?? 'https://aegisai.ae';
+  const siteUrl = import.meta.env.SITE_URL ?? 'https://lenooai.com';
   if (!import.meta.env.DEV && origin !== siteUrl) {
     return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
   }

@@ -3,8 +3,8 @@
 // exact string match — comparing against a single SITE_URL value silently rejects
 // legitimate visitors on every domain except whichever one SITE_URL is set to.
 const TRUSTED_ORIGINS = new Set([
-  'https://aegisai.ae',
-  'https://www.aegisai.ae',
+  'https://lenooai.com',
+  'https://www.lenooai.com',
   'https://aicompany.usine.site',
 ]);
 
