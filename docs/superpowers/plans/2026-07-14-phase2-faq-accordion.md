@@ -17,7 +17,7 @@
 **Files:**
 - Create: `astro-site/src/components/FaqAccordion.astro`
 
-- [ ] **Step 1: Write the component**
+- [x] **Step 1: Write the component**
 
 ```astro
 ---
@@ -57,12 +57,12 @@ const { items } = Astro.props;
 
 This is a byte-for-byte port of the markup/CSS already used identically in 11 of the 13 target files (`services.astro`, `ai-agents.astro`, `ai-automation.astro`, `ai-integration.astro`, `ai-model-finetuning.astro`, `claude-agent-builds.astro`, `custom-ai-development.astro`, `custom-gpt-development.astro`, `internal-ai-tools.astro`, `prompt-engineering.astro`, `vibe-coding.astro`) — no design decisions made here, just relocated. `ai-strategy.astro` and `ai-training.astro` currently use a different (CSS-less, broken) SVG icon variant; Task 3 migrates them onto this same component, which fixes their bug as a side effect.
 
-- [ ] **Step 2: Verify the file is syntactically valid**
+- [x] **Step 2: Verify the file is syntactically valid**
 
 Run: `cd astro-site && npx astro check --root . 2>&1 | grep -i "FaqAccordion" || echo "no FaqAccordion-specific errors"`
 Expected: no errors referencing this new file (the command may hit the pre-existing `astro check` memory limit for the whole project — if so, this specific verification is inconclusive and Task 2's build check is the real gate).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add astro-site/src/components/FaqAccordion.astro
@@ -88,7 +88,7 @@ git commit -m "feat: add shared FaqAccordion component"
 
 Each of these 11 files needs the identical 3-part transformation. Worked example using `services/ai-agents.astro`:
 
-- [ ] **Step 1: Add the import**
+- [x] **Step 1: Add the import**
 
 Current frontmatter top (line 2-3):
 ```astro
@@ -104,7 +104,7 @@ import { getSupabaseAdmin } from "../../lib/supabase";
 import FaqAccordion from "../../components/FaqAccordion.astro";
 ```
 
-- [ ] **Step 2: Replace the accordion markup**
+- [x] **Step 2: Replace the accordion markup**
 
 Current (`services/ai-agents.astro:288-297`, indentation/exact whitespace varies slightly per file — match what's actually there):
 ```astro
@@ -128,7 +128,7 @@ Replace with:
 
 (Every one of these 11 files uses the variable name `faqItems` for its FAQ array — confirmed via grep across all 13 files. If any file uses a different variable name, use that file's actual variable name instead — check before editing, don't assume.)
 
-- [ ] **Step 3: Delete the now-duplicate CSS rules from the page's own `<style>` block**
+- [x] **Step 3: Delete the now-duplicate CSS rules from the page's own `<style>` block**
 
 Each file has these exact 6 lines somewhere in its `<style>` block (line numbers below are current as of this plan being written — verify with grep before editing since earlier edits in this same task will not shift other files' line numbers, but re-verify each file individually):
 
@@ -159,22 +159,22 @@ Delete all 6 lines (they're consecutive in every file). Known current line numbe
 
 For `services.astro`: check via `grep -n "faq-item\|faq-btn\|faq-body\|faq-icon" astro-site/src/pages/services.astro` — if it returns CSS rule matches (not just the markup match), delete them the same way as the other files; if it only returns the markup match (no CSS block), there's nothing to delete for this file, move on.
 
-- [ ] **Step 4: Verify each file after editing it**
+- [x] **Step 4: Verify each file after editing it**
 
 For each file, run: `grep -n "faq-item\|faq-btn\|faq-body\|faq-icon" <file>` — expected: zero matches (both markup and CSS should be fully gone, replaced by the `<FaqAccordion>` usage and the component import).
 
 Also run: `grep -n "FaqAccordion" <file>` — expected: 2 matches (the import line, and the `<FaqAccordion items={faqItems} />` usage).
 
-- [ ] **Step 5: Build after all 11 files are migrated**
+- [x] **Step 5: Build after all 11 files are migrated**
 
 Run: `cd astro-site && npm run build`
 Expected: succeeds with no errors.
 
-- [ ] **Step 6: Visual spot-check**
+- [x] **Step 6: Visual spot-check**
 
 Run: `npm run dev`, open `/services`, `/services/ai-agents`, `/services/vibe-coding`, `/services/internal-ai-tools` (pick 4 of the 11 as a sample) — confirm the FAQ section still renders and the accordion still expands/collapses on click (the `toggleFaq` global function is unchanged, so this should just work — but verify, don't assume).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add astro-site/src/pages/services.astro astro-site/src/pages/services/ai-agents.astro astro-site/src/pages/services/ai-automation.astro astro-site/src/pages/services/ai-integration.astro astro-site/src/pages/services/ai-model-finetuning.astro astro-site/src/pages/services/claude-agent-builds.astro astro-site/src/pages/services/custom-ai-development.astro astro-site/src/pages/services/custom-gpt-development.astro astro-site/src/pages/services/internal-ai-tools.astro astro-site/src/pages/services/prompt-engineering.astro astro-site/src/pages/services/vibe-coding.astro
@@ -191,7 +191,7 @@ git commit -m "refactor: migrate 11 services pages to shared FaqAccordion compon
 
 These two currently render a flattened one-line variant with an inline SVG "+" icon that has **no matching CSS** (confirmed: `grep -n "\.faq-icon"` on both files' `<style>` blocks returns zero matches — the rotate-on-open animation these SVGs visually imply doesn't exist). Migrating them to `FaqAccordion` intentionally changes their icon from the broken SVG to the working text "+" used everywhere else on the site — this is a deliberate bug fix, not an oversight, and should look like the other 11 pages' FAQ section after this change.
 
-- [ ] **Step 1: Confirm current content in `ai-strategy.astro`**
+- [x] **Step 1: Confirm current content in `ai-strategy.astro`**
 
 Run: `grep -n -B2 -A2 "faq-item" astro-site/src/pages/services/ai-strategy.astro`
 Expected: a single-line block matching:
@@ -200,38 +200,38 @@ Expected: a single-line block matching:
 ```
 (this line is inside a `{faqItems.map((item) => ( ... ))}` block — read a few lines above/below to see the exact wrapping `<div>` and `.map()` call before editing)
 
-- [ ] **Step 2: Add the import to `ai-strategy.astro`**
+- [x] **Step 2: Add the import to `ai-strategy.astro`**
 
 Find this file's existing imports (top of frontmatter) and add:
 ```astro
 import FaqAccordion from "../../components/FaqAccordion.astro";
 ```
 
-- [ ] **Step 3: Replace the whole `{faqItems.map(...)}` block in `ai-strategy.astro`**
+- [x] **Step 3: Replace the whole `{faqItems.map(...)}` block in `ai-strategy.astro`**
 
 Replace the entire wrapping `<div>{faqItems.map((item) => ( ...single-line faq-item... ))}</div>` block with:
 ```astro
     <FaqAccordion items={faqItems} />
 ```
 
-- [ ] **Step 4: Verify no CSS needs deleting in `ai-strategy.astro`**
+- [x] **Step 4: Verify no CSS needs deleting in `ai-strategy.astro`**
 
 Run: `grep -n "faq-item\|faq-btn\|faq-body\|faq-icon" astro-site/src/pages/services/ai-strategy.astro` — expected: zero matches (this file never had `.faq-item`/`.faq-btn`/`.faq-body` CSS rules to begin with per the earlier audit, only the markup, which is now gone).
 
-- [ ] **Step 5: Repeat Steps 1-4 for `ai-training.astro`**
+- [x] **Step 5: Repeat Steps 1-4 for `ai-training.astro`**
 
 Same procedure — confirm current content via `grep -n -B2 -A2 "faq-item" astro-site/src/pages/services/ai-training.astro`, add the same import, replace the same shape of block with `<FaqAccordion items={faqItems} />`, verify no CSS to delete.
 
-- [ ] **Step 6: Build**
+- [x] **Step 6: Build**
 
 Run: `cd astro-site && npm run build`
 Expected: succeeds with no errors.
 
-- [ ] **Step 7: Visual check — confirm the fix**
+- [x] **Step 7: Visual check — confirm the fix**
 
 Run: `npm run dev`, open `/services/ai-strategy` and `/services/ai-training`. Click a FAQ item on each page. Confirm: (a) the icon is now the text "+" that rotates 45° to look like an "×" when opened (matching every other services page), not the old static SVG, and (b) the accordion opens/closes correctly.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add astro-site/src/pages/services/ai-strategy.astro astro-site/src/pages/services/ai-training.astro
