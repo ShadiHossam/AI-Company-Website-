@@ -1,0 +1,200 @@
+---
+interface Testimonial {
+  client_name: string;
+  client_title: string | null;
+  client_company: string | null;
+  industry: string | null;
+  client_image_url: string | null;
+  quote: string;
+}
+
+interface Props {
+  testimonials: Testimonial[];
+}
+
+const { testimonials } = Astro.props;
+
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map((part) => part[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+}
+---
+
+<div class="tcarousel" data-testimonial-carousel>
+  <div class="tcarousel-track" data-testimonial-track role="region" aria-label="Client testimonials" tabindex="0">
+    {testimonials.map((t) => (
+      <figure class="testimonial-card" data-testimonial-card>
+        <span class="material-symbols-outlined testimonial-quote-icon" aria-hidden="true">format_quote</span>
+        <blockquote class="testimonial-quote">{t.quote}</blockquote>
+        <figcaption class="testimonial-footer">
+          {t.client_image_url ? (
+            <img class="testimonial-avatar" src={t.client_image_url} alt={t.client_name} loading="lazy" width="48" height="48" />
+          ) : (
+            <span class="testimonial-avatar testimonial-avatar-initials" aria-hidden="true">{getInitials(t.client_name)}</span>
+          )}
+          <div>
+            <p class="testimonial-name">{t.client_name}</p>
+            <p class="testimonial-role">{[t.client_title, t.client_company].filter(Boolean).join(', ')}</p>
+          </div>
+          {t.industry && <span class="testimonial-industry">{t.industry}</span>}
+        </figcaption>
+      </figure>
+    ))}
+  </div>
+  {testimonials.length > 1 && (
+    <div class="tcarousel-controls">
+      <button type="button" class="tcarousel-btn" data-testimonial-prev aria-label="Previous testimonial">
+        <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+      </button>
+      <div class="tcarousel-dots" role="tablist" aria-label="Testimonial navigation">
+        {testimonials.map((_, i) => (
+          <button
+            type="button"
+            class="tcarousel-dot"
+            data-testimonial-dot
+            data-index={i}
+            role="tab"
+            aria-selected={i === 0 ? "true" : "false"}
+            aria-label={`Go to testimonial ${i + 1}`}
+          ></button>
+        ))}
+      </div>
+      <button type="button" class="tcarousel-btn" data-testimonial-next aria-label="Next testimonial">
+        <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+      </button>
+    </div>
+  )}
+</div>
+
+<style>
+.tcarousel { display: flex; flex-direction: column; gap: 1.5rem; }
+.tcarousel-track {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding-block: 0.25rem;
+  padding-inline: 0.25rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.tcarousel-track::-webkit-scrollbar { display: none; }
+.tcarousel-track:focus-visible { outline: 2px solid #006875; outline-offset: 4px; }
+
+.testimonial-card {
+  background: #fff; border: 1px solid rgba(0,37,59,0.08);
+  border-radius: 20px; padding: 2rem;
+  box-shadow: var(--shadow-card);
+  display: flex; flex-direction: column;
+  margin: 0;
+  transition: box-shadow .25s var(--ease), transform .25s var(--ease);
+  flex: 0 0 calc(33.333% - 1rem);
+  min-width: 280px;
+  scroll-snap-align: start;
+}
+.testimonial-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-4px); }
+.testimonial-quote-icon { color: #00e3fd; font-size: 34px; margin-bottom: 0.75rem; }
+.testimonial-quote { margin: 0 0 1.75rem; color: #42474e; line-height: 1.8; font-size: 0.9375rem; flex: 1; }
+.testimonial-footer {
+  display: flex; align-items: center; gap: 12px;
+  padding-top: 1.25rem; margin: 0;
+  border-top: 1px solid rgba(0,37,59,0.08);
+}
+.testimonial-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.testimonial-avatar-initials {
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #00253b, #006875);
+  color: #fff; font-weight: 700; font-size: 0.9375rem; letter-spacing: 0.02em;
+}
+.testimonial-name { margin: 0; font-weight: 700; font-size: 0.9375rem; color: #00253b; }
+.testimonial-role { margin: 0; font-size: 0.8125rem; color: #72787e; }
+.testimonial-industry {
+  margin-inline-start: auto;
+  font-size: 0.6875rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: #004f58;
+  background: rgba(0,104,117,0.10);
+  border: 1px solid rgba(0,104,117,0.20);
+  border-radius: 100px; padding: 3px 10px;
+  white-space: nowrap;
+}
+
+.tcarousel-controls { display: flex; align-items: center; justify-content: center; gap: 1.5rem; }
+.tcarousel-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: #f0f3ff; border: 1px solid rgba(0,37,59,0.10);
+  color: #00253b; cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.tcarousel-btn:hover { background: #00253b; color: #fff; }
+.tcarousel-btn:focus-visible { outline: 2px solid #006875; outline-offset: 2px; }
+.tcarousel-dots { display: flex; gap: 8px; }
+.tcarousel-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(0,37,59,0.18); border: none; padding: 0; cursor: pointer;
+  transition: background .2s, transform .2s;
+}
+.tcarousel-dot[aria-selected="true"] { background: #006875; transform: scale(1.3); }
+.tcarousel-dot:focus-visible { outline: 2px solid #006875; outline-offset: 2px; }
+
+@media (max-width: 900px) {
+  .testimonial-card { flex: 0 0 calc(50% - 0.75rem); }
+}
+@media (max-width: 600px) {
+  .testimonial-card { flex: 0 0 calc(100% - 0.5rem); }
+}
+</style>
+
+<script>
+document.querySelectorAll<HTMLElement>('[data-testimonial-carousel]').forEach((root) => {
+  const track = root.querySelector<HTMLElement>('[data-testimonial-track]');
+  const cards = Array.from(root.querySelectorAll<HTMLElement>('[data-testimonial-card]'));
+  const prevBtn = root.querySelector<HTMLButtonElement>('[data-testimonial-prev]');
+  const nextBtn = root.querySelector<HTMLButtonElement>('[data-testimonial-next]');
+  const dots = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-testimonial-dot]'));
+  if (!track || cards.length === 0) return;
+
+  let activeIndex = 0;
+
+  function setActive(index: number) {
+    activeIndex = index;
+    dots.forEach((dot, i) => {
+      dot.setAttribute('aria-selected', i === index ? 'true' : 'false');
+    });
+  }
+
+  function scrollToIndex(index: number) {
+    const clamped = Math.max(0, Math.min(index, cards.length - 1));
+    cards[clamped]?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+  }
+
+  prevBtn?.addEventListener('click', () => scrollToIndex(activeIndex - 1));
+  nextBtn?.addEventListener('click', () => scrollToIndex(activeIndex + 1));
+  dots.forEach((dot, i) => {
+    dot.addEventListener('click', () => scrollToIndex(i));
+  });
+
+  // Direction-agnostic active-card detection: works the same under LTR and RTL
+  // since IntersectionObserver reports visibility relative to the track's
+  // viewport, not an absolute scrollLeft coordinate.
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
+          const index = cards.indexOf(entry.target as HTMLElement);
+          if (index !== -1) setActive(index);
+        }
+      });
+    },
+    { root: track, threshold: [0.6] }
+  );
+  cards.forEach((card) => observer.observe(card));
+});
+</script>
