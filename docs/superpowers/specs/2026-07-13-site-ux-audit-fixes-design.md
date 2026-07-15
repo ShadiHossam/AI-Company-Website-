@@ -33,14 +33,16 @@ Scoped to what's actually live, per the database check above. `team_members` is 
 
 No new components needed. Straightforward deletions and one verified image swap.
 
-### Phase 2 — Shared services components (refactor, no visual change)
-Extract from the 12 duplicated services pages into `src/components/`:
-- `Tabs.astro` (replaces `data-agent-demo`, `data-roadmap-tabs`, `data-role-tabs`, `data-cab-tabs`, `data-iat-tab`, `data-ft-demo`, and toggle variants — same interaction, one implementation)
-- `FaqAccordion.astro`
-- `ProcessSteps.astro`
-- `StatStrip.astro`
+### Phase 2 — Shared services components (refactor, mostly no visual change)
 
-Migrate all 12 service pages + hub to use them. Behavior-preserving: no copy or layout changes, just de-duplication. This is what makes Phase 3's service-page work cheap instead of 12x.
+**Correction after reading all 13 files directly (2026-07-14):** the original framing ("extract 4 identical duplicated patterns") was wrong on two counts. First, the FAQ toggle *JS* is not duplicated at all — `toggleFaq()` already lives once in `src/scripts/site.ts` and every page calls the same global function; only markup/CSS is repeated. Second, none of the other three patterns are actually identical across all 13 files — each has real per-file variance (missing CSS, different content shapes, or genuinely different JS behavior), so "behavior-preserving, no changes" isn't achievable as stated. Extracting still pays off, but each component involves a real small decision, documented below instead of silently picked.
+
+- **`FaqAccordion.astro`** — markup/CSS only (JS already shared). 10 of 12 sub-pages + the hub use a working "+" icon with correct CSS; `ai-strategy.astro` and `ai-training.astro` use an inline SVG icon with **no matching CSS rule at all** (a pre-existing, silent bug — the open/close rotate animation these SVGs imply just doesn't fire). Decision: standardize all 13 on the working "+" icon variant; this incidentally fixes the 2 broken pages rather than propagating their bug into the shared component.
+- **`ProcessSteps.astro`** — only 10 of 13 files have this pattern in identical form (4-step static grid, byte-identical CSS). `ai-strategy.astro` uses a tabbed roadmap instead (conceptually similar slot, different implementation — migrates to the new `Tabs.astro`, not this component). `ai-training.astro` and the hub have no such section at all. Scope: migrate the 10, leave the other 3 as-is.
+- **`StatStrip.astro`** — not one pattern but three real implementations plus 2 pages with none: named-class version (`ai-automation`, `ai-integration`, `vibe-coding`), inline-only version with the same visual result (`ai-agents`, `ai-model-finetuning`, `claude-agent-builds`, `custom-gpt-development`, `prompt-engineering`), and a `.stat-number`-class-with-no-CSS version that also varies in count — 1 stat (`ai-strategy`) vs. 3 (`ai-training`, using a `<div>` instead of `<p>`). Decision: one component taking an array of `{ value, caption }` (length 1-3), grid columns computed from array length, so all three groups' actual visual output (which already looks the same to a site visitor — same colors/sizes) converges into one implementation. `services.astro` (hub) and `internal-ai-tools.astro` have no stat strip — not touched.
+- **`Tabs.astro`** — two JS "families" already exist with real behavioral differences, not just naming: Family A (5 files: `ai-agents`, `ai-integration`, `ai-model-finetuning`, `ai-strategy`, `ai-training`) has no ARIA panel wiring (`role="tabpanel"`/`id`/`aria-controls` are all missing) and queries are wrapper-scoped. Family B (5 files: `claude-agent-builds`, `custom-ai-development`, `internal-ai-tools`, `prompt-engineering`, `vibe-coding`) has full ARIA wiring, but 4 of its 5 instances query `document.querySelectorAll` unscoped (a latent bug if two tab widgets ever land on one page — currently harmless since each page only has one, but not safe to copy forward as a shared component's default). Decision: the new component uses Family B's full ARIA wiring + `claude-agent-builds.astro`'s scoped-to-root query pattern (the one file that already avoids the unscoped-query issue) — the safest behavior already proven in the codebase, not a novel design. `services.astro`'s category-filter widget (`data-service-filter`/`data-cat`) is a 10th, distinct interactive pattern (filtering, not tab-panel-swapping) — out of scope for `Tabs.astro`, left as-is.
+
+Migrate the files that actually have each pattern (see per-component scope above — not a uniform "all 12 + hub" for every component). This is what makes Phase 3's service-page work cheap instead of 12x.
 
 ### Phase 3 — New interactive features
 Ranked by reuse value:
