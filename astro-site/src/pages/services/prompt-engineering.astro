@@ -3,6 +3,7 @@ export const prerender = false;
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getSupabaseAdmin } from "../../lib/supabase";
 import FaqAccordion from "../../components/FaqAccordion.astro";
+import ProcessSteps from "../../components/ProcessSteps.astro";
 
 const fallbackFaqs = [
   { question: "What does a prompt engineering engagement actually look like?", answer: "It depends on your starting point. For teams already using AI heavily, we start with a prompt audit: reviewing your existing prompts, identifying where output quality is inconsistent, and rewriting the worst offenders. For teams building AI features or workflows, we join the design process early and write the system prompts from scratch. Either way, you end up with a documented prompt library that's easy to maintain and update." },
@@ -40,6 +41,13 @@ const faqLdJson = {
     acceptedAnswer: { '@type': 'Answer', text: f.answer },
   })),
 };
+
+const processSteps = [
+  { icon: "search", step: "Step 1", title: "Audit", description: "We review your existing prompts, workflows, and outputs, and score exactly what's broken and why." },
+  { icon: "edit", step: "Step 2", title: "Engineer", description: "We rewrite, restructure, and rebuild your prompts using proven engineering techniques tailored to your model and use case." },
+  { icon: "science", step: "Step 3", title: "Test & Refine", description: "Structured A/B testing across real scenarios. We measure, compare, and refine until performance meets the bar we set together." },
+  { icon: "library_books", step: "Step 4", title: "Deliver & Train", description: "You get the full prompt library, documentation, and a team training session so you can maintain and build on it yourself." },
+];
 
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
@@ -241,41 +249,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     <div class="section-header">
       <h2 id="process-heading">How a Prompt Engineering Engagement Works</h2>
     </div>
-    <div class="process-grid">
-      <div class="process-connector"></div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">search</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 1</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Audit</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We review your existing prompts, workflows, and outputs, and score exactly what's broken and why.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">edit</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 2</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Engineer</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We rewrite, restructure, and rebuild your prompts using proven engineering techniques tailored to your model and use case.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">science</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 3</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Test & Refine</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Structured A/B testing across real scenarios. We measure, compare, and refine until performance meets the bar we set together.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">library_books</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 4</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Deliver & Train</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">You get the full prompt library, documentation, and a team training session so you can maintain and build on it yourself.</p>
-      </div>
-    </div>
+    <ProcessSteps steps={processSteps} />
   </div>
 </section>
 
@@ -335,10 +309,6 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
 <style>
 .icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
 .builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
-.process-step { display:flex; flex-direction:column; align-items:center; text-align:center; }
-.process-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#00253b,#006875); box-shadow:0 0 0 6px #fff, 0 0 0 8px rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; position:relative; z-index:1; }
-.process-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2rem; position:relative; }
-.process-connector { position:absolute; top:27px; left:calc(12.5% + 28px); right:calc(12.5% + 28px); height:2px; background:linear-gradient(90deg,#00e3fd,rgba(0,37,59,0.20)); }
 .pe-ba-grid { display:grid; grid-template-columns:1fr 1.1fr; gap:1.5rem; align-items:stretch; }
 .pe-ba-toggle { display:flex; gap:0.5rem; background:#f0f3ff; border-radius:12px; padding:4px; }
 .pe-ba-btn { flex:1; padding:0.625rem 1rem; border:none; background:none; border-radius:8px; font-weight:600; font-size:0.875rem; color:#42474e; cursor:pointer; transition:background .2s, color .2s; font-family:inherit; }

@@ -3,6 +3,7 @@ export const prerender = false;
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getSupabaseAdmin } from "../../lib/supabase";
 import FaqAccordion from "../../components/FaqAccordion.astro";
+import ProcessSteps from "../../components/ProcessSteps.astro";
 
 const fallbackFaqs = [
   { question: "What's the difference between an AI agent and a chatbot?", answer: "A chatbot responds to questions. An AI agent takes actions. Agents can browse the web, write and send emails, update your CRM, book meetings, run searches, call APIs, and chain multiple steps together without waiting to be told what to do next. They're autonomous problem-solvers, not just answer machines." },
@@ -41,6 +42,13 @@ const faqLdJson = {
     acceptedAnswer: { '@type': 'Answer', text: f.answer },
   })),
 };
+
+const processSteps = [
+  { icon: "target", step: "Step 1", title: "Define the Mission", description: "We scope exactly what your agent needs to do, what tools it needs access to, and where humans stay in the loop." },
+  { icon: "extension", step: "Step 2", title: "Build & Connect", description: "We build the agent, connect it to your tools, train it on your context, and define guardrails for safe operation." },
+  { icon: "science", step: "Step 3", title: "Test Rigorously", description: "We stress-test with edge cases, adversarial inputs, and real scenarios to ensure the agent behaves as expected before going live." },
+  { icon: "monitoring", step: "Step 4", title: "Monitor & Improve", description: "Full audit logs, performance dashboards, and 90-day support ensure your agent keeps improving after launch." },
+];
 
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
@@ -242,41 +250,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     <div style="border-radius:20px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 20px 48px rgba(0,59,92,0.10);">
       <img src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1200&q=80&auto=format&fit=crop" alt="AI-powered retail floor in Dubai where an agent monitors stock and pricing" loading="lazy" width="1200" height="320" style="width:100%; height:clamp(180px, 26vw, 320px); object-fit:cover; display:block;" />
     </div>
-    <div class="process-grid">
-      <div class="process-connector"></div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">target</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 1</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Define the Mission</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We scope exactly what your agent needs to do, what tools it needs access to, and where humans stay in the loop.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">extension</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 2</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Build &amp; Connect</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We build the agent, connect it to your tools, train it on your context, and define guardrails for safe operation.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">science</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 3</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Test Rigorously</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We stress-test with edge cases, adversarial inputs, and real scenarios to ensure the agent behaves as expected before going live.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">monitoring</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 4</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Monitor &amp; Improve</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Full audit logs, performance dashboards, and 90-day support ensure your agent keeps improving after launch.</p>
-      </div>
-    </div>
+    <ProcessSteps steps={processSteps} />
   </div>
 </section>
 
@@ -351,10 +325,6 @@ document.querySelectorAll('[data-agent-demo]').forEach((demo) => {
 <style>
 .icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
 .builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
-.process-step { display:flex; flex-direction:column; align-items:center; text-align:center; }
-.process-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#00253b,#006875); box-shadow:0 0 0 6px #fff, 0 0 0 8px rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; position:relative; z-index:1; }
-.process-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2rem; position:relative; }
-.process-connector { position:absolute; top:27px; left:calc(12.5% + 28px); right:calc(12.5% + 28px); height:2px; background:linear-gradient(90deg,#00e3fd,rgba(0,37,59,0.20)); }
 .explain-split { display:grid; grid-template-columns:1.3fr 1fr; gap:3rem; align-items:center; max-width:1080px; margin:0 auto; }
 .explain-img-wrap { border-radius:20px; overflow:hidden; box-shadow:0 20px 48px rgba(0,59,92,0.12); }
 .explain-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; min-height:280px; }

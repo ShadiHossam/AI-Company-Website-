@@ -3,6 +3,7 @@ export const prerender = false;
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getSupabaseAdmin } from "../../lib/supabase";
 import FaqAccordion from "../../components/FaqAccordion.astro";
+import ProcessSteps from "../../components/ProcessSteps.astro";
 
 const fallbackFaqs = [
   { question: "Why build on leading AI models?", answer: "Our AI agents are built on models designed with a focus on safety, instruction-following, and long-context reasoning. For business applications, that translates to agents that follow rules reliably, handle complex multi-step tasks without going off-script, and deal gracefully with ambiguous situations. They perform particularly well on tasks that require reading and reasoning over large documents, maintaining consistent behavior across long conversations, and operating within strict guardrails." },
@@ -40,6 +41,13 @@ const faqLdJson = {
     acceptedAnswer: { '@type': 'Answer', text: f.answer },
   })),
 };
+
+const processSteps = [
+  { icon: "target", step: "Step 1", title: "Define the Mission", description: "We scope the agent's goals, the tools it needs, and where humans stay in the loop for high-stakes decisions." },
+  { icon: "extension", step: "Step 2", title: "Build & Connect", description: "We build the agent, wire it to your tools and data sources, write the system prompts, and configure guardrails." },
+  { icon: "science", step: "Step 3", title: "Test Rigorously", description: "We stress-test with edge cases, adversarial inputs, and real workflow scenarios before anything touches production." },
+  { icon: "monitoring", step: "Step 4", title: "Deploy & Monitor", description: "Full audit logs, performance dashboards, and 90-day support. Your agent keeps improving after launch." },
+];
 
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
@@ -306,41 +314,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     <div class="section-header">
       <h2 id="process-heading">How We Build and Deploy Your AI Agent</h2>
     </div>
-    <div class="process-grid">
-      <div class="process-connector"></div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">target</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 1</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Define the Mission</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We scope the agent's goals, the tools it needs, and where humans stay in the loop for high-stakes decisions.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">extension</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 2</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Build & Connect</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We build the agent, wire it to your tools and data sources, write the system prompts, and configure guardrails.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">science</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 3</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Test Rigorously</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We stress-test with edge cases, adversarial inputs, and real workflow scenarios before anything touches production.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">monitoring</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 4</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Deploy & Monitor</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Full audit logs, performance dashboards, and 90-day support. Your agent keeps improving after launch.</p>
-      </div>
-    </div>
+    <ProcessSteps steps={processSteps} />
   </div>
 </section>
 
@@ -400,10 +374,6 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
 <style>
 .icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
 .builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
-.process-step { display:flex; flex-direction:column; align-items:center; text-align:center; }
-.process-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#00253b,#006875); box-shadow:0 0 0 6px #fff, 0 0 0 8px rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; position:relative; z-index:1; }
-.process-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2rem; position:relative; }
-.process-connector { position:absolute; top:27px; left:calc(12.5% + 28px); right:calc(12.5% + 28px); height:2px; background:linear-gradient(90deg,#00e3fd,rgba(0,37,59,0.20)); }
 @media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } }
 @media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
 </style>

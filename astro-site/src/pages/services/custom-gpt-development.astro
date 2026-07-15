@@ -3,6 +3,7 @@ export const prerender = false;
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getSupabaseAdmin } from "../../lib/supabase";
 import FaqAccordion from "../../components/FaqAccordion.astro";
+import ProcessSteps from "../../components/ProcessSteps.astro";
 
 const fallbackFaqs = [
   { question: "What exactly is a custom AI assistant?", answer: "A custom AI assistant is a language model configured specifically for your business. You define its purpose, provide knowledge files (your docs, SOPs, product info), and optionally connect it to external systems via API. It behaves according to your rules, knows your content, and can be shared with your team or customers, all without your team writing a single line of code." },
@@ -40,6 +41,13 @@ const faqLdJson = {
     acceptedAnswer: { '@type': 'Answer', text: f.answer },
   })),
 };
+
+const processSteps = [
+  { icon: "description", step: "Step 1", title: "Brief & Scope", description: "We define the assistant's purpose, audience, and what knowledge it needs to do its job." },
+  { icon: "upload_file", step: "Step 2", title: "Build & Train", description: "We configure the system prompt, upload your knowledge files, set up any API connections, and apply your brand rules." },
+  { icon: "science", step: "Step 3", title: "Test & Refine", description: "We run it through real scenarios, edge cases, and adversarial questions, then tune until it performs exactly as intended." },
+  { icon: "rocket_launch", step: "Step 4", title: "Deploy & Hand Off", description: "We publish it to your team or customers, train your admins on how to update it, and hand over full ownership." },
+];
 
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
@@ -221,41 +229,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
       <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1200&q=80&auto=format&fit=crop" alt="Team collaborating on an AI assistant build" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
     </div>
-    <div class="process-grid">
-      <div class="process-connector"></div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">description</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 1</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Brief & Scope</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We define the assistant's purpose, audience, and what knowledge it needs to do its job.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">upload_file</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 2</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Build & Train</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We configure the system prompt, upload your knowledge files, set up any API connections, and apply your brand rules.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">science</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 3</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Test & Refine</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We run it through real scenarios, edge cases, and adversarial questions, then tune until it performs exactly as intended.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">rocket_launch</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 4</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Deploy & Hand Off</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We publish it to your team or customers, train your admins on how to update it, and hand over full ownership.</p>
-      </div>
-    </div>
+    <ProcessSteps steps={processSteps} />
   </div>
 </section>
 
@@ -322,10 +296,6 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
 <style>
 .icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
 .builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
-.process-step { display:flex; flex-direction:column; align-items:center; text-align:center; }
-.process-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#00253b,#006875); box-shadow:0 0 0 6px #fff, 0 0 0 8px rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; position:relative; z-index:1; }
-.process-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2rem; position:relative; }
-.process-connector { position:absolute; top:27px; left:calc(12.5% + 28px); right:calc(12.5% + 28px); height:2px; background:linear-gradient(90deg,#00e3fd,rgba(0,37,59,0.20)); }
 .cgd-flip-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
 .cgd-flip { perspective:1200px; height:190px; cursor:pointer; }
 .cgd-flip-inner { position:relative; width:100%; height:100%; transition:transform .6s var(--ease); transform-style:preserve-3d; }

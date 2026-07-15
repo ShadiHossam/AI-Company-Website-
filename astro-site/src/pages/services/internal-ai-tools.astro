@@ -3,6 +3,7 @@ export const prerender = false;
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getSupabaseAdmin } from "../../lib/supabase";
 import FaqAccordion from "../../components/FaqAccordion.astro";
+import ProcessSteps from "../../components/ProcessSteps.astro";
 
 const fallbackFaqs = [
   { question: "What data do you train the internal AI on?", answer: "We train on whatever your team actually uses: company wikis, SOPs, policies, product docs, past projects, support tickets, internal documents, and more. The AI becomes a true company expert, not a generic one." },
@@ -41,6 +42,13 @@ const faqLdJson = {
     acceptedAnswer: { '@type': 'Answer', text: f.answer },
   })),
 };
+
+const processSteps = [
+  { icon: "folder_open", step: "Step 1", title: "Data Audit", description: "We inventory your documents, wikis, and data sources, then identify what to include and how to structure it." },
+  { icon: "settings", step: "Step 2", title: "Build & Configure", description: "We ingest your data, configure the AI, set access permissions, and build the interface your team will actually use." },
+  { icon: "fact_check", step: "Step 3", title: "Test & Tune", description: "Your team tests real questions. We tune the responses, fix gaps, and ensure accuracy before launch." },
+  { icon: "rocket_launch", step: "Step 4", title: "Launch & Update", description: "Tool goes live with continuous document sync. 90-day support included to expand and refine." },
+];
 
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
@@ -270,41 +278,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     <div class="section-header">
       <h2 id="process-heading">From Your Data to a Working Tool</h2>
     </div>
-    <div class="process-grid">
-      <div class="process-connector"></div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">folder_open</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 1</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Data Audit</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We inventory your documents, wikis, and data sources, then identify what to include and how to structure it.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">settings</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 2</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Build &amp; Configure</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We ingest your data, configure the AI, set access permissions, and build the interface your team will actually use.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">fact_check</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 3</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Test &amp; Tune</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Your team tests real questions. We tune the responses, fix gaps, and ensure accuracy before launch.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">rocket_launch</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 4</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Launch &amp; Update</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Tool goes live with continuous document sync. 90-day support included to expand and refine.</p>
-      </div>
-    </div>
+    <ProcessSteps steps={processSteps} />
   </div>
 </section>
 
@@ -364,10 +338,6 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
 <style>
 .icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
 .builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
-.process-step { display:flex; flex-direction:column; align-items:center; text-align:center; }
-.process-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#00253b,#006875); box-shadow:0 0 0 6px #fff, 0 0 0 8px rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; position:relative; z-index:1; }
-.process-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2rem; position:relative; }
-.process-connector { position:absolute; top:27px; left:calc(12.5% + 28px); right:calc(12.5% + 28px); height:2px; background:linear-gradient(90deg,#00e3fd,rgba(0,37,59,0.20)); }
 .iat-dept-grid { display:grid; grid-template-columns:220px 1fr; gap:1.5rem; }
 .iat-dept-tabs { display:flex; flex-direction:column; gap:0.5rem; }
 .iat-dept-tab { display:flex; align-items:center; gap:0.625rem; padding:0.875rem 1.125rem; border-radius:12px; border:1px solid rgba(0,37,59,0.08); background:#fff; color:#42474e; font-weight:600; font-size:0.875rem; cursor:pointer; text-align:left; transition:background .2s, color .2s, border-color .2s; font-family:inherit; }

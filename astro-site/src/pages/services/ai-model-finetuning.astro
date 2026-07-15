@@ -3,6 +3,7 @@ export const prerender = false;
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getSupabaseAdmin } from "../../lib/supabase";
 import FaqAccordion from "../../components/FaqAccordion.astro";
+import ProcessSteps from "../../components/ProcessSteps.astro";
 
 const fallbackFaqs = [
   { question: "What's the difference between fine-tuning and using a prompt?", answer: "A prompt tells a general-purpose model how to behave in a specific situation. Fine-tuning trains the model on hundreds or thousands of examples so that behavior becomes the model's default, with no prompt required. The result is faster responses, lower token costs (shorter or no system prompt needed), and significantly more consistent output. Fine-tuning is worth it when you have a high-volume use case and need the model to perform a specific task reliably, at scale." },
@@ -40,6 +41,13 @@ const faqLdJson = {
     acceptedAnswer: { '@type': 'Answer', text: f.answer },
   })),
 };
+
+const processSteps = [
+  { icon: "dataset", step: "Step 1", title: "Data Collection", description: "We scope the task, identify training data sources, and build or curate the dataset, cleaning, formatting, and labeling as needed." },
+  { icon: "model_training", step: "Step 2", title: "Fine-Tune", description: "We run the training job with your data, monitoring loss curves and adjusting hyperparameters to prevent overfitting." },
+  { icon: "science", step: "Step 3", title: "Evaluate", description: "We benchmark the fine-tuned model against the base model on held-out test data, so you can see exactly how much it improved." },
+  { icon: "rocket_launch", step: "Step 4", title: "Deploy", description: "We integrate your fine-tuned model into your product or workflow, with documentation and post-launch support included." },
+];
 
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
@@ -230,41 +238,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     <div style="border-radius:20px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 20px 48px rgba(0,59,92,0.10);">
       <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&auto=format&fit=crop" alt="Evaluation dashboard comparing a fine-tuned model's accuracy against the base model before deployment" loading="lazy" width="1200" height="320" style="width:100%; height:clamp(180px, 26vw, 320px); object-fit:cover; display:block;" />
     </div>
-    <div class="process-grid">
-      <div class="process-connector"></div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">dataset</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 1</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Data Collection</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We scope the task, identify training data sources, and build or curate the dataset, cleaning, formatting, and labeling as needed.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">model_training</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 2</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Fine-Tune</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We run the training job with your data, monitoring loss curves and adjusting hyperparameters to prevent overfitting.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">science</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 3</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Evaluate</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We benchmark the fine-tuned model against the base model on held-out test data, so you can see exactly how much it improved.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-circle">
-          <span class="material-symbols-outlined" style="color:#00e3fd; font-size:22px;">rocket_launch</span>
-        </div>
-        <span style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Step 4</span>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:4px;">Deploy</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">We integrate your fine-tuned model into your product or workflow, with documentation and post-launch support included.</p>
-      </div>
-    </div>
+    <ProcessSteps steps={processSteps} />
   </div>
 </section>
 
@@ -353,10 +327,6 @@ document.querySelectorAll('[data-ft-demo]').forEach((demo) => {
 .ft-notes { list-style:none; padding:0; margin:0; }
 .ft-notes li { color:#42474e; font-size:0.875rem; line-height:1.7; padding:0.3rem 0 0.3rem 1.5rem; position:relative; }
 .ft-notes li::before { content:'•'; position:absolute; left:0.375rem; color:#006875; font-weight:700; }
-.process-step { display:flex; flex-direction:column; align-items:center; text-align:center; }
-.process-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#00253b,#006875); box-shadow:0 0 0 6px #fff, 0 0 0 8px rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; position:relative; z-index:1; }
-.process-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2rem; position:relative; }
-.process-connector { position:absolute; top:27px; left:calc(12.5% + 28px); right:calc(12.5% + 28px); height:2px; background:linear-gradient(90deg,#00e3fd,rgba(0,37,59,0.20)); }
 @media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } .explain-split { grid-template-columns:1fr; } .explain-img-wrap img { min-height:220px; } }
 @media(max-width:600px) { .ft-demo { padding:1.5rem; } }
 @media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
