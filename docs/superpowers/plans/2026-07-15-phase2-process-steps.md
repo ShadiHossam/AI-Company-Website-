@@ -221,6 +221,10 @@ git commit -m "refactor: migrate 10 services pages to shared ProcessSteps compon
 
 ---
 
+## Confirmed during Task 2's code-quality review: the dead `@media` CSS is by design, not an oversight
+
+The reviewer flagged that `.process-grid`/`.process-connector` references remain inside each file's combined `@media(max-width:900px) {...}` line after migration (e.g. `ai-agents.astro:342`). This is exactly what this plan's Architecture section called for: leaving those lines untouched rather than risk partial-line surgery across 10 files, since `ProcessSteps.astro` already ships its own equivalent `@media` block and Astro's per-component CSS scoping (`data-astro-cid-*`) makes the leftover page-level references provably unable to match anything (confirmed harmless by the reviewer's own analysis — no functional or visual impact). Recording this explicitly so it isn't mistaken for a missed cleanup step later.
+
 ## Notes for whoever picks up the next Phase 2 component
 
 - `StatStrip.astro` is next: 3 real implementations (named-class, inline-only, and a `.stat-number`-with-no-CSS variant that also varies in count — 1 stat vs. 3) across ~10 files, plus 2 pages (`services.astro` hub, `internal-ai-tools.astro`) with no stat strip at all. Needs a component accepting an array of 1-3 `{ value, caption }` items with grid columns computed from array length — a real design decision, not a mechanical port. Investigate each file's actual current markup before writing that plan, the same way this one and the FaqAccordion one did.
