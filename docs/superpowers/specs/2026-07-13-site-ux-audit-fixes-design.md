@@ -45,18 +45,23 @@ No new components needed. Straightforward deletions and one verified image swap.
 Migrate the files that actually have each pattern (see per-component scope above — not a uniform "all 12 + hub" for every component). This is what makes Phase 3's service-page work cheap instead of 12x.
 
 ### Phase 3 — New interactive features
-Ranked by reuse value:
-1. **ROI/time-savings calculator** (shared component: inputs like team size / hours-per-week on manual work / hourly cost → annual savings out). Placed on homepage, `services/ai-automation.astro`, `services/internal-ai-tools.astro`, `services/ai-agents.astro`, and one industries page as a pilot (`industries/logistics.astro`, since it already has fleet/fuel-shaped inputs).
-2. **Testimonials carousel** on the homepage, replacing the static 3-card grid that currently drops rows 4–6 the DB already returns.
-3. **Homepage picker**: add a second step so each of the 5 challenge buttons leads to a short follow-up instead of one static card.
-4. **Results page**: count-up stats + a before/after metric slider per case study.
-5. **Blog**: reading-progress bar, auto-generated table of contents on post pages, related-posts as a small carousel.
-6. **Careers**: department/location filter on the job list (fields already exist in the data).
-7. **Contact**: replace the stock hero image (already being fixed in Phase 1) with a live "we're open now" GST office-hours widget.
-8. **Services hub**: a 3-question "which service fits" quiz replacing the static "still not sure" strip.
-9. **Industries** (hospitality, real-estate, retail — logistics gets the calculator instead): a clickable pipeline diagram replacing the stock photo grids.
 
-Each is an independent unit: own component, own data needs, no cross-dependencies except items reusing the Phase 2 components.
+**Correction after reading the actual target pages directly (2026-07-15), in a git worktree run in parallel with Phase 2:** two of the originally-planned items turned out to already exist, fully built. Removed from scope below rather than duplicated:
+- **Blog reading-progress bar, table of contents, and related-posts** — all three already exist and work in `ArticleLayout.astro` (progress bar: lines ~102, ~517-526; auto-generated TOC from `<h2>`s with an `IntersectionObserver` active-section highlight: lines ~550-579; related-posts grid: lines ~220-237). Nothing to build here.
+- **Industries pipeline diagram** — `hospitality.astro` and `real-estate.astro` already have an interactive, accessible 3-stage "journey" tabs component (keyboard nav, ARIA tablist, one photo + copy per stage) that already does what a "clickable pipeline diagram" would do. Only `retail.astro` still has the plain static 3-photo grid this item was meant to replace — scope narrows from 3 files to 1.
+
+Remaining items, ranked by reuse value:
+1. **ROI/time-savings calculator** (shared component: inputs like team size / hours-per-week on manual work / hourly cost → annual savings out). Placed on homepage, `services/ai-automation.astro`, `services/internal-ai-tools.astro`, `services/ai-agents.astro`, and one industries page as a pilot (`industries/logistics.astro`, since it already has fleet/fuel-shaped inputs).
+2. **Testimonials carousel** on the homepage, replacing the static 3-card grid that currently drops rows 4–6 the DB already returns (confirmed: query fetches up to 6, fallback is 3 hardcoded, current markup is a plain `.bento-grid` with zero carousel/slider code anywhere on the page). Build with CSS scroll-snap + logical properties (not hardcoded `left`/`right`) so it works unmodified in Phase 4's RTL homepage port, rather than needing an LTR-only rebuild later.
+3. **Homepage picker**: add a second step. Confirmed: currently a single click swaps in one of 5 hardcoded static `.picker-panel` cards with no further interaction — needs a real second step, not just a description tweak.
+4. **Results page**: count-up stats (confirmed: `.result-pill`/`.result-val` are static text, zero animation JS on the page) — before/after metric slider deferred, no existing hook to build it against yet, revisit after count-up ships.
+5. ~~Blog~~ — already built, removed from scope (see correction above).
+6. **Careers**: department/location filter on the job list (confirmed: `department`/`location` already selected in the Supabase query, zero filter/search UI exists yet, functional or not).
+7. **Contact**: office-hours widget. Confirmed: no hero image exists (already removed in Phase 1), and office-hours info is scattered as static text in 4+ places (location card, footer, WhatsApp card, LD-JSON) with no single widget — a live "we're open now" GST widget would consolidate these rather than compete with a hero image.
+8. **Services hub**: a 3-question "which service fits" quiz replacing the static "still not sure" strip (confirmed still static: `.deciding-strip` with a CSS-gradient placeholder box, no quiz). **Blocked until Phase 2 fully merges** — this is the one Phase 3 item that touches `services.astro`, which Phase 2 is actively modifying.
+9. **Industries**: `retail.astro` only (see correction above) — replace its static 3-photo grid with a pipeline-style treatment matching the pattern hospitality/real-estate already established, for consistency across all three pages rather than inventing a 4th pattern.
+
+Each is an independent unit: own component, own data needs, no cross-dependencies except items reusing the Phase 2 components. Item 8 has a hard file-overlap dependency on Phase 2 (`services.astro`); everything else does not.
 
 ### Phase 4 — Arabic parity
 - Port the homepage rebuild (stat band, picker, testimonials, blog preview) from `index.astro` to `ar/index.astro`, using existing `ar_*` DB columns.
