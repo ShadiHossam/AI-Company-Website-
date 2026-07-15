@@ -240,6 +240,10 @@ git commit -m "fix: migrate ai-strategy and ai-training FAQ to FaqAccordion, fix
 
 ---
 
+## Found during Task 3's code-quality review: global.css FAQ collision (not fixed here, flagged for Phase 4)
+
+`src/styles/global.css:672` has its own unscoped `.faq-item`/`.faq-btn`/`.faq-body`/`.faq-icon` block, loaded on every page via `BaseLayout.astro`. It's load-bearing for ~29 other pages still using the raw `onclick="toggleFaq(this)"` pattern without `FaqAccordion` (`about.astro`, `careers.astro`, `contact.astro`, `products.astro`, `industries/*`, `jobs/[slug].astro`, and all `ar/*` pages) — can't be deleted yet. It also still applies to the 13 pages now migrated to `FaqAccordion.astro`, since Astro's scoped CSS only adds a selector, it doesn't suppress unscoped global rules targeting the same class names. Net effect on the 13 migrated pages: a minor double-border artifact (global sets `border-bottom`, the component sets `border-top` — both apply, visually stacking) and a latent (currently harmless, since no answer text is long enough) `max-height:500px` clip risk from the global rule that the component's `display:none/block` toggle doesn't override. Nothing is visibly broken today. This is exactly the "unify the two conflicting FAQ-accordion patterns... on one pattern sitewide" item already scoped for **Phase 4** in the design spec — resolve it there (once the ~29 other pages are migrated too, e.g. by moving them onto `FaqAccordion` or `<details>`) rather than as a partial fix now.
+
 ## Notes for whoever picks up the next Phase 2 component
 
 - `ProcessSteps.astro` is next: 10 of 13 files share an identical 4-step static grid (byte-identical CSS confirmed across samples). `ai-strategy.astro` uses a tabbed roadmap instead (belongs with the `Tabs.astro` work, not this component). `ai-training.astro` and `services.astro` (hub) have no such section — don't force one in.
