@@ -24,17 +24,21 @@ const isStaging = import.meta.env.IS_STAGING === 'true';
 // there would ship with zero CSP/clickjacking/MIME-sniffing protection. Applied
 // unconditionally so both deploy targets get them (redundant-but-harmless on Vercel,
 // since Response.headers.set() just overwrites the value Vercel already set).
+// Only the vendor origins for currently-configured integrations belong here — verified
+// against live site_config (2026-07-16): every integration.* key is empty except a
+// placeholder Mailchimp URL, so no tracking/chat vendor is actually wired up yet. Add an
+// origin back only when its integration is turned on for real in the admin settings.
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://connect.facebook.net https://snap.licdn.com https://analytics.tiktok.com https://static.hotjar.com https://script.hotjar.com https://www.clarity.ms https://intercomcdn.com https://widget.intercom.io https://js.crisp.chat https://embed.tawk.to https://js-cdn.hubspot.com",
+  "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "font-src 'self' https://fonts.gstatic.com",
+  "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: blob: https:",
-  "connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://px.ads.linkedin.com https://analytics.tiktok.com https://*.hotjar.com https://*.hotjar.io https://api.intercom.io https://*.crisp.chat https://*.tawk.to https://api.hubspot.com",
+  "connect-src 'self' https://*.supabase.co",
   // 'self' is required for the sandboxed snippet-preview iframe (admin/settings/snippets) —
   // safe because that iframe uses sandbox="allow-scripts" with no allow-same-origin, so
   // embedded content still can't touch this page's DOM, cookies, or storage.
-  "frame-src 'self' https://td.doubleclick.net https://www.facebook.com https://www.youtube.com",
+  "frame-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -299,7 +303,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     !pathname.startsWith('/_') &&
     !response.headers.has('Cache-Control')
   ) {
-    response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+    response.headers.set('Cache-Control', 's-maxage=300, stale-while-revalidate=3600');
   }
 
   return response;

@@ -37,6 +37,28 @@ document.addEventListener('click', function(e) {
   }
 });
 
+// Escape closes whichever nav dropdown is open and returns focus to its toggle button.
+document.addEventListener('keydown', (e: KeyboardEvent) => {
+  if (e.key !== 'Escape') return;
+  const sBtn = document.getElementById('services-btn');
+  const sMenu = document.getElementById('services-menu');
+  if (sMenu?.classList.contains('open')) {
+    sMenu.classList.remove('open');
+    sBtn?.classList.remove('open');
+    sBtn?.setAttribute('aria-expanded', 'false');
+    sBtn?.focus();
+    return;
+  }
+  const iBtn = document.getElementById('industries-btn');
+  const iMenu = document.getElementById('industries-menu');
+  if (iMenu?.classList.contains('open')) {
+    iMenu.classList.remove('open');
+    iBtn?.classList.remove('open');
+    iBtn?.setAttribute('aria-expanded', 'false');
+    iBtn?.focus();
+  }
+});
+
 function toggleMenu() {
   const m = document.getElementById('mobile-menu');
   const btn = document.getElementById('hamburger');
@@ -65,6 +87,20 @@ function toggleLang() {
   });
 })();
 
+// Element that had focus before the modal opened — restored on close so keyboard
+// users land back where they were instead of at the top of the page.
+let modalTriggerEl: HTMLElement | null = null;
+
+function getModalFocusable(): HTMLElement[] {
+  const box = document.querySelector('#modal .modal-box');
+  if (!box) return [];
+  return Array.from(
+    box.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )
+  ).filter(elFocusable => elFocusable.offsetParent !== null);
+}
+
 function openModal(el?: HTMLElement | Event) {
   const modal = document.getElementById('modal');
   if (!modal) return;
@@ -75,11 +111,15 @@ function openModal(el?: HTMLElement | Event) {
   }
   const sourceField = document.getElementById('modal-source-field') as HTMLInputElement | null;
   if (sourceField) sourceField.value = source;
+  modalTriggerEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
   const today = new Date().toISOString().split('T')[0];
   const dateEl = document.getElementById('pref-date') as HTMLInputElement | null;
   if (dateEl) dateEl.min = today;
+  // Move keyboard focus into the dialog — aria-modal="true" only holds up if focus
+  // actually goes there instead of staying on the trigger behind the overlay.
+  getModalFocusable()[0]?.focus();
 }
 
 function closeModal() {
@@ -92,13 +132,33 @@ function closeModal() {
   const ind = document.getElementById('step-indicator');
   if (ind) ind.style.display = '';
   goToStep(1);
+  modalTriggerEl?.focus();
+  modalTriggerEl = null;
 }
 
 function handleOverlayClick(e: MouseEvent) {
   if (e.target === document.getElementById('modal')) closeModal();
 }
 
-document.addEventListener('keydown', (e: KeyboardEvent) => { if (e.key === 'Escape') closeModal(); });
+document.addEventListener('keydown', (e: KeyboardEvent) => {
+  const modal = document.getElementById('modal');
+  if (!modal || !modal.classList.contains('open')) return;
+  if (e.key === 'Escape') { closeModal(); return; }
+  // Trap Tab focus inside the open modal so keyboard users can't tab into the page behind it.
+  if (e.key === 'Tab') {
+    const focusable = getModalFocusable();
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+});
 
 // The modal's step divs aren't a real <form>, so the `required` attribute on
 // its inputs never triggers native browser validation on its own — enforce it

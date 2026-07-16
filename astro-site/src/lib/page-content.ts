@@ -71,7 +71,7 @@ export const PAGE_CONFIGS: PageConfig[] = [
         heading: 'Hero',
         fields: [
           { key: 'hero_eyebrow', label: 'Eyebrow Text', type: 'text', default: 'What We Offer' },
-          { key: 'hero_h1', label: 'Headline', type: 'text', default: 'Three Services. One Mission.' },
+          { key: 'hero_h1', label: 'Headline', type: 'text', default: 'Twelve Services. One Mission.' },
           { key: 'hero_subtext', label: 'Sub-text', type: 'textarea', default: "We don't just build AI tools — we make your business genuinely AI-ready. From strategy to build to team training, we cover the full process." },
           { key: 'hero_cta', label: 'CTA Button Text', type: 'text', default: 'Book a Free Consultation' },
         ],

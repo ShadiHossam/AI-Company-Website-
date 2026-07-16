@@ -30,6 +30,8 @@ const {
 
 const canonicalURL = `https://${COMPANY.domain}${canonicalPath}`;
 const ogImageURL = ogImage.startsWith('http') ? ogImage : `https://${COMPANY.domain}${ogImage}`;
+const isMirrorDeployment = import.meta.env.DEPLOY_TARGET === 'o2switch';
+const effectiveNoindex = noindex || isMirrorDeployment;
 ---
 
 <!doctype html>
@@ -44,7 +46,7 @@ const ogImageURL = ogImage.startsWith('http') ? ogImage : `https://${COMPANY.dom
   <link rel="manifest" href="/site.webmanifest" />
   <title>{title}</title>
   <meta name="description" content={description} />
-  {noindex ? <meta name="robots" content="noindex, nofollow" /> : <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />}
+  {effectiveNoindex ? <meta name="robots" content="noindex, nofollow" /> : <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />}
   <meta name="author" content="Aegis AI" />
   <link rel="canonical" href={canonicalURL} />
   <meta property="og:site_name" content="Aegis AI" />
@@ -75,15 +77,14 @@ const ogImageURL = ogImage.startsWith('http') ? ogImage : `https://${COMPANY.dom
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" /></noscript>
-  <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-  <link rel="dns-prefetch" href="https://www.clarity.ms" />
-  <link rel="dns-prefetch" href="https://cdn.simpleicons.org" />
 </head>
 <body>
 
+<a href="#main-content" class="skip-link">Skip to main content</a>
 <Navbar arPath={arPath} />
+<main id="main-content">
 <slot />
+</main>
 <Footer />
 <Modal />
 <WhatsAppButton />
