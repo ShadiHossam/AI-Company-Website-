@@ -5,7 +5,7 @@ export const prerender = false;
 
 const CSRF = (req: Request) => {
   const origin = req.headers.get('origin') ?? '';
-  const siteUrl = import.meta.env.SITE_URL ?? 'https://aegisai.ae';
+  const siteUrl = import.meta.env.SITE_URL ?? 'https://lenooai.com';
   return import.meta.env.DEV || origin === siteUrl;
 };
 

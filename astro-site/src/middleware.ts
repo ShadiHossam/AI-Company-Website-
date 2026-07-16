@@ -7,9 +7,17 @@ const supabaseConfigured = (() => {
   return url.length > 0 && !url.includes('placeholder');
 })();
 
-// Mirror/staging deployments (e.g. the o2switch subdomain) must never be indexed —
+// DEPLOY_TARGET only selects the Node vs Vercel adapter — both the staging mirror and
+// lenooai.com production run the Node adapter now, so the HTTPS-pending CSP carve-out
+// below stays keyed off it (both o2switch-hosted domains lack a trusted cert until
+// AutoSSL issues one).
+const isNodeAdapter = import.meta.env.DEPLOY_TARGET === 'o2switch';
+
+// Staging deployments (e.g. the o2switch mirror subdomain) must never be indexed —
 // canonical tags alone are a hint, not a directive, so this blocks crawlers outright.
-const isMirrorDeployment = import.meta.env.DEPLOY_TARGET === 'o2switch';
+// Deliberately separate from isNodeAdapter: lenooai.com is also o2switch-hosted now,
+// but must stay indexable.
+const isStaging = import.meta.env.IS_STAGING === 'true';
 
 // Vercel's edge layer applies these from vercel.json, but that file only takes effect
 // on Vercel — the o2switch Node server never reads it, so without this every response
@@ -31,9 +39,9 @@ const CSP = [
   "base-uri 'self'",
   "form-action 'self'",
   // Forces every same-origin request onto HTTPS — correct on Vercel (always valid HTTPS),
-  // but would break the o2switch mirror while it's still serving plain HTTP with no
-  // trusted cert (AutoSSL pending), so it's left out there.
-  ...(isMirrorDeployment ? [] : ['upgrade-insecure-requests']),
+  // but would break an o2switch-hosted domain while it's still serving plain HTTP with
+  // no trusted cert (AutoSSL pending), so it's left out there.
+  ...(isNodeAdapter ? [] : ['upgrade-insecure-requests']),
 ].join('; ');
 
 function applySecurityHeaders(response: Response): void {
@@ -279,7 +287,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   applySecurityHeaders(response);
 
-  if (isMirrorDeployment) {
+  if (isStaging) {
     response.headers.set('X-Robots-Tag', 'noindex, nofollow');
   }
 

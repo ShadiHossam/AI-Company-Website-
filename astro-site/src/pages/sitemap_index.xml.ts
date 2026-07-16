@@ -7,11 +7,11 @@ export const GET: APIRoute = async () => {
 <?xml-stylesheet type="text/xsl" href="/main-sitemap.xsl"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
-    <loc>https://aegisai.ae/page-sitemap.xml</loc>
+    <loc>https://lenooai.com/page-sitemap.xml</loc>
     <lastmod>${now}</lastmod>
   </sitemap>
   <sitemap>
-    <loc>https://aegisai.ae/post-sitemap.xml</loc>
+    <loc>https://lenooai.com/post-sitemap.xml</loc>
     <lastmod>${now}</lastmod>
   </sitemap>
 </sitemapindex>`;

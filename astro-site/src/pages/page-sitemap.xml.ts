@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 
-const BASE = 'https://aegisai.ae';
+const BASE = 'https://lenooai.com';
 
 interface PageEntry {
   url: string;

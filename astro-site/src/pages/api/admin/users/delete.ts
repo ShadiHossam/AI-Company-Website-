@@ -5,7 +5,7 @@ export const prerender = false;
 
 const CSRF = (req: Request) => {
   const origin = req.headers.get('origin') ?? '';
-  return import.meta.env.DEV || origin === (import.meta.env.SITE_URL ?? 'https://aegisai.ae');
+  return import.meta.env.DEV || origin === (import.meta.env.SITE_URL ?? 'https://lenooai.com');
 };
 
 export const DELETE: APIRoute = async ({ request, locals }) => {
