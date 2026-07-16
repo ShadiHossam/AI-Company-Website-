@@ -1,10 +1,12 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../lib/supabase';
+import { getCollection } from 'astro:content';
 
 const BASE = 'https://lenooai.com';
 
 export const GET: APIRoute = async () => {
-  let entries = '';
+  const seenSlugs = new Set<string>();
+  const urlBlocks: string[] = [];
 
   try {
     const supabase = getSupabaseAdmin();
@@ -16,17 +18,17 @@ export const GET: APIRoute = async () => {
       .order('pub_date', { ascending: false });
 
     if (!error && data) {
-      entries = data
-        .map((post) => {
-          const lastmod = (post.updated_date ?? post.pub_date ?? new Date().toISOString())
-            .replace('Z', '+00:00');
-          const hreflang = post.ar_title
-            ? `
+      for (const post of data) {
+        seenSlugs.add(post.slug);
+        const lastmod = (post.updated_date ?? post.pub_date ?? new Date().toISOString())
+          .replace('Z', '+00:00');
+        const hreflang = post.ar_title
+          ? `
     <xhtml:link rel="alternate" hreflang="en-ae" href="${BASE}/blog/${post.slug}"/>
     <xhtml:link rel="alternate" hreflang="ar" href="${BASE}/ar/blog/${post.slug}"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}/blog/${post.slug}"/>`
-            : '';
-          return `  <url>
+          : '';
+        urlBlocks.push(`  <url>
     <loc>${BASE}/blog/${post.slug}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>monthly</changefreq>
@@ -40,13 +42,34 @@ export const GET: APIRoute = async () => {
     <xhtml:link rel="alternate" hreflang="ar" href="${BASE}/ar/blog/${post.slug}"/>
     <xhtml:link rel="alternate" hreflang="en-ae" href="${BASE}/blog/${post.slug}"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}/blog/${post.slug}"/>
-  </url>` : ''}`;
-        })
-        .join('\n');
+  </url>` : ''}`);
+      }
     }
   } catch {
-    // Return empty urlset if DB is unreachable
+    // DB unreachable — fall through to content-collection posts below
   }
+
+  // Content-collection posts (local markdown) are the site's fallback content
+  // source whenever Supabase has no rows for a slug — see blog.astro / blog/[slug].astro.
+  try {
+    const collectionPosts = await getCollection('blog');
+    for (const post of collectionPosts) {
+      if (seenSlugs.has(post.id)) continue;
+      const lastmod = (post.data.updatedDate ?? post.data.pubDate ?? new Date())
+        .toISOString()
+        .replace('Z', '+00:00');
+      urlBlocks.push(`  <url>
+    <loc>${BASE}/blog/${post.id}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>`);
+    }
+  } catch {
+    // No content collection available
+  }
+
+  const entries = urlBlocks.join('\n');
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="/main-sitemap.xsl"?>
