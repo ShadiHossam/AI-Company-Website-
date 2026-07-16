@@ -6,7 +6,9 @@
 
 **Architecture:** Confirmed by reading `astro-site/src/pages/index.astro` directly: the testimonials query (lines 47-58) fetches up to 6 rows and falls back to 3 hardcoded testimonials, but the current markup (`.bento-grid.bento-grid-3` at line 730) is a plain 3-column CSS grid with zero carousel/slider JS anywhere on the page — rows 4-6 render but are visually identical to 1-3, just wrapping to more grid rows (not actually "dropped," but the section reads as a flat grid rather than a curated, swipeable set, and doesn't scale well past 3 items). New component: `TestimonialsCarousel.astro`, taking the same `testimonials` array shape already being fetched, self-contained (owns its CSS, ported from `index.astro`'s existing `.testimonial-*` rules — `.bento-grid`/`.bento-grid-3` is a shared `global.css` utility used by *other*, unrelated sections on this page, so it is not touched or reused here).
 
-**RTL design decision:** Carousel navigation uses `Element.scrollIntoView({ inline: 'start' })` for programmatic scrolling and an `IntersectionObserver` (scoped to the track as `root`) to detect the active card for dot indicators — both are direction-agnostic browser APIs that work correctly under `dir="rtl"` with no sign-flipping logic needed. This deliberately avoids manually reading/writing `scrollLeft`, whose sign convention differs across browsers in RTL contexts (a well-known cross-browser inconsistency) — sidestepping that class of bug entirely rather than working around it.
+**RTL design decision:** Carousel navigation uses `Element.scrollIntoView({ inline: 'start' })` for programmatic scrolling, and active-card detection compares each card's inline-start edge to the track's inline-start edge via `getBoundingClientRect()` (flipping which physical edge "inline-start" means based on `getComputedStyle(track).direction`) — both are direction-agnostic and work correctly under `dir="rtl"` with no sign-flipping logic needed. This deliberately avoids manually reading/writing `scrollLeft`, whose sign convention differs across browsers in RTL contexts (a well-known cross-browser inconsistency), and avoids `IntersectionObserver` threshold-based detection, which was tried first but doesn't work: at the desktop (3-card) and tablet (2-card) breakpoints, the flex-basis percentages mean multiple cards are simultaneously ~100% visible at rest, so a threshold crossing can't tell which one is *leading* — confirmed as a real bug during this component's own code-quality review, not a hypothetical, and fixed by switching to the edge-distance comparison instead.
+
+Keyboard navigation (`ArrowRight`/`ArrowLeft` on the track) follows the WAI-ARIA carousel convention of logical next/previous, not physical direction — so it is deliberately NOT flipped for RTL. The dot indicators use `role="group"` with `aria-current` rather than `role="tablist"`/`role="tab"` with `aria-selected`, since the component doesn't implement the full ARIA tabs interaction pattern (roving tabindex, associated tabpanel) that the `tablist` role would imply — `aria-current` accurately communicates "this is the current item in the set" without overpromising behavior that isn't there.
 
 **Tech Stack:** Astro component, scoped `<style>`, vanilla JS (`<script>`, matching the site's existing convention of unscoped `<script>` blocks for page interactivity — no new dependency, consistent with the design spec's "prefer a small dependency-free implementation" note).
 
@@ -75,15 +77,14 @@ function getInitials(name: string): string {
       <button type="button" class="tcarousel-btn" data-testimonial-prev aria-label="Previous testimonial">
         <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
       </button>
-      <div class="tcarousel-dots" role="tablist" aria-label="Testimonial navigation">
+      <div class="tcarousel-dots" role="group" aria-label="Testimonial navigation">
         {testimonials.map((_, i) => (
           <button
             type="button"
             class="tcarousel-dot"
             data-testimonial-dot
             data-index={i}
-            role="tab"
-            aria-selected={i === 0 ? "true" : "false"}
+            aria-current={i === 0 ? "true" : "false"}
             aria-label={`Go to testimonial ${i + 1}`}
           ></button>
         ))}
@@ -94,6 +95,7 @@ function getInitials(name: string): string {
     </div>
   )}
 </div>
+<!-- Requires an ancestor element with `dir`/`direction` set (both BaseLayout.astro and ArBaseLayout.astro already do this) for the RTL-safe scroll behavior below to resolve correctly. -->
 
 <style>
 .tcarousel { display: flex; flex-direction: column; gap: 1.5rem; }
@@ -165,7 +167,7 @@ function getInitials(name: string): string {
   background: rgba(0,37,59,0.18); border: none; padding: 0; cursor: pointer;
   transition: background .2s, transform .2s;
 }
-.tcarousel-dot[aria-selected="true"] { background: #006875; transform: scale(1.3); }
+.tcarousel-dot[aria-current="true"] { background: #006875; transform: scale(1.3); }
 .tcarousel-dot:focus-visible { outline: 2px solid #006875; outline-offset: 2px; }
 
 @media (max-width: 900px) {
@@ -186,11 +188,12 @@ document.querySelectorAll<HTMLElement>('[data-testimonial-carousel]').forEach((r
   if (!track || cards.length === 0) return;
 
   let activeIndex = 0;
+  let scrollRaf = 0;
 
   function setActive(index: number) {
     activeIndex = index;
     dots.forEach((dot, i) => {
-      dot.setAttribute('aria-selected', i === index ? 'true' : 'false');
+      dot.setAttribute('aria-current', i === index ? 'true' : 'false');
     });
   }
 
@@ -199,27 +202,67 @@ document.querySelectorAll<HTMLElement>('[data-testimonial-carousel]').forEach((r
     cards[clamped]?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
   }
 
+  // Direction-agnostic "which card is leading" detection. At the desktop
+  // (3 cards) and tablet (2 cards) breakpoints, the flex-basis percentages
+  // are chosen so multiple cards are simultaneously ~100% visible at rest —
+  // an IntersectionObserver threshold crossing can't tell which one is the
+  // *leading* card in that situation. Instead, compare each card's
+  // inline-start edge to the track's inline-start edge using real rendered
+  // positions (getBoundingClientRect), which resolves correctly under both
+  // LTR (inline-start = left) and RTL (inline-start = right) with no
+  // scrollLeft sign-flipping logic.
+  function updateActiveFromScroll() {
+    const isRTL = getComputedStyle(track!).direction === 'rtl';
+    const trackRect = track!.getBoundingClientRect();
+    let closestIndex = 0;
+    let closestDist = Infinity;
+    cards.forEach((card, i) => {
+      const cardRect = card.getBoundingClientRect();
+      const dist = isRTL
+        ? Math.abs(trackRect.right - cardRect.right)
+        : Math.abs(cardRect.left - trackRect.left);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closestIndex = i;
+      }
+    });
+    setActive(closestIndex);
+  }
+
   prevBtn?.addEventListener('click', () => scrollToIndex(activeIndex - 1));
   nextBtn?.addEventListener('click', () => scrollToIndex(activeIndex + 1));
   dots.forEach((dot, i) => {
     dot.addEventListener('click', () => scrollToIndex(i));
   });
 
-  // Direction-agnostic active-card detection: works the same under LTR and RTL
-  // since IntersectionObserver reports visibility relative to the track's
-  // viewport, not an absolute scrollLeft coordinate.
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
-          const index = cards.indexOf(entry.target as HTMLElement);
-          if (index !== -1) setActive(index);
-        }
-      });
+  // Arrow-key navigation: Right = next, Left = previous — the standard
+  // carousel keyboard convention (WAI-ARIA carousel pattern uses logical
+  // next/previous, not physical left/right), so this is deliberately NOT
+  // flipped for RTL. Right always means "next slide" regardless of reading
+  // direction, matching how native OS/browser carousels behave.
+  track.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      scrollToIndex(activeIndex + 1);
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      scrollToIndex(activeIndex - 1);
+    }
+  });
+
+  track.addEventListener(
+    'scroll',
+    () => {
+      if (scrollRaf) cancelAnimationFrame(scrollRaf);
+      scrollRaf = requestAnimationFrame(updateActiveFromScroll);
     },
-    { root: track, threshold: [0.6] }
+    { passive: true }
   );
-  cards.forEach((card) => observer.observe(card));
+
+  // Set the correct initial active state immediately — fixes the bug where
+  // desktop/tablet showed the wrong dot as active on first paint, since the
+  // markup only hardcodes dot 0 as a starting guess.
+  updateActiveFromScroll();
 });
 </script>
 ```
@@ -345,8 +388,10 @@ Expected: succeeds with no errors.
 Run `npm run dev`, open `/`, scroll to the testimonials section. Confirm:
 - All cards render identically in appearance to before (same border, shadow, avatar, industry tag styling).
 - Clicking the next/prev arrow buttons scrolls smoothly to the adjacent card.
-- Clicking a dot jumps to that specific card and marks it active (`aria-selected="true"`, visually larger/darker dot).
-- Swiping/dragging the track directly (trackpad or touch emulation in devtools) also works and updates the active dot via the `IntersectionObserver`.
+- Clicking a dot jumps to that specific card and marks it active (`aria-current="true"`, visually larger/darker dot).
+- Swiping/dragging the track directly (trackpad or touch emulation in devtools) also works and updates the active dot on scroll.
+- Focus the track and press ArrowRight/ArrowLeft — confirm it navigates to the next/previous card, and that the active dot updates to match.
+- At the default (desktop, ≥900px) width where 3 cards are visible at once, confirm the active dot reflects the *leading* (first/leftmost in LTR) visible card, not an arbitrary one among the 3 simultaneously-visible cards — this was the specific bug found and fixed during code review.
 - Resize the viewport narrow (< 600px) and confirm cards go full-width, one at a time.
 - Using browser devtools, temporarily set the carousel's container to `dir="rtl"` (e.g. via the devtools "Force RTL" or by editing the `<div class="tcarousel">` in the inspector to add `dir="rtl"`) and confirm the prev/next buttons and dot navigation still work correctly in that orientation — this is a temporary manual check standing in for Phase 4's eventual real RTL usage, since this page itself is not RTL.
 
