@@ -1,0 +1,34 @@
+---
+interface Stat {
+  value: string;
+  caption: string;
+}
+
+interface Props {
+  stats: Stat[];
+}
+
+const { stats } = Astro.props;
+const gridTemplateColumns = stats.map(() => "1fr").join(" auto ");
+---
+
+<div class="stat-strip glass-dark" style={`border-radius:20px; padding:2.25rem 2.5rem; grid-template-columns:${gridTemplateColumns};`}>
+  {stats.map((s, i) => (
+    <>
+      <div class="stat-item">
+        <div class="stat-num">{s.value}</div>
+        <p class="stat-label">{s.caption}</p>
+      </div>
+      {i < stats.length - 1 && <div class="stat-divider"></div>}
+    </>
+  ))}
+</div>
+
+<style>
+.stat-strip { display:grid; gap:2rem; align-items:center; }
+.stat-divider { width:1px; height:80px; background:rgba(255,255,255,0.15); }
+.stat-item { text-align:center; }
+.stat-num { font-size:2.5rem; font-weight:800; color:#00e3fd; line-height:1; margin-bottom:0.5rem; }
+.stat-label { color:rgba(255,255,255,0.55); font-size:0.875rem; line-height:1.6; }
+@media(max-width:900px) { .stat-strip { grid-template-columns:1fr !important; } .stat-divider { display:none; } }
+</style>
