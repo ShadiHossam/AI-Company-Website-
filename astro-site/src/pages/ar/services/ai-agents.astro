@@ -1,452 +1,281 @@
 ---
 export const prerender = false;
 import ArBaseLayout from '../../../layouts/ArBaseLayout.astro';
+import FaqAccordion from '../../../components/FaqAccordion.astro';
+import ProcessSteps from '../../../components/ProcessSteps.astro';
+import StatStrip from '../../../components/StatStrip.astro';
+
+const processSteps = [
+  { icon: "target", step: "الخطوة 1", title: "تحديد المهمة", description: "نُحدد بدقة ما يحتاج وكيلك لفعله، والأدوات التي يحتاج الوصول إليها، وأين يبقى الإنسان جزءاً من القرار." },
+  { icon: "extension", step: "الخطوة 2", title: "البناء والربط", description: "نبني الوكيل، نربطه بأدواتك، نُدرّبه على سياقك، ونُحدد الضوابط لتشغيل آمن." },
+  { icon: "science", step: "الخطوة 3", title: "اختبار دقيق", description: "نختبر الوكيل بحالات استثنائية، مدخلات معقدة، وسيناريوهات حقيقية للتأكد من أنه يعمل كما هو متوقع قبل الإطلاق." },
+  { icon: "monitoring", step: "الخطوة 4", title: "المراقبة والتحسين", description: "سجلات تدقيق كاملة، لوحات أداء، ودعم لمدة 90 يوماً تضمن استمرار تحسّن وكيلك بعد الإطلاق." },
+];
+
+const faqItems = [
+  { question: "ما الفرق بين وكيل الذكاء الاصطناعي وروبوت المحادثة؟", answer: "روبوت المحادثة يرد على الأسئلة. وكيل الذكاء الاصطناعي يتخذ إجراءات فعلية. يمكن للوكلاء تصفح الإنترنت، كتابة وإرسال رسائل البريد الإلكتروني، تحديث نظام CRM، حجز الاجتماعات، إجراء عمليات بحث، استدعاء واجهات برمجية، وتسلسل خطوات متعددة دون انتظار توجيه. إنهم حلّالو مشكلات مستقلون، وليسوا مجرد آلات للإجابة." },
+  { question: "ما مدى موثوقية وكلاء الذكاء الاصطناعي في اتخاذ القرارات؟", answer: "نُصمم الوكلاء بضوابط واضحة، نقاط موافقة للإجراءات عالية الأهمية، وتحكم بشري عند الحاجة. يتعامل الوكلاء مع القرارات عالية الحجم ومنخفضة المخاطر تلقائياً؛ أي شيء يحتاج حكماً بشرياً يُحال لشخص للموافقة. تزداد الموثوقية مع الوقت مع تعلّم الوكلاء من التغذية الراجعة." },
+  { question: "هل يمكن للوكلاء العمل مع أدواتنا الحالية؟", answer: "نعم. نبني وكلاء يتصلون بأنظمتك الحالية عبر واجهات برمجية: CRM، البريد الإلكتروني، التقويم، قواعد البيانات، أدوات تواصل الفريق، وغيرها. يعمل الوكيل كطبقة ذكية فوق أنظمتك الحالية، وليس بديلاً عنها." },
+  { question: "هل هناك خطر أن يقوم الوكيل بشيء خاطئ؟", answer: "نبني تسجيلاً شاملاً، إمكانية التراجع، وحدوداً للإجراءات في كل وكيل. كل إجراء يتخذه الوكيل يُسجَّل ويمكن مراجعته. بالنسبة للمهام الحساسة، نُضيف خطوة موافقة بشرية قبل تنفيذ أي إجراء لا يمكن التراجع عنه." },
+  { question: "ما الفرق بين الأتمتة البسيطة ووكيل الذكاء الاصطناعي؟", answer: "الأتمتة التقليدية تتبع سيناريو ثابت: إذا حدث X، افعل Y. تتعطل بمجرد حدوث أمر غير متوقع. وكيل الذكاء الاصطناعي يُحلل الموقف، يقرر أفضل مسار للعمل، ويتكيّف عندما لا تسير الأمور كما هو مخطط لها. الأتمتة ممتازة للمهام المتكررة والمتوقعة. الوكلاء مناسبون للمهام التي تحتاج حكماً، مدخلات غير منظمة، أو خطوات متغيرة." },
+  { question: "هل يمكن لوكيل واحد التعامل مع مهام متعددة ومختلفة؟", answer: "يمكن منح الوكيل قدرات وأدوات متعددة، لكننا عادة نُصمم وكلاء مُركّزين يُتقنون مهمة واحدة بشكل ممتاز. بالنسبة للمهام المعقدة التي تشمل عدة مجالات، نبني أنظمة متعددة الوكلاء: فريق من الوكلاء المتخصصين يُنسّقهم وكيل رئيسي. هذا يُنتج نتائج أكثر موثوقية من وكيل واحد عام مثقل بالمهام." },
+  { question: "كم تكلفة مشروع وكيل ذكاء اصطناعي عادةً؟", answer: "يعتمد ذلك على تعقيد المهمة، عدد الأدوات التي يحتاجها الوكيل، وهل تحتاج واجهة مستخدم مخصصة أم مجرد واجهة برمجية. الوكلاء البسيطون بمهمة واحدة يبدأون بأسعار في الآلاف المنخفضة. أنظمة الوكلاء المتعددة للعمليات المعقدة تُحدد تكلفتها بشكل فردي. تشمل جميع المشاريع مكالمة استكشافية مجانية نُعطيك فيها تقديراً واضحاً قبل أي التزام." },
+];
 
 const ldJson = [
-  {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "وكلاء الذكاء الاصطناعي في دبي والإمارات | Aegis AI",
-    "url": "https://lenooai.com/ar/services/ai-agents",
-    "inLanguage": "ar",
-    "isPartOf": { "@type": "WebSite", "url": "https://lenooai.com" }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
-      { "@type": "ListItem", "position": 2, "name": "الخدمات", "item": "https://lenooai.com/ar/services" },
-      { "@type": "ListItem", "position": 3, "name": "وكلاء الذكاء الاصطناعي", "item": "https://lenooai.com/ar/services/ai-agents" }
-    ]
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "name": "وكلاء الذكاء الاصطناعي",
-    "description": "بناء وكلاء ذكاء اصطناعي مستقلين يُكملون مهام متعددة الخطوات، يتخذون قرارات، ويعملون 24/7 بالعربي والإنجليزي.",
-    "areaServed": {"@type": "Country", "name": "United Arab Emirates"},
-    "provider": { "name": "Aegis AI", "url": "https://lenooai.com" }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "ما الفرق بين وكيل الذكاء الاصطناعي وروبوت المحادثة العادي؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "روبوت المحادثة يجيب على أسئلة. الوكيل يُفكر ويتصرف: يكمل مهام متعددة الخطوات بشكل مستقل، مثل البحث عن معلومة ثم إرسال بريد إلكتروني ثم تحديث السجل في CRM، مما يُحرّر فريقك للتركيز على القرارات التي تحتاج حكماً بشرياً حقيقياً." }
-      },
-      {
-        "@type": "Question",
-        "name": "هل يمكن للوكيل التعامل مع العربية والإنجليزية معاً؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نعم. جميع وكلاءنا ثنائيو اللغة بشكل كامل، يفهمون السياق ويردون بنفس لغة المستخدم، ويتعاملون مع التبديل بين اللغتين في نفس المحادثة." }
-      },
-      {
-        "@type": "Question",
-        "name": "ما الأنظمة التي يمكن للوكيل الوصول إليها؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نبني الوكلاء ليصلوا إلى ما تحتاجه: بريد إلكتروني، CRM، تقاويم، قواعد بيانات، تطبيقات المراسلة، وغيرها. نحدد الصلاحيات بدقة لضمان الأمان الكامل." }
-      },
-      {
-        "@type": "Question",
-        "name": "كيف نضمن أن الوكيل لن يتخذ قرارات خاطئة؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نصمم الوكلاء بحدود واضحة. يعرف الوكيل متى يتصرف ومتى يصعّد للإنسان. تحدد أنت مستوى الاستقلالية، ونبني نظام مراجعة داخلي لأي إجراء حساس." }
-      },
-      {
-        "@type": "Question",
-        "name": "هل يمكن للوكيل أن يتعلم ويتحسن مع الوقت؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نعم. نصمم الوكلاء ليجمعوا تغذية راجعة من نتائجهم ويحسّنوا أداءهم. بعض الوكلاء يُحدَّثون يدوياً بشكل دوري، وبعضها يمكن أن يتكيف تلقائياً بناء على الأنماط." }
-      }
-    ]
-  }
+  { "@context": "https://schema.org", "@type": "Service", "name": "وكلاء الذكاء الاصطناعي وأنظمة الوكلاء", "url": "https://lenooai.com/ar/services/ai-agents", "description": "وكلاء ذكاء اصطناعي مستقلون يُحللون المهام المعقدة، يستخدمون الأدوات، وينفذون مهاماً متعددة الخطوات دون إشراف بشري مستمر.", "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://lenooai.com" }, "areaServed": "United Arab Emirates", "serviceType": "تطوير وكلاء الذكاء الاصطناعي" },
+  { "@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
+    { "@type": "ListItem", "position": 2, "name": "الخدمات", "item": "https://lenooai.com/ar/services" },
+    { "@type": "ListItem", "position": 3, "name": "وكلاء الذكاء الاصطناعي", "item": "https://lenooai.com/ar/services/ai-agents" }
+  ] },
+  { "@context": "https://schema.org", "@type": "FAQPage", "mainEntity": faqItems.map((f) => ({ "@type": "Question", "name": f.question, "acceptedAnswer": { "@type": "Answer", "text": f.answer } })) }
 ];
 ---
 
 <ArBaseLayout
-  title="وكلاء الذكاء الاصطناعي وأنظمة الوكلاء للشركات في الإمارات | Aegis AI"
-  description="Aegis AI وكالة ذكاء اصطناعي في دبي تبني وكلاء ذكاء اصطناعي مستقلين للشركات في الإمارات، يُكملون مهام متعددة الخطوات ويتخذون قرارات على مدار الساعة."
+  title="وكلاء الذكاء الاصطناعي وأنظمة الوكلاء لشركات الإمارات | Aegis AI"
+  description="ذكاء اصطناعي لا يكتفي بالإجابة، بل يتصرف. بصفتنا وكالة ذكاء اصطناعي في دبي، نبني وكلاء ذكاء اصطناعي مستقلين لشركات الإمارات، يُحللون، يقررون، وينفذون."
   canonicalPath="/ar/services/ai-agents"
   enPath="/services/ai-agents"
   ldJson={ldJson}
 >
 
-<!-- 1. Page Hero -->
-<header class="page-hero">
-  <div class="container">
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
     <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التنقل"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services" style="color:inherit;text-decoration:none;opacity:0.65;">الخدمات</a><span style="opacity:0.4;padding:0 4px;"> / </span>وكلاء الذكاء الاصطناعي</div>
-    <div class="badge badge-amber" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">smart_toy</span>
-      وكلاء مستقلون
-    </div>
-    <h1>وكلاء ذكاء اصطناعي<br><span class="gradient-text">يُفكرون ويتصرفون دون انتظار</span></h1>
-    <p style="color:rgba(255,255,255,0.72);font-size:1.125rem;max-width:620px;margin:1.5rem auto 2.5rem;line-height:1.8;">
-      ليس مجرد ردود آلية. وكلاء حقيقيون يُكملون مهام متعددة الخطوات بشكل مستقل: يبحثون، يقررون، يُرسلون، يُحدّثون. كل ذلك دون أن تتدخل.
+    <h1>ذكاء اصطناعي <span class="gradient-text">يُفكر، يُقرر، ويتصرف دون انتظار التعليمات</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      معظم أدوات الذكاء الاصطناعي تكتفي بالرد. الوكلاء يبادرون. يُحللون المشكلات المعقدة، يستخدمون الأدوات، يتخذون القرارات، وينجزون مهاماً متعددة الخطوات بشكل مستقل، على نطاق واسع، على مدار الساعة.
     </p>
-    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
-      <button onclick="openModal(this)" data-source="ar_ai-agents_hero" class="btn-primary">احجز استشارة مجانية</button>
-      <a href="/ar/services" class="btn-outline">جميع الخدمات</a>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_agents_hero" class="btn-primary">ابنِ أول وكيل لك</button>
+      <a href="#agent-types" class="btn-outline">استعرض أنواع الوكلاء ↓</a>
     </div>
   </div>
 </header>
 
-<!-- IMAGE BANNER -->
-<div style="width:100%; height:260px; overflow:hidden; position:relative;">
-  <img src="https://images.unsplash.com/photo-1535378917042-10a22c95931a?w=1400&q=80&auto=format&fit=crop" alt="وكلاء الذكاء الاصطناعي واتخاذ القرار المستقل" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center;" />
-  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.35));"></div>
+<div style="width:100%; height:280px; overflow:hidden; position:relative;">
+  <img src="https://images.unsplash.com/photo-1535378917042-10a22c95931a?w=1400&q=80&auto=format&fit=crop" alt="وكلاء الذكاء الاصطناعي واتخاذ القرار المستقل" loading="eager" fetchpriority="high" width="1400" height="280" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center;" />
+  <div style="width:100%; height:100%; background:rgba(0,25,42,0.78); display:flex; align-items:center; justify-content:center; position:relative;">
+    <div style="position:absolute; inset:0; background-image:radial-gradient(circle, rgba(0,227,253,0.07) 1px, transparent 1px); background-size:24px 24px;"></div>
+    <StatStrip stats={[
+      { value: "24/7", caption: "الوكلاء يعملون على مدار الساعة، بلا توقف وبلا إجازات" },
+      { value: "متعدد الخطوات", caption: "الوكلاء يُسلسلون عشرات الإجراءات لإنجاز مهام معقدة" },
+      { value: "تكيّفي", caption: "الوكلاء يُعدّلون أسلوبهم بناءً على ما يكتشفونه" },
+    ]} />
+  </div>
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,#f9f9ff 0%,transparent 100%); pointer-events:none;"></div>
 </div>
 
-<!-- 2. Stats Strip -->
-<section style="background:#f8fafc;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:2.5rem 0;">
+<section class="section" aria-labelledby="explain-heading">
   <div class="container">
-    <div class="stats-strip">
-      <div class="stat-item">
-        <div class="stat-number">٢٤/٧</div>
-        <div class="stat-label">يعمل بلا توقف</div>
+    <div class="explain-split">
+      <div>
+        <h2 id="explain-heading" style="margin-bottom:1.5rem;">ما هو وكيل الذكاء الاصطناعي بالضبط؟</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+          وكيل الذكاء الاصطناعي هو نظام برمجي قادر على إدراك بيئته، والتفكير في مشكلة ما، واتخاذ إجراءات لتحقيق هدف معين، دون الحاجة لإنسان يوجّه كل خطوة. على عكس روبوت المحادثة الذي ينتظر الأسئلة ويجيب عليها واحداً تلو الآخر، يُمنح الوكيل مهمة ويكتشف بنفسه كيف يُنجزها: ما المعلومات التي يحتاجها، وأي الأدوات يستدعيها، وبأي ترتيب، وكيف يتعامل مع النتائج التي تصله.
+        </p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+          الفرق العملي كبير. اطلب من روبوت محادثة أن يجد أفضل 20 عميلاً محتملاً، يتحقق من تحديثاتهم على لينكدإن، ويُعدّ رسائل تواصل مخصصة، وستحصل على قائمة مهام كرد. أعطِ نفس المهمة لوكيل ذكاء اصطناعي مبني جيداً، وسيبحث عن العملاء المحتملين، يقرأ بيانات لينكدإن، يُعدّ 20 رسالة بريد إلكتروني مخصصة، ويضعها في نظام CRM الخاص بك جاهزة للمراجعة. الوكيل يُنجز العمل؛ أنت تتخذ القرارات التي تحتاج فعلاً لحكمك.
+        </p>
       </div>
-      <div class="stat-item">
-        <div class="stat-number">٨٠٪</div>
-        <div class="stat-label">متوسط تشغيل الطلبات تلقائياً</div>
+      <div class="explain-img-wrap">
+        <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&q=80&auto=format&fit=crop" alt="فريق في دبي يُراجع قائمة مهام وكيل ذكاء اصطناعي على حاسوب محمول" loading="lazy" width="800" height="600" />
       </div>
-      <div class="stat-item">
-        <div class="stat-number">١٠٠٪</div>
-        <div class="stat-label">ضمان الاسترداد</div>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:2rem auto 0;">
+      بالنسبة للشركات، فجوة القدرات هذه هائلة. معظم الشركات لديها موظفون يقضون من 20 إلى 40 بالمئة من وقتهم في مهام منظمة، متكررة، وتعتمد على أدوات محددة: توجيه رسائل البريد الإلكتروني، تحديث السجلات، نقل البيانات من نظام إلى آخر، الجدولة، المتابعات، والمراقبة. هذه بالضبط المهام التي صُمم وكلاء الذكاء الاصطناعي لها. نشر الوكلاء في هذه المهام لا يُقلل عدد الموظفين؛ بل يُحرّر فريقك للتركيز على العمل الذي يحتاج حكماً وعلاقات إنسانية حقيقية.
+    </p>
+  </div>
+</section>
+
+<section class="section" style="background:#e7eeff;" aria-labelledby="demo-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="demo-heading">شاهد وكيلاً أثناء العمل</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">اختر دوراً أدناه لترى ما يفعله الوكيل فعلياً، خطوة بخطوة، من لحظة استلامه المهمة حتى لحظة تسليم النتيجة.</p>
+    </div>
+    <div class="agent-demo" data-agent-demo>
+      <div class="tab-buttons" role="tablist" aria-label="نوع مثال الوكيل">
+        <button type="button" class="tab-btn active" role="tab" aria-selected="true" data-tab="sales">المبيعات والتواصل</button>
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="research">البحث والتحليل</button>
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="support">خدمة العملاء</button>
       </div>
-      <div class="stat-item">
-        <div class="stat-number">ع + إنجليزي</div>
-        <div class="stat-label">ثنائي اللغة دائماً</div>
+      <div class="tab-panel" data-panel="sales">
+        <div class="demo-step"><span class="demo-step-num">1</span><p><strong>المهمة المستلمة:</strong> «ابحث عن 20 عميلاً محتملاً في قطاع العقارات وأعدّ رسائل تواصل مخصصة.»</p></div>
+        <div class="demo-step"><span class="demo-step-num">2</span><p><strong>الوكيل يتصرف:</strong> يسحب جهات الاتصال المطابقة من نظام CRM، يتحقق من نشاط كل منهم الأخير على لينكدإن، ويُعدّ رسالة بريد إلكتروني مخصصة تُشير لتفصيل محدد عن كل عميل محتمل.</p></div>
+        <div class="demo-step"><span class="demo-step-num">3</span><p><strong>النتيجة المُسلّمة:</strong> 20 رسالة بريد إلكتروني جاهزة في نظام CRM الخاص بك، بانتظار مندوب المبيعات لمراجعتها وإرسالها. بلا صفحة فارغة، بلا بحث يدوي.</p></div>
+      </div>
+      <div class="tab-panel hidden" data-panel="research">
+        <div class="demo-step"><span class="demo-step-num">1</span><p><strong>المهمة المستلمة:</strong> «لخّص ما غيّره أكبر 5 منافسين لنا في تسعيرهم هذا الربع.»</p></div>
+        <div class="demo-step"><span class="demo-step-num">2</span><p><strong>الوكيل يتصرف:</strong> يبحث في مصادر عامة، يقرأ صفحات التسعير والتغطية الإعلامية، يُراجع التواريخ، ويُنظّم النتائج حسب كل منافس.</p></div>
+        <div class="demo-step"><span class="demo-step-num">3</span><p><strong>النتيجة المُسلّمة:</strong> تقرير منظم من صفحة واحدة مع ذكر المصادر، يصلك خلال دقائق بدلاً من يوم كامل من البحث اليدوي.</p></div>
+      </div>
+      <div class="tab-panel hidden" data-panel="support">
+        <div class="demo-step"><span class="demo-step-num">1</span><p><strong>المهمة المستلمة:</strong> عميل يُرسل بريداً إلكترونياً يسأل عن موقع طلبه وهل لا يزال بالإمكان تعديله.</p></div>
+        <div class="demo-step"><span class="demo-step-num">2</span><p><strong>الوكيل يتصرف:</strong> يتحقق من حالة الطلب، يتأكد إن كان قد شُحن، ويرد بالإجابة، أو بتأكيد التعديل إن كان لا يزال ممكناً.</p></div>
+        <div class="demo-step"><span class="demo-step-num">3</span><p><strong>النتيجة المُسلّمة:</strong> يحصل العميل على إجابة خلال ثوانٍ، في أي وقت من اليوم، ويُسجَّل الطلب تلقائياً لفريقك.</p></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 3. What We Build -->
-<section class="section">
+<section id="agent-types" class="section" aria-labelledby="agents-heading">
   <div class="container">
-    <div style="text-align:center;margin-bottom:3rem;">
-      <h2>أنواع الوكلاء التي نبنيها</h2>
-      <p style="color:#42474e;max-width:560px;margin:1rem auto 0;line-height:1.8;">أمثلة شائعة، لا قائمة نهائية. بصفتنا وكالة الذكاء الاصطناعي في دبي التي يثق بها عملاء من كل الإمارات، نُصمم كل وكيل لمهمة محددة، نُدرّبه على سياقك، وندمجه في أدواتك. إذا كانت فكرتك لا تنطبق على أي مما هنا، أخبرنا بها.</p>
-    </div>
-    <div class="agent-tabs" id="agent-tabs" role="tablist" aria-label="تصفية أنواع الوكلاء">
-      <button class="agent-tab active" data-cat="all" type="button">الكل</button>
-      <button class="agent-tab" data-cat="customer" type="button">خدمة العملاء</button>
-      <button class="agent-tab" data-cat="sales" type="button">المبيعات والتسويق</button>
-      <button class="agent-tab" data-cat="ops" type="button">العمليات الداخلية</button>
+    <div class="section-header">
+      <h2 id="agents-heading">أنواع وكلاء الذكاء الاصطناعي التي نبنيها</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">أمثلة شائعة، وليست قائمة نهائية. كل وكيل يُبنى خصيصاً لحالة استخدامك، يُدرَّب على سياقك، ويُدمج مع أدواتك الحالية. إذا لم تجد فكرتك ضمن هذه الأمثلة، شاركنا بها.</p>
     </div>
     <div class="feature-ledger">
-      <div class="card feature-card" data-cat="ops">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">mail</span>
-        <h3>وكلاء البريد الإلكتروني</h3>
-        <p>يقرأون البريد الوارد، يُصنّفون الأولويات، يُعدّون ردوداً مقترحة، وينهون المهام المرتبطة بكل رسالة تلقائياً.</p>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">trending_up</span></div>
+        <h3>وكلاء المبيعات والتواصل</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">يبحثون عن العملاء المحتملين، يُخصّصون رسائل التواصل، يُرسلون المتابعات، ويُحدّثون نظام CRM، ويديرون مئات المحادثات في وقت واحد.</p>
       </div>
-      <div class="card feature-card" data-cat="ops">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">search</span>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">manage_search</span></div>
         <h3>وكلاء البحث والتحليل</h3>
-        <p>يبحثون عبر مصادر متعددة، يلخّصون المعلومات، ويُعدّون تقارير جاهزة للقرار. خلال دقائق لا ساعات.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">يبحثون على الإنترنت، يقرأون المستندات، يُلخّصون النتائج، ويُسلّمون تقارير منظمة. ساعات من البحث تُنجز خلال دقائق.</p>
       </div>
-      <div class="card feature-card" data-cat="sales">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">manage_accounts</span>
-        <h3>وكلاء تحديث CRM</h3>
-        <p>يتابعون العملاء المحتملين، يُحدّثون السجلات، وينبّهون الفريق بالوقت المناسب، دون لمسة يدوية.</p>
-      </div>
-      <div class="card feature-card" data-cat="sales">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">filter_alt</span>
-        <h3>وكلاء تأهيل العملاء</h3>
-        <p>يتحدثون مع العملاء المحتملين، يطرحون الأسئلة الصحيحة، ويحوّلون الجاهزين فقط إلى فريق المبيعات.</p>
-      </div>
-      <div class="card feature-card" data-cat="customer">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">support_agent</span>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">support_agent</span></div>
         <h3>وكلاء خدمة العملاء</h3>
-        <p>يُجيبون على استفسارات العملاء بدقة واتساق، يصلون إلى قواعد المعرفة، ويُصعّدون ما يحتاج إنساناً.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">يتعاملون مع الدعم من المستوى الأول والثاني بشكل مستقل: يتحققون من حالة الطلبات، يُعالجون المرتجعات، يُصعّدون الحالات الاستثنائية، ولا يتركون عميلاً بالانتظار.</p>
       </div>
-      <div class="card feature-card" data-cat="ops">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">calendar_month</span>
-        <h3>وكلاء الجدولة والتنسيق</h3>
-        <p>يُنسّقون المواعيد، يُرسلون التذكيرات، ويديرون التقاويم، مع الأخذ بالحسبان تفضيلاتك ومتاحيّتك.</p>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">calendar_month</span></div>
+        <h3>وكلاء الجدولة والعمليات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">يُنسّقون التقاويم، يحجزون الاجتماعات، يديرون التوفر، ويتعاملون مع اللوجستيات، مما يُحرّر فريقك من التنسيق المتكرر ذهاباً وإياباً.</p>
       </div>
-    </div>
-
-    <!-- Live example -->
-    <div class="live-example">
-      <div class="live-example-img">
-        <img src="https://images.unsplash.com/photo-1611746869696-d09bce200020?w=800&q=80&auto=format&fit=crop" alt="وكيل ذكاء اصطناعي يرد على استفسارات العملاء عبر واتساب" loading="lazy" width="800" height="520" />
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">gavel</span></div>
+        <h3>وكلاء الامتثال والمراقبة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">يُراقبون البيانات، يُحددون الحالات الشاذة، يُراجعون المستندات للتحقق من الامتثال للسياسات، وينبّهون الأشخاص المعنيين، باستمرار ودون كلل.</p>
       </div>
-      <div class="live-example-text">
-        <div class="badge badge-cyan" style="margin-bottom:1rem;">مثال حي</div>
-        <h3 style="margin-bottom:0.75rem;">وكيل واتساب يتابع كل استفسار خلال ثوانٍ</h3>
-        <p style="color:#42474e;line-height:1.8;">عميل يسأل عن توفر غرفة أو موعد، الوكيل يرد فوراً، يتحقق من التوفر، ويحجز أو يُصعّد للفريق إذا احتاج الأمر قراراً بشرياً. لا انتظار، ولا رسالة تضيع.</p>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">build_circle</span></div>
+        <h3>أنظمة وكلاء مخصصة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">أنظمة متعددة الوكلاء يتعاون فيها وكلاء متخصصون: واحد يبحث، وآخر يكتب، وثالث يُراجع، ورابع يُنشر، وكلهم يُنسّقهم وكيل رئيسي.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Agent vs Chatbot comparison -->
-<section class="section" style="background:#f8fafc;">
-  <div class="container" style="max-width:760px;">
-    <div style="text-align:center;margin-bottom:2rem;">
-      <h2>وكيل ذكاء اصطناعي أم روبوت محادثة عادي؟</h2>
-    </div>
-    <div class="compare-wrap" style="overflow-x:auto;background:#fff;border:1px solid #e2e8f0;border-radius:16px;">
-      <table class="compare-table" style="width:100%;border-collapse:collapse;">
-        <thead>
-          <tr><th></th><th>روبوت محادثة عادي</th><th>وكيل Aegis AI</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>ينفّذ مهام متعددة الخطوات</td><td class="check-no">✕</td><td class="check-yes">✓</td></tr>
-          <tr><td>يتخذ قرارات بناء على السياق</td><td class="check-rarely">أحياناً</td><td class="check-yes">✓</td></tr>
-          <tr><td>يتصل بأنظمتك (CRM، بريد، واتساب)</td><td class="check-no">✕</td><td class="check-yes">✓</td></tr>
-          <tr><td>يعمل بالعربي والإنجليزي معاً</td><td class="check-rarely">أحياناً</td><td class="check-yes">✓</td></tr>
-          <tr><td>يُصعّد للإنسان عند الحاجة</td><td class="check-no">✕</td><td class="check-yes">✓</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- 4. Results Card -->
-<section class="section" style="background:#f8fafc;">
-  <div class="container" style="max-width:860px;">
-    <div style="text-align:center;margin-bottom:2.5rem;">
-      <h2>نتيجة حقيقية من دبي</h2>
+<section class="section" style="background:#f0f3ff;" aria-labelledby="industries-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="industries-heading">وكلاء الذكاء الاصطناعي في العمل: تطبيقات حسب القطاع</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">كل قطاع لديه مهام متكررة وعالية الحجم يمكن أن يتولاها الوكلاء. إليك أمثلة محددة عن كيفية استخدام الشركات في قطاعات مختلفة للوكلاء اليوم.</p>
     </div>
     <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
-      <img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1200&q=80&auto=format&fit=crop" alt="فريق عمليات يراجع مهام وكيل الذكاء الاصطناعي" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+      <img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1200&q=80&auto=format&fit=crop" alt="فريق عمليات يُراجع مهام الوكلاء في اجتماع تخطيط" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
     </div>
-    <div class="card results-card">
-      <div class="results-badge">
-        <span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">hotel</span>
-        مجموعة ضيافة فندقية، دبي
+    <div class="builds-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">real_estate_agent</span></div>
+        <h3>العقارات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">يُؤهّل الوكلاء العملاء المحتملين الواردين، يبحثون عن العقارات المطابقة لمعايير المشتري، يُرسلون تنبيهات بالعروض الجديدة، يُجدولون المعاينات، ويُتابعون مع العملاء المحتملين بالوتيرة المناسبة تماماً، كل ذلك دون جهد يدوي من موظفيك.</p>
       </div>
-      <div class="results-row">
-        <div class="results-col">
-          <div class="results-label">المشكلة</div>
-          <p>طلبات النزلاء تأتي عبر قنوات متعددة، واتساب والبريد الإلكتروني والهاتف، والفريق يرد يدوياً على كل شيء، مما يُبطئ الاستجابة ويرفع التكاليف التشغيلية.</p>
-        </div>
-        <div class="results-divider" aria-hidden="true">←</div>
-        <div class="results-col">
-          <div class="results-label">الحل</div>
-          <p>وكيل كونسيرج يفهم طلبات النزلاء، ينفّذ ما يستطيع تلقائياً، ويُصعّد ما يحتاج قراراً بشرياً. يعمل بالعربية والإنجليزية على مدار الساعة.</p>
-        </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">storefront</span></div>
+        <h3>التجارة الإلكترونية والتجزئة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">وكلاء خدمة العملاء يتعاملون مع حالة الطلبات، المرتجعات، وأسئلة المنتجات على مدار الساعة. وكلاء مراقبة المخزون يُنبّهون عند انخفاض المخزون ويُطلقون إجراءات إعادة الطلب. وكلاء تحليل الأسعار يُتابعون المنافسين ويُعدّلون توصيات التسعير.</p>
       </div>
-      <div class="results-metrics">
-        <div class="metric">
-          <div class="metric-number">٨٠٪</div>
-          <div class="metric-label">من الطلبات تُعالَج تلقائياً</div>
-        </div>
-        <div class="metric">
-          <div class="metric-number">٢٤/٧</div>
-          <div class="metric-label">خدمة بلا انقطاع بالعربي والإنجليزي</div>
-        </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">local_shipping</span></div>
+        <h3>اللوجستيات والعمليات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">يُراقب الوكلاء حالة الشحنات عبر شركات النقل المختلفة، يتواصلون مع العملاء استباقياً عند حدوث تأخير، يُحدّثون الأنظمة الداخلية، ويُصعّدون الاستثناءات لفريق العمليات فقط عند الحاجة الفعلية لتدخل بشري.</p>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- 5. How It Works -->
-<section class="section">
-  <div class="container" style="max-width:760px;">
-    <div style="text-align:center;margin-bottom:3rem;">
-      <h2>كيف يسير العمل</h2>
-    </div>
-    <div class="process-steps">
-      <div class="process-step">
-        <div class="step-number">١</div>
-        <div class="step-content">
-          <h3>تحديد المهام والصلاحيات</h3>
-          <p>نجلس معك لتحديد ما يُنفّذه الوكيل وحده، وما يُصعّده للفريق. تُحدّد أنت حدود الاستقلالية، ونبني على هذا الأساس.</p>
-        </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">hotel</span></div>
+        <h3>الضيافة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">وكلاء الحجز يتعاملون مع رحلة الاستفسار حتى التأكيد، يُجيبون عن أسئلة العقار، يُديرون التحقق من التوفر، ويُرسلون رسائل مخصصة قبل الوصول، مما يُقلّل العبء على مكتب الاستقبال دون التأثير على جودة الخدمة.</p>
       </div>
-      <div class="process-step">
-        <div class="step-number">٢</div>
-        <div class="step-content">
-          <h3>بناء وربط الأنظمة</h3>
-          <p>نبني الوكيل ونربطه بالأنظمة التي تحتاجها: CRM، بريد إلكتروني، واتساب، وغيرها. نختبره على حالات حقيقية قبل الإطلاق.</p>
-        </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">account_balance</span></div>
+        <h3>المالية والخدمات المهنية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">وكلاء البحث يجمعون البيانات المالية، يُحللون تقارير الشركات، ويُعدّون مذكرات استثمارية. وكلاء الامتثال يُراقبون المستندات وينبّهون عند مخالفة السياسات. وكلاء التسجيل يجمعون بيانات العملاء ويُجرون فحوصات الخلفية، ليتفرغ فريقك لبناء العلاقات واتخاذ القرارات المهمة.</p>
       </div>
-      <div class="process-step">
-        <div class="step-number">٣</div>
-        <div class="step-content">
-          <h3>إطلاق ومراقبة</h3>
-          <p>يعمل الوكيل ونتابع أداءه في المرحلة الأولى معاً. لوحة مراقبة تعرض كل إجراء اتخذه، شفافية كاملة.</p>
-        </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">health_and_safety</span></div>
+        <h3>الرعاية الصحية والعيادات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">وكلاء جدولة المواعيد يُديرون الحجز، إعادة الجدولة، والتذكيرات. الوكلاء الإداريون يتعاملون مع أوراق الموافقة المسبقة من شركات التأمين. وكلاء متابعة المرضى يُرسلون تعليمات الخروج ويجمعون التقييمات بعد الزيارة تلقائياً.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 6. Guarantee -->
-<section class="section" style="background:#e7eeff;padding:4rem 0;text-align:center;">
+<section class="section" style="background:#e7eeff;" aria-labelledby="how-heading">
   <div class="container">
-    <div class="guarantee-badge" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:18px;direction:ltr;" aria-hidden="true">shield</span>
-      ضمان الاسترداد الكامل، الوحيد في الإمارات
+    <div class="section-header">
+      <h2 id="how-heading">كيف نبني وننشر وكيلك</h2>
     </div>
-    <h2 style="margin-bottom:1rem;">إذا لم تكن راضياً، لا تدفع أي شيء.</h2>
-    <p style="color:#42474e;max-width:560px;margin:0 auto 2rem;line-height:1.8;">نبني، تختبر، وإذا لم تكن راضياً تماماً نردّ ١٠٠٪ خلال ٣٠ يوماً من التسليم. بدون أسئلة.</p>
-    <button onclick="openModal(this)" data-source="ar_ai-agents_guarantee" class="btn-primary">ابدأ بدون مخاطرة</button>
+    <div style="border-radius:20px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 20px 48px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1200&q=80&auto=format&fit=crop" alt="أرضية تجزئة مدعومة بالذكاء الاصطناعي في دبي حيث يُراقب وكيل المخزون والتسعير" loading="lazy" width="1200" height="320" style="width:100%; height:clamp(180px, 26vw, 320px); object-fit:cover; display:block;" />
+    </div>
+    <ProcessSteps steps={processSteps} />
   </div>
 </section>
 
-<!-- 7. FAQ -->
-<section class="section">
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
   <div class="container" style="max-width:720px;">
-    <div style="text-align:center;margin-bottom:3rem;">
-      <h2>أسئلة شائعة</h2>
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
     </div>
-    <div class="faq-list">
-
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          ما الفرق بين وكيل الذكاء الاصطناعي وروبوت المحادثة العادي؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">روبوت المحادثة يجيب على أسئلة. الوكيل يُفكر ويتصرف: يكمل مهام متعددة الخطوات بشكل مستقل، مثل البحث عن معلومة ثم إرسال بريد إلكتروني ثم تحديث سجل العميل، مما يُحرّر فريقك للتركيز على القرارات التي تحتاج حكماً بشرياً حقيقياً.</div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل يمكن للوكيل التعامل مع العربية والإنجليزية معاً؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نعم. جميع وكلاءنا ثنائيو اللغة بشكل كامل. يفهمون السياق ويردون بنفس لغة المستخدم، ويتعاملون مع التبديل بين اللغتين في نفس المحادثة.</div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          ما الأنظمة التي يمكن للوكيل الوصول إليها؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نبني الوكلاء ليصلوا إلى ما تحتاجه: بريد إلكتروني، CRM، تقاويم، قواعد بيانات، واتساب، وأدوات التواصل الداخلي. نحدد الصلاحيات بدقة لضمان الأمان الكامل.</div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          كيف نضمن أن الوكيل لن يتخذ قرارات خاطئة؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نصمم الوكلاء بحدود واضحة. يعرف الوكيل متى يتصرف ومتى يصعّد للإنسان. تحدد أنت مستوى الاستقلالية، ونبني نظام مراجعة داخلي لأي إجراء حساس.</div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل يمكن للوكيل أن يتعلم ويتحسن مع الوقت؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نعم. نصمم الوكلاء ليجمعوا تغذية راجعة من نتائجهم ويحسّنوا أداءهم. بعض الوكلاء يُحدَّثون يدوياً بشكل دوري، وبعضها يمكن أن يتكيف تلقائياً بناء على الأنماط.</div>
-      </div>
-
-    </div>
+    <FaqAccordion items={faqItems} />
   </div>
 </section>
 
-<!-- 8. Final CTA Band -->
-<section class="cta-band" style="border-radius:24px;margin:2rem 2rem 4rem;">
-  <div class="container" style="text-align:center;">
-    <h2 style="margin-bottom:1rem;">هل أنت مستعد لوكيل يعزز قدرة فريقك؟</h2>
-    <p style="opacity:0.85;max-width:500px;margin:0 auto 2rem;line-height:1.8;">احجز جلسة تشخيص مجانية. نحدد أي المهام يمكن أتمتتها فوراً حتى يركز فريقك على ما يستحق وقته.</p>
-    <button onclick="openModal(this)" data-source="ar_ai-agents_cta" class="btn-primary">احجز جلستك المجانية</button>
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">مكالمة استكشافية مجانية</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">هل أنت مستعد لنشر أول وكيل ذكاء اصطناعي لك؟</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">أخبرنا بما تريد أتمتته. بصفتنا وكالة ذكاء اصطناعي مقرها دبي، سنُصمم وكيلاً يتولى المهمة ونُريك بالضبط كيف يعمل قبل أن نبنيه.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ مجاني 100%</span>
+      <span class="cta-trust-badge">✓ بدون التزام</span>
+      <span class="cta-trust-badge">✓ ضمان استرداد</span>
+    </div>
+    <button onclick="openModal(this)" data-source="ar_agents_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجز مكالمتك الاستكشافية المجانية</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة 30 دقيقة · بدون ضغط للبيع</p>
   </div>
-</section>
+</div>
+
+<script>
+document.querySelectorAll('[data-agent-demo]').forEach((demo) => {
+  demo.querySelectorAll('.tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      demo.querySelectorAll('.tab-btn').forEach((b) => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+      demo.querySelectorAll('.tab-panel').forEach((p) => p.classList.add('hidden'));
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      const target = (btn as HTMLElement).dataset.tab;
+      demo.querySelector(`[data-panel="${target}"]`)?.classList.remove('hidden');
+    });
+  });
+});
+</script>
 
 </ArBaseLayout>
 
-<script define:vars={{ pageId: 'ai-agents' }}>
-  (function () {
-    const wrap = document.getElementById('agent-tabs');
-    if (!wrap) return;
-    const buttons = wrap.querySelectorAll('.agent-tab');
-    const cards = document.querySelectorAll('.feature-ledger .card[data-cat]');
-    buttons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        buttons.forEach((b) => b.classList.remove('active'));
-        btn.classList.add('active');
-        const cat = btn.getAttribute('data-cat');
-        cards.forEach((card) => {
-          card.style.display = cat === 'all' || card.getAttribute('data-cat') === cat ? '' : 'none';
-        });
-      });
-    });
-  })();
-</script>
-
 <style>
-  .stats-strip {
-    display: flex;
-    justify-content: center;
-    gap: 3rem;
-    flex-wrap: wrap;
-    text-align: center;
-  }
-  .stat-item { min-width: 120px; }
-  .stat-number { font-size: 2rem; font-weight: 800; color: #00253b; line-height: 1.1; }
-  .stat-label { font-size: 0.8125rem; color: #5f6b7a; margin-top: 0.375rem; }
-
-  .feature-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-  }
-  .feature-card { display: flex; flex-direction: column; gap: 0.75rem; }
-  .feature-icon { font-size: 2rem; color: #006875; }
-  .feature-card h3 { font-size: 1rem; font-weight: 700; color: #00253b; margin: 0; }
-  .feature-card p { font-size: 0.875rem; color: #42474e; line-height: 1.7; margin: 0; }
-
-  .results-card { padding: 2.5rem; }
-  .results-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: rgba(0,104,117,0.1); color: #004f58;
-    font-size: 0.8125rem; font-weight: 700; padding: 5px 14px;
-    border-radius: 100px; margin-bottom: 2rem;
-  }
-  .results-row { display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 2rem; }
-  .results-col { flex: 1; }
-  .results-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #006875; margin-bottom: 0.5rem; }
-  .results-col p { font-size: 0.9375rem; color: #42474e; line-height: 1.75; margin: 0; }
-  .results-divider { font-size: 1.5rem; color: #c4cbd4; padding-top: 1.5rem; flex-shrink: 0; }
-  .results-metrics { display: flex; gap: 2rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0; }
-  .metric { flex: 1; text-align: center; }
-  .metric-number { font-size: 2rem; font-weight: 800; color: #006875; line-height: 1.1; }
-  .metric-label { font-size: 0.8125rem; color: #5f6b7a; margin-top: 0.375rem; }
-
-  .process-steps { display: flex; flex-direction: column; gap: 2rem; }
-  .process-step { display: flex; gap: 1.5rem; align-items: flex-start; }
-  .step-number {
-    width: 44px; height: 44px; border-radius: 50%;
-    background: #00253b; color: #fff;
-    font-size: 1.125rem; font-weight: 800;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .step-content h3 { font-size: 1.0625rem; font-weight: 700; color: #00253b; margin: 0 0 0.5rem; }
-  .step-content p { font-size: 0.9375rem; color: #42474e; line-height: 1.75; margin: 0; }
-
-  .faq-list { display: flex; flex-direction: column; gap: 0; }
-
-  .agent-tabs { display: flex; flex-wrap: wrap; gap: 0.625rem; justify-content: center; margin-bottom: 2.5rem; }
-  .agent-tab {
-    font-size: 0.875rem; font-weight: 600; padding: 0.5rem 1.25rem;
-    border-radius: 100px; border: 1px solid rgba(0,37,59,0.14);
-    background: #fff; color: #42474e; cursor: pointer;
-    transition: all .2s var(--ease); font-family: inherit;
-  }
-  .agent-tab:hover { border-color: rgba(0,104,117,0.4); color: #006875; }
-  .agent-tab.active { background: #00253b; border-color: #00253b; color: #fff; }
-
-  .live-example {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: center;
-    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 24px; padding: 2rem; margin-top: 3rem;
-  }
-  .live-example-img { border-radius: 16px; overflow: hidden; height: 260px; }
-  .live-example-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-  @media (max-width: 900px) { .feature-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 768px) {
-    .live-example { grid-template-columns: 1fr; padding: 1.25rem; }
-    .live-example-img { height: 200px; }
-  }
-  @media (max-width: 580px) {
-    .feature-grid { grid-template-columns: 1fr; }
-    .results-row { flex-direction: column; }
-    .results-divider { display: none; }
-    .stats-strip { gap: 1.5rem; }
-  }
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+.builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+.explain-split { display:grid; grid-template-columns:1.3fr 1fr; gap:3rem; align-items:center; max-width:1080px; margin:0 auto; }
+.explain-img-wrap { border-radius:20px; overflow:hidden; box-shadow:0 20px 48px rgba(0,59,92,0.12); }
+.explain-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; min-height:280px; }
+.agent-demo { max-width:820px; margin:0 auto; background:#fff; border-radius:20px; padding:2rem; box-shadow:0 8px 32px rgba(0,37,59,0.06); }
+.tab-buttons { display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.75rem; border-bottom:1px solid rgba(0,37,59,0.10); padding-bottom:1.25rem; }
+.tab-btn { background:#f0f3ff; border:1px solid transparent; border-radius:100px; padding:0.625rem 1.25rem; font-size:0.875rem; font-weight:600; color:#42474e; cursor:pointer; font-family:inherit; transition:background .2s, color .2s, border-color .2s; }
+.tab-btn:hover { color:#006875; }
+.tab-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+.tab-btn.active { background:#00253b; color:#fff; border-color:#00253b; }
+.tab-panel.hidden { display:none; }
+.demo-step { display:flex; gap:1rem; align-items:flex-start; padding:0.875rem 0; border-bottom:1px solid rgba(0,37,59,0.07); }
+.demo-step:last-child { border-bottom:none; }
+.demo-step-num { flex-shrink:0; width:28px; height:28px; border-radius:50%; background:rgba(0,227,253,0.15); color:#006875; font-weight:700; font-size:0.8125rem; display:flex; align-items:center; justify-content:center; }
+.demo-step p { color:#42474e; font-size:0.9375rem; line-height:1.65; margin:0; }
+@media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .explain-split { grid-template-columns:1fr; } .explain-img-wrap img { min-height:220px; } }
+@media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
 </style>
