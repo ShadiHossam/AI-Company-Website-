@@ -1,0 +1,588 @@
+/* ── Homepage Redesign — scoped design system ──
+   Everything here is scoped under .hp-redesign so it only affects the
+   homepage content between the hero and the final CTA. Nav/footer and every
+   other page keep using global.css untouched. */
+
+@import '@fontsource-variable/fraunces';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+
+.hp-redesign {
+  --hp-bg: #ffffff;
+  --hp-bg-alt: #f7f8fb;
+  --hp-ink: #0b0f19;
+  --hp-ink-soft: #12141a;
+  --hp-muted: #5b6472;
+  --hp-muted-soft: #8891a0;
+  --hp-accent: #0f9d63;
+  /* Darker than --hp-accent — passes WCAG AA (4.5:1) for small text on --hp-bg/--hp-bg-alt; use --hp-accent only for icons/large text/decorative use (3:1 threshold), --hp-accent-text for any link/label text. */
+  --hp-accent-text: #0a6b44;
+  /* Light mint for text/icons sitting on a dark photo overlay (e.g. Industries cards) — the darker --hp-accent-text tokens would be illegible there. Verified ~12:1 contrast against the overlay gradient. */
+  --hp-accent-on-dark: #6ee7b0;
+  --hp-line: #eceef3;
+
+  background: var(--hp-bg);
+  font-family: 'Inter', sans-serif;
+  color: var(--hp-ink);
+}
+
+.hp-redesign h1,
+.hp-redesign h2,
+.hp-redesign h3,
+.hp-redesign h4 {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--hp-ink-soft);
+  text-wrap: balance;
+}
+
+.hp-redesign .hp-accent {
+  color: var(--hp-accent);
+  font-style: italic;
+}
+
+.hp-redesign ::selection {
+  background: rgba(15, 157, 99, 0.22);
+  color: var(--hp-ink);
+}
+
+/* Buttons — replace the cyan-gradient .btn-primary / navy-outline .btn-outline
+   from global.css with the flat-ink pill system from the design spec. */
+.hp-redesign .btn-primary {
+  background: var(--hp-ink);
+  color: #ffffff;
+  border-radius: 100px;
+  box-shadow: none;
+}
+.hp-redesign .btn-primary::before { display: none; }
+.hp-redesign .btn-primary:hover {
+  box-shadow: 0 10px 24px -10px rgba(11, 15, 25, 0.35);
+}
+.hp-redesign .btn-outline {
+  border-color: var(--hp-line);
+  color: var(--hp-ink);
+  border-radius: 100px;
+  background: #ffffff;
+}
+.hp-redesign .btn-outline:hover {
+  background: var(--hp-bg-alt);
+  box-shadow: none;
+}
+
+/* Kill the old cyan gradient-text trick everywhere on the homepage; the new
+   accent device is the inline gradient orb (added per-section below) plus
+   the italic mint .hp-accent span. */
+.hp-redesign .gradient-text {
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  color: var(--hp-ink-soft);
+}
+
+/* Inline gradient-orb accent, used inside hero and CTA headlines */
+.hp-redesign .hp-orb {
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin: 0 0.12em;
+  transform: translateY(-0.08em);
+}
+.hp-redesign .hp-orb-a {
+  background: conic-gradient(from 200deg, #ff8bd6, #7c6cf0, #3adfc4, #ff8bd6);
+}
+.hp-redesign .hp-orb-b {
+  background: radial-gradient(circle at 30% 30%, #ffd28a, #ff7a59 60%, #7c3aed 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-redesign .hp-orb { animation: none !important; }
+}
+
+.hp-redesign .hp-hero {
+  background: var(--hp-bg);
+  padding: 4rem 0 0;
+  position: static;
+}
+.hp-redesign .hp-hero-copy {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+}
+.hp-redesign .hp-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--hp-muted);
+  margin-bottom: 1.5rem;
+}
+.hp-redesign .hp-hero-eyebrow-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--hp-accent);
+}
+.hp-redesign .hp-hero-copy h1 {
+  font-size: clamp(2.25rem, 4.5vw, 3.25rem);
+  line-height: 1.2;
+  margin: 0 0 1.5rem;
+}
+.hp-redesign .hp-hero-lede {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--hp-muted);
+  max-width: 46rem;
+  margin: 0 auto 2rem;
+}
+.hp-redesign .hp-hero-cta-row {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 3rem;
+}
+.hp-redesign .hp-hero-photo {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.hp-redesign .hp-hero-photo img {
+  width: 100%;
+  height: auto;
+  max-height: 520px;
+  object-fit: cover;
+  display: block;
+}
+.hp-redesign .hp-hero-photo-badge {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  right: 24px;
+  max-width: 320px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.hp-redesign .hp-hero-photo-badge-num {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 1.5rem;
+  color: var(--hp-accent);
+}
+.hp-redesign .hp-hero-photo-badge-label {
+  font-size: 0.8125rem;
+  color: var(--hp-ink);
+  line-height: 1.4;
+}
+@media (max-width: 640px) {
+  .hp-redesign .hp-hero-photo-badge { position: static; margin-top: 12px; max-width: none; }
+}
+
+/* Stat band */
+.hp-redesign .stat-band {
+  background: var(--hp-bg) !important;
+  border-top: 1px solid var(--hp-line);
+  border-bottom: 1px solid var(--hp-line);
+  padding: 0 !important;
+}
+.hp-redesign .stat-band-grid {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.hp-redesign .stat-band-item {
+  padding: 2rem 1.5rem;
+}
+.hp-redesign .stat-band-item + .stat-band-item::before {
+  background: var(--hp-line) !important;
+}
+.hp-redesign .stat-band-icon {
+  background: var(--hp-bg-alt) !important;
+  color: var(--hp-accent) !important;
+  border: 1px solid var(--hp-line) !important;
+}
+.hp-redesign .stat-band-icon-amber {
+  background: var(--hp-bg-alt) !important;
+  color: var(--hp-accent) !important;
+  border-color: var(--hp-line) !important;
+}
+.hp-redesign .stat-band-number {
+  font-family: 'Fraunces', serif;
+  font-weight: 600 !important;
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: var(--hp-ink-soft) !important;
+}
+.hp-redesign .stat-band-label {
+  color: var(--hp-muted) !important;
+}
+
+/* Services */
+.hp-redesign .hp-services {
+  background: var(--hp-bg);
+}
+.hp-redesign .hp-service-grid {
+  margin-bottom: 2.5rem;
+}
+.hp-redesign .hp-service-card {
+  /* !important required: this div also carries the old .service-card class,
+     whose Astro-scoped rule (.service-card[data-astro-cid-*]) has the exact
+     same specificity (0,2,0) as .hp-redesign .hp-service-card and appears
+     later in the compiled bundle, so it would otherwise win the tie on
+     these shared properties (verified against dist/client/_astro/index.*.css). */
+  background: var(--hp-bg-alt) !important;
+  border: 1px solid var(--hp-line) !important;
+  border-radius: 16px !important;
+  padding: 1.75rem !important;
+}
+.hp-redesign .hp-service-card:hover {
+  border-color: var(--hp-accent);
+}
+.hp-redesign .hp-service-icon {
+  /* Same specificity tie as above, this time against
+     .service-icon[data-astro-cid-*] which sets background/color. */
+  background: #ffffff !important;
+  border: 1px solid var(--hp-line);
+  color: var(--hp-accent) !important;
+}
+.hp-redesign .hp-service-card h3 {
+  font-size: 1.1875rem;
+  margin-bottom: 0.75rem;
+}
+.hp-redesign .hp-service-card p {
+  color: var(--hp-muted);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+.hp-redesign .hp-service-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--hp-accent-text);
+  text-decoration: none;
+}
+
+/* Cascade fix: neutralize the Astro-scoped local .service-card rules'
+   box-shadow/transform on hover so the JS-driven hover-lift in
+   homepage-motion.ts (Task 4) is the only thing animating transform, and so
+   .hp-service-card's flat, no-shadow look isn't fought by the old rule. */
+.hp-redesign .service-card {
+  box-shadow: none !important;
+}
+.hp-redesign .service-card:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: var(--hp-accent) !important;
+}
+.hp-redesign .service-card:hover .service-icon {
+  transform: none !important;
+}
+
+/* Testimonials */
+.hp-redesign .hp-testimonials {
+  background: var(--hp-bg) !important;
+}
+.hp-redesign .testimonial-card {
+  background: var(--hp-bg-alt) !important;
+  border: 1px solid var(--hp-line) !important;
+  box-shadow: none !important;
+}
+.hp-redesign .testimonial-card:hover {
+  box-shadow: none !important;
+  transform: none !important;
+  border-color: var(--hp-accent) !important;
+}
+.hp-redesign .testimonial-quote-icon {
+  color: var(--hp-accent) !important;
+}
+.hp-redesign .testimonial-quote {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-weight: 500;
+  color: var(--hp-ink-soft) !important;
+}
+.hp-redesign .testimonial-name {
+  color: var(--hp-ink) !important;
+}
+.hp-redesign .testimonial-role {
+  color: var(--hp-muted) !important;
+}
+.hp-redesign .testimonial-avatar-initials {
+  background: var(--hp-accent-text) !important;
+  color: #ffffff !important;
+}
+.hp-redesign .testimonial-industry {
+  background: var(--hp-bg) !important;
+  border: 1px solid var(--hp-line) !important;
+  color: var(--hp-accent-text) !important;
+}
+/* Cascade fix: the old .testimonial-footer border-top
+   (rgba(0,37,59,0.08), a translucent dark hairline) was tuned against a
+   #fff card background. Now that .testimonial-card sits on --hp-bg-alt
+   (#f7f8fb), swap it for the same --hp-line token used everywhere else in
+   the redesign so the hairline stays consistent instead of reading as a
+   mismatched one-off shade. */
+.hp-redesign .testimonial-footer {
+  border-top: 1px solid var(--hp-line) !important;
+}
+
+/* Authority */
+.hp-redesign .authority-eyebrow {
+  color: var(--hp-accent-text) !important;
+}
+.hp-redesign .authority-para {
+  color: var(--hp-muted) !important;
+}
+.hp-redesign .authority-link {
+  color: var(--hp-accent-text) !important;
+}
+.hp-redesign .authority-link:hover {
+  color: var(--hp-ink) !important;
+}
+
+/* Who This Is For */
+.hp-redesign .hp-who {
+  background: var(--hp-bg);
+}
+.hp-redesign .statement-row {
+  border-bottom-color: var(--hp-line);
+}
+.hp-redesign .statement-row:hover {
+  border-bottom-color: var(--hp-accent);
+}
+.hp-redesign .statement-row > .statement-icon {
+  background: var(--hp-bg-alt);
+  border-color: var(--hp-line);
+  color: var(--hp-accent);
+}
+.hp-redesign .statement-row > h3 {
+  color: var(--hp-ink-soft);
+}
+.hp-redesign .statement-row > p {
+  color: var(--hp-muted);
+}
+
+/* Industries */
+.hp-redesign .hp-industries {
+  background: var(--hp-bg-alt);
+}
+.hp-redesign .industry-icon {
+  color: var(--hp-accent-on-dark) !important;
+}
+.hp-redesign .industry-link {
+  color: var(--hp-accent-on-dark) !important;
+}
+.hp-redesign .industry-card {
+  border-color: var(--hp-line) !important;
+}
+
+/* Picker */
+.hp-redesign .hp-picker {
+  background: var(--hp-bg-alt);
+}
+.hp-redesign .picker-btn {
+  background: #ffffff !important;
+  border-color: var(--hp-line) !important;
+  color: var(--hp-ink) !important;
+}
+.hp-redesign .picker-btn:hover {
+  border-color: var(--hp-accent) !important;
+  color: var(--hp-accent-text) !important;
+  box-shadow: none !important;
+}
+.hp-redesign .picker-btn.active {
+  background: var(--hp-ink) !important;
+  border-color: var(--hp-ink) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+.hp-redesign .picker-btn:focus-visible {
+  outline-color: var(--hp-accent) !important;
+}
+.hp-redesign .picker-hint {
+  color: var(--hp-muted) !important;
+  border-color: var(--hp-line) !important;
+}
+.hp-redesign .picker-card {
+  background: #ffffff !important;
+  border-color: var(--hp-line) !important;
+  box-shadow: none !important;
+}
+.hp-redesign .picker-card .service-icon {
+  background: var(--hp-bg-alt) !important;
+  color: var(--hp-accent) !important;
+}
+.hp-redesign .picker-card-label {
+  color: var(--hp-accent-text) !important;
+}
+.hp-redesign .picker-card-title {
+  color: var(--hp-ink-soft) !important;
+}
+.hp-redesign .picker-card-desc {
+  color: var(--hp-muted) !important;
+}
+.hp-redesign .picker-learn-link {
+  color: var(--hp-accent-text) !important;
+}
+.hp-redesign .picker-learn-link:hover {
+  color: var(--hp-ink) !important;
+}
+
+/* Value grid */
+.hp-redesign .hp-different {
+  background: var(--hp-bg);
+}
+.hp-redesign .value-card {
+  background: var(--hp-bg-alt) !important;
+  border-color: var(--hp-line) !important;
+  box-shadow: none !important;
+}
+.hp-redesign .value-card:hover {
+  box-shadow: none !important;
+  transform: none !important;
+  border-color: var(--hp-accent) !important;
+}
+.hp-redesign .value-card .service-icon {
+  background: var(--hp-bg-alt) !important;
+  color: var(--hp-accent) !important;
+}
+.hp-redesign .hp-value-heading {
+  color: var(--hp-ink-soft);
+}
+
+/* Comparison table */
+.hp-redesign .hp-compare {
+  background: var(--hp-bg-alt);
+}
+.hp-redesign .compare-wrap {
+  background: #ffffff !important;
+  border-color: var(--hp-line) !important;
+}
+.hp-redesign .compare-table th {
+  background: var(--hp-bg-alt) !important;
+  color: var(--hp-ink) !important;
+}
+.hp-redesign .compare-table td {
+  color: var(--hp-muted) !important;
+  border-bottom-color: var(--hp-line) !important;
+}
+.hp-redesign .check-yes {
+  color: var(--hp-accent-text) !important;
+}
+.hp-redesign .check-no {
+  color: var(--hp-muted) !important;
+}
+.hp-redesign .compare-table th.hp-compare-highlight {
+  color: var(--hp-accent-text) !important;
+}
+
+/* Process thread */
+.hp-redesign .thread-node {
+  background: #ffffff;
+  border-color: var(--hp-line);
+  color: var(--hp-accent-text);
+}
+.hp-redesign .thread-step-final .thread-node {
+  background: var(--hp-accent-text);
+  border-color: var(--hp-accent);
+  color: #ffffff;
+}
+.hp-redesign .process-thread::before {
+  background: linear-gradient(to right, transparent, var(--hp-line) 7%, var(--hp-line) 93%, transparent);
+}
+.hp-redesign .hp-thread-heading {
+  color: var(--hp-ink-soft);
+}
+
+/* FAQ preview */
+.hp-redesign .hp-faq-preview {
+  background: var(--hp-bg-alt);
+}
+.hp-redesign .faq-item {
+  background: #ffffff !important;
+  border-color: var(--hp-line) !important;
+}
+.hp-redesign .faq-question {
+  color: var(--hp-ink) !important;
+}
+.hp-redesign .faq-question::after {
+  color: var(--hp-muted) !important;
+}
+.hp-redesign .faq-answer {
+  color: var(--hp-muted) !important;
+}
+
+/* Blog preview */
+.hp-redesign .resource-card {
+  border-color: var(--hp-line) !important;
+  box-shadow: none !important;
+}
+.hp-redesign .resource-card:hover {
+  box-shadow: none !important;
+  transform: none !important;
+  border-color: var(--hp-accent) !important;
+}
+.hp-redesign .resource-card-pill {
+  background: var(--hp-bg-alt) !important;
+  color: var(--hp-accent-text) !important;
+  border-color: var(--hp-line) !important;
+}
+.hp-redesign .resource-card-title {
+  color: var(--hp-ink-soft) !important;
+}
+.hp-redesign .resource-card-excerpt {
+  color: var(--hp-muted) !important;
+}
+.hp-redesign .resource-card-link {
+  color: var(--hp-accent-text) !important;
+}
+.hp-redesign .hp-view-all-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-weight: 700; font-size: 0.9375rem;
+  color: var(--hp-ink);
+  background: #ffffff;
+  border: 1.5px solid var(--hp-line);
+  border-radius: 12px;
+  padding: 0.875rem 2rem;
+  text-decoration: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.hp-redesign .hp-view-all-link:hover {
+  border-color: var(--hp-accent);
+}
+
+/* Final CTA */
+.hp-redesign .cta-band {
+  background: var(--hp-bg-alt);
+  border-color: var(--hp-line);
+  box-shadow: none;
+}
+.hp-redesign .cta-band::before,
+.hp-redesign .cta-band::after {
+  display: none;
+}
+.hp-redesign .cta-band p {
+  color: var(--hp-muted);
+}
+.hp-redesign .hp-cta-heading {
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  margin-bottom: 1.5rem;
+}
+.hp-redesign .cta-trust-badge {
+  background: #ffffff;
+  border: 1px solid var(--hp-line);
+  color: var(--hp-muted);
+}
