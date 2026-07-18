@@ -14,7 +14,7 @@ export default defineConfig({
     },
   },
   define: {
-    'import.meta.env.SITE_URL': JSON.stringify('https://aegisai.ae'),
+    'import.meta.env.SITE_URL': JSON.stringify('https://lenooai.com'),
     'import.meta.env.SUPABASE_URL': JSON.stringify('https://test.supabase.co'),
     'import.meta.env.SUPABASE_SERVICE_ROLE_KEY': JSON.stringify('test-service-role-key'),
     'import.meta.env.SUPABASE_JWT_SECRET': JSON.stringify('super-secret-jwt-key-for-testing-purposes-only'),

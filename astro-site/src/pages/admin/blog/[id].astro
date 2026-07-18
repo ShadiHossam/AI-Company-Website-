@@ -3,6 +3,7 @@ export const prerender = false;
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { getSupabaseAdmin } from '../../../lib/supabase';
 import { marked } from 'marked';
+import { sanitizeRichText } from '../../../lib/sanitize';
 
 const user = Astro.locals.user!;
 const supabase = getSupabaseAdmin();
@@ -27,7 +28,7 @@ const createdAt = new Date(post.created_at).toLocaleString('en-AE', { dateStyle:
 const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle: 'medium', timeStyle: 'short' });
 
 // Load initial HTML for TipTap: prefer body_html, fall back to converting body_markdown
-const initialHtml: string = post.body_html || (post.body_markdown ? await marked.parse(post.body_markdown) : '');
+const initialHtml: string = sanitizeRichText(post.body_html || (post.body_markdown ? await marked.parse(post.body_markdown) : ''));
 
 const [{ data: dbCategories }, { data: dbTags }, { data: postTagRows }] = await Promise.all([
   supabase.from('blog_categories').select('id, name').order('sort_order', { ascending: true }).order('name', { ascending: true }),
@@ -102,7 +103,7 @@ const postTagIds = new Set((postTagRows ?? []).map((r: { tag_id: string }) => r.
             </div>
             <div class="form-group">
               <label class="form-label" for="author_name">Author</label>
-              <input id="author_name" name="author_name" type="text" class="form-input" value={post.author_name ?? 'Aegis AI'} />
+              <input id="author_name" name="author_name" type="text" class="form-input" value={post.author_name ?? 'Lenoo AI'} />
             </div>
           </div>
 

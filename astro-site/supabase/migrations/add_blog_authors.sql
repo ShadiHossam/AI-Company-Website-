@@ -14,5 +14,5 @@ CREATE TABLE blog_authors (
 );
 
 -- Seed the default author already referenced by existing blog_posts.author_name
-INSERT INTO blog_authors (name, slug) VALUES ('Aegis AI', 'aegis-ai')
+INSERT INTO blog_authors (name, slug) VALUES ('Lenoo AI', 'lenoo-ai')
 ON CONFLICT (slug) DO NOTHING;

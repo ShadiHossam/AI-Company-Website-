@@ -81,8 +81,8 @@ function makeSvg(title, subtitle, eyebrow) {
   <text x="80" y="${titleY + lines.length * 72 + 44}" font-family="Arial, sans-serif" font-size="28" fill="rgba(255,255,255,0.60)" font-weight="400">${s}</text>
 
   <!-- Bottom: logo area -->
-  <text x="80" y="${H - 28}" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="rgba(255,255,255,0.35)">AEGIS AI</text>
-  <text x="${W - 80}" y="${H - 28}" font-family="Arial, sans-serif" font-size="20" fill="${TEAL}" text-anchor="end" font-weight="600">aegisai.ae</text>
+  <text x="80" y="${H - 28}" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="rgba(255,255,255,0.35)">LENOO AI</text>
+  <text x="${W - 80}" y="${H - 28}" font-family="Arial, sans-serif" font-size="20" fill="${TEAL}" text-anchor="end" font-weight="600">lenooai.com</text>
 
   <!-- Divider line -->
   <line x1="80" y1="${H - 88}" x2="${W - 80}" y2="${H - 88}" stroke="rgba(255,255,255,0.10)" stroke-width="1"/>
@@ -98,7 +98,7 @@ const pages = [
   },
   {
     file: 'og-about.jpg',
-    eyebrow: 'ABOUT AEGIS AI',
+    eyebrow: 'ABOUT LENOO AI',
     title: 'We Build AI That Actually Works',
     subtitle: 'Dubai-based team. Bilingual. 100% refund guarantee.',
   },
@@ -122,7 +122,7 @@ const pages = [
   },
   {
     file: 'og-services.jpg',
-    eyebrow: 'AEGIS AI SERVICES',
+    eyebrow: 'LENOO AI SERVICES',
     title: 'Three Services. One Mission: AI-Ready.',
     subtitle: 'Build · Train · Strategise — covered by our guarantee',
   },
@@ -134,7 +134,7 @@ const pages = [
   },
   {
     file: 'og-products.jpg',
-    eyebrow: 'AEGIS AI PRODUCTS',
+    eyebrow: 'LENOO AI PRODUCTS',
     title: 'Ready-Made AI Products for UAE Businesses',
     subtitle: 'Faster to deploy · Lower cost · Same guarantee',
   },
@@ -152,19 +152,19 @@ const pages = [
   },
   {
     file: 'og-privacy.jpg',
-    eyebrow: 'AEGIS AI',
+    eyebrow: 'LENOO AI',
     title: 'Privacy Policy',
-    subtitle: 'UAE PDPL compliant · aegisai.ae',
+    subtitle: 'UAE PDPL compliant · lenooai.com',
   },
   {
     file: 'og-terms.jpg',
-    eyebrow: 'AEGIS AI',
+    eyebrow: 'LENOO AI',
     title: 'Terms of Service',
-    subtitle: 'aegisai.ae',
+    subtitle: 'lenooai.com',
   },
   {
     file: 'og-contact.jpg',
-    eyebrow: 'CONTACT AEGIS AI',
+    eyebrow: 'CONTACT LENOO AI',
     title: 'Book a Free AI Strategy Call',
     subtitle: 'Dubai-based · Responds within 4 hours · Arabic & English',
   },

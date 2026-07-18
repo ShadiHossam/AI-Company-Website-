@@ -14,10 +14,10 @@ import { POST as logoutPOST } from '../../pages/api/admin/auth/logout';
 
 // ---- helpers ----------------------------------------------------------------
 
-function makeLoginCtx(body: unknown, origin = 'https://aegisai.ae') {
+function makeLoginCtx(body: unknown, origin = 'https://lenooai.com') {
   const cookieStore = new Map<string, { value: string; options?: Record<string, unknown> }>();
   return {
-    request: new Request('https://aegisai.ae/api/admin/auth/login', {
+    request: new Request('https://lenooai.com/api/admin/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -111,6 +111,10 @@ describe('POST /api/admin/auth/login', () => {
 describe('POST /api/admin/auth/logout', () => {
   it('deletes both auth cookies and returns 200', async () => {
     const ctx = {
+      request: new Request('https://lenooai.com/api/admin/auth/logout', {
+        method: 'POST',
+        headers: { origin: 'https://lenooai.com' },
+      }),
       cookies: { delete: vi.fn() },
     };
     const res = await logoutPOST(ctx as any);

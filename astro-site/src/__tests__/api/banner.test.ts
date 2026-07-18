@@ -61,9 +61,9 @@ describe('PATCH /api/admin/banner', () => {
   it('returns 400 for invalid JSON', async () => {
     const ctx = {
       locals: makeLocals(),
-      request: new Request('https://aegisai.ae/api/admin/banner', {
+      request: new Request('https://lenooai.com/api/admin/banner', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', origin: 'https://aegisai.ae' },
+        headers: { 'Content-Type': 'application/json', origin: 'https://lenooai.com' },
         body: 'not-json',
       }),
     };

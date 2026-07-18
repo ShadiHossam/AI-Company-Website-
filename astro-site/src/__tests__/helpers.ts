@@ -31,7 +31,7 @@ export function makeLocals(overrides: Partial<{ id: string; email: string; role:
   return {
     user: {
       id: 'user-1',
-      email: 'admin@aegisai.ae',
+      email: 'admin@lenooai.com',
       role: 'super_admin',
       ...overrides,
     },
@@ -42,9 +42,9 @@ export function makeLocals(overrides: Partial<{ id: string; email: string; role:
 export function makeRequest(
   body: unknown,
   method = 'POST',
-  origin = 'https://aegisai.ae',
+  origin = 'https://lenooai.com',
 ): Request {
-  return new Request('https://aegisai.ae/api/admin/test', {
+  return new Request('https://lenooai.com/api/admin/test', {
     method,
     headers: {
       'Content-Type': 'application/json',

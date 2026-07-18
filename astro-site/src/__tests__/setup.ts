@@ -7,7 +7,7 @@ Object.assign(import.meta.env, {
   DEV: false,
   PROD: true,
   MODE: 'production',
-  SITE_URL: 'https://aegisai.ae',
+  SITE_URL: 'https://lenooai.com',
   SUPABASE_URL: 'https://test.supabase.co',
   SUPABASE_SERVICE_ROLE_KEY: 'test-service-role-key',
   SUPABASE_JWT_SECRET: 'super-secret-jwt-key-for-testing-purposes-only',

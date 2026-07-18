@@ -24,8 +24,8 @@ export const POST: APIRoute = async ({ locals }) => {
     action: 'trash.emptied',
     entity_type: 'trash',
     entity_id: null,
-    user_id: locals.user.id,
-    details: { purged },
+    admin_email: locals.user.email,
+    after_value: { purged },
   });
 
   return new Response(JSON.stringify({ ok: true, purged }), { status: 200, headers: { 'Content-Type': 'application/json' } });

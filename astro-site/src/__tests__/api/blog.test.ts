@@ -31,7 +31,7 @@ describe('GET /api/admin/blog', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns 401 when not authenticated', async () => {
-    const ctx = { locals: {}, url: new URL('https://aegisai.ae/api/admin/blog') };
+    const ctx = { locals: {}, url: new URL('https://lenooai.com/api/admin/blog') };
     const res = await LIST(ctx as any);
     expect(res.status).toBe(401);
   });
@@ -42,7 +42,7 @@ describe('GET /api/admin/blog', () => {
 
     const ctx = {
       locals: makeLocals(),
-      url: new URL('https://aegisai.ae/api/admin/blog?page=1'),
+      url: new URL('https://lenooai.com/api/admin/blog?page=1'),
     };
     const res = await LIST(ctx as any);
     expect(res.status).toBe(200);
@@ -57,7 +57,7 @@ describe('GET /api/admin/blog', () => {
 
     const ctx = {
       locals: makeLocals(),
-      url: new URL('https://aegisai.ae/api/admin/blog'),
+      url: new URL('https://lenooai.com/api/admin/blog'),
     };
     const res = await LIST(ctx as any);
     expect(res.status).toBe(500);
@@ -90,9 +90,9 @@ describe('POST /api/admin/blog', () => {
   it('returns 400 for invalid JSON body', async () => {
     const ctx = {
       locals: makeLocals(),
-      request: new Request('https://aegisai.ae/api/admin/blog', {
+      request: new Request('https://lenooai.com/api/admin/blog', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', origin: 'https://aegisai.ae' },
+        headers: { 'Content-Type': 'application/json', origin: 'https://lenooai.com' },
         body: 'not-json',
       }),
     };
@@ -221,9 +221,9 @@ describe('PATCH /api/admin/blog/[id]', () => {
     const ctx = {
       locals: makeLocals(),
       params: { id: 'p1' },
-      request: new Request('https://aegisai.ae/api/admin/blog/p1', {
+      request: new Request('https://lenooai.com/api/admin/blog/p1', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', origin: 'https://aegisai.ae' },
+        headers: { 'Content-Type': 'application/json', origin: 'https://lenooai.com' },
         body: 'not-json',
       }),
     };
@@ -301,9 +301,9 @@ describe('DELETE /api/admin/blog/[id]', () => {
     const ctx = {
       locals: {},
       params: { id: 'p1' },
-      request: new Request('https://aegisai.ae/api/admin/blog/p1', {
+      request: new Request('https://lenooai.com/api/admin/blog/p1', {
         method: 'DELETE',
-        headers: { origin: 'https://aegisai.ae' },
+        headers: { origin: 'https://lenooai.com' },
       }),
     };
     const res = await DELETE(ctx as any);
@@ -314,7 +314,7 @@ describe('DELETE /api/admin/blog/[id]', () => {
     const ctx = {
       locals: makeLocals(),
       params: { id: 'p1' },
-      request: new Request('https://aegisai.ae/api/admin/blog/p1', {
+      request: new Request('https://lenooai.com/api/admin/blog/p1', {
         method: 'DELETE',
         headers: { origin: 'https://evil.com' },
       }),
@@ -341,16 +341,20 @@ describe('DELETE /api/admin/blog/[id]', () => {
     const ctx = {
       locals: makeLocals(),
       params: { id: 'p1' },
-      request: new Request('https://aegisai.ae/api/admin/blog/p1', {
+      request: new Request('https://lenooai.com/api/admin/blog/p1', {
         method: 'DELETE',
-        headers: { origin: 'https://aegisai.ae' },
+        headers: { origin: 'https://lenooai.com' },
       }),
     };
     const res = await DELETE(ctx as any);
     expect(res.status).toBe(200);
     expect((await res.json()).success).toBe(true);
     expect(activityInsert).toHaveBeenCalledWith(
-      expect.objectContaining({ action: 'blog.deleted', details: { title: 'Post to delete' } })
+      expect.objectContaining({
+        action: 'blog.deleted',
+        admin_email: 'admin@lenooai.com',
+        before_value: { title: 'Post to delete' },
+      })
     );
   });
 
@@ -367,9 +371,9 @@ describe('DELETE /api/admin/blog/[id]', () => {
     const ctx = {
       locals: makeLocals(),
       params: { id: 'p1' },
-      request: new Request('https://aegisai.ae/api/admin/blog/p1', {
+      request: new Request('https://lenooai.com/api/admin/blog/p1', {
         method: 'DELETE',
-        headers: { origin: 'https://aegisai.ae' },
+        headers: { origin: 'https://lenooai.com' },
       }),
     };
     const res = await DELETE(ctx as any);

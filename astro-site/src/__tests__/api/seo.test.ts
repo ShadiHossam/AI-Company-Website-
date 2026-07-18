@@ -64,9 +64,9 @@ describe('PATCH /api/admin/seo', () => {
   it('returns 400 for invalid JSON', async () => {
     const ctx = {
       locals: makeLocals(),
-      request: new Request('https://aegisai.ae/api/admin/seo', {
+      request: new Request('https://lenooai.com/api/admin/seo', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', origin: 'https://aegisai.ae' },
+        headers: { 'Content-Type': 'application/json', origin: 'https://lenooai.com' },
         body: 'bad-json',
       }),
     };
@@ -91,7 +91,7 @@ describe('PATCH /api/admin/seo', () => {
       locals: makeLocals(),
       request: makeRequest({
         page_slug: '/about',
-        meta_title: 'About Aegis AI',
+        meta_title: 'About Lenoo AI',
         meta_description: 'We build AI.',
         noindex: false,
       }, 'PATCH'),

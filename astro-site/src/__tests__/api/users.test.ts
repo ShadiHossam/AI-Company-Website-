@@ -51,9 +51,9 @@ describe('POST /api/admin/users/invite', () => {
   it('returns 400 for invalid JSON body', async () => {
     const ctx = {
       locals: makeLocals(),
-      request: new Request('https://aegisai.ae/api/admin/users/invite', {
+      request: new Request('https://lenooai.com/api/admin/users/invite', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', origin: 'https://aegisai.ae' },
+        headers: { 'Content-Type': 'application/json', origin: 'https://lenooai.com' },
         body: 'not-json',
       }),
     };

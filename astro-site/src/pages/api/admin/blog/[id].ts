@@ -157,8 +157,8 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
     action,
     entity_type: 'blog_post',
     entity_id: id,
-    user_id: locals.user.id,
-    details: { title: data.title },
+    admin_email: locals.user.email,
+    after_value: { title: data.title },
   });
 
   return new Response(JSON.stringify({ data }), {
@@ -208,8 +208,8 @@ export const DELETE: APIRoute = async ({ locals, params, request }) => {
     action: 'blog.deleted',
     entity_type: 'blog_post',
     entity_id: id,
-    user_id: locals.user.id,
-    details: { title: existing?.title ?? '' },
+    admin_email: locals.user.email,
+    before_value: { title: existing?.title ?? '' },
   });
 
   return new Response(JSON.stringify({ success: true }), {

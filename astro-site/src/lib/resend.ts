@@ -27,7 +27,7 @@ export async function sendAdminNotification(lead: LeadData, adminEmail: string):
   const source = lead.page_source ? ` (via ${esc(lead.page_source.replace(/_/g, ' '))})` : '';
   const safeWhatsapp = (lead.whatsapp ?? '').replace(/\D/g, '');
   await resend.emails.send({
-    from: 'Aegis AI Leads <noreply@lenooai.com>',
+    from: 'Lenoo AI Leads <noreply@lenooai.com>',
     to: adminEmail,
     subject: `New Lead: ${lead.full_name} from ${lead.company_name}`,
     html: `
@@ -60,13 +60,13 @@ export async function sendLeadAutoReply(lead: LeadData, companyPhone: string, co
     ? `<p><strong>Meeting type:</strong> ${esc(lead.meeting_format)}${lead.preferred_date ? ` · ${esc(lead.preferred_date)}` : ''}${lead.preferred_time ? ` · ${esc(lead.preferred_time)}` : ''}</p>`
     : '';
   await resend.emails.send({
-    from: 'Aegis AI <hello@lenooai.com>',
+    from: 'Lenoo AI <hello@lenooai.com>',
     to: lead.work_email,
-    subject: `We've received your consultation request — Aegis AI`,
+    subject: `We've received your consultation request — Lenoo AI`,
     html: `
       <div style="font-family: sans-serif; max-width: 600px; color: #1a1a2e;">
         <div style="background: #0a0f1a; padding: 24px; border-radius: 8px 8px 0 0;">
-          <h1 style="color: #00e3fd; margin: 0; font-size: 22px;">Aegis AI</h1>
+          <h1 style="color: #00e3fd; margin: 0; font-size: 22px;">Lenoo AI</h1>
         </div>
         <div style="background: #fff; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
           <h2 style="margin-top:0;">Hi ${esc(lead.full_name)},</h2>
@@ -84,7 +84,7 @@ export async function sendLeadAutoReply(lead: LeadData, companyPhone: string, co
             <li>📞 Phone: ${companyPhone}</li>
           </ul>
           <p style="color:#666; font-size:13px; margin-top:32px; border-top:1px solid #e5e7eb; padding-top:16px;">
-            Aegis AI · Dubai, UAE · Sun – Thu, 9am – 6pm GST<br>
+            Lenoo AI · Dubai, UAE · Sun – Thu, 9am – 6pm GST<br>
             <a href="https://lenooai.com/privacy" style="color:#999;">Privacy Policy</a>
           </p>
         </div>
@@ -99,7 +99,7 @@ export async function sendApplicationNotification(
 ): Promise<void> {
   const resend = getResend();
   await resend.emails.send({
-    from: 'Aegis AI Careers <noreply@lenooai.com>',
+    from: 'Lenoo AI Careers <noreply@lenooai.com>',
     to: adminEmail,
     subject: `New Application: ${esc(app.full_name)} for ${esc(app.job_title)}`,
     html: `
@@ -128,9 +128,9 @@ export async function sendStaleLeadDigest(leads: LeadData[], adminEmail: string)
     `<tr><td style="padding:8px;">${esc(l.full_name)}</td><td style="padding:8px;">${esc(l.company_name)}</td><td style="padding:8px;"><a href="https://wa.me/${(l.whatsapp ?? '').replace(/\D/g, '')}">WhatsApp</a></td><td style="padding:8px;"><a href="https://lenooai.com/admin/leads/${esc(l.id)}">View</a></td></tr>`
   ).join('');
   await resend.emails.send({
-    from: 'Aegis AI <noreply@lenooai.com>',
+    from: 'Lenoo AI <noreply@lenooai.com>',
     to: adminEmail,
-    subject: `⏰ ${leads.length} lead${leads.length > 1 ? 's' : ''} need follow-up — Aegis AI`,
+    subject: `⏰ ${leads.length} lead${leads.length > 1 ? 's' : ''} need follow-up — Lenoo AI`,
     html: `
       <div style="font-family: sans-serif; max-width: 600px;">
         <h2>Leads awaiting follow-up (5+ days)</h2>

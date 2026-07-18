@@ -1,5 +1,5 @@
 -- ============================================================
--- Aegis AI Admin Dashboard — Full Schema
+-- Lenoo AI Admin Dashboard — Full Schema
 -- Run this in Supabase SQL Editor (supabase.com → SQL Editor)
 -- ============================================================
 
@@ -161,7 +161,7 @@ CREATE TABLE blog_posts (
   status           TEXT NOT NULL DEFAULT 'draft'
                    CHECK (status IN ('draft','published','archived')),
   pub_date         DATE,
-  author_name      TEXT DEFAULT 'Aegis AI',
+  author_name      TEXT DEFAULT 'Lenoo AI',
   meta_title       TEXT,
   meta_description TEXT,
   focus_keyword    TEXT,
@@ -337,11 +337,11 @@ CREATE POLICY "public_logos"    ON client_logos  FOR SELECT TO anon USING (activ
 
 INSERT INTO site_config (key, value, type, label, section) VALUES
   -- Company
-  ('company.name',      'Aegis AI',                                   'string', 'Company Name',        'company'),
+  ('company.name',      'Lenoo AI',                                   'string', 'Company Name',        'company'),
   ('company.phone',     '+971 4 321 8888',                            'string', 'Phone',               'company'),
-  ('company.email',     'hello@aegisai.ae',                           'string', 'Email',               'company'),
+  ('company.email',     'hello@lenooai.com',                           'string', 'Email',               'company'),
   ('company.whatsapp',  '971501234567',                               'string', 'WhatsApp Number',     'company'),
-  ('company.linkedin',  'aegis-ai-dubai',                             'string', 'LinkedIn Slug',       'company'),
+  ('company.linkedin',  'lenoo-ai-dubai',                             'string', 'LinkedIn Slug',       'company'),
   ('company.address',   'Dubai, UAE',                                 'string', 'Office Address',      'company'),
   ('company.hours',     'Sun – Thu · 9:00 am – 6:00 pm GST',         'string', 'Business Hours',      'company'),
 
@@ -524,7 +524,7 @@ INSERT INTO case_studies (industry, title, slug, delivery_time, challenge, solut
 INSERT INTO team_members (name, title, bio, image_url, sort_order, active) VALUES
 (
   'Faris Al-Hashemi', 'Founder & CEO',
-  'Faris spent 12 years watching AI projects fail across the GCC — not because the technology didn''t work, but because businesses weren''t set up to use it. He founded Aegis AI to fix that.',
+  'Faris spent 12 years watching AI projects fail across the GCC — not because the technology didn''t work, but because businesses weren''t set up to use it. He founded Lenoo AI to fix that.',
   'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80&auto=format&fit=crop&crop=face',
   1, true
 ),
@@ -587,14 +587,14 @@ INSERT INTO legal_pages (slug, title, last_updated, sections) VALUES
   'Privacy Policy',
   '2026-05-22',
   '[
-    {"heading":"Overview","body":"Aegis AI (\"we\", \"our\", \"us\") is committed to protecting your personal information. This Privacy Policy explains what data we collect, how we use it, and your rights under UAE law."},
+    {"heading":"Overview","body":"Lenoo AI (\"we\", \"our\", \"us\") is committed to protecting your personal information. This Privacy Policy explains what data we collect, how we use it, and your rights under UAE law."},
     {"heading":"Information We Collect","body":"We collect: **Identity Data** (name, job title), **Contact Data** (email, phone, WhatsApp), **Business Data** (company, industry, challenge, budget), **Technical Data** (IP address, browser type)."},
     {"heading":"How We Use Your Data","body":"We use your data to: respond to consultation requests, send relevant information about our services, improve our website, and comply with legal obligations."},
     {"heading":"Data Security","body":"We implement appropriate technical and organisational measures to protect your data against unauthorised access, alteration, disclosure, or destruction."},
     {"heading":"Data Sharing","body":"We do not sell your data. We may share data with trusted service providers (Microsoft Azure, OpenAI, Anthropic, Make.com, n8n) solely to deliver our services, under strict confidentiality agreements."},
-    {"heading":"Your Rights Under UAE Law","body":"Under UAE Federal Decree-Law No. 45 of 2021 (PDPL), you have the right to access, correct, or delete your personal data. Contact us at hello@aegisai.ae to exercise these rights."},
+    {"heading":"Your Rights Under UAE Law","body":"Under UAE Federal Decree-Law No. 45 of 2021 (PDPL), you have the right to access, correct, or delete your personal data. Contact us at hello@lenooai.com to exercise these rights."},
     {"heading":"Cookies and Tracking","body":"We use essential cookies and Google Analytics to improve your experience. You can control cookie preferences through your browser settings."},
-    {"heading":"Contact","body":"For privacy-related questions, contact us at hello@aegisai.ae or +971 4 321 8888."}
+    {"heading":"Contact","body":"For privacy-related questions, contact us at hello@lenooai.com or +971 4 321 8888."}
   ]'
 ),
 (
@@ -602,15 +602,15 @@ INSERT INTO legal_pages (slug, title, last_updated, sections) VALUES
   'Terms of Service',
   '2026-05-22',
   '[
-    {"heading":"Agreement to Terms","body":"By accessing or using Aegis AI services, you agree to be bound by these Terms of Service and all applicable laws and regulations."},
-    {"heading":"Services","body":"Aegis AI provides Custom AI Development, AI Training & Workshops, and AI Strategy Consulting services to businesses in the UAE and wider region."},
+    {"heading":"Agreement to Terms","body":"By accessing or using Lenoo AI services, you agree to be bound by these Terms of Service and all applicable laws and regulations."},
+    {"heading":"Services","body":"Lenoo AI provides Custom AI Development, AI Training & Workshops, and AI Strategy Consulting services to businesses in the UAE and wider region."},
     {"heading":"100% Refund Guarantee","body":"Our satisfaction guarantee covers completed project deliverables. If you are not satisfied with the final delivery, you may request a full refund within 14 days of project completion. Refunds are processed within 5 business days via the original payment method. The guarantee applies to the core project scope, not third-party API fees or ongoing retainer services."},
-    {"heading":"Third-Party API Fees","body":"Some AI deployments require third-party API subscriptions (OpenAI, Azure, WhatsApp Business API). These fees are separate from Aegis AI project fees and are not covered by the refund guarantee."},
-    {"heading":"Intellectual Property","body":"On full payment, clients own all custom deliverables. Aegis AI retains rights to general methodologies, frameworks, and non-client-specific tooling."},
+    {"heading":"Third-Party API Fees","body":"Some AI deployments require third-party API subscriptions (OpenAI, Azure, WhatsApp Business API). These fees are separate from Lenoo AI project fees and are not covered by the refund guarantee."},
+    {"heading":"Intellectual Property","body":"On full payment, clients own all custom deliverables. Lenoo AI retains rights to general methodologies, frameworks, and non-client-specific tooling."},
     {"heading":"Client Responsibilities","body":"Clients are responsible for providing accurate data, timely feedback, and necessary system access. Project timelines are contingent on client cooperation."},
-    {"heading":"Limitation of Liability","body":"Aegis AI liability is limited to the project fees paid. We are not liable for indirect, incidental, or consequential damages arising from use of our deliverables."},
+    {"heading":"Limitation of Liability","body":"Lenoo AI liability is limited to the project fees paid. We are not liable for indirect, incidental, or consequential damages arising from use of our deliverables."},
     {"heading":"Governing Law","body":"These terms are governed by the laws of the UAE. Disputes shall be resolved in the courts of Dubai, UAE."},
-    {"heading":"Contact","body":"For questions about these terms, contact hello@aegisai.ae."}
+    {"heading":"Contact","body":"For questions about these terms, contact hello@lenooai.com."}
   ]'
 );
 

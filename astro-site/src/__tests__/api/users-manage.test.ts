@@ -56,9 +56,9 @@ describe('DELETE /api/admin/users/delete', () => {
   it('returns 400 for invalid JSON', async () => {
     const ctx = {
       locals: makeLocals(),
-      request: new Request('https://aegisai.ae/api/admin/users/delete', {
+      request: new Request('https://lenooai.com/api/admin/users/delete', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', origin: 'https://aegisai.ae' },
+        headers: { 'Content-Type': 'application/json', origin: 'https://lenooai.com' },
         body: 'bad',
       }),
     };
@@ -146,9 +146,9 @@ describe('PATCH /api/admin/users/role', () => {
   it('returns 400 for invalid JSON', async () => {
     const ctx = {
       locals: makeLocals(),
-      request: new Request('https://aegisai.ae/api/admin/users/role', {
+      request: new Request('https://lenooai.com/api/admin/users/role', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', origin: 'https://aegisai.ae' },
+        headers: { 'Content-Type': 'application/json', origin: 'https://lenooai.com' },
         body: 'bad',
       }),
     };

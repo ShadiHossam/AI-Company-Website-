@@ -86,7 +86,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
     category,
     status,
     og_image: (body.og_image as string) ?? '/assets/og-blog.jpg',
-    author_name: (body.author_name as string) ?? 'Aegis AI',
+    author_name: (body.author_name as string) ?? 'Lenoo AI',
     pub_date: status === 'published' ? ((body.pub_date as string) ?? now) : status === 'scheduled' ? ((body.pub_date as string) ?? null) : (body.pub_date as string) ?? null,
     meta_title: (body.meta_title as string) ?? null,
     meta_description: (body.meta_description as string) ?? null,
@@ -126,8 +126,8 @@ export const POST: APIRoute = async ({ locals, request }) => {
       action: 'blog.published',
       entity_type: 'blog_post',
       entity_id: data.id,
-      user_id: locals.user.id,
-      details: { title },
+      admin_email: locals.user.email,
+      after_value: { title },
     });
   }
 

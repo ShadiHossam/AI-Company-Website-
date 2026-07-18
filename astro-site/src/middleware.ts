@@ -195,6 +195,19 @@ function forbidden403(): Response {
   });
 }
 
+// Plain 403 response (no redirect) for authenticated-but-insufficient-permission page
+// requests — redirecting to /admin/login would loop, since that page bounces any
+// holder of a valid session cookie straight back to /admin.
+function forbiddenPage(): Response {
+  return new Response(
+    '<!doctype html><meta charset="utf-8"><title>Forbidden</title>' +
+      '<body style="font-family:sans-serif;padding:4rem;text-align:center;">' +
+      '<h1>403 — Forbidden</h1><p>Your account does not have access to this section.</p>' +
+      '<a href="/">Back to site</a></body>',
+    { status: 403, headers: { 'Content-Type': 'text/html' } }
+  );
+}
+
 export function __resetCachesForTest() {
   redirectsMap = null;
   redirectsExp = 0;
@@ -264,8 +277,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
     // super_admin: unrestricted
     if (role !== 'super_admin') {
       const sections = await getAllowedSections(role);
-      const allowed = pathname === '/admin' || isAdminPathAllowed(pathname, sections);
-      if (!allowed) return context.redirect('/admin?error=unauthorized');
+      // The bare /admin dashboard queries data directly (not through the section-gated
+      // API), so it requires the 'dashboard' section like any other admin page rather
+      // than being open to any authenticated-but-sectionless role. Fail closed with a
+      // plain 403 (not a redirect) — /admin/login bounces any valid-cookie holder
+      // straight back to /admin, which would loop.
+      const allowed = isAdminPathAllowed(pathname, sections);
+      if (!allowed) return forbiddenPage();
     }
   }
 

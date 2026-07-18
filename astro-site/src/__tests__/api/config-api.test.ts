@@ -19,19 +19,19 @@ describe('GET /api/admin/config', () => {
   it('returns 401 when not authenticated', async () => {
     const ctx = {
       locals: {},
-      request: new Request('https://aegisai.ae/api/admin/config'),
+      request: new Request('https://lenooai.com/api/admin/config'),
     };
     const res = await GET(ctx as any);
     expect(res.status).toBe(401);
   });
 
   it('returns all site_config rows', async () => {
-    const rows = [{ key: 'site.name', value: 'Aegis AI', section: 'branding' }];
+    const rows = [{ key: 'site.name', value: 'Lenoo AI', section: 'branding' }];
     makeSupabase({ data: rows, error: null });
 
     const ctx = {
       locals: makeLocals(),
-      request: new Request('https://aegisai.ae/api/admin/config'),
+      request: new Request('https://lenooai.com/api/admin/config'),
     };
     const res = await GET(ctx as any);
     expect(res.status).toBe(200);
@@ -43,7 +43,7 @@ describe('GET /api/admin/config', () => {
 
     const ctx = {
       locals: makeLocals(),
-      request: new Request('https://aegisai.ae/api/admin/config?section=branding'),
+      request: new Request('https://lenooai.com/api/admin/config?section=branding'),
     };
     await GET(ctx as any);
     expect(chain['eq']).toHaveBeenCalledWith('section', 'branding');
@@ -53,7 +53,7 @@ describe('GET /api/admin/config', () => {
     makeSupabase({ data: null, error: { message: 'fail' } });
     const ctx = {
       locals: makeLocals(),
-      request: new Request('https://aegisai.ae/api/admin/config'),
+      request: new Request('https://lenooai.com/api/admin/config'),
     };
     const res = await GET(ctx as any);
     expect(res.status).toBe(500);
@@ -84,9 +84,9 @@ describe('PATCH /api/admin/config', () => {
   it('returns 400 for invalid JSON', async () => {
     const ctx = {
       locals: makeLocals(),
-      request: new Request('https://aegisai.ae/api/admin/config', {
+      request: new Request('https://lenooai.com/api/admin/config', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', origin: 'https://aegisai.ae' },
+        headers: { 'Content-Type': 'application/json', origin: 'https://lenooai.com' },
         body: 'bad',
       }),
     };

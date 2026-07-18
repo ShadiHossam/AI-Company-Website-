@@ -19,7 +19,7 @@ describe('GET /api/admin/notifications', () => {
   it('returns 401 when not authenticated', async () => {
     const ctx = {
       locals: {},
-      request: new Request('https://aegisai.ae/api/admin/notifications'),
+      request: new Request('https://lenooai.com/api/admin/notifications'),
     };
     const res = await GET(ctx as any);
     expect(res.status).toBe(401);
@@ -31,7 +31,7 @@ describe('GET /api/admin/notifications', () => {
 
     const ctx = {
       locals: makeLocals(),
-      request: new Request('https://aegisai.ae/api/admin/notifications?page=1'),
+      request: new Request('https://lenooai.com/api/admin/notifications?page=1'),
     };
     const res = await GET(ctx as any);
     expect(res.status).toBe(200);
@@ -45,7 +45,7 @@ describe('GET /api/admin/notifications', () => {
     makeSupabase({ data: null, error: { message: 'fail' }, count: null });
     const ctx = {
       locals: makeLocals(),
-      request: new Request('https://aegisai.ae/api/admin/notifications'),
+      request: new Request('https://lenooai.com/api/admin/notifications'),
     };
     const res = await GET(ctx as any);
     expect(res.status).toBe(500);
@@ -73,9 +73,9 @@ describe('PATCH /api/admin/notifications (mark read)', () => {
   it('returns 400 for invalid JSON', async () => {
     const ctx = {
       locals: makeLocals(),
-      request: new Request('https://aegisai.ae/api/admin/notifications', {
+      request: new Request('https://lenooai.com/api/admin/notifications', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', origin: 'https://aegisai.ae' },
+        headers: { 'Content-Type': 'application/json', origin: 'https://lenooai.com' },
         body: 'bad',
       }),
     };

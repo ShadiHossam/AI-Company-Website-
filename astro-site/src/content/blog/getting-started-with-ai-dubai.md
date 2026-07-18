@@ -46,7 +46,7 @@ A conservative 60% automation rate on a task taking 20 hours/week at AED 150/hou
 - AI implementations without team training: adoption kills ROI
 - Vendors who build and disappear (no ongoing support)
 
-## The Aegis AI Approach
+## The Lenoo AI Approach
 
 We combine custom AI development with bilingual (Arabic and English) team training, so your business is truly AI-ready, not just AI-curious.
 

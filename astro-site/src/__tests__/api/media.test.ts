@@ -32,7 +32,7 @@ describe('GET /api/admin/media', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns 401 when not authenticated', async () => {
-    const ctx = { locals: {}, url: new URL('https://aegisai.ae/api/admin/media') };
+    const ctx = { locals: {}, url: new URL('https://lenooai.com/api/admin/media') };
     const res = await GET(ctx as any);
     expect(res.status).toBe(401);
   });
@@ -43,7 +43,7 @@ describe('GET /api/admin/media', () => {
 
     const ctx = {
       locals: makeLocals(),
-      url: new URL('https://aegisai.ae/api/admin/media?page=1'),
+      url: new URL('https://lenooai.com/api/admin/media?page=1'),
     };
     const res = await GET(ctx as any);
     expect(res.status).toBe(200);
@@ -55,7 +55,7 @@ describe('GET /api/admin/media', () => {
 
   it('returns 500 on DB error', async () => {
     makeSupabase({ data: null, error: { message: 'DB fail' }, count: null });
-    const ctx = { locals: makeLocals(), url: new URL('https://aegisai.ae/api/admin/media') };
+    const ctx = { locals: makeLocals(), url: new URL('https://lenooai.com/api/admin/media') };
     const res = await GET(ctx as any);
     expect(res.status).toBe(500);
     expect((await res.json()).error).toBe('Internal server error');
@@ -73,9 +73,9 @@ describe('DELETE /api/admin/media/[id]', () => {
     const ctx = {
       locals: {},
       params: { id: 'm1' },
-      request: new Request('https://aegisai.ae/api/admin/media/m1', {
+      request: new Request('https://lenooai.com/api/admin/media/m1', {
         method: 'DELETE',
-        headers: { origin: 'https://aegisai.ae' },
+        headers: { origin: 'https://lenooai.com' },
       }),
     };
     const res = await DELETE(ctx as any);
@@ -86,7 +86,7 @@ describe('DELETE /api/admin/media/[id]', () => {
     const ctx = {
       locals: makeLocals(),
       params: { id: 'm1' },
-      request: new Request('https://aegisai.ae/api/admin/media/m1', {
+      request: new Request('https://lenooai.com/api/admin/media/m1', {
         method: 'DELETE',
         headers: { origin: 'https://evil.com' },
       }),
@@ -100,9 +100,9 @@ describe('DELETE /api/admin/media/[id]', () => {
     const ctx = {
       locals: makeLocals(),
       params: { id: 'missing' },
-      request: new Request('https://aegisai.ae/api/admin/media/missing', {
+      request: new Request('https://lenooai.com/api/admin/media/missing', {
         method: 'DELETE',
-        headers: { origin: 'https://aegisai.ae' },
+        headers: { origin: 'https://lenooai.com' },
       }),
     };
     const res = await DELETE(ctx as any);
@@ -127,9 +127,9 @@ describe('DELETE /api/admin/media/[id]', () => {
     const ctx = {
       locals: makeLocals(),
       params: { id: 'm1' },
-      request: new Request('https://aegisai.ae/api/admin/media/m1', {
+      request: new Request('https://lenooai.com/api/admin/media/m1', {
         method: 'DELETE',
-        headers: { origin: 'https://aegisai.ae' },
+        headers: { origin: 'https://lenooai.com' },
       }),
     };
     const res = await DELETE(ctx as any);
@@ -152,9 +152,9 @@ describe('DELETE /api/admin/media/[id]', () => {
     const ctx = {
       locals: makeLocals(),
       params: { id: 'm1' },
-      request: new Request('https://aegisai.ae/api/admin/media/m1', {
+      request: new Request('https://lenooai.com/api/admin/media/m1', {
         method: 'DELETE',
-        headers: { origin: 'https://aegisai.ae' },
+        headers: { origin: 'https://lenooai.com' },
       }),
     };
     const res = await DELETE(ctx as any);
@@ -171,12 +171,12 @@ function makeUploadRequest(
   filename = 'photo.jpg',
   mimeType = 'image/jpeg',
   altText = '',
-  origin = 'https://aegisai.ae',
+  origin = 'https://lenooai.com',
 ) {
   const fd = new FormData();
   fd.append('file', new File([fileContent], filename, { type: mimeType }));
   if (altText) fd.append('alt_text', altText);
-  return new Request('https://aegisai.ae/api/admin/media/upload', {
+  return new Request('https://lenooai.com/api/admin/media/upload', {
     method: 'POST',
     headers: { origin },
     body: fd,
@@ -205,9 +205,9 @@ describe('POST /api/admin/media/upload', () => {
     const fd = new FormData();
     const ctx = {
       locals: makeLocals(),
-      request: new Request('https://aegisai.ae/api/admin/media/upload', {
+      request: new Request('https://lenooai.com/api/admin/media/upload', {
         method: 'POST',
-        headers: { origin: 'https://aegisai.ae' },
+        headers: { origin: 'https://lenooai.com' },
         body: fd,
       }),
     };
@@ -223,7 +223,17 @@ describe('POST /api/admin/media/upload', () => {
     };
     const res = await UPLOAD(ctx as any);
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toBe('Only image files are allowed');
+    expect((await res.json()).error).toBe('Only image files are allowed (SVG not supported)');
+  });
+
+  it('returns 400 for SVG files', async () => {
+    const ctx = {
+      locals: makeLocals(),
+      request: makeUploadRequest('<svg onload="alert(1)"></svg>', 'evil.svg', 'image/svg+xml'),
+    };
+    const res = await UPLOAD(ctx as any);
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toBe('Only image files are allowed (SVG not supported)');
   });
 
   it('returns 400 when file exceeds 10MB', async () => {

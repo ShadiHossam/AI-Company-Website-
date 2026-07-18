@@ -30,8 +30,8 @@ function makeCtx(overrides: {
   if (token !== null) cookies.set('sb-access-token', token);
 
   const ctx: any = {
-    url: new URL(`https://aegisai.ae${pathname}`),
-    request: new Request(`https://aegisai.ae${pathname}`, {
+    url: new URL(`https://lenooai.com${pathname}`),
+    request: new Request(`https://lenooai.com${pathname}`, {
       headers: {
         ...(ip ? { 'x-forwarded-for': ip } : {}),
         ...headers,
@@ -213,9 +213,10 @@ describe('admin auth guard', () => {
 
     const ctx = makeCtx({ pathname: '/admin/leads', token: 'editor.token' });
     const next = vi.fn();
-    await onRequest(ctx, next);
+    const response = await onRequest(ctx, next);
 
-    expect(ctx.redirect).toHaveBeenCalledWith('/admin?error=unauthorized');
+    expect(ctx.redirect).not.toHaveBeenCalled();
+    expect(response.status).toBe(403);
   });
 
   it('allows editor to access /admin/content', async () => {
@@ -246,9 +247,10 @@ describe('admin auth guard', () => {
 
     const ctx = makeCtx({ pathname: '/admin/blog', token: 'sales.token' });
     const next = vi.fn();
-    await onRequest(ctx, next);
+    const response = await onRequest(ctx, next);
 
-    expect(ctx.redirect).toHaveBeenCalledWith('/admin?error=unauthorized');
+    expect(ctx.redirect).not.toHaveBeenCalled();
+    expect(response.status).toBe(403);
   });
 
   it('allows sales to access /admin/leads', async () => {

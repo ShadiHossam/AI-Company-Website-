@@ -3,6 +3,7 @@ export const prerender = false;
 import ArBaseLayout from '../../../layouts/ArBaseLayout.astro';
 import { getSupabaseAdmin } from '../../../lib/supabase';
 import { marked } from 'marked';
+import { sanitizeRichText } from '../../../lib/sanitize';
 
 const { slug } = Astro.params;
 
@@ -44,7 +45,7 @@ if (error || !post || !post.ar_title) {
   return Astro.redirect(`/blog/${slug}`, 302);
 }
 
-const bodyHtml = post.ar_body_markdown ? await marked(post.ar_body_markdown) : '';
+const bodyHtml = post.ar_body_markdown ? sanitizeRichText(await marked(post.ar_body_markdown)) : '';
 
 const pubDate = post.pub_date ? new Date(post.pub_date) : new Date();
 const updatedDate = post.updated_at ? new Date(post.updated_at) : undefined;
@@ -72,8 +73,8 @@ const ldJson = [
     inLanguage: 'ar',
     datePublished: pubDate.toISOString(),
     dateModified: (updatedDate ?? pubDate).toISOString(),
-    author: { '@type': 'Person', name: post.author_name ?? 'Aegis AI' },
-    publisher: { '@type': 'Organization', name: 'Aegis AI', url: 'https://lenooai.com' },
+    author: { '@type': 'Person', name: post.author_name ?? 'Lenoo AI' },
+    publisher: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
     mainEntityOfPage: { '@type': 'WebPage', '@id': `https://lenooai.com/ar/blog/${slug}` },
     ...(post.og_image ? { image: post.og_image.startsWith('http') ? post.og_image : `https://lenooai.com${post.og_image}` } : {}),
   },
@@ -90,7 +91,7 @@ const ldJson = [
 ---
 
 <ArBaseLayout
-  title={`${post.ar_meta_title ?? post.ar_title} | مدونة Aegis AI`}
+  title={`${post.ar_meta_title ?? post.ar_title} | مدونة Lenoo AI`}
   description={post.ar_meta_description ?? post.ar_description ?? ''}
   canonicalPath={`/ar/blog/${slug}`}
   enPath={`/blog/${slug}`}
@@ -122,7 +123,7 @@ const ldJson = [
         )}
         <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
           <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,104,117,0.12);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.875rem;color:#006875;" aria-hidden="true">AI</div>
-          <span style="font-size:0.9rem;color:#42474e;font-weight:600;">{post.author_name ?? 'Aegis AI'}</span>
+          <span style="font-size:0.9rem;color:#42474e;font-weight:600;">{post.author_name ?? 'Lenoo AI'}</span>
           <button id="share-btn" type="button" class="share-inline-btn" aria-label="مشاركة المقال">
             <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;">ios_share</span>
             <span id="share-btn-label">مشاركة</span>

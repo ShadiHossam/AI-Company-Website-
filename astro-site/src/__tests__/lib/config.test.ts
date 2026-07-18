@@ -21,14 +21,14 @@ describe('getSiteConfig', () => {
   it('returns a key-value map from rows', async () => {
     makeSupabase({
       data: [
-        { key: 'site.name', value: 'Aegis AI' },
+        { key: 'site.name', value: 'Lenoo AI' },
         { key: 'site.tagline', value: 'AI Company' },
       ],
       error: null,
     });
 
     const config = await getSiteConfig();
-    expect(config).toEqual({ 'site.name': 'Aegis AI', 'site.tagline': 'AI Company' });
+    expect(config).toEqual({ 'site.name': 'Lenoo AI', 'site.tagline': 'AI Company' });
   });
 
   it('returns empty object on supabase error', async () => {

@@ -69,9 +69,9 @@ describe('POST /api/admin/redirects', () => {
   it('returns 400 for invalid JSON', async () => {
     const ctx = {
       locals: makeLocals(),
-      request: new Request('https://aegisai.ae/api/admin/redirects', {
+      request: new Request('https://lenooai.com/api/admin/redirects', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', origin: 'https://aegisai.ae' },
+        headers: { 'Content-Type': 'application/json', origin: 'https://lenooai.com' },
         body: 'bad',
       }),
     };
@@ -204,9 +204,9 @@ describe('DELETE /api/admin/redirects/[id]', () => {
     const ctx = {
       locals: {},
       params: { id: 'r1' },
-      request: new Request('https://aegisai.ae/api/admin/redirects/r1', {
+      request: new Request('https://lenooai.com/api/admin/redirects/r1', {
         method: 'DELETE',
-        headers: { origin: 'https://aegisai.ae' },
+        headers: { origin: 'https://lenooai.com' },
       }),
     };
     const res = await DELETE(ctx as any);
@@ -217,7 +217,7 @@ describe('DELETE /api/admin/redirects/[id]', () => {
     const ctx = {
       locals: makeLocals(),
       params: { id: 'r1' },
-      request: new Request('https://aegisai.ae/api/admin/redirects/r1', {
+      request: new Request('https://lenooai.com/api/admin/redirects/r1', {
         method: 'DELETE',
         headers: { origin: 'https://evil.com' },
       }),
@@ -231,9 +231,9 @@ describe('DELETE /api/admin/redirects/[id]', () => {
     const ctx = {
       locals: makeLocals(),
       params: { id: 'r1' },
-      request: new Request('https://aegisai.ae/api/admin/redirects/r1', {
+      request: new Request('https://lenooai.com/api/admin/redirects/r1', {
         method: 'DELETE',
-        headers: { origin: 'https://aegisai.ae' },
+        headers: { origin: 'https://lenooai.com' },
       }),
     };
     const res = await DELETE(ctx as any);
@@ -246,9 +246,9 @@ describe('DELETE /api/admin/redirects/[id]', () => {
     const ctx = {
       locals: makeLocals(),
       params: { id: 'r1' },
-      request: new Request('https://aegisai.ae/api/admin/redirects/r1', {
+      request: new Request('https://lenooai.com/api/admin/redirects/r1', {
         method: 'DELETE',
-        headers: { origin: 'https://aegisai.ae' },
+        headers: { origin: 'https://lenooai.com' },
       }),
     };
     const res = await DELETE(ctx as any);

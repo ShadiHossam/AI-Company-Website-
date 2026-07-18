@@ -58,8 +58,9 @@ export const POST: APIRoute = async ({ locals, request }) => {
   const timestamp = Date.now();
   const filename = `${timestamp}-${safeName}`;
 
-  if (!file.type.startsWith('image/')) {
-    return new Response(JSON.stringify({ error: 'Only image files are allowed' }), {
+  // SVG excluded: it's an XML document that can carry <script>, unlike raster formats.
+  if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') {
+    return new Response(JSON.stringify({ error: 'Only image files are allowed (SVG not supported)' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
     });

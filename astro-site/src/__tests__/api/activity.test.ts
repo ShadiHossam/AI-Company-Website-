@@ -19,7 +19,7 @@ describe('GET /api/admin/activity', () => {
   it('returns 401 when not authenticated', async () => {
     const ctx = {
       locals: {},
-      request: new Request('https://aegisai.ae/api/admin/activity'),
+      request: new Request('https://lenooai.com/api/admin/activity'),
     };
     const res = await GET(ctx as any);
     expect(res.status).toBe(401);
@@ -28,7 +28,7 @@ describe('GET /api/admin/activity', () => {
   it('returns 403 when user is not super_admin', async () => {
     const ctx = {
       locals: makeLocals({ role: 'editor' }),
-      request: new Request('https://aegisai.ae/api/admin/activity'),
+      request: new Request('https://lenooai.com/api/admin/activity'),
     };
     const res = await GET(ctx as any);
     expect(res.status).toBe(403);
@@ -44,7 +44,7 @@ describe('GET /api/admin/activity', () => {
 
     const ctx = {
       locals: makeLocals({ role: 'super_admin' }),
-      request: new Request('https://aegisai.ae/api/admin/activity?page=1'),
+      request: new Request('https://lenooai.com/api/admin/activity?page=1'),
     };
     const res = await GET(ctx as any);
     expect(res.status).toBe(200);
@@ -60,7 +60,7 @@ describe('GET /api/admin/activity', () => {
 
     const ctx = {
       locals: makeLocals({ role: 'super_admin' }),
-      request: new Request('https://aegisai.ae/api/admin/activity?action=blog.published'),
+      request: new Request('https://lenooai.com/api/admin/activity?action=blog.published'),
     };
     await GET(ctx as any);
     expect(chain['eq']).toHaveBeenCalledWith('action', 'blog.published');
@@ -71,7 +71,7 @@ describe('GET /api/admin/activity', () => {
 
     const ctx = {
       locals: makeLocals({ role: 'super_admin' }),
-      request: new Request('https://aegisai.ae/api/admin/activity'),
+      request: new Request('https://lenooai.com/api/admin/activity'),
     };
     await GET(ctx as any);
     expect(chain['eq']).not.toHaveBeenCalled();
@@ -82,7 +82,7 @@ describe('GET /api/admin/activity', () => {
 
     const ctx = {
       locals: makeLocals({ role: 'super_admin' }),
-      request: new Request('https://aegisai.ae/api/admin/activity'),
+      request: new Request('https://lenooai.com/api/admin/activity'),
     };
     const res = await GET(ctx as any);
     expect(res.status).toBe(500);

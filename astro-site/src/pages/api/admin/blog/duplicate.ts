@@ -65,6 +65,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
       slug: copySlug,
       description: source.description,
       body_markdown: source.body_markdown,
+      body_html: source.body_html,
       category: source.category,
       status: 'draft',
       og_image: source.og_image,
@@ -93,8 +94,8 @@ export const POST: APIRoute = async ({ locals, request }) => {
     action: 'blog.duplicated',
     entity_type: 'blog_post',
     entity_id: data.id,
-    user_id: locals.user.id,
-    details: { title: data.title, source_id: body.id },
+    admin_email: locals.user.email,
+    after_value: { title: data.title, source_id: body.id },
   });
 
   return new Response(JSON.stringify({ data }), {

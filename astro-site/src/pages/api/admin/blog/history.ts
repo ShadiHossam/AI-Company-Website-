@@ -180,8 +180,8 @@ export const POST: APIRoute = async ({ locals, request }) => {
     action: 'blog.restored',
     entity_type: 'blog_post',
     entity_id: body.post_id,
-    user_id: locals.user.id,
-    details: { title: updated.title, restored_from_version: version.version_num },
+    admin_email: locals.user.email,
+    after_value: { title: updated.title, restored_from_version: version.version_num },
   });
 
   return new Response(JSON.stringify({ data: updated }), {

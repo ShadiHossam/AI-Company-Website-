@@ -30,7 +30,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
     action: `${body.entity_type}.restored`,
     entity_type: body.entity_type,
     entity_id: body.id,
-    user_id: locals.user.id,
+    admin_email: locals.user.email,
   });
 
   return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });

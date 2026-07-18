@@ -3,6 +3,7 @@ export const prerender = false;
 import { getSupabaseAdmin } from '../../lib/supabase';
 import ArticleLayout from '../../layouts/ArticleLayout.astro';
 import { marked } from 'marked';
+import { sanitizeRichText } from '../../lib/sanitize';
 
 const { slug } = Astro.params;
 
@@ -56,7 +57,7 @@ try {
 
   if (!error && data) {
     dbPost = data as DbPost;
-    bodyHtml = await marked(dbPost.body_markdown ?? '');
+    bodyHtml = sanitizeRichText(await marked(dbPost.body_markdown ?? ''));
     pubDate = dbPost.pub_date ? new Date(dbPost.pub_date) : new Date();
     updatedDate = dbPost.updated_date ? new Date(dbPost.updated_date) : undefined;
 

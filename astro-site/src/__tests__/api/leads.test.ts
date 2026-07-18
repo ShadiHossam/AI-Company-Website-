@@ -24,7 +24,7 @@ describe('GET /api/admin/leads', () => {
   it('returns 401 when not authenticated', async () => {
     const ctx = {
       locals: {},
-      url: new URL('https://aegisai.ae/api/admin/leads'),
+      url: new URL('https://lenooai.com/api/admin/leads'),
     };
     const res = await GET(ctx as any);
     expect(res.status).toBe(401);
@@ -37,7 +37,7 @@ describe('GET /api/admin/leads', () => {
 
     const ctx = {
       locals: makeLocals(),
-      url: new URL('https://aegisai.ae/api/admin/leads?page=1'),
+      url: new URL('https://lenooai.com/api/admin/leads?page=1'),
     };
     const res = await GET(ctx as any);
     expect(res.status).toBe(200);
@@ -53,7 +53,7 @@ describe('GET /api/admin/leads', () => {
 
     const ctx = {
       locals: makeLocals(),
-      url: new URL('https://aegisai.ae/api/admin/leads?status=qualified'),
+      url: new URL('https://lenooai.com/api/admin/leads?status=qualified'),
     };
     await GET(ctx as any);
     expect(chain['eq']).toHaveBeenCalledWith('status', 'qualified');
@@ -64,7 +64,7 @@ describe('GET /api/admin/leads', () => {
 
     const ctx = {
       locals: makeLocals(),
-      url: new URL('https://aegisai.ae/api/admin/leads?industry=retail'),
+      url: new URL('https://lenooai.com/api/admin/leads?industry=retail'),
     };
     await GET(ctx as any);
     expect(chain['eq']).toHaveBeenCalledWith('industry', 'retail');
@@ -75,7 +75,7 @@ describe('GET /api/admin/leads', () => {
 
     const ctx = {
       locals: makeLocals(),
-      url: new URL('https://aegisai.ae/api/admin/leads?date_from=2025-01-01&date_to=2025-06-30'),
+      url: new URL('https://lenooai.com/api/admin/leads?date_from=2025-01-01&date_to=2025-06-30'),
     };
     await GET(ctx as any);
     expect(chain['gte']).toHaveBeenCalledWith('created_at', '2025-01-01');
@@ -87,7 +87,7 @@ describe('GET /api/admin/leads', () => {
 
     const ctx = {
       locals: makeLocals(),
-      url: new URL('https://aegisai.ae/api/admin/leads?search=alice'),
+      url: new URL('https://lenooai.com/api/admin/leads?search=alice'),
     };
     await GET(ctx as any);
     expect(chain['or']).toHaveBeenCalledWith(
@@ -104,7 +104,7 @@ describe('GET /api/admin/leads', () => {
 
     const ctx = {
       locals: makeLocals(),
-      url: new URL('https://aegisai.ae/api/admin/leads?format=csv'),
+      url: new URL('https://lenooai.com/api/admin/leads?format=csv'),
     };
     const res = await GET(ctx as any);
     expect(res.headers.get('Content-Type')).toBe('text/csv');
@@ -121,7 +121,7 @@ describe('GET /api/admin/leads', () => {
 
     const ctx = {
       locals: makeLocals(),
-      url: new URL('https://aegisai.ae/api/admin/leads?format=csv'),
+      url: new URL('https://lenooai.com/api/admin/leads?format=csv'),
     };
     const res = await GET(ctx as any);
     const text = await res.text();
