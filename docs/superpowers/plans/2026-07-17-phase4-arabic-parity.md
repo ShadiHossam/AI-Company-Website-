@@ -17,7 +17,7 @@
 1. **Section parity, not byte parity.** For each `ar/X.astro`, read the live `X.astro` in full first. The Arabic page must have the same `<section>`s, in the same order, using the same shared components. Translate meaning faithfully — do not invent stats, claims, or CTAs not present in the English source, and do not carry over any Arabic-only section.
 2. **Numerals:** use Western digits (`0-9`, `%`) in all rewritten Arabic content, not Arabic-Indic digits (`٠-٩`, `٪`). Existing AR pages are inconsistent (mixed usage found via grep); Western digits are already the majority convention and match the EN source content being mirrored.
 3. **FAQ data source:** `faq_items` (Supabase) has only English `question`/`answer` columns (no `question_ar`/`answer_ar` — confirmed in `supabase/schema.sql:127-133`). Arabic pages must NOT query Supabase for FAQs. Use `<FaqAccordion items={faqItems} />` with a hardcoded Arabic array translated from that page's actual current English FAQ content (the live fallback array if the EN page queries Supabase-with-fallback, or the hardcoded array if it doesn't).
-4. **Keep all Arabic technical scaffolding as-is:** `ArBaseLayout`, `ArNavbar`/`ArFooter`, `dir="rtl"` / `lang="ar"`, `canonicalPath`/`enPath` props, `data-source="ar_<page>_<location>"` naming convention on CTA buttons, hreflang wiring. Only the *content sections* are being rewritten.
+4. **Keep all Arabic technical scaffolding as-is:** `ArBaseLayout`, `ArNavbar`/`ArFooter`, `dir="rtl"` / `lang="ar"`, `canonicalPath`/`enPath` props, `data-source="ar_<page>_<location>"` naming convention on CTA buttons, hreflang wiring, and **`ogImage` matching the EN page's `ogImage` value** (found in Task 1's code-quality review: the Task 1 worked example initially omitted `ogImage`, causing `/ar/services/ai-agents` to fall back to the homepage OG image instead of `/assets/og-services.jpg` for social/search link previews — fixed in that file; every other `<ArBaseLayout>` call in Tasks 2-5 must copy its corresponding EN page's `ogImage` prop value, don't drop it).
 5. **Data-driven sections** (products, team members, testimonials, case studies pulled from Supabase) already use `ar_*` columns where the EN page is DB-driven — preserve that pattern; do not hardcode over live DB-driven content.
 6. **Verify after every file:** `cd astro-site && npm run build` succeeds, then spot-check the page in `npm run dev` (confirm RTL layout, no leftover English strings, shared components render correctly).
 
@@ -113,6 +113,7 @@ const ldJson = [
   description="ذكاء اصطناعي لا يكتفي بالإجابة، بل يتصرف. بصفتنا وكالة ذكاء اصطناعي في دبي، نبني وكلاء ذكاء اصطناعي مستقلين لشركات الإمارات، يُحللون، يقررون، وينفذون."
   canonicalPath="/ar/services/ai-agents"
   enPath="/services/ai-agents"
+  ogImage="/assets/og-services.jpg"
   ldJson={ldJson}
 >
 
