@@ -1,475 +1,290 @@
 ---
 export const prerender = false;
 import ArBaseLayout from '../../../layouts/ArBaseLayout.astro';
+import FaqAccordion from '../../../components/FaqAccordion.astro';
+import ProcessSteps from '../../../components/ProcessSteps.astro';
+
+const processSteps = [
+  { icon: "search", step: "الخطوة 1", title: "التشخيص", description: "نُخطط لعملياتك ونُحدد أين يخلق الذكاء الاصطناعي أكبر قيمة." },
+  { icon: "edit", step: "الخطوة 2", title: "التصميم", description: "تخطيط البنية، متطلبات البيانات، وتصميم النظام. توافق قبل أن نبدأ البناء." },
+  { icon: "code", step: "الخطوة 3", title: "البناء والاختبار", description: "التطوير، التكامل، اختبار الجودة، وفحوصات شاملة للنظام قبل الإطلاق." },
+  { icon: "rocket_launch", step: "الخطوة 4", title: "الإطلاق والدعم", description: "يُطلق النظام. يشمل دعماً لمدة 90 يوماً. تدريب الفريق مشمول في معظم الباقات." },
+];
+
+const faqItems = [
+  { question: "كم يستغرق تطوير نظام ذكاء اصطناعي مخصص؟", answer: "يُحدَّد نطاق كل مشروع بشكل فردي. نمنحك جدولاً زمنياً دقيقاً بعد جلسة التشخيص، بناءً على عملياتك وبياناتك ومتطلبات التكامل الخاصة بك." },
+  { question: "هل تعملون مع الأنظمة التي نستخدمها حالياً؟", answer: "نعم. نتكامل مع معظم أنظمة CRM وERP ومئات تطبيقات الأعمال الأخرى عبر واجهات برمجية. تحتفظ بالأدوات التي يعرفها فريقك بالفعل؛ نحن نضيف طبقة ذكاء اصطناعي فوقها." },
+  { question: "أين تُستضاف بياناتنا؟", answer: "نوفر استضافة مرنة: سحابية أو محلية داخل الشركة. للعملاء الذين لديهم متطلبات إقامة بيانات، نُهيئ عمليات النشر لتلبية متطلبات الامتثال الإقليمية الخاصة بك. تُناقش جميع الخيارات خلال جلسة التشخيص." },
+  { question: "ماذا لو احتجنا تعديلات بعد الإطلاق؟", answer: "تشمل جميع الباقات دعماً لمدة 90 يوماً بعد الإطلاق: إصلاح الأخطاء، تعديلات بسيطة، وتحسين الأداء. بعد ذلك، نوفر عقود دعم مستمر. تواصل معنا للتفاصيل." },
+  { question: "ما هو ضمان الاسترداد بنسبة 100%؟", answer: "إذا سلّمنا نظام الذكاء الاصطناعي المخصص لك ولم تكن راضياً عن النتائج، نُعيد لك 100% من استثمارك. بدون شروط مخفية وبدون قيود. هذا وعدنا، ولهذا السبب لا نقبل إلا المشاريع التي نعلم أننا قادرون على تنفيذها بشكل ممتاز." },
+  { question: "ما الفرق بين الذكاء الاصطناعي المخصص واستخدام أداة ذكاء اصطناعي عامة لفريقنا؟", answer: "أدوات الذكاء الاصطناعي الجاهزة عامة الغرض ولا تعرف شيئاً عن عملك. تطوير الذكاء الاصطناعي المخصص يعني بناء نظام مدرَّب على بياناتك الخاصة، مدمج مع عملياتك الخاصة، ومُهيَّأ بقواعدك وضوابطك الخاصة. يعرف منتجاتك، وأسلوبك، وسياساتك، وعملاءك. يمكنه اتخاذ إجراءات داخل أنظمتك، وليس فقط الإجابة عن الأسئلة. الفرق في جودة النتائج العملية كبير." },
+  { question: "أي نوع من الشركات يستفيد أكثر من تطوير الذكاء الاصطناعي المخصص؟", answer: "الشركات التي لديها أعمال متكررة وعالية الحجم تتطلب معرفة متخصصة بالمجال، والشركات ذات تفاعلات العملاء المعقدة التي تحتاج اتساقاً، والشركات التي تُشكّل فيها العمليات اليدوية عائقاً حقيقياً أمام النمو. إذا كنت تُنفق وقتاً كبيراً من فريقك على مهام تتبع نمطاً معيناً لكنها تحتاج حكماً، فإن تطوير الذكاء الاصطناعي المخصص يُحقق عائداً سريعاً في الغالب." },
+  { question: "هل نحتاج إلى تجهيز بياناتنا قبل بدء المشروع؟", answer: "لا. تجهيز البيانات جزء مما نقوم به. نُقيّم بياناتك الحالية خلال جلسة التشخيص، نُحدد ما هو مطلوب، نساعدك على جمع أو توليد ما ينقص، ونتولى كل عمليات التنظيف والتنسيق قبل أن نبدأ البناء. لا تحتاج إلى الحضور ببيانات منظمة تنظيماً مثالياً." },
+];
 
 const ldJson = [
-  {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "تطوير ذكاء اصطناعي مخصص في دبي والإمارات | Aegis AI",
-    "url": "https://lenooai.com/ar/services/custom-ai-development",
-    "inLanguage": "ar",
-    "isPartOf": { "@type": "WebSite", "url": "https://lenooai.com" }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
-      { "@type": "ListItem", "position": 2, "name": "الخدمات", "item": "https://lenooai.com/ar/services" },
-      { "@type": "ListItem", "position": 3, "name": "تطوير ذكاء اصطناعي مخصص", "item": "https://lenooai.com/ar/services/custom-ai-development" }
-    ]
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "name": "تطوير ذكاء اصطناعي مخصص",
-    "description": "بناء أنظمة ذكاء اصطناعي مصممة لعمليات شركتك في الإمارات: روبوتات محادثة، أتمتة، لوحات تحليلية مدمجة مع أدواتك.",
-    "areaServed": {"@type": "Country", "name": "United Arab Emirates"},
-    "provider": { "name": "Aegis AI", "url": "https://lenooai.com" }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "كم يستغرق تطوير نظام ذكاء اصطناعي مخصص؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "يعتمد على تعقيد المشروع. المشاريع البسيطة تنجز بسرعة. الأنظمة الأكثر تعقيداً التي تشمل تكاملات متعددة تأخذ وقتاً أطول. نحدد الجدول الزمني بالضبط في جلسة التشخيص الأولى." }
-      },
-      {
-        "@type": "Question",
-        "name": "هل يعمل النظام مع الأنظمة التي نستخدمها حالياً؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نعم. نبني الأنظمة لتعمل مع ما لديك، سواء CRM أو ERP أو واتساب أو البريد الإلكتروني أو قواعد بيانات مخصصة. لا نطلب منك تغيير بنيتك الحالية." }
-      },
-      {
-        "@type": "Question",
-        "name": "هل يدعم النظام اللغة العربية؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "بالطبع. جميع أنظمتنا تدعم العربية والإنجليزية بشكل كامل، بما في ذلك اللهجة الإماراتية في روبوتات المحادثة." }
-      },
-      {
-        "@type": "Question",
-        "name": "ماذا يحدث إذا احتجت تعديلات بعد التسليم؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نوفر فترة دعم بعد التسليم لضمان عمل كل شيء كما هو متوقع. أي تعديلات ضمن نطاق المشروع الأصلي مشمولة. بعد ذلك تتوفر خطط صيانة بأسعار شفافة." }
-      },
-      {
-        "@type": "Question",
-        "name": "ما الفرق بين تطوير ذكاء اصطناعي مخصص وشراء أداة جاهزة؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "الأدوات الجاهزة تحل مشاكل عامة. النظام المخصص يُبنى على بياناتك وعملياتك وأهدافك تحديداً، مما يعطيك دقة أعلى وتكامل حقيقي مع عملك." }
-      }
-    ]
-  }
+  { "@context": "https://schema.org", "@type": "Service", "name": "تطوير ذكاء اصطناعي مخصص", "url": "https://lenooai.com/ar/services/custom-ai-development", "description": "نبني أنظمة ذكاء اصطناعي مخصصة حول عمليات عملك بالضبط: روبوتات محادثة، مسارات أتمتة، لوحات تحليل تنبؤية، وتكاملات CRM/ERP.", "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://lenooai.com" }, "areaServed": "United Arab Emirates", "offers": { "@type": "Offer", "description": "تطوير ذكاء اصطناعي مخصص: التسعير حسب نطاق مشروعك. احجز مكالمة استكشافية مجانية للحصول على عرض سعر." }, "serviceType": "تطوير الذكاء الاصطناعي", "termsOfService": "ضمان رضا 100%. استرداد كامل إذا لم تكن راضياً." },
+  { "@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
+    { "@type": "ListItem", "position": 2, "name": "الخدمات", "item": "https://lenooai.com/ar/services" },
+    { "@type": "ListItem", "position": 3, "name": "تطوير ذكاء اصطناعي مخصص", "item": "https://lenooai.com/ar/services/custom-ai-development" }
+  ] },
+  { "@context": "https://schema.org", "@type": "FAQPage", "mainEntity": faqItems.map((f) => ({ "@type": "Question", "name": f.question, "acceptedAnswer": { "@type": "Answer", "text": f.answer } })) }
 ];
 ---
 
 <ArBaseLayout
-  title="تطوير ذكاء اصطناعي مخصص للشركات في الإمارات | Aegis AI"
-  description="Aegis AI، وكالة الذكاء الاصطناعي في دبي، تبني أنظمة ذكاء اصطناعي مصممة لعمليات شركتك في الإمارات: روبوتات محادثة، أتمتة، ولوحات تحليلية."
+  title="تطوير ذكاء اصطناعي مخصص لشركات الإمارات: روبوتات محادثة وأنظمة ذكاء اصطناعي | Aegis AI"
+  description="بصفتنا وكالة ذكاء اصطناعي في دبي، نبني أنظمة ذكاء اصطناعي مخصصة لشركات الإمارات حول عملياتك: روبوتات محادثة، أتمتة، لوحات تحليل، ووكلاء."
   canonicalPath="/ar/services/custom-ai-development"
   enPath="/services/custom-ai-development"
+  ogImage="/assets/og-custom-ai.jpg"
   ldJson={ldJson}
 >
 
-<!-- 1. Page Hero -->
-<header class="page-hero">
-  <div class="container">
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
     <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التنقل"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services" style="color:inherit;text-decoration:none;opacity:0.65;">الخدمات</a><span style="opacity:0.4;padding:0 4px;"> / </span>تطوير ذكاء اصطناعي مخصص</div>
-    <div class="badge badge-cyan" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">monitor_heart</span>
-      الأكثر طلباً
-    </div>
-    <h1>تطوير ذكاء اصطناعي مخصص<br><span class="gradient-text">لشركتك في دبي</span></h1>
-    <p style="color:rgba(255,255,255,0.72);font-size:1.125rem;max-width:620px;margin:1.5rem auto 2.5rem;line-height:1.8;">
-      لا حلول جاهزة. نبني أنظمة ذكاء اصطناعي مصممة من الصفر على عمليات شركتك، مدمجة مع أدواتك الحالية، تعمل باللغتين، وتحل مشاكل حقيقية تواجهها اليوم.
+    <h1>ذكاء اصطناعي مبني حول عملياتك، <span class="gradient-text">لا العكس</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:600px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      الذكاء الاصطناعي الجاهز لا يناسب عملك. نبني أنظمة ذكاء اصطناعي تفعل بالضبط ما يحتاجه فريقك وتتكامل مع الأدوات التي تستخدمها بالفعل.
     </p>
-    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
-      <button onclick="openModal(this)" data-source="ar_custom-ai-development_hero" class="btn-primary">احجز استشارة مجانية</button>
-      <a href="/ar/services" class="btn-outline">جميع الخدمات</a>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_custom_ai_hero" class="btn-primary">احجز مكالمة استكشافية مجانية</button>
+      <a href="#what-we-build" class="btn-outline">شاهد ما نبنيه ↓</a>
     </div>
   </div>
 </header>
 
-<!-- IMAGE BANNER -->
-<div style="width:100%; height:260px; overflow:hidden; position:relative;">
-  <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1400&q=80&auto=format&fit=crop" alt="تطوير ذكاء اصطناعي مخصص وهندسة برمجيات" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:240px;">
+  <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1400&q=80&auto=format&fit=crop" alt="تطوير ذكاء اصطناعي مخصص وهندسة برمجيات" loading="eager" fetchpriority="high" width="1400" height="240" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
   <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
 </div>
 
-<!-- 2. Stats Strip -->
-<section style="background:#f8fafc;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:2.5rem 0;">
+<!-- WHY CUSTOM -->
+<section class="section" aria-labelledby="why-custom-heading">
   <div class="container">
-    <div class="stats-strip">
-      <div class="stat-item">
-        <div class="stat-number">سريع</div>
-        <div class="stat-label">وقت التسليم حسب المشروع</div>
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="why-custom-heading" style="margin-bottom:1.5rem;">لماذا لا يكفي الذكاء الاصطناعي الجاهز</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        أدوات الذكاء الاصطناعي العامة مصممة للجميع، أي أنها في الواقع محسّنة لأحد تحديداً. الذكاء الاصطناعي الجاهز لا يعرف أسعارك، أو إجراءاتك التشغيلية، أو إرشادات علامتك التجارية. عندما تبني باستخدام أدوات عامة، تقضي وقتاً أطول في تصحيح النتائج مما توفره أثناء توليدها، لأن الذكاء الاصطناعي يعمل دائماً من نقطة انطلاق عامة بدلاً من سياقك الفعلي.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        تطوير الذكاء الاصطناعي المخصص يبني النظام حول عملياتك، لا حول فكرة شخص آخر عن شكل الشركة النموذجية. يعرف الذكاء الاصطناعي منتجاتك، وعملاءك، وتنسيقات بياناتك، ومتطلبات الامتثال لديك، وأسلوبك في التواصل. يتكامل مباشرة مع أدواتك الحالية بحيث يستطيع اتخاذ إجراءات داخل أنظمتك، لا مجرد توليد نص لينسخه أحدهم. النتيجة نظام يناسب فعلاً طريقة عمل شركتك.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        الشركات التي تستفيد أكثر هي التي لديها عمليات عالية الحجم ومتخصصة بمجال معين، حيث يقصّر الذكاء الاصطناعي العام: شركات الخدمات المهنية التي تتعامل مع أعمال عملاء معقدة، شركات التجارة الإلكترونية التي تُدير كتالوجات منتجات وعلاقات عملاء كبيرة، شركات اللوجستيات التي تُنسّق بين أطراف وأنظمة متعددة، وأي مؤسسة تكون فيها الدقة والاتساق غير قابلين للتفاوض.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- OFF-THE-SHELF VS CUSTOM (interactive toggle) -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="cad-compare-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="cad-compare-heading">الذكاء الاصطناعي الجاهز مقابل الذكاء الاصطناعي المخصص</h2>
+      <p>نفس السؤال، إجابتان مختلفتان. بدّل بينهما لترى الفرق الذي يصنعه السياق.</p>
+    </div>
+    <div class="cad-compare-grid">
+      <div style="border-radius:24px; overflow:hidden; box-shadow:0 24px 56px rgba(0,59,92,0.10); min-height:260px;">
+        <img src="https://images.unsplash.com/photo-1611746869696-d09bce200020?w=1200&q=80&auto=format&fit=crop" alt="صاحب عمل يُراجع رد مساعد ذكاء اصطناعي على حاسوب محمول في دبي" loading="lazy" width="1200" height="800" style="width:100%; height:100%; object-fit:cover; display:block;" />
       </div>
-      <div class="stat-item">
-        <div class="stat-number">١٠٠٪</div>
-        <div class="stat-label">ضمان الاسترداد</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-number">+٤٧٪</div>
-        <div class="stat-label">متوسط تحسين التحويل</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-number">عربي + إنجليزي</div>
-        <div class="stat-label">ثنائي اللغة دائماً</div>
+      <div class="card" style="padding:2rem;">
+        <div class="cad-toggle" role="tablist" aria-label="مقارنة إجابات الذكاء الاصطناعي">
+          <button class="cad-toggle-btn is-active" role="tab" id="cad-tab-generic" aria-selected="true" aria-controls="cad-panel-generic" data-cad-toggle="generic">ذكاء اصطناعي جاهز</button>
+          <button class="cad-toggle-btn" role="tab" id="cad-tab-custom" aria-selected="false" aria-controls="cad-panel-custom" data-cad-toggle="custom">ذكاء اصطناعي مخصص</button>
+        </div>
+        <p style="color:#72787e; font-size:0.8125rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin:1.5rem 0 0.75rem;">السؤال المطروح</p>
+        <p style="color:#00253b; font-size:1rem; font-weight:600; margin-bottom:1.5rem;">«ما سياسة الإرجاع للمنتجات المشتراة أثناء التخفيضات؟»</p>
+        <div role="tabpanel" id="cad-panel-generic" aria-labelledby="cad-tab-generic" data-cad-panel="generic">
+          <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">«تختلف سياسات الإرجاع حسب المتجر. تسمح معظم المتاجر بالإرجاع خلال 30 يوماً من الشراء، لكن منتجات التخفيضات مستثناة أحياناً. يرجى التحقق من المتجر المحدد لمعرفة سياسته الدقيقة.»</p>
+        </div>
+        <div role="tabpanel" id="cad-panel-custom" aria-labelledby="cad-tab-custom" data-cad-panel="custom" hidden>
+          <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">«يمكن إرجاع منتجات التخفيضات خلال 14 يوماً مع الإيصال، مقابل رصيد في المتجر فقط. المنتجات بالسعر العادي تحصل على استرداد كامل خلال 30 يوماً. بما أن طلبك شُحن في اليوم الثالث، لديك حتى اليوم السابع عشر لإرجاعه. هل تريد أن أبدأ عملية الإرجاع الآن؟»</p>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 3. What We Build -->
-<section class="section">
+<script is:inline>
+(function () {
+  var toggles = document.querySelectorAll('[data-cad-toggle]');
+  var panels = document.querySelectorAll('[data-cad-panel]');
+  toggles.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      toggles.forEach(function (t) { t.classList.remove('is-active'); t.setAttribute('aria-selected', 'false'); });
+      panels.forEach(function (p) { p.hidden = true; });
+      btn.classList.add('is-active');
+      btn.setAttribute('aria-selected', 'true');
+      var panel = document.querySelector('[data-cad-panel="' + btn.getAttribute('data-cad-toggle') + '"]');
+      if (panel) panel.hidden = false;
+    });
+  });
+})();
+</script>
+
+<!-- WHAT WE BUILD -->
+<section id="what-we-build" class="section" aria-labelledby="build-heading">
   <div class="container">
-    <div style="text-align:center;margin-bottom:3rem;">
-      <h2>ماذا نبني لشركتك</h2>
-      <p style="color:#42474e;max-width:560px;margin:1rem auto 0;line-height:1.8;">أمثلة شائعة، لا قائمة حصرية. من روبوتات المحادثة إلى لوحات التحليل، كل ما نبنيه مدمج في عملياتك اليومية. إذا كانت فكرتك مختلفة، أخبرنا بما تحتاجه.</p>
+    <div class="section-header">
+      <h2 id="build-heading">ماذا نبني لك</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">فئات شائعة من أنظمة الذكاء الاصطناعي التي نبنيها، وليست قائمة شاملة. كلها مبنية حسب عملياتك ومدمجة مع أدواتك الحالية. إذا لم تُناسب فكرتك أياً من هذه الفئات، أخبرنا بما تحتاجه.</p>
     </div>
-    <div class="feature-grid">
-      <div class="card feature-card">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">smart_toy</span>
-        <h3>روبوتات واتساب وتيليغرام</h3>
-        <p>بوتات محادثة تردّ على العملاء فوراً، تؤهّل العملاء المحتملين، وترسل عروض أسعار على مدار الساعة.</p>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&q=80&auto=format&fit=crop" alt="مهندس Aegis AI يربط نظام ذكاء اصطناعي مخصص بأدوات عمل العميل عبر واجهة برمجية" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="builds-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">smart_toy</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">مساعدون ذكاء اصطناعي داخليون</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">مدرَّبون على بيانات شركتك ومستنداتك وإجراءاتك التشغيلية. يُجيبون على أسئلة فريقك فوراً وبدقة.</p>
       </div>
-      <div class="card feature-card">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">manage_accounts</span>
-        <h3>أتمتة CRM</h3>
-        <p>تحديث تلقائي للسجلات، تصنيف العملاء المحتملين، وإرسال متابعات مخصصة دون تدخل يدوي.</p>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">support_agent</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">روبوتات محادثة للعملاء</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">يتعاملون مع الاستفسارات والحجوزات والدعم على مدار الساعة عبر موقعك وتطبيقات المراسلة وقنوات أخرى، بأي لغة.</p>
       </div>
-      <div class="card feature-card">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">bar_chart</span>
-        <h3>لوحات تحليلية تنبؤية</h3>
-        <p>بيانات شركتك تتحول إلى رؤى قابلة للتنفيذ: مبيعات، مخزون، أداء الفرق. كل شيء في مكان واحد.</p>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">bolt</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">أتمتة سير العمل</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">يُلغي المهام اليدوية المتكررة عبر المبيعات والعمليات والإدارة. اربط تطبيقاتك ودع الذكاء الاصطناعي يتولى إدخال البيانات.</p>
       </div>
-      <div class="card feature-card">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">description</span>
-        <h3>معالجة المستندات</h3>
-        <p>استخراج بيانات من الفواتير والعقود والنماذج تلقائياً، وتحويلها إلى بيانات منظمة في ثوانٍ.</p>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">monitoring</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">لوحات تحليل تنبؤية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">أدوات توقّع للمبيعات، الطلب، التسعير، والمخزون. اتخذ قراراتك بناءً على البيانات، لا التخمين.</p>
       </div>
-      <div class="card feature-card">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">build</span>
-        <h3>أدوات ذكاء اصطناعي داخلية</h3>
-        <p>مساعد معرفة للموظفين، أداة توليد تقارير، أو أي أداة تحتاجها، مبنية خصيصاً لفريقك.</p>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">integration_instructions</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">طبقات ذكاء اصطناعي لأنظمة CRM وERP</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">أضف ذكاءً اصطناعياً إلى نظام CRM الحالي أو أنظمتك المخصصة دون استبدالها. يستمر فريقك بالعمل بنفس الطريقة؛ والنظام يصبح أذكى.</p>
       </div>
-      <div class="card feature-card">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">account_tree</span>
-        <h3>أتمتة سير العمل</h3>
-        <p>نربط أنظمتك المختلفة ونُعيد تصميم العمليات المتكررة لتعمل وحدها، بدقة وبدون أخطاء.</p>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">معالجة المستندات بالذكاء الاصطناعي</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">العقود، الفواتير، والتقارير تُعالَج تلقائياً. يستخرج، يُصنّف، ويُوجّه البيانات خلال ثوانٍ.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 3b. Industry Tabs -->
-<section class="section" style="background:#f8fafc;" aria-labelledby="industry-heading">
+<!-- WHAT'S INCLUDED -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="included-heading">
   <div class="container">
-    <div style="text-align:center;margin-bottom:3rem;">
-      <h2 id="industry-heading">نُصمم الحل حسب قطاعك</h2>
-      <p style="color:#42474e;max-width:560px;margin:1rem auto 0;line-height:1.8;">لكل قطاع مشاكله الخاصة. اختر قطاعك لترى أين يُحدث الذكاء الاصطناعي أكبر فرق فوري.</p>
-    </div>
-    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
-      <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1200&q=80&auto=format&fit=crop" alt="اجتماع فريق عمل يناقش حلول ذكاء اصطناعي مخصصة لشركة في دبي" loading="lazy" width="1200" height="340" style="width:100%; height:clamp(200px, 26vw, 340px); object-fit:cover; display:block;" />
-    </div>
-    <div class="industry-tabs" data-tabs="cad-industry">
-      <div class="industry-tab-btns" role="tablist" aria-label="اختر قطاعك">
-        <button type="button" class="industry-tab-btn is-active" role="tab" aria-selected="true" data-tab-target="realestate">عقارات</button>
-        <button type="button" class="industry-tab-btn" role="tab" aria-selected="false" data-tab-target="retail">تجزئة وتجارة إلكترونية</button>
-        <button type="button" class="industry-tab-btn" role="tab" aria-selected="false" data-tab-target="hospitality">ضيافة وسياحة</button>
-      </div>
-      <div class="industry-tab-panel is-active" data-tab-panel="realestate" role="tabpanel">
-        <p>فرق المبيعات العقارية تُغرَق برسائل واتساب لنفس الأسئلة: السعر، الموقع، خطة الدفع. نبني بوتاً يرد فوراً بكل التفاصيل، ويُحوّل للمبيع المناسب فقط العملاء الجاهزين للشراء.</p>
-      </div>
-      <div class="industry-tab-panel" data-tab-panel="retail" role="tabpanel" hidden>
-        <p>من تتبّع الطلبات إلى التوصية بالمنتج المناسب، نبني أدوات تُقلّل تذاكر الدعم المتكررة وتزيد متوسط قيمة السلة، دون الحاجة لفريق دعم أكبر.</p>
-      </div>
-      <div class="industry-tab-panel" data-tab-panel="hospitality" role="tabpanel" hidden>
-        <p>النزلاء يتوقعون رداً فورياً على مدار الساعة. نبني وكيل كونسيرج يتعامل مع الحجوزات والاستفسارات بالعربي والإنجليزي، دون أن ينتظر أحد في الطابور.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- 4. Results Card -->
-<section class="section" style="background:#f8fafc;">
-  <div class="container" style="max-width:860px;">
-    <div style="text-align:center;margin-bottom:2.5rem;">
-      <h2>نتيجة حقيقية من دبي</h2>
+    <div class="section-header">
+      <h2 id="included-heading">ما يشمله كل مشروع ذكاء اصطناعي مخصص</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">ليس فقط نظام الذكاء الاصطناعي نفسه. يشمل كل مشروع الدعم والهيكلية التي يحتاجها فريقك لاستخدامه فعلياً.</p>
     </div>
     <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
       <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&q=80&auto=format&fit=crop" alt="مساحة عمل تطوير برمجيات أثناء بناء نظام ذكاء اصطناعي مخصص" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
     </div>
-    <div class="card results-card">
-      <div class="results-badge">
-        <span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">apartment</span>
-        شركة عقارات، دبي
-      </div>
-      <div class="results-row">
-        <div class="results-col">
-          <div class="results-label">المشكلة</div>
-          <p>فريق المبيعات يرد على استفسارات واتساب يدوياً، أحياناً بعد ٤ ساعات من الاستلام. كثير من العملاء المحتملين يتحولون للمنافسين قبل الرد.</p>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem;">
+      <div style="background:#fff; border:1px solid rgba(0,37,59,0.08); border-radius:16px; padding:1.75rem; display:flex; gap:1rem; align-items:flex-start;">
+        <div style="width:40px; height:40px; border-radius:10px; background:rgba(0,227,253,0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px;">search</span>
         </div>
-        <div class="results-divider" aria-hidden="true">←</div>
-        <div class="results-col">
-          <div class="results-label">الحل</div>
-          <p>روبوت واتساب مخصص يرد فوراً، يؤهّل العملاء بأسئلة ذكية، ويحوّل الجاهزين للشراء مباشرة إلى المبيع المناسب.</p>
+        <div>
+          <h3 style="font-size:1rem; color:#00253b; margin-bottom:0.375rem;">تقييم الاحتياجات وتحديد النطاق</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">جلسة تشخيص منظمة لرسم خريطة عملياتك، تحديد أين يخلق الذكاء الاصطناعي أكبر قيمة، وتحديد نطاق دقيق بلا مفاجآت.</p>
         </div>
       </div>
-      <div class="results-metrics">
-        <div class="metric">
-          <div class="metric-number">+٤٧٪</div>
-          <div class="metric-label">زيادة في تحويل العملاء المحتملين</div>
+      <div style="background:#fff; border:1px solid rgba(0,37,59,0.08); border-radius:16px; padding:1.75rem; display:flex; gap:1rem; align-items:flex-start;">
+        <div style="width:40px; height:40px; border-radius:10px; background:rgba(0,227,253,0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px;">dataset</span>
         </div>
-        <div class="metric">
-          <div class="metric-number">أقل من ٢ دقيقة</div>
-          <div class="metric-label">متوسط وقت الرد (كان ٤ ساعات)</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- 5. How It Works -->
-<section class="section">
-  <div class="container" style="max-width:760px;">
-    <div style="text-align:center;margin-bottom:3rem;">
-      <h2>كيف يسير العمل</h2>
-    </div>
-    <div class="process-steps">
-      <div class="process-step">
-        <div class="step-number">١</div>
-        <div class="step-content">
-          <h3>جلسة تشخيص مجانية</h3>
-          <p>نجلس معك ٤٥ دقيقة لفهم عملياتك وتحديد أعلى نقطة تأثير للذكاء الاصطناعي في شركتك. تخرج بخارطة طريق واضحة حتى لو لم تستمر معنا.</p>
+        <div>
+          <h3 style="font-size:1rem; color:#00253b; margin-bottom:0.375rem;">تجهيز البيانات</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">نتولى جميع عمليات جمع البيانات وتنظيفها وتنسيقها. لست بحاجة للحضور ببيانات منظمة تماماً. نبني ما يحتاجه النظام.</p>
         </div>
       </div>
-      <div class="process-step">
-        <div class="step-number">٢</div>
-        <div class="step-content">
-          <h3>بناء وتكامل</h3>
-          <p>نبني النظام بشكل تكراري ونريك نتائج كل أسبوع. تُدمج في أنظمتك الحالية دون توقف العمل. فريقك يُجرّب مع كل مرحلة.</p>
+      <div style="background:#fff; border:1px solid rgba(0,37,59,0.08); border-radius:16px; padding:1.75rem; display:flex; gap:1rem; align-items:flex-start;">
+        <div style="width:40px; height:40px; border-radius:10px; background:rgba(0,227,253,0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px;">code</span>
+        </div>
+        <div>
+          <h3 style="font-size:1rem; color:#00253b; margin-bottom:0.375rem;">بناء وتكامل مخصص</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">تطوير كامل لنظام الذكاء الاصطناعي الخاص بك، مدمج مع أدواتك الحالية عبر واجهة برمجية، مُهيأ حسب قواعد عملك، ومنشور في بيئتك.</p>
         </div>
       </div>
-      <div class="process-step">
-        <div class="step-number">٣</div>
-        <div class="step-content">
-          <h3>تسليم وضمان</h3>
-          <p>تحصل على النظام كاملاً مع توثيق ودعم. إذا لم تكن راضياً تماماً خلال ٣٠ يوماً، نردّ ١٠٠٪. بدون أسئلة.</p>
+      <div style="background:#fff; border:1px solid rgba(0,37,59,0.08); border-radius:16px; padding:1.75rem; display:flex; gap:1rem; align-items:flex-start;">
+        <div style="width:40px; height:40px; border-radius:10px; background:rgba(0,227,253,0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px;">fact_check</span>
+        </div>
+        <div>
+          <h3 style="font-size:1rem; color:#00253b; margin-bottom:0.375rem;">اختبار الجودة وقبول المستخدم</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">اختبار شامل على بيانات حقيقية بما في ذلك الحالات الاستثنائية. يختبر فريقك النظام قبل الإطلاق ويوافق على الأداء.</p>
+        </div>
+      </div>
+      <div style="background:#fff; border:1px solid rgba(0,37,59,0.08); border-radius:16px; padding:1.75rem; display:flex; gap:1rem; align-items:flex-start;">
+        <div style="width:40px; height:40px; border-radius:10px; background:rgba(0,227,253,0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px;">school</span>
+        </div>
+        <div>
+          <h3 style="font-size:1rem; color:#00253b; margin-bottom:0.375rem;">تدريب الفريق والتسليم</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">جلسات تدريب لفريقك بحيث يعرف الجميع كيفية استخدام النظام وإدارته والاستفادة القصوى منه منذ اليوم الأول.</p>
+        </div>
+      </div>
+      <div style="background:#fff; border:1px solid rgba(0,37,59,0.08); border-radius:16px; padding:1.75rem; display:flex; gap:1rem; align-items:flex-start;">
+        <div style="width:40px; height:40px; border-radius:10px; background:rgba(0,227,253,0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px;">support</span>
+        </div>
+        <div>
+          <h3 style="font-size:1rem; color:#00253b; margin-bottom:0.375rem;">دعم لمدة 90 يوماً بعد الإطلاق</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">إصلاح الأخطاء، تعديلات بسيطة، ومراقبة الأداء لمدة 90 يوماً بعد الإطلاق. إذا تعطل شيء أو احتاج ضبطاً، نُصلحه.</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 5b. Comparison -->
-<section class="section" aria-labelledby="compare-heading">
-  <div class="container" style="max-width:820px;">
-    <div style="text-align:center;margin-bottom:2.5rem;">
-      <h2 id="compare-heading">نظام مخصص أم أداة جاهزة؟</h2>
-      <p style="color:#42474e;max-width:580px;margin:1rem auto 0;line-height:1.8;">الأدوات الجاهزة تحل مشاكل عامة بسرعة. النظام المخصص يُبنى على بياناتك وعملياتك، فيعطيك دقة لا تصل إليها أداة عامة.</p>
-    </div>
-    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
-      <img src="https://images.unsplash.com/photo-1573497491208-6b1acb260507?w=1200&q=80&auto=format&fit=crop" alt="لوحة تحليلات ذكاء اصطناعي مخصصة تعرض بيانات مبيعات شركة إماراتية" loading="lazy" width="1200" height="340" style="width:100%; height:clamp(200px, 26vw, 340px); object-fit:cover; display:block;" />
-    </div>
-    <div class="compare-wrap" style="border-radius:var(--radius-md);overflow-x:auto;box-shadow:var(--shadow-card);">
-      <table class="compare-table" style="width:100%;border-collapse:collapse;">
-        <thead>
-          <tr>
-            <th style="text-align:start;">المعيار</th>
-            <th>أداة جاهزة</th>
-            <th>نظام مخصص</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>مبني على بيانات شركتك تحديداً</td><td class="check-no">لا</td><td class="check-yes">نعم</td></tr>
-          <tr><td>يدعم اللهجة الإماراتية بدقة</td><td class="check-rarely">جزئياً</td><td class="check-yes">نعم</td></tr>
-          <tr><td>يتكامل مع أنظمتك الحالية بلا حدود</td><td class="check-rarely">محدود بإضافات جاهزة</td><td class="check-yes">نعم</td></tr>
-          <tr><td>سرعة الإطلاق الأولي</td><td class="check-yes">أسرع</td><td class="check-rarely">حسب النطاق</td></tr>
-          <tr><td>يكبر مع نمو عملياتك</td><td class="check-no">محدود بحدود الأداة</td><td class="check-yes">نعم</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- 6. Guarantee -->
-<section class="section" style="background:#e7eeff;padding:4rem 0;text-align:center;">
+<!-- PROCESS -->
+<section class="section" aria-labelledby="process-heading">
   <div class="container">
-    <div class="guarantee-badge" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:18px;direction:ltr;" aria-hidden="true">shield</span>
-      ضمان الاسترداد الكامل، الوحيد في الإمارات
+    <div class="section-header">
+      <h2 id="process-heading">من التشخيص إلى الإطلاق</h2>
     </div>
-    <h2 style="margin-bottom:1rem;">إذا لم تكن راضياً، لا تدفع أي شيء.</h2>
-    <p style="color:#42474e;max-width:560px;margin:0 auto 2rem;line-height:1.8;">نبني، تختبر، وإذا لم تكن راضياً تماماً نردّ ١٠٠٪ خلال ٣٠ يوماً من التسليم. بدون أسئلة.</p>
-    <button onclick="openModal(this)" data-source="ar_custom-ai-development_guarantee" class="btn-primary">ابدأ بدون مخاطرة</button>
+    <ProcessSteps steps={processSteps} />
   </div>
 </section>
 
-<!-- 7. FAQ -->
-<section class="section">
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
   <div class="container" style="max-width:720px;">
-    <div style="text-align:center;margin-bottom:3rem;">
-      <h2>أسئلة شائعة</h2>
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
     </div>
-    <div class="faq-list">
-
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          كم يستغرق تطوير نظام ذكاء اصطناعي مخصص؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">يعتمد على تعقيد المشروع. المشاريع البسيطة تنجز بسرعة. الأنظمة الأكثر تعقيداً التي تشمل تكاملات متعددة تأخذ وقتاً أطول. نحدد الجدول الزمني بالضبط في جلسة التشخيص الأولى.</div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل يعمل النظام مع الأنظمة التي نستخدمها حالياً؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نعم. نبني الأنظمة لتعمل مع ما لديك، سواء CRM أو ERP أو واتساب أو البريد الإلكتروني أو قواعد بيانات مخصصة. لا نطلب منك تغيير بنيتك الحالية.</div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل يدعم النظام اللغة العربية؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">بالطبع. جميع أنظمتنا تدعم العربية والإنجليزية بشكل كامل، بما في ذلك اللهجة الإماراتية في روبوتات المحادثة.</div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          ماذا يحدث إذا احتجت تعديلات بعد التسليم؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نوفر فترة دعم بعد التسليم لضمان عمل كل شيء كما هو متوقع. أي تعديلات ضمن نطاق المشروع الأصلي مشمولة. بعد ذلك تتوفر خطط صيانة بأسعار شفافة.</div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          ما الفرق بين تطوير ذكاء اصطناعي مخصص وشراء أداة جاهزة؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">الأدوات الجاهزة تحل مشاكل عامة. النظام المخصص يُبنى على بياناتك وعملياتك وأهدافك تحديداً، مما يعطيك دقة أعلى وتكامل حقيقي مع عملك.</div>
-      </div>
-
-    </div>
+    <FaqAccordion items={faqItems} />
   </div>
 </section>
 
-<!-- 8. Final CTA Band -->
-<section class="cta-band" style="border-radius:24px;margin:2rem 2rem 4rem;">
-  <div class="container" style="text-align:center;">
-    <h2 style="margin-bottom:1rem;">جاهز لبناء نظامك الأول؟</h2>
-    <p style="opacity:0.85;max-width:500px;margin:0 auto 2rem;line-height:1.8;">احجز جلسة تشخيص مجانية، نخرج منها بخارطة طريق واضحة لما يمكن أتمتته في شركتك.</p>
-    <button onclick="openModal(this)" data-source="ar_custom-ai-development_cta" class="btn-primary">احجز جلستك المجانية</button>
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">مكالمة استكشافية مجانية</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">هل أنت مستعد لبناء نظام الذكاء الاصطناعي المخصص الخاص بك؟</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">سنُقيّم احتياجاتك ونمنحك نطاقاً وجدولاً زمنياً وميزانية واضحة، لتعرف بالضبط ما تلتزم به قبل أن تقرر.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ مجاني 100%</span>
+      <span class="cta-trust-badge">✓ بدون التزام</span>
+      <span class="cta-trust-badge">✓ ضمان استرداد</span>
+    </div>
+    <button onclick="openModal(this)" data-source="ar_custom_ai_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجز مكالمتك الاستكشافية المجانية</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة 30 دقيقة · بدون ضغط للبيع</p>
   </div>
-</section>
+</div>
 
 </ArBaseLayout>
 
-<script>
-  (function () {
-    const root = document.querySelector('[data-tabs="cad-industry"]');
-    if (!root) return;
-    const btns = root.querySelectorAll<HTMLElement>('[data-tab-target]');
-    const panels = root.querySelectorAll<HTMLElement>('[data-tab-panel]');
-    btns.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const target = btn.getAttribute('data-tab-target');
-        btns.forEach((b) => {
-          const active = b === btn;
-          b.classList.toggle('is-active', active);
-          b.setAttribute('aria-selected', String(active));
-        });
-        panels.forEach((p) => {
-          const match = p.getAttribute('data-tab-panel') === target;
-          p.classList.toggle('is-active', match);
-          p.hidden = !match;
-        });
-      });
-    });
-  })();
-</script>
-
 <style>
-  .stats-strip {
-    display: flex;
-    justify-content: center;
-    gap: 3rem;
-    flex-wrap: wrap;
-    text-align: center;
-  }
-  .stat-item { min-width: 120px; }
-  .stat-number { font-size: 2rem; font-weight: 800; color: #00253b; line-height: 1.1; }
-  .stat-label { font-size: 0.8125rem; color: #5f6b7a; margin-top: 0.375rem; }
-
-  .feature-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-  }
-  .feature-card { display: flex; flex-direction: column; gap: 0.75rem; }
-  .feature-icon { font-size: 2rem; color: #006875; }
-  .feature-card h3 { font-size: 1rem; font-weight: 700; color: #00253b; margin: 0; }
-  .feature-card p { font-size: 0.875rem; color: #42474e; line-height: 1.7; margin: 0; }
-
-  .results-card { padding: 2.5rem; }
-  .results-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: rgba(0,104,117,0.1); color: #004f58;
-    font-size: 0.8125rem; font-weight: 700; padding: 5px 14px;
-    border-radius: 100px; margin-bottom: 2rem;
-  }
-  .results-row { display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 2rem; }
-  .results-col { flex: 1; }
-  .results-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #006875; margin-bottom: 0.5rem; }
-  .results-col p { font-size: 0.9375rem; color: #42474e; line-height: 1.75; margin: 0; }
-  .results-divider { font-size: 1.5rem; color: #c4cbd4; padding-top: 1.5rem; flex-shrink: 0; }
-  .results-metrics { display: flex; gap: 2rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0; }
-  .metric { flex: 1; text-align: center; }
-  .metric-number { font-size: 2rem; font-weight: 800; color: #006875; line-height: 1.1; }
-  .metric-label { font-size: 0.8125rem; color: #5f6b7a; margin-top: 0.375rem; }
-
-  .process-steps { display: flex; flex-direction: column; gap: 2rem; }
-  .process-step { display: flex; gap: 1.5rem; align-items: flex-start; }
-  .step-number {
-    width: 44px; height: 44px; border-radius: 50%;
-    background: #00253b; color: #fff;
-    font-size: 1.125rem; font-weight: 800;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .step-content h3 { font-size: 1.0625rem; font-weight: 700; color: #00253b; margin: 0 0 0.5rem; }
-  .step-content p { font-size: 0.9375rem; color: #42474e; line-height: 1.75; margin: 0; }
-
-  .faq-list { display: flex; flex-direction: column; gap: 0; }
-
-  .industry-tab-btns { display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 2rem; }
-  .industry-tab-btn {
-    background: #fff; border: 1px solid #c2c7ce; color: #42474e;
-    font-size: 0.9375rem; font-weight: 600; padding: 0.625rem 1.375rem;
-    border-radius: 100px; cursor: pointer; transition: all .25s var(--ease);
-    font-family: 'IBM Plex Sans Arabic', sans-serif;
-  }
-  .industry-tab-btn:hover { border-color: #006875; color: #006875; }
-  .industry-tab-btn.is-active { background: #00253b; border-color: #00253b; color: #fff; }
-  .industry-tab-btn:focus-visible { outline: 3px solid #006875; outline-offset: 2px; }
-  .industry-tab-panel {
-    max-width: 700px; margin: 0 auto; text-align: center;
-    background: #fff; border: 1px solid #e2e8f0; border-radius: 16px;
-    padding: 2rem 2.25rem;
-  }
-  .industry-tab-panel p { color: #42474e; font-size: 1rem; line-height: 1.85; margin: 0; }
-
-  @media (max-width: 900px) { .feature-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 580px) {
-    .feature-grid { grid-template-columns: 1fr; }
-    .results-row { flex-direction: column; }
-    .results-divider { display: none; }
-    .stats-strip { gap: 1.5rem; }
-    .compare-table { font-size: 0.8125rem; }
-    .compare-table td, .compare-table th { padding: .625rem .625rem; }
-    .industry-tab-panel { padding: 1.5rem; }
-  }
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+.builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+.cad-compare-grid { display:grid; grid-template-columns:1fr 1.1fr; gap:1.5rem; align-items:stretch; }
+.cad-toggle { display:flex; gap:0.5rem; background:#f0f3ff; border-radius:12px; padding:4px; }
+.cad-toggle-btn { flex:1; padding:0.625rem 1rem; border:none; background:none; border-radius:8px; font-weight:600; font-size:0.875rem; color:#42474e; cursor:pointer; transition:background .2s, color .2s; font-family:inherit; }
+.cad-toggle-btn.is-active { background:#fff; color:#00253b; box-shadow:0 2px 8px rgba(0,37,59,0.10); }
+@media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .cad-compare-grid { grid-template-columns:1fr; } }
+@media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
 </style>
