@@ -1,429 +1,307 @@
 ---
 export const prerender = false;
-import ArBaseLayout from "../../../layouts/ArBaseLayout.astro";
+import ArBaseLayout from '../../../layouts/ArBaseLayout.astro';
+import FaqAccordion from '../../../components/FaqAccordion.astro';
+import ProcessSteps from '../../../components/ProcessSteps.astro';
 
-Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+const faqItems = [
+  { question: "ما البيانات التي تُدرَّب عليها الأداة الداخلية؟", answer: "نُدرّبها على كل ما يستخدمه فريقك فعلياً: موسوعات الشركة، إجراءات التشغيل القياسية، السياسات، مستندات المنتج، المشاريع السابقة، تذاكر الدعم، والمستندات الداخلية، وغيرها. تصبح الأداة خبيراً حقيقياً في شركتك، لا أداة عامة." },
+  { question: "هل بيانات شركتنا آمنة؟", answer: "نعم. بياناتك لا تغادر نطاق تحكمك أبداً. نُنشر الأدوات الداخلية في بيئتك السحابية الخاصة أو على خوادمك الداخلية. لا تُستخدم بياناتك لتدريب أي نماذج ذكاء اصطناعي خارجية. نُعدّ ضوابط الوصول بحيث يرى كل موظف فقط ما هو مُصرَّح له برؤيته." },
+  { question: "هل يمكن للموظفين بدون مهارات تقنية استخدام هذه الأدوات؟", answer: "نعم، هذا بالضبط الهدف منها. الأدوات الداخلية مصممة للموظفين غير التقنيين. يطرح الموظف سؤاله بلغة بسيطة ويحصل على إجابة مباشرة. لا حاجة لأي تدريب سوى جلسة تعريفية قصيرة." },
+  { question: "كيف تُبقون الأداة محدَّثة عند تغيّر مستنداتنا؟", answer: "نُعدّ خطوط مزامنة آلية تُحدّث الأداة باستمرار بالمستندات الجديدة أو المعدَّلة. تبقى معرفة الأداة محدَّثة دون أي جهد يدوي من فريقك." },
+  { question: "ما الفرق بين أداة ذكاء اصطناعي داخلية واستخدام بحث SharePoint فقط؟", answer: "بحث SharePoint يجد المستندات التي تحتوي على كلماتك المفتاحية. أما الأداة الداخلية فتفهم ما تسأل عنه فعلياً وتُعطيك الإجابة، مع السياق، بلغة بسيطة. تُلخّص من عدة مستندات، تشرح السياسات، تقارن الخيارات، وتتعامل مع الأسئلة التابعة. الفرق أشبه بالفرق بين أن تُسلَّم كومة من الملفات وبين أن يشرح لك زميل مطّلع بالضبط ما تحتاج معرفته." },
+  { question: "هل يمكننا تقييد أي موظف يصل لأي معلومات؟", answer: "نعم، ضوابط الوصول مبنية في الأداة منذ البداية. نُعدّ الذكاء الاصطناعي بحيث لا يُظهر إلا المعلومات المُصرَّح للموظف السائل برؤيتها. الموارد البشرية تصل لبيانات الموارد البشرية. المالية ترى مستندات المالية. موظف مبتدئ لن يحصل على بيانات تعويضات الإدارة العليا لمجرد أنه سأل عنها. الصلاحيات تعكس هيكلك التنظيمي الحالي." },
+  { question: "كم يستغرق نشر أداة ذكاء اصطناعي داخلية؟", answer: "أداة قاعدة معرفة مُركَّزة لقسم واحد تنتقل عادةً من الانطلاق إلى التشغيل الفعلي خلال أسبوعين إلى أربعة أسابيع. عمليات النشر الأكبر التي تشمل عدة أقسام، وأنواع مستندات، وتكاملات تأخذ وقتاً أطول ويُحدَّد نطاقها بشكل فردي. نُطلق الأداة على مراحل للتحقق من الدقة قبل النشر الكامل." },
+];
+
+const processSteps = [
+  { icon: "folder_open", step: "الخطوة 1", title: "تدقيق البيانات", description: "نحصر مستنداتك وموسوعاتك الداخلية ومصادر بياناتك، ثم نحدد ما يجب تضمينه وكيف يُنظَّم." },
+  { icon: "settings", step: "الخطوة 2", title: "البناء والإعداد", description: "نستوعب بياناتك، نُعدّ الذكاء الاصطناعي، نضبط صلاحيات الوصول، ونبني الواجهة التي سيستخدمها فريقك فعلياً." },
+  { icon: "fact_check", step: "الخطوة 3", title: "الاختبار والضبط", description: "يختبر فريقك أسئلة حقيقية. نضبط الإجابات، نُصلح الثغرات، ونتأكد من الدقة قبل الإطلاق." },
+  { icon: "rocket_launch", step: "الخطوة 4", title: "الإطلاق والتحديث", description: "تنطلق الأداة مع مزامنة مستمرة للمستندات. دعم لمدة 90 يوماً مشمول للتوسيع والتحسين." },
+];
 
 const ldJson = [
-  {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "أدوات ذكاء اصطناعي داخلية لفريقك | Aegis AI، الإمارات",
-    "url": "https://lenooai.com/ar/services/internal-ai-tools",
-    "inLanguage": "ar",
-    "description": "Aegis AI تبني أدوات ذكاء اصطناعي داخلية لفريقك في الإمارات: مساعدات معرفة، قواعد بيانات ذكية، وأتمتة خاصة بعملياتك.",
-    "isPartOf": { "@type": "WebSite", "url": "https://lenooai.com" }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
-      { "@type": "ListItem", "position": 2, "name": "الخدمات", "item": "https://lenooai.com/ar/services" },
-      { "@type": "ListItem", "position": 3, "name": "أدوات داخلية", "item": "https://lenooai.com/ar/services/internal-ai-tools" }
-    ]
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "name": "أدوات ذكاء اصطناعي داخلية لفريقك",
-    "url": "https://lenooai.com/ar/services/internal-ai-tools",
-    "inLanguage": "ar",
-    "description": "نبني أدوات ذكاء اصطناعي داخلية مخصصة لفريقك، تعمل بطريقتك، على بياناتك، وبالعربي والإنجليزي.",
-    "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://lenooai.com" },
-    "areaServed": {"@type": "Country", "name": "United Arab Emirates"},
-    "serviceType": "Internal AI Tools Development"
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "ما الفرق بين أداة AI داخلية وبين نموذج الذكاء الاصطناعي العام؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نماذج الذكاء الاصطناعي العامة لا تعرف شيئاً عن شركتك. الأداة الداخلية التي نبنيها مُدرَّبة على سياساتك الخاصة ومستنداتك وعملياتك، فتجيب بدقة عالية على أسئلة خاصة بشركتك لا يمكن لأي نموذج عام الإجابة عنها." }
-      },
-      {
-        "@type": "Question",
-        "name": "هل بيانات شركتنا آمنة؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نعم. نحن نبني الأدوات لتعمل على بنيتك التحتية الخاصة أو في بيئة مُعزَّزة لا يُشارك فيها أي بيانات مع نماذج عامة. بياناتك تظل داخل نطاق تحكمك الكامل." }
-      },
-      {
-        "@type": "Question",
-        "name": "كم يستغرق بناء أداة AI داخلية؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "يعتمد على نوع الأداة وتعقيد التكاملات المطلوبة. الأدوات البسيطة تُسلَّم بسرعة، والأدوات الأكثر تعقيداً تأخذ وقتاً أطول. نعطيك جدولاً دقيقاً بعد تحليل احتياجاتك." }
-      },
-      {
-        "@type": "Question",
-        "name": "هل تدعم الأداة اللغة العربية؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نعم. جميع الأدوات التي نبنيها تدعم العربية والإنجليزي بشكل كامل. يمكن للموظف أن يسأل بالعربية ويحصل على رد بالعربية أو الإنجليزية حسب تفضيله." }
-      },
-      {
-        "@type": "Question",
-        "name": "هل يمكن تحديث الأداة عند تغيير السياسات أو الإجراءات؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "بالتأكيد. نبني الأدوات بحيث يمكنك تحديث قاعدة المعرفة بسهولة كلما تغيرت السياسات أو أُضيفت وثائق جديدة، دون الحاجة لإعادة البناء من الصفر." }
-      }
-    ]
-  }
+  { "@context": "https://schema.org", "@type": "Service", "name": "أدوات ذكاء اصطناعي داخلية", "url": "https://lenooai.com/ar/services/internal-ai-tools", "description": "مساعدات ذكاء اصطناعي داخلية، قواعد معرفة، ولوحات تحليلية مخصصة، مدربة على بيانات شركتك الخاصة، وتُنشر في بيئتك بضوابط الوصول التي تحددها.", "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://lenooai.com" }, "areaServed": "United Arab Emirates", "serviceType": "تطوير الذكاء الاصطناعي الداخلي" },
+  { "@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
+    { "@type": "ListItem", "position": 2, "name": "الخدمات", "item": "https://lenooai.com/ar/services" },
+    { "@type": "ListItem", "position": 3, "name": "أدوات ذكاء اصطناعي داخلية", "item": "https://lenooai.com/ar/services/internal-ai-tools" }
+  ] },
+  { "@context": "https://schema.org", "@type": "FAQPage", "mainEntity": faqItems.map((f) => ({ "@type": "Question", "name": f.question, "acceptedAnswer": { "@type": "Answer", "text": f.answer } })) }
 ];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
 
 <ArBaseLayout
-  title="أدوات ذكاء اصطناعي داخلية للشركات في الإمارات | Aegis AI"
-  description="Aegis AI، وكالة الذكاء الاصطناعي في دبي، تبني أدوات ذكاء اصطناعي داخلية لفريقك في الإمارات: مساعدات معرفة، قواعد بيانات ذكية، وأتمتة لعملياتك."
+  title="أدوات ذكاء اصطناعي داخلية للشركات في الإمارات: لوحات ومساعدات | Aegis AI"
+  description="امنح فريقك في الإمارات ذكاءً اصطناعياً يعرف عملك فعلاً. نبني مساعدات ذكاء اصطناعي داخلية، قواعد معرفة، ولوحات تحليلية مدربة على بياناتك الخاصة."
   canonicalPath="/ar/services/internal-ai-tools"
   enPath="/services/internal-ai-tools"
+  ogImage="/assets/og-services.jpg"
   ldJson={ldJson}
 >
 
-<!-- 1. HERO -->
-<header class="page-hero">
-  <div class="container" style="position:relative;z-index:1;">
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
     <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التنقل"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services" style="color:inherit;text-decoration:none;opacity:0.65;">الخدمات</a><span style="opacity:0.4;padding:0 4px;"> / </span>أدوات داخلية</div>
-    <div class="badge badge-cyan" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">build</span>
-      أدوات داخلية
-    </div>
-    <h1>أدوات ذكاء اصطناعي مخصصة لفريقك، <span class="gradient-text">تعمل بالطريقة التي تعمل بها</span></h1>
-    <p style="color:rgba(255,255,255,0.72);font-size:1.125rem;max-width:640px;margin:1.5rem auto 2.5rem;line-height:1.9;">
-      لا أدوات عامة لا تعرف شركتك. نبني أدوات ذكاء اصطناعي مُدرَّبة على سياساتك ومستنداتك وعملياتك بالتحديد، تجيب بدقة، تعمل بالعربي والإنجليزي، وتوفر على فريقك ساعات يومياً.
+    <h1>امنح فريقك ذكاءً اصطناعياً <span class="gradient-text">يعرف عملك فعلاً.</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:620px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      الأدوات العامة للذكاء الاصطناعي لا تعرف سياساتك، منتجاتك، أو عملياتك. نبني أدوات ذكاء اصطناعي مُدرَّبة على بيانات شركتك الخاصة، ليحصل فريقك على إجابات دقيقة وواعية بالسياق فوراً.
     </p>
-    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-      <button onclick="openModal(this)" data-source="ar_internal_ai_tools_hero" class="btn-primary">ابن أداة ذكاء اصطناعي لفريقك</button>
-      <a href="#what-we-build" class="btn-outline">اكتشف ما نبنيه ↓</a>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_internal_hero" class="btn-primary">احجز مكالمة استكشافية مجانية</button>
+      <a href="#what-we-build" class="btn-outline">اطّلع على ما نبنيه ↓</a>
     </div>
   </div>
 </header>
 
-<!-- IMAGE BANNER -->
-<div style="width:100%; height:260px; overflow:hidden; position:relative;">
-  <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1400&q=80&auto=format&fit=crop" alt="أدوات ذكاء اصطناعي داخلية ولوحات ذكاء الأعمال" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1400&q=80&auto=format&fit=crop" alt="أدوات ذكاء اصطناعي داخلية ولوحات ذكاء الأعمال لشركات دبي والإمارات" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
   <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.40));"></div>
 </div>
 
-<!-- 2. STATS -->
-<div class="stats-strip">
+<!-- WHAT ARE INTERNAL AI TOOLS -->
+<section class="section" aria-labelledby="explain-heading">
   <div class="container">
-    <div class="stats-grid">
-      <div class="stat-item">
-        <div class="stat-val">٢+ ساعة</div>
-        <div class="stat-desc">يوفرها كل موظف يومياً</div>
-      </div>
-      <div class="stat-div"></div>
-      <div class="stat-item">
-        <div class="stat-val">كاملة</div>
-        <div class="stat-desc">معرفة شركتك: سياسات، عمليات، مستندات</div>
-      </div>
-      <div class="stat-div"></div>
-      <div class="stat-item">
-        <div class="stat-val">ثنائي اللغة</div>
-        <div class="stat-desc">عربي وإنجليزي بشكل كامل</div>
-      </div>
-      <div class="stat-div"></div>
-      <div class="stat-item">
-        <div class="stat-val">١٠٠٪</div>
-        <div class="stat-desc">ضمان استرداد كامل إذا لم تكن راضياً</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 3. WHAT WE BUILD -->
-<section id="what-we-build" class="section" aria-labelledby="builds-heading">
-  <div class="container">
-    <div style="text-align:center;margin-bottom:3rem;">
-      <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#006875;margin-bottom:0.75rem;">ما الذي نبنيه</div>
-      <h2 id="builds-heading">أدوات الذكاء الاصطناعي الداخلية التي نبنيها</h2>
-      <p style="color:#42474e;font-size:1rem;max-width:560px;margin:0.75rem auto 0;line-height:1.8;">أمثلة شائعة، لا حد لما يمكن بناؤه. كل أداة مُصمَّمة خصيصاً لعمليات شركتك. إذا كان لديك أداة محددة في ذهنك غير مذكورة هنا، أخبرنا بها.</p>
-    </div>
-    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
-      <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&q=80&auto=format&fit=crop" alt="فريق عمل في مكتب بدبي يستخدم أداة ذكاء اصطناعي داخلية على الحاسوب" loading="lazy" width="1200" height="340" style="width:100%; height:clamp(200px, 26vw, 340px); object-fit:cover; display:block;" />
-    </div>
-    <div class="feature-ledger">
-      <div class="card">
-        <div class="icon-box">
-          <span class="material-symbols-outlined" style="color:#006875;font-size:24px;direction:ltr;" aria-hidden="true">forum</span>
-        </div>
-        <h3>مساعد قاعدة المعرفة</h3>
-        <p style="color:#42474e;font-size:0.875rem;line-height:1.8;">بوت يجيب على أسئلة الموظفين من وثائق شركتك مباشرة: أدلة تشغيل، سياسات، إجراءات. لا بحث يدوي، لا انتظار للردود.</p>
-      </div>
-      <div class="card">
-        <div class="icon-box">
-          <span class="material-symbols-outlined" style="color:#006875;font-size:24px;direction:ltr;" aria-hidden="true">people</span>
-        </div>
-        <h3>مساعد HR الذكي</h3>
-        <p style="color:#42474e;font-size:0.875rem;line-height:1.8;">يجيب الموظفين على أسئلة السياسات والإجازات والتأهيل الوظيفي تلقائياً، ويريح فريق HR للتركيز على العمل الاستراتيجي.</p>
-      </div>
-      <div class="card">
-        <div class="icon-box">
-          <span class="material-symbols-outlined" style="color:#006875;font-size:24px;direction:ltr;" aria-hidden="true">trending_up</span>
-        </div>
-        <h3>أداة ذكاء المبيعات</h3>
-        <p style="color:#42474e;font-size:0.875rem;line-height:1.8;">يعطي مندوب المبيعات ملخصاً كاملاً للحساب والفرصة والخطوات التالية المقترحة، دون ساعات من البحث والتحليل.</p>
-      </div>
-      <div class="card">
-        <div class="icon-box">
-          <span class="material-symbols-outlined" style="color:#006875;font-size:24px;direction:ltr;" aria-hidden="true">summarize</span>
-        </div>
-        <h3>تلخيص الاجتماعات وبنود الإجراءات</h3>
-        <p style="color:#42474e;font-size:0.875rem;line-height:1.8;">يلخص الاجتماعات تلقائياً ويستخرج بنود الإجراءات والمسؤوليات والمواعيد، ويرسلها للمعنيين فور انتهاء الاجتماع.</p>
-      </div>
-      <div class="card">
-        <div class="icon-box">
-          <span class="material-symbols-outlined" style="color:#006875;font-size:24px;direction:ltr;" aria-hidden="true">bar_chart</span>
-        </div>
-        <h3>لوحة تقارير داخلية بتحليلات ذكية</h3>
-        <p style="color:#42474e;font-size:0.875rem;line-height:1.8;">لوحة تقارير تسأل بيانات شركتك بالعربي أو الإنجليزي وتحصل على إجابات فورية، دون الحاجة لمحلل بيانات أو معرفة بـ SQL.</p>
-      </div>
-      <div class="card" data-more-group="internal-tools-more" hidden>
-        <div class="icon-box">
-          <span class="material-symbols-outlined" style="color:#006875;font-size:24px;direction:ltr;" aria-hidden="true">gavel</span>
-        </div>
-        <h3>مساعد قانوني وعقود داخلي</h3>
-        <p style="color:#42474e;font-size:0.875rem;line-height:1.8;">يراجع العقود القياسية، يُشير إلى البنود غير المعتادة أو الناقصة، ويُسرّع موافقات الفريق القانوني قبل التوقيع.</p>
-      </div>
-      <div class="card" data-more-group="internal-tools-more" hidden>
-        <div class="icon-box">
-          <span class="material-symbols-outlined" style="color:#006875;font-size:24px;direction:ltr;" aria-hidden="true">school</span>
-        </div>
-        <h3>أداة تأهيل وتدريب الموظفين</h3>
-        <p style="color:#42474e;font-size:0.875rem;line-height:1.8;">يجيب الموظف الجديد عن أي سؤال متعلق بالتأهيل الوظيفي، ويقترح له خطوة التدريب التالية تلقائياً دون انتظار مسؤول HR.</p>
-      </div>
-      <div class="card" data-more-group="internal-tools-more" hidden>
-        <div class="icon-box">
-          <span class="material-symbols-outlined" style="color:#006875;font-size:24px;direction:ltr;" aria-hidden="true">shopping_cart</span>
-        </div>
-        <h3>مساعد المشتريات والموردين</h3>
-        <p style="color:#42474e;font-size:0.875rem;line-height:1.8;">يقارن عروض الموردين، يتتبع طلبات الشراء، وينبّه الفريق تلقائياً عند اقتراب أي طلب من تجاوز الميزانية المحددة.</p>
-      </div>
-    </div>
-    <div style="text-align:center;margin-top:2rem;">
-      <button type="button" class="btn-outline-sky" data-more-toggle="internal-tools-more" aria-expanded="false">
-        <span data-more-label>عرض المزيد من الأدوات</span>
-        <span class="material-symbols-outlined" style="font-size:18px;direction:ltr;" aria-hidden="true" data-more-icon>expand_more</span>
-      </button>
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="explain-heading" style="margin-bottom:1.5rem;">ما هي الأدوات الداخلية؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        الأدوات الداخلية هي أنظمة ذكاء اصطناعي تُنشَر داخل مؤسستك، مُدرَّبة على بيانات شركتك الخاصة، ومتاحة فقط لفريقك. على عكس أدوات الذكاء الاصطناعي الاستهلاكية التي تُجيب من معرفة عامة على الإنترنت، تعرف الأدوات الداخلية بالضبط ماذا تفعل شركتك، وكيف تعمل، وما هي سياساتها، وما المعلومات ذات الصلة بدور كل موظف.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        الشكل الأكثر شيوعاً هو ذكاء اصطناعي لقاعدة معرفة الشركة: مساعد يستطيع الإجابة على أي سؤال عن منتجاتك، عملياتك، سياساتك، أو تاريخك، عبر قراءة مستنداتك الداخلية وتلخيص إجابة دقيقة. بدلاً من البحث في مجلد SharePoint لمدة 15 دقيقة أو مراسلة زميل أقدم للمرة الخامسة هذا الأسبوع، يكتب الموظف سؤاله ويحصل على الإجابة الصحيحة خلال ثوانٍ، مع الإشارة إلى المستند المصدر.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        بالإضافة إلى استرجاع المعرفة، يمكن للأدوات الداخلية أن تتولى عملاً تشغيلياً: صياغة مستندات بأسلوب شركتك، تحليل البيانات الداخلية واستخراج الرؤى منها، إدارة سير عمل التأهيل الوظيفي، أو العمل كمكتب مساعدة داخلي على مدار الساعة لأسئلة الموارد البشرية وتقنية المعلومات. يُحدَّد النطاق بحسب ما يحتاجه فريقك فعلياً، وتُنشَر كل أداة في بيئتك بضوابط الوصول الخاصة بك، بحيث تبقى بياناتك بالضبط حيث ينبغي أن تكون. بصفتنا وكالة ذكاء اصطناعي في دبي، نبني هذه الأدوات بالعناية نفسها لفرق العمل في جميع أنحاء الإمارات.
+      </p>
     </div>
   </div>
 </section>
 
-<!-- 4. RESULTS CARD -->
-<section class="section" style="background:#e7eeff;padding:4rem 0;" aria-labelledby="results-heading">
+<!-- PROBLEM CARDS -->
+<section class="section" aria-labelledby="problem-heading">
   <div class="container">
-    <div style="text-align:center;margin-bottom:2.5rem;">
-      <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#006875;margin-bottom:0.75rem;">نتيجة حقيقية</div>
-      <h2 id="results-heading">فريق HR يضيع ٣ ساعات يومياً في أسئلة متكررة</h2>
+    <div style="text-align:center; margin-bottom:3rem;">
+      <h2 id="problem-heading">مشكلة أدوات الذكاء الاصطناعي العامة</h2>
+      <p style="color:#42474e; max-width:36rem; margin:1rem auto 0; line-height:1.7;">فريقك يستحق ذكاءً اصطناعياً يعرف عملك، لا ذكاءً اصطناعياً يُعطي إجابة الجميع نفسها.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card text-center">
+        <div style="width:52px; height:52px; border-radius:50%; background:rgba(186,26,26,0.08); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem;">
+          <svg viewBox="0 0 24 24" fill="none" class="w-6 h-6" stroke="#ba1a1a" stroke-width="2"><path d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <p style="color:#42474e; line-height:1.65;">الأدوات العامة للذكاء الاصطناعي لا تعرف منتجاتك أو سير عملك أو سياساتك. تُعطي فريقك نفس النتيجة التي تُعطيها لأي شخص آخر، وهي عديمة الفائدة لأي شيء خاص بطريقة عملك الفعلية.</p>
+      </div>
+      <div class="card text-center">
+        <div style="width:52px; height:52px; border-radius:50%; background:rgba(245,158,11,0.10); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem;">
+          <svg viewBox="0 0 24 24" fill="none" class="w-6 h-6" stroke="#92400e" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <p style="color:#42474e; line-height:1.65;">يقضي الموظفون الجدد أسابيع في البحث بين مئات صفحات التوثيق للعثور على إجابات أساسية. يستسلم معظمهم ويقاطعون زميلاً بدلاً من ذلك.</p>
+      </div>
+      <div class="card text-center">
+        <div style="width:52px; height:52px; border-radius:50%; background:rgba(0,37,59,0.08); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem;">
+          <svg viewBox="0 0 24 24" fill="none" class="w-6 h-6" stroke="#00253b" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        </div>
+        <p style="color:#42474e; line-height:1.65;">يقضي أكثر موظفيك خبرة ساعات كل يوم في الإجابة على نفس الأسئلة الداخلية المتكررة، وقت كان يجب أن يذهب للعمل الذي لا يستطيع القيام به سواهم.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT WE BUILD -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">أدوات الذكاء الاصطناعي الداخلية التي نبنيها</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">أمثلة شائعة، وليست حداً لما هو ممكن. جميعها تُنشَر في بيئتك، على بياناتك، بضوابط الوصول الخاصة بك. إذا كان لديك أداة محددة في ذهنك وغير مذكورة هنا، شاركنا بها.</p>
+    </div>
+    <div class="feature-ledger">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">menu_book</span></div>
+        <h3>ذكاء اصطناعي لقاعدة معرفة الشركة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">اطرح أي سؤال واحصل على إجابة دقيقة مع إشارة إلى المصدر، مُدرَّبة على إجراءاتك التشغيلية، سياساتك، مستندات منتجك، والأسئلة الشائعة.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">support_agent</span></div>
+        <h3>مساعد العمليات الداخلية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">زميل ذكاء اصطناعي متاح على مدار الساعة يتعامل مع أسئلة الموارد البشرية، تذاكر تقنية المعلومات، استفسارات التأهيل الوظيفي، والطلبات الداخلية، بدقة وفورية.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">monitoring</span></div>
+        <h3>لوحات تحليلات مخصصة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">رؤية فورية لمؤشرات أعمالك. اطرح على لوحتك التحليلية أسئلة بلغة بسيطة واحصل على رسوم بيانية وملخصات وتوقعات.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">search</span></div>
+        <h3>بحث في المستندات مدعوم بالذكاء الاصطناعي</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">اعثر على أي شيء في مستندات شركتك، رسائل البريد الإلكتروني، وملفاتها. ليس بحثاً بالكلمات المفتاحية، بل فهماً دلالياً لما تبحث عنه فعلياً.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">auto_awesome</span></div>
+        <h3>أدوات محتوى وكتابة بالذكاء الاصطناعي</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">مساعدات كتابة بالذكاء الاصطناعي مُدرَّبة على أسلوب علامتك التجارية. اكتب عروضاً، تقارير، رسائل بريد إلكتروني، وعروضاً تقديمية تبدو وكأن شركتك كتبتها.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">school</span></div>
+        <h3>ذكاء اصطناعي للتأهيل والتدريب</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">ذكاء اصطناعي للموظفين الجدد يُرافقهم عبر عمليات الشركة، يجيب على أسئلتهم، ويُظهر المعلومة الصحيحة في الوقت المناسب.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROI SECTION -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="roi-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="roi-heading">التكلفة الحقيقية لعدم امتلاك ذكاء اصطناعي داخلي</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">قبل أن تستثمر في أدوات الذكاء الاصطناعي الداخلية، فكّر في ما يُكلّفك البديل فعلياً.</p>
     </div>
     <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
       <img src="https://images.unsplash.com/photo-1551434678-e076c223a692?w=1200&q=80&auto=format&fit=crop" alt="فريق يستخدم لوحات معلومات داخلية في المكتب" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
     </div>
-    <div class="card" style="max-width:800px;margin:0 auto;">
-      <div class="results-grid">
-        <div class="result-col">
-          <div class="result-label">المشكلة</div>
-          <p style="color:#42474e;line-height:1.8;">شركة تضم ٢٠٠ موظف في دبي: فريق HR يُمضي ٣ ساعات يومياً في الإجابة على نفس الأسئلة، سياسات الإجازة وإجراءات التأهيل والتعويضات. وقت ثمين يُهدر في أسئلة كان يمكن تجنبها.</p>
-        </div>
-        <div class="result-col">
-          <div class="result-label">الحل</div>
-          <p style="color:#42474e;line-height:1.8;">بنينا مساعد HR ذكي مُدرَّب على جميع سياسات الشركة وأدلة الموظفين. يجيب بالعربي والإنجليزي في ثوانٍ، ويُحيل الحالات المعقدة لفريق HR فقط عند الضرورة.</p>
-        </div>
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem;">
+      <div style="background:#fff; border:1px solid rgba(186,26,26,0.15); border-radius:16px; padding:1.75rem;">
+        <div style="font-size:2rem; font-weight:800; color:#ba1a1a; line-height:1; margin-bottom:0.75rem;">1-3 ساعة</div>
+        <p style="color:#42474e; font-size:0.9rem; line-height:1.7;">لكل موظف أسبوعياً، تُقضى في البحث عن معلومات داخلية يجب أن تكون متاحة فوراً. مع 20 موظفاً، هذا يعني أكثر من 60 ساعة إنتاجية ضائعة أسبوعياً.</p>
       </div>
-      <div class="metrics-row">
-        <div class="metric-item">
-          <div class="metric-val">٨٠٪-</div>
-          <div class="metric-desc">تراجع في الاستفسارات المتكررة لـ HR</div>
+      <div style="background:#fff; border:1px solid rgba(186,26,26,0.15); border-radius:16px; padding:1.75rem;">
+        <div style="font-size:2rem; font-weight:800; color:#ba1a1a; line-height:1; margin-bottom:0.75rem;">6 أشهر</div>
+        <p style="color:#42474e; font-size:0.9rem; line-height:1.7;">متوسط الوقت الذي يحتاجه الموظف الجديد للوصول إلى إنتاجية كاملة دون نقل معرفة منظّم. يُقلّص الذكاء الاصطناعي الداخلي هذا الجدول الزمني بشكل كبير عبر منح الموظفين الجدد وصولاً فورياً للمعرفة المؤسسية.</p>
+      </div>
+      <div style="background:#fff; border:1px solid rgba(186,26,26,0.15); border-radius:16px; padding:1.75rem;">
+        <div style="font-size:2rem; font-weight:800; color:#ba1a1a; line-height:1; margin-bottom:0.75rem;">خطر مرتفع</div>
+        <p style="color:#42474e; font-size:0.9rem; line-height:1.7;">لفقدان المعرفة عند مغادرة الموظفين كبار الخبرة. تُخزّن معظم الشركات معرفتها المؤسسية الحيوية في عقول الأفراد، لا في الأنظمة. يلتقط الذكاء الاصطناعي الداخلي هذه المعرفة قبل أن تخرج من الباب.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BY DEPARTMENT (interactive tabs) -->
+<section class="section" style="background:#fff;" aria-labelledby="dept-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="dept-heading">مصمم لكل قسم</h2>
+      <p>اختر قسماً لترى الأسئلة التي تُجيب عنها أداته الداخلية كل يوم.</p>
+    </div>
+    <div class="iat-dept-grid">
+      <div class="iat-dept-tabs" role="tablist" aria-label="الأقسام">
+        <button class="iat-dept-tab is-active" role="tab" id="iat-tab-hr" aria-selected="true" aria-controls="iat-panel-hr" data-iat-tab="hr">
+          <span class="material-symbols-outlined" aria-hidden="true">groups</span> الموارد البشرية
+        </button>
+        <button class="iat-dept-tab" role="tab" id="iat-tab-it" aria-selected="false" aria-controls="iat-panel-it" data-iat-tab="it">
+          <span class="material-symbols-outlined" aria-hidden="true">dns</span> تقنية المعلومات
+        </button>
+        <button class="iat-dept-tab" role="tab" id="iat-tab-finance" aria-selected="false" aria-controls="iat-panel-finance" data-iat-tab="finance">
+          <span class="material-symbols-outlined" aria-hidden="true">account_balance</span> المالية
+        </button>
+        <button class="iat-dept-tab" role="tab" id="iat-tab-sales" aria-selected="false" aria-controls="iat-panel-sales" data-iat-tab="sales">
+          <span class="material-symbols-outlined" aria-hidden="true">trending_up</span> المبيعات
+        </button>
+      </div>
+      <div class="card" style="padding:2rem;">
+        <div role="tabpanel" id="iat-panel-hr" aria-labelledby="iat-tab-hr" data-iat-panel="hr">
+          <ul class="iat-q-list">
+            <li>"كم يوم إجازة سنوية متبقٍ لي؟"</li>
+            <li>"ما هي إجراءات طلب إجازة الأمومة أو الأبوة؟"</li>
+            <li>"أين أجد سياسة العمل عن بُعد المحدَّثة؟"</li>
+          </ul>
         </div>
-        <div class="metric-item">
-          <div class="metric-val">٣ ساعات</div>
-          <div class="metric-desc">يومياً تحررت لفريق HR للعمل الاستراتيجي</div>
+        <div role="tabpanel" id="iat-panel-it" aria-labelledby="iat-tab-it" data-iat-panel="it" hidden>
+          <ul class="iat-q-list">
+            <li>"كيف أطلب صلاحية الوصول لنظام المالية؟"</li>
+            <li>"ما هي خطوات إعداد VPN على أجهزة اللابتوب الجديدة؟"</li>
+            <li>"من أتواصل معه لاستبدال جهاز معطّل؟"</li>
+          </ul>
+        </div>
+        <div role="tabpanel" id="iat-panel-finance" aria-labelledby="iat-tab-finance" data-iat-panel="finance" hidden>
+          <ul class="iat-q-list">
+            <li>"ما هو حد الموافقة على مصاريف العميل؟"</li>
+            <li>"أين نموذج الفاتورة الحالي؟"</li>
+            <li>"ما سياستنا بشأن تأخر دفعات الموردين؟"</li>
+          </ul>
+        </div>
+        <div role="tabpanel" id="iat-panel-sales" aria-labelledby="iat-tab-sales" data-iat-panel="sales" hidden>
+          <ul class="iat-q-list">
+            <li>"ما هو الحد الحالي للموافقة على الخصومات؟"</li>
+            <li>"هل لدينا دراسات حالة لقطاع الضيافة؟"</li>
+            <li>"ما هو مسار التصعيد لصفقة مؤسسية كبرى؟"</li>
+          </ul>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 5. HOW IT WORKS -->
+<script is:inline>
+(function () {
+  var tabs = document.querySelectorAll('[data-iat-tab]');
+  var panels = document.querySelectorAll('[data-iat-panel]');
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      tabs.forEach(function (t) { t.classList.remove('is-active'); t.setAttribute('aria-selected', 'false'); });
+      panels.forEach(function (p) { p.hidden = true; });
+      tab.classList.add('is-active');
+      tab.setAttribute('aria-selected', 'true');
+      var panel = document.querySelector('[data-iat-panel="' + tab.getAttribute('data-iat-tab') + '"]');
+      if (panel) panel.hidden = false;
+    });
+  });
+})();
+</script>
+
+<!-- PROCESS -->
 <section class="section" aria-labelledby="process-heading">
   <div class="container">
-    <div style="text-align:center;margin-bottom:3rem;">
-      <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#006875;margin-bottom:0.75rem;">كيف نعمل</div>
-      <h2 id="process-heading">ثلاث خطوات لبناء أداة الذكاء الاصطناعي الداخلية</h2>
+    <div class="section-header">
+      <h2 id="process-heading">من بياناتك إلى أداة جاهزة للعمل</h2>
     </div>
-    <div class="process-steps">
-      <div class="process-step">
-        <div class="process-num">١</div>
-        <h3>تحديد أكثر الاحتياجات أثراً</h3>
-        <p style="color:#42474e;font-size:0.9rem;line-height:1.8;">نجلس مع فريقك ونحدد أين يُهدر الوقت أكثر: الأسئلة المتكررة، البحث في الوثائق، التقارير اليدوية. نبدأ بالأداة التي تُحدث أكبر تأثير فوري.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-num">٢</div>
-        <h3>بناء وتدريب الأداة على بيانات شركتك</h3>
-        <p style="color:#42474e;font-size:0.9rem;line-height:1.8;">نجمّع مستنداتك وسياساتك وإجراءاتك، ندرّب عليها الأداة، ونختبر دقة الإجابات على سيناريوهات حقيقية من عملياتك اليومية.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-num">٣</div>
-        <h3>نشر وتدريب الفريق</h3>
-        <p style="color:#42474e;font-size:0.9rem;line-height:1.8;">ننشر الأداة في بيئتك، سواء كموقع داخلي أو تكامل مع أدوات التواصل الداخلي أو واجهة مستقلة، ونُدرّب فريقك على الاستخدام الأمثل مع دعم ٩٠ يوماً بعد الإطلاق.</p>
-      </div>
-    </div>
+    <ProcessSteps steps={processSteps} />
   </div>
 </section>
 
-<!-- 5b. Comparison -->
-<section class="section" style="background:#f9f9ff;" aria-labelledby="compare-heading">
-  <div class="container" style="max-width:820px;">
-    <div style="text-align:center;margin-bottom:2.5rem;">
-      <h2 id="compare-heading">أداة داخلية مخصصة أم ChatGPT عام؟</h2>
-      <p style="color:#42474e;max-width:580px;margin:1rem auto 0;line-height:1.8;">أدوات الذكاء الاصطناعي العامة مفيدة، لكنها لا تعرف شيئاً عن سياساتك أو بياناتك. الفرق يظهر في اليوم الأول من الاستخدام.</p>
-    </div>
-    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
-      <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=1200&q=80&auto=format&fit=crop" alt="فريق موظفين يتعاون حول شاشة أداة ذكاء اصطناعي داخلية في مكتب بدبي" loading="lazy" width="1200" height="340" style="width:100%; height:clamp(200px, 26vw, 340px); object-fit:cover; display:block;" />
-    </div>
-    <div class="compare-wrap" style="border-radius:var(--radius-md);overflow-x:auto;box-shadow:var(--shadow-card);">
-      <table class="compare-table" style="width:100%;border-collapse:collapse;">
-        <thead>
-          <tr><th style="text-align:start;">المعيار</th><th>ChatGPT عام</th><th>أداة داخلية مخصصة</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>يعرف سياسات شركتك بالتفصيل</td><td class="check-no">لا</td><td class="check-yes">نعم</td></tr>
-          <tr><td>بياناتك تبقى داخل بنيتك التحتية</td><td class="check-no">لا</td><td class="check-yes">نعم</td></tr>
-          <tr><td>يتكامل مع أنظمتك الداخلية مباشرة</td><td class="check-no">لا</td><td class="check-yes">نعم</td></tr>
-          <tr><td>يحتاج الموظف لصياغة سياق كل مرة</td><td class="check-rarely">دائماً</td><td class="check-yes">لا</td></tr>
-          <tr><td>يتحدث بمصطلحات ولهجة فريقك</td><td class="check-rarely">جزئياً</td><td class="check-yes">نعم</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- 6. GUARANTEE -->
-<section class="section" style="background:#e7eeff;padding:4rem 0;text-align:center;">
-  <div class="container">
-    <div class="guarantee-badge" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:18px;direction:ltr;" aria-hidden="true">shield</span>
-      ضمان الاسترداد الكامل، الوحيد في الإمارات
-    </div>
-    <h2 style="margin-bottom:1rem;">إذا لم تكن راضياً، لا تدفع أي شيء.</h2>
-    <p style="color:#42474e;max-width:560px;margin:0 auto 2rem;line-height:1.8;">نبني، تختبر، وإذا لم تكن راضياً تماماً نردّ ١٠٠٪ خلال ٣٠ يوماً من التسليم. بدون أسئلة.</p>
-    <button onclick="openModal(this)" data-source="ar_internal_ai_tools_guarantee" class="btn-primary">ابدأ بدون مخاطرة</button>
-  </div>
-</section>
-
-<!-- 7. FAQ -->
+<!-- FAQ -->
 <section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
   <div class="container" style="max-width:720px;">
-    <div style="text-align:center;margin-bottom:2.5rem;">
-      <h2 id="faq-heading">أسئلة شائعة</h2>
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
     </div>
-    <div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          ما الفرق بين أداة AI داخلية وبين نموذج الذكاء الاصطناعي العام؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نماذج الذكاء الاصطناعي العامة لا تعرف شيئاً عن شركتك. الأداة الداخلية التي نبنيها مُدرَّبة على سياساتك الخاصة ومستنداتك وعملياتك، فتجيب بدقة عالية على أسئلة خاصة بشركتك لا يمكن لأي نموذج عام الإجابة عنها.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل بيانات شركتنا آمنة؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نعم. نبني الأدوات لتعمل على بنيتك التحتية الخاصة أو في بيئة مُعزَّزة لا يُشارك فيها أي بيانات مع نماذج عامة. بياناتك تظل داخل نطاق تحكمك الكامل في جميع الأوقات.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          كم يستغرق بناء أداة AI داخلية؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">يعتمد على نوع الأداة وتعقيد التكاملات المطلوبة. الأدوات البسيطة تُسلَّم بسرعة، والأدوات الأكثر تعقيداً تأخذ وقتاً أطول. نعطيك جدولاً زمنياً دقيقاً بعد تحليل احتياجاتك في جلسة مجانية.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل تدعم الأداة اللغة العربية؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نعم. جميع الأدوات التي نبنيها تدعم العربية والإنجليزي بشكل كامل. يمكن للموظف أن يسأل بالعربية ويحصل على رد بالعربية أو الإنجليزية حسب تفضيله، دون أي فقدان في الدقة.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل يمكن تحديث الأداة عند تغيير السياسات أو الإجراءات؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">بالتأكيد. نبني الأدوات بحيث يمكنك تحديث قاعدة المعرفة بسهولة كلما تغيرت السياسات أو أُضيفت وثائق جديدة، دون الحاجة لإعادة البناء من الصفر أو الحاجة لمهارات تقنية متقدمة.</div>
-      </div>
-    </div>
+    <FaqAccordion items={faqItems} />
   </div>
 </section>
 
-<!-- 8. FINAL CTA -->
-<section class="cta-band" style="border-radius:24px;margin:2rem 2rem 4rem;">
-  <div style="position:relative;z-index:1;text-align:center;">
-    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem);margin-bottom:1rem;">ابن أداة ذكاء اصطناعي لفريقك</h2>
-    <p style="font-size:1.125rem;max-width:36rem;margin:0 auto 2.5rem;line-height:1.7;">أخبرنا أين يُهدر فريقك أكثر وقته. سنريك بالضبط كيف نبني أداة تحل هذه المشكلة، مجاناً وبدون التزام.</p>
-    <button onclick="openModal(this)" data-source="ar_internal_ai_tools_cta" class="btn-primary" style="font-size:1.125rem;padding:1.125rem 2.75rem;">احجز جلسة مجانية</button>
-    <p style="font-size:0.875rem;margin-top:1.25rem;">مجاني · بدون التزام · ضمان استرداد ١٠٠٪</p>
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">مكالمة استكشافية مجانية</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">هل أنت مستعد لمنح فريقك ذكاءً اصطناعياً يعرف عملك فعلاً؟</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجز مكالمة استكشافية مجانية. سنُقيّم مستنداتك، نُحدد أعلى حالات الاستخدام قيمة، ونُريك بالضبط ما يمكننا بناؤه.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ مجاني 100%</span>
+      <span class="cta-trust-badge">✓ بدون التزام</span>
+      <span class="cta-trust-badge">✓ ضمان استرداد</span>
+    </div>
+    <button onclick="openModal(this)" data-source="ar_internal_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجز مكالمتك الاستكشافية المجانية</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة 30 دقيقة · بدون ضغط للبيع</p>
   </div>
-</section>
+</div>
 
 </ArBaseLayout>
 
-<script>
-  (function () {
-    const btn = document.querySelector('[data-more-toggle="internal-tools-more"]');
-    if (!btn) return;
-    const items = document.querySelectorAll('[data-more-group="internal-tools-more"]');
-    const label = btn.querySelector('[data-more-label]');
-    const icon = btn.querySelector('[data-more-icon]');
-    btn.addEventListener('click', () => {
-      const expanded = btn.getAttribute('aria-expanded') === 'true';
-      items.forEach((el) => { (el as HTMLElement).hidden = expanded; });
-      btn.setAttribute('aria-expanded', String(!expanded));
-      if (label) label.textContent = expanded ? 'عرض المزيد من الأدوات' : 'عرض أقل';
-      if (icon) icon.textContent = expanded ? 'expand_more' : 'expand_less';
-    });
-  })();
-</script>
-
 <style>
-.stats-strip { background:linear-gradient(135deg,#001e30,#00253b,#003b5c);padding:4rem 0; }
-.stats-grid { display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;gap:1.5rem;align-items:center; }
-.stat-div { width:1px;height:70px;background:rgba(255,255,255,0.15); }
-.stat-item { text-align:center; }
-.stat-val { font-size:1.75rem;font-weight:800;color:#00e3fd;line-height:1;margin-bottom:0.5rem; }
-.stat-desc { color:rgba(255,255,255,0.55);font-size:0.8125rem;line-height:1.6; }
-
-.icon-box { width:48px;height:48px;border-radius:14px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.25);display:flex;align-items:center;justify-content:center;margin-bottom:1rem; }
-.builds-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem; }
-
-.results-grid { display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem; }
-.result-col { position: relative; }
-.result-col:first-child::after { content: ''; position: absolute; top: 0; bottom: 0; inset-inline-end: -1rem; width: 1px; background: rgba(0,37,59,0.10); }
-@media (max-width: 768px) { .result-col:first-child::after { display: none; } }
-.result-label { font-size:0.75rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#006875;margin-bottom:0.75rem; }
-.metrics-row { display:flex;gap:2rem;border-top:1px solid #e2e8f0;padding-top:1.5rem; }
-.metric-item { flex:1;text-align:center; }
-.metric-val { font-size:2rem;font-weight:800;color:#00253b;line-height:1;margin-bottom:0.375rem; }
-.metric-desc { color:#42474e;font-size:0.875rem; }
-
-.process-steps { display:grid;grid-template-columns:repeat(3,1fr);gap:2rem; }
-.process-step { background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:2rem; }
-.process-num { width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#00253b,#006875);color:#00e3fd;font-size:1.25rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:1rem; }
-
-@media (max-width:900px) {
-  .stats-grid { grid-template-columns:1fr 1fr;gap:1rem; }
-  .stat-div { display:none; }
-  .builds-grid { grid-template-columns:1fr 1fr; }
-  .results-grid { grid-template-columns:1fr; }
-  .process-steps { grid-template-columns:1fr; }
-}
-@media (max-width:580px) {
-  .builds-grid { grid-template-columns:1fr; }
-  .stats-grid { grid-template-columns:1fr; }
-  .metrics-row { flex-direction:column;gap:1rem; }
-  .compare-table { font-size: 0.8125rem; }
-  .compare-table td, .compare-table th { padding: .625rem .625rem; }
-}
-
-[data-more-toggle] { margin: 0 auto; }
-[data-more-toggle] .material-symbols-outlined { transition: transform .3s var(--ease); }
-[data-more-toggle][aria-expanded="true"] .material-symbols-outlined { transform: rotate(180deg); }
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+.iat-dept-grid { display:grid; grid-template-columns:220px 1fr; gap:1.5rem; }
+.iat-dept-tabs { display:flex; flex-direction:column; gap:0.5rem; }
+.iat-dept-tab { display:flex; align-items:center; gap:0.625rem; padding:0.875rem 1.125rem; border-radius:12px; border:1px solid rgba(0,37,59,0.08); background:#fff; color:#42474e; font-weight:600; font-size:0.875rem; cursor:pointer; text-align:start; transition:background .2s, color .2s, border-color .2s; font-family:inherit; }
+.iat-dept-tab .material-symbols-outlined { font-size:20px; color:#72787e; transition:color .2s; }
+.iat-dept-tab.is-active { background:#00253b; color:#fff; border-color:#00253b; }
+.iat-dept-tab.is-active .material-symbols-outlined { color:#00e3fd; }
+.iat-q-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0; }
+.iat-q-list li { padding:1rem 0; border-bottom:1px solid rgba(0,37,59,0.08); color:#00253b; font-weight:600; font-size:0.9375rem; }
+.iat-q-list li:last-child { border-bottom:none; }
+@media(max-width:768px) { .iat-dept-grid { grid-template-columns:1fr; } .iat-dept-tabs { flex-direction:row; flex-wrap:wrap; } .iat-dept-tab { flex:1 1 auto; } }
+@media(max-width:900px) { .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } }
 </style>
