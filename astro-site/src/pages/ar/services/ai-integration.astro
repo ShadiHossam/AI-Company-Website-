@@ -1,359 +1,271 @@
 ---
 export const prerender = false;
 import ArBaseLayout from "../../../layouts/ArBaseLayout.astro";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../components/ProcessSteps.astro";
+import StatStrip from "../../../components/StatStrip.astro";
 
-Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+const faqItems = [
+  { question: "لدينا CRM بالفعل. هل يمكنكم إضافة الذكاء الاصطناعي إليه دون استبداله؟", answer: "نعم، هذا بالضبط ما يخدمه تكامل الذكاء الاصطناعي. نُضيف طبقة ذكاء اصطناعي فوق نظام CRM الحالي أو النظام المخصص لديك. يواصل فريقك العمل في النظام نفسه الذي يعرفه؛ الفرق أنه يصبح أذكى: يُثري جهات الاتصال تلقائياً، يتوقع صحة الصفقات، ويُظهر إجراءات المتابعة الصحيحة." },
+  { question: "ما الأنظمة التي تدمجون الذكاء الاصطناعي معها؟", answer: "أي نظام يملك واجهة برمجية (API). نعمل بانتظام مع أنظمة CRM وERP ومنصات التواصل وأدوات إدارة المشاريع ومستودعات البيانات ومنصات التجارة الإلكترونية. إذا كان نظامك يملك API، يمكننا إضافة الذكاء الاصطناعي إليه. سنُخبرك مسبقاً إذا كان أي أمر غير ممكن." },
+  { question: "كم يستغرق مشروع تكامل الذكاء الاصطناعي؟", answer: "يُحدَّد نطاق كل مشروع بشكل فردي. نُعطيك جدولاً زمنياً دقيقاً بعد جلسة التحليل الأولى، بناءً على عدد الأنظمة المعنية، تعقيد البيانات، وإعداد API الحالي لديك." },
+  { question: "هل ستتعطل سير عملنا الحالي أثناء التكامل؟", answer: "لا. نبني ونختبر تكاملات الذكاء الاصطناعي في بيئة اختبار أولاً. تبقى أنظمة الإنتاج لديك دون أي تعديل حتى يتم التحقق الكامل من التكامل. آلية التراجع مدمجة كشبكة أمان." },
+  { question: "نظام CRM لدينا مبني داخلياً بشكل مخصص. هل يمكنكم دمج الذكاء الاصطناعي معه؟", answer: "نعم، طالما أن نظامك يُتيح واجهة API أو وصولاً لقاعدة البيانات. دمجنا الذكاء الاصطناعي مع أنظمة مخصصة كثيرة لا تملك توثيقاً جاهزاً. نُراجع الـ API خلال جلسة التحليل الأولى، نُؤكد إمكانية التنفيذ، ونبني اتصالاً آمناً. إذا لم يكن لدى نظامك أي API إطلاقاً، يمكننا مناقشة خيارات لإنشاء واحد." },
+  { question: "ماذا يحدث لطبقة الذكاء الاصطناعي إذا استبدلنا برنامجنا الرئيسي لاحقاً؟", answer: "تكامل الذكاء الاصطناعي مبني كطبقة وسيطة، بمعنى أنه يتصل بنظامك الرئيسي عبر API بدلاً من أن يكون مدمجاً بداخله. إذا انتقلت إلى CRM أو ERP جديد، نُحدّث اتصالات API في جانب الذكاء الاصطناعي لتُشير إلى النظام الجديد. في معظم الحالات، تحتاج طبقة الذكاء الاصطناعي نفسها فقط تعديلات طفيفة أثناء الترحيل." },
+  { question: "كيف يختلف تكامل الذكاء الاصطناعي عن مجرد شراء إضافة برمجية (plugin)؟", answer: "الإضافة البرمجية تُضيف مجموعة ثابتة من الميزات صمّمها المورّد للعميل المتوسط. أما تكامل الذكاء الاصطناعي فيُبنى حول بنية بياناتك المحددة وسير عملك ومنطق عملك التجاري. إنه يفهم معنى بياناتك، لا مجرد تنسيقها. النتيجة نظام يعكس فعلياً طريقة عمل شركتك، لا طريقة عمل شركة أخرى." },
+];
+
+const processSteps = [
+  { icon: "search", step: "الخطوة 1", title: "تدقيق الأنظمة", description: "نُقيّم أنظمتك الحالية وواجهات البرمجة وتدفقات البيانات، ثم نُحدد بالضبط أين يخلق تكامل الذكاء الاصطناعي أعلى قيمة." },
+  { icon: "architecture", step: "الخطوة 2", title: "التصميم والربط", description: "نُصمم طبقة الذكاء الاصطناعي، نُنشئ اتصالات API آمنة، ونبني التكاملات في بيئة اختبار." },
+  { icon: "fact_check", step: "الخطوة 3", title: "اختبار على بيانات حقيقية", description: "نتحقق من صحة التكامل باستخدام بياناتك الفعلية والحالات الاستثنائية والحمل، دون أي تأثير على أنظمتك الحية." },
+  { icon: "rocket_launch", step: "الخطوة 4", title: "النشر والمراقبة", description: "يُطلق التكامل فعلياً. تشمل الخدمة مراقبة ودعماً لمدة 90 يوماً. نلتقط المشكلات قبل أن تصل إلى فريقك." },
+];
 
 const ldJson = [
-  {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "دمج الذكاء الاصطناعي في عمليات شركتك | Aegis AI",
-    "url": "https://lenooai.com/ar/services/ai-integration",
-    "inLanguage": "ar",
-    "description": "Aegis AI تدمج أدوات الذكاء الاصطناعي مع CRM وERP وأنظمة شركتك في الإمارات، دون إعادة البناء من الصفر.",
-    "isPartOf": { "@type": "WebSite", "url": "https://lenooai.com" }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
-      { "@type": "ListItem", "position": 2, "name": "الخدمات", "item": "https://lenooai.com/ar/services" },
-      { "@type": "ListItem", "position": 3, "name": "تكامل الذكاء الاصطناعي", "item": "https://lenooai.com/ar/services/ai-integration" }
-    ]
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "name": "دمج الذكاء الاصطناعي في عمليات شركتك",
-    "url": "https://lenooai.com/ar/services/ai-integration",
-    "inLanguage": "ar",
-    "description": "ندمج أدوات الذكاء الاصطناعي مع أنظمتك الحالية: CRM وERP والبريد الإلكتروني وأكثر، دون إعادة البناء من الصفر.",
-    "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://lenooai.com" },
-    "areaServed": {"@type": "Country", "name": "United Arab Emirates"},
-    "serviceType": "AI System Integration"
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "هل يمكنكم دمج الذكاء الاصطناعي مع نظام CRM الذي نستخدمه حالياً؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نعم، هذا بالضبط ما نفعله. ندمج الذكاء الاصطناعي مع أي نظام CRM تستخدمه دون الحاجة لتغيير النظام. فريقك يواصل العمل بنفس الطريقة، لكن النظام يصبح أذكى." }
-      },
-      {
-        "@type": "Question",
-        "name": "ما الأنظمة التي تدعمون دمجها مع الذكاء الاصطناعي؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "أي نظام يملك API. الأكثر شيوعاً: أنظمة CRM وERP وأدوات التواصل الداخلي وإدارة المستندات ومنصات المراسلة، وأكثر من 50 نظاماً آخر." }
-      },
-      {
-        "@type": "Question",
-        "name": "كم يستغرق مشروع التكامل؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "الجدول الزمني يعتمد على عدد الأنظمة وتعقيد التكاملات. نعطيك جدولاً زمنياً دقيقاً بعد جلسة التحليل الأولى." }
-      },
-      {
-        "@type": "Question",
-        "name": "هل ستتأثر عملياتنا أثناء التكامل؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "لا. نبني التكامل في بيئة اختبار منفصلة ولا نلمس أنظمتك الحية حتى يكتمل الاختبار بالكامل. لديك دائماً خيار التراجع كشبكة أمان." }
-      },
-      {
-        "@type": "Question",
-        "name": "ماذا يحدث بعد الإطلاق؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "جميع مشاريع التكامل تشمل دعماً لمدة 90 يوماً بعد الإطلاق. نراقب الأنظمة ونصلح أي مشكلة ونجري التحديثات اللازمة مع تطور عملياتك." }
-      }
-    ]
-  }
+  { "@context": "https://schema.org", "@type": "Service", "name": "خدمات تكامل الذكاء الاصطناعي", "url": "https://lenooai.com/ar/services/ai-integration", "description": "نُضيف طبقة ذكاء اصطناعي إلى CRM وERP وأنظمتك البرمجية الحالية، لنجعل أدواتك الحالية أذكى بشكل ملحوظ دون استبدالها.", "provider": { "@type": "Organization", "name": "Aegis AI", "url": "https://lenooai.com" }, "areaServed": "United Arab Emirates", "serviceType": "تكامل الذكاء الاصطناعي" },
+  { "@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
+    { "@type": "ListItem", "position": 2, "name": "الخدمات", "item": "https://lenooai.com/ar/services" },
+    { "@type": "ListItem", "position": 3, "name": "خدمات تكامل الذكاء الاصطناعي", "item": "https://lenooai.com/ar/services/ai-integration" }
+  ] },
+  { "@context": "https://schema.org", "@type": "FAQPage", "mainEntity": faqItems.map((f) => ({ "@type": "Question", "name": f.question, "acceptedAnswer": { "@type": "Answer", "text": f.answer } })) }
 ];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
 
 <ArBaseLayout
-  title="خدمات دمج الذكاء الاصطناعي للشركات في الإمارات | Aegis AI"
-  description="Aegis AI وكالة ذكاء اصطناعي في دبي تدمج أدوات الذكاء الاصطناعي مع CRM وERP وأنظمة شركتك في الإمارات، دون إعادة البناء من الصفر. تكامل سريع."
+  title="خدمات تكامل الذكاء الاصطناعي لشركات الإمارات | Aegis AI"
+  description="لا تحتاج لاستبدال برمجياتك، فقط اجعلها أذكى. بصفتنا وكالة ذكاء اصطناعي في دبي، نُضيف طبقة ذكاء اصطناعي إلى CRM وERP وأدواتك الحالية لشركات الإمارات."
   canonicalPath="/ar/services/ai-integration"
   enPath="/services/ai-integration"
+  ogImage="/assets/og-services.jpg"
   ldJson={ldJson}
 >
 
-<!-- 1. HERO -->
-<header class="page-hero">
-  <div class="container" style="position:relative;z-index:1;">
-    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التنقل"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services" style="color:inherit;text-decoration:none;opacity:0.65;">الخدمات</a><span style="opacity:0.4;padding:0 4px;"> / </span>تكامل الأنظمة</div>
-    <div class="badge badge-cyan" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">hub</span>
-      تكامل الأنظمة
-    </div>
-    <h1>اربط الذكاء الاصطناعي بأنظمتك الحالية <span class="gradient-text">بدون بناء من الصفر</span></h1>
-    <p style="color:rgba(255,255,255,0.72);font-size:1.125rem;max-width:640px;margin:1.5rem auto 2.5rem;line-height:1.9;">
-      لا تحتاج إلى استبدال CRM أو ERP أو أي أداة أخرى. نضيف طبقة ذكاء اصطناعي دقيقة فوق ما تستخدمه حالياً، فيحصل فريقك على نتائج أفضل بكثير دون تغيير طريقة عمله.
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التنقل"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services" style="color:inherit;text-decoration:none;opacity:0.65;">الخدمات</a><span style="opacity:0.4;padding:0 4px;"> / </span>خدمات تكامل الذكاء الاصطناعي</div>
+    <h1>برمجياتك الحالية، <span class="gradient-text">أذكى بالذكاء الاصطناعي.</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:620px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      لا تحتاج إلى استبدال CRM أو ERP أو أي أداة أخرى. تحتاج إلى جعلها أذكى. نُضيف طبقة ذكاء اصطناعي دقيقة فوق ما تستخدمه بالفعل، فيحصل نفس الفريق على نتائج أفضل بكثير.
     </p>
-    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-      <button onclick="openModal(this)" data-source="ar_ai_integration_hero" class="btn-primary">ابدأ بربط أنظمتك بالذكاء الاصطناعي</button>
-      <a href="#what-we-build" class="btn-outline">اكتشف ما نبنيه ↓</a>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_integration_hero" class="btn-primary">احجز مكالمة استكشافية مجانية</button>
+      <a href="#what-we-integrate" class="btn-outline">اكتشف ما ندمجه ↓</a>
     </div>
   </div>
 </header>
 
-<!-- IMAGE BANNER -->
-<div style="width:100%; height:260px; overflow:hidden; position:relative;">
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
   <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1400&q=80&auto=format&fit=crop" alt="دمج الذكاء الاصطناعي مع الأنظمة الحالية وواجهات البرمجة" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center;" />
   <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
 </div>
 
-<!-- 2. STATS -->
-<div class="stats-strip">
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#001e30,#00253b,#003b5c); padding:4rem 0;">
   <div class="container">
-    <div class="stats-grid">
-      <div class="stat-item">
-        <div class="stat-val">سريع</div>
-        <div class="stat-desc">تكامل يبدأ من أول يوم</div>
-      </div>
-      <div class="stat-div"></div>
-      <div class="stat-item">
-        <div class="stat-val">دون توقف</div>
-        <div class="stat-desc">عملياتك لا تتوقف لحظة واحدة أثناء التكامل</div>
-      </div>
-      <div class="stat-div"></div>
-      <div class="stat-item">
-        <div class="stat-val">+٥٠ نظام</div>
-        <div class="stat-desc">دعم أكثر من ٥٠ نظاماً وأداة مختلفة</div>
-      </div>
-      <div class="stat-div"></div>
-      <div class="stat-item">
-        <div class="stat-val">١٠٠٪</div>
-        <div class="stat-desc">ضمان استرداد كامل إذا لم تكن راضياً</div>
-      </div>
-    </div>
+    <StatStrip stats={[
+      { value: "بدون استبدال", caption: "نُحسّن أدواتك الحالية. لن نطلب منك التخلي عمّا ينجح." },
+      { value: "API أولاً", caption: "أي نظام يملك واجهة برمجية يمكن تحسينه: CRM وERP وقواعد البيانات وأكثر" },
+      { value: "100%", caption: "ضمان استرداد كامل إذا لم تكن راضياً عمّا نُسلّمه" },
+    ]} />
   </div>
 </div>
 
-<!-- 3. WHAT WE BUILD -->
-<section id="what-we-build" class="section" aria-labelledby="builds-heading">
+<!-- WHAT IS AI INTEGRATION -->
+<section class="section" aria-labelledby="explain-heading">
   <div class="container">
-    <div style="text-align:center;margin-bottom:3rem;">
-      <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#006875;margin-bottom:0.75rem;">ما الذي نبنيه</div>
-      <h2 id="builds-heading">تكاملات الذكاء الاصطناعي التي نبنيها</h2>
-      <p style="color:#42474e;font-size:1rem;max-width:560px;margin:0.75rem auto 0;line-height:1.8;">أمثلة شائعة، لا قائمة حصرية. بصفتنا وكالة الذكاء الاصطناعي في دبي، نُصمم كل تكامل لأنظمتك بالتحديد، نختبره على بياناتك الحقيقية، وندعمه بعد الإطلاق. إذا كان نظامك أو حالتك غير مذكورة هنا، نقوم بها على الأرجح. أخبرنا بما تعمل عليه.</p>
+    <div class="explain-split">
+      <div>
+        <h2 id="explain-heading" style="margin-bottom:1.5rem;">ما الذي يعنيه تكامل الذكاء الاصطناعي فعلياً؟</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+          تكامل الذكاء الاصطناعي يعني إضافة طبقة ذكاء اصطناعي فوق برمجياتك الحالية، بحيث تصبح أدواتك الحالية أذكى بشكل ملحوظ دون استبدالها. يواصل فريقك استخدام الأنظمة التي يعرفها. الفرق أن هذه الأنظمة الآن تفهم البيانات بدلاً من مجرد تخزينها، تتوقع النتائج بدلاً من مجرد عرض التاريخ، وتتخذ إجراءات بدلاً من مجرد إظهار المعلومات.
+        </p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+          فكّر بالأمر هكذا: نظام CRM عادي يُسجّل ما حدث في مسار مبيعاتك. أما CRM بطبقة ذكاء اصطناعي فيُخبرك بالصفقات المعرّضة للخطر، ولماذا يُرجَّح إغلاق كل صفقة أو عدم إغلاقها، وما الخطوة التالية الأفضل لكل مندوب، وأي الحسابات على وشك المغادرة، كل ذلك في الوقت الفعلي. النظام الأساسي هو نفسه. طبقة الذكاء فوقه هي ما يُغيّر النتيجة.
+        </p>
+      </div>
+      <div class="explain-img-wrap">
+        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80&auto=format&fit=crop" alt="مديرة مبيعات في شركة بدبي تُراجع لوحات مسار مُثراة بالذكاء الاصطناعي داخل نظام CRM الذي يستخدمه فريقها بالفعل" loading="lazy" width="800" height="600" />
+      </div>
     </div>
-    <div style="border-radius:20px;overflow:hidden;margin-bottom:2.5rem;box-shadow:0 20px 48px rgba(0,59,92,0.08);">
-      <img src="https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=1100&q=80&auto=format&fit=crop" alt="شيفرة تكامل ذكاء اصطناعي على شاشة مطور في دبي" loading="lazy" width="1100" height="300" style="width:100%;height:clamp(180px,26vw,300px);object-fit:cover;display:block;" />
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:2rem auto 0;">
+      السبب الذي يجعل الشركات تختار التكامل بدلاً من الاستبدال واضح: عمليات ترحيل البرمجيات المؤسسية مكلفة، مُربكة، وغالباً ما تستغرق من 12 إلى 24 شهراً. معظم الشركات استثمرت سنوات في تهيئة أنظمتها الحالية وتدريب فرقها عليها. تكامل الذكاء الاصطناعي يحصل على معظم قيمة الذكاء الاصطناعي الحديث، بجزء بسيط من التكلفة والإرباك، من خلال العمل مع ما لديك بالفعل.
+    </p>
+  </div>
+</section>
+
+<!-- WHAT WE INTEGRATE -->
+<section id="what-we-integrate" class="section" aria-labelledby="integrate-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="integrate-heading">تكاملات الذكاء الاصطناعي التي نُقدّمها</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">أنواع تكامل شائعة، كل منها مُصمم خصيصاً لنظامك ومدعوم بعد الإطلاق. إذا لم يكن نظامك أو حالة استخدامك مذكورة هنا، على الأرجح لا نزال نبنيها. أخبرنا بما تعمل عليه.</p>
     </div>
     <div class="feature-ledger">
       <div class="card">
-        <div class="icon-box">
-          <span class="material-symbols-outlined" style="color:#006875;font-size:24px;direction:ltr;" aria-hidden="true">contacts</span>
-        </div>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">contacts</span></div>
         <h3>تكامل CRM مع الذكاء الاصطناعي</h3>
-        <p style="color:#42474e;font-size:0.875rem;line-height:1.8;">نضيف الذكاء الاصطناعي لنظام CRM الذي تستخدمه. يُسجّل الصفقات تلقائياً، يتوقع صحة الفرص، ويحدد الخطوة التالية لكل مندوب دون مغادرة النظام.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">أضف الذكاء الاصطناعي إلى CRM لإثراء جهات الاتصال تلقائياً، تقييم العملاء المحتملين، توقع صحة الصفقات، وإظهار الخطوة التالية الصحيحة لكل مندوب، كل ذلك دون مغادرة نظامك الحالي.</p>
       </div>
       <div class="card">
-        <div class="icon-box">
-          <span class="material-symbols-outlined" style="color:#006875;font-size:24px;direction:ltr;" aria-hidden="true">inventory_2</span>
-        </div>
-        <h3>مزامنة ERP مع الذكاء الاصطناعي</h3>
-        <p style="color:#42474e;font-size:0.875rem;line-height:1.8;">نحوّل بيانات ERP الخام إلى تحليلات تنبؤية: توقع الطلب، تحسين المخزون، الكشف عن الشذوذات قبل أن تتحول إلى مشاكل.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">inventory_2</span></div>
+        <h3>تحليلات ERP الذكية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">حوّل بيانات ERP الخام إلى تحليلات تنبؤية: توقع الطلب، تحسين المخزون، تقييم مخاطر الموردين، واكتشاف الشذوذات قبل أن تتفاقم المشكلات.</p>
       </div>
       <div class="card">
-        <div class="icon-box">
-          <span class="material-symbols-outlined" style="color:#006875;font-size:24px;direction:ltr;" aria-hidden="true">whatsapp</span>
-        </div>
-        <h3>تكامل منصة المراسلة مع الذكاء الاصطناعي</h3>
-        <p style="color:#42474e;font-size:0.875rem;line-height:1.8;">نربط منصة المراسلة التي تستخدمها بأنظمتك الداخلية. رد تلقائي على الاستفسارات، تحديث الطلبات، وتوجيه المحادثات للشخص المناسب دون تدخل يدوي.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">forum</span></div>
+        <h3>ذكاء اصطناعي لمنصات التواصل</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">ذكاء اصطناعي مُضاف لأدوات التواصل لديك لتلخيص المحادثات الطويلة، استخراج بنود الإجراءات، صياغة الردود، وتوجيه الرسائل للشخص المناسب تلقائياً.</p>
       </div>
       <div class="card">
-        <div class="icon-box">
-          <span class="material-symbols-outlined" style="color:#006875;font-size:24px;direction:ltr;" aria-hidden="true">mail</span>
-        </div>
-        <h3>منصة البريد الإلكتروني مع الذكاء الاصطناعي</h3>
-        <p style="color:#42474e;font-size:0.875rem;line-height:1.8;">ذكاء اصطناعي مدمج في بريدك الإلكتروني. يلخص المحادثات الطويلة، يستخرج بنود الإجراءات، ويصيغ الردود، ويوجه الرسائل للشخص الصحيح تلقائياً.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">shopping_cart</span></div>
+        <h3>طبقة ذكاء اصطناعي للتجارة الإلكترونية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">توصيات ذكاء اصطناعي، تسعير ديناميكي، بحث مخصص، وتوقع مغادرة العملاء، مُضافة فوق منصة تجارتك الإلكترونية أو متجرك المخصص.</p>
       </div>
       <div class="card">
-        <div class="icon-box">
-          <span class="material-symbols-outlined" style="color:#006875;font-size:24px;direction:ltr;" aria-hidden="true">description</span>
-        </div>
-        <h3>إدارة المستندات واستخراج البيانات</h3>
-        <p style="color:#42474e;font-size:0.875rem;line-height:1.8;">نربط نظام إدارة مستنداتك بالذكاء الاصطناعي لاستخراج البيانات من الفواتير والعقود والنماذج تلقائياً، وإدخالها مباشرة في أنظمتك.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">storage</span></div>
+        <h3>ذكاء اصطناعي لمستودعات البيانات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">اطرح أسئلة على مستودع بياناتك بلغة طبيعية. يُترجمها الذكاء الاصطناعي إلى SQL، يُنفّذ الاستعلامات، ويُعيد التحليلات دون حاجة فريقك لمعرفة SQL.</p>
       </div>
       <div class="card">
-        <div class="icon-box">
-          <span class="material-symbols-outlined" style="color:#006875;font-size:24px;direction:ltr;" aria-hidden="true">webhook</span>
-        </div>
-        <h3>جسور API مخصصة</h3>
-        <p style="color:#42474e;font-size:0.875rem;line-height:1.8;">نبني وسيطاً ذكياً يصل أنظمتك الخاصة ببعضها، حتى تتدفق البيانات بذكاء بين أدوات لم تُصمَّم أصلاً للتحدث مع بعضها.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">webhook</span></div>
+        <h3>اتصالات API مخصصة بالذكاء الاصطناعي</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">نبني وسيطاً ذكياً مُخصصاً يربط أنظمتك الخاصة، بحيث تتدفق البيانات بذكاء بين أدوات لم تُصمَّم أصلاً للتواصل مع بعضها.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 4. RESULTS CARD -->
-<section class="section" style="background:#e7eeff;padding:4rem 0;" aria-labelledby="results-heading">
+<!-- INTEGRATION SCENARIOS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="scenarios-heading">
   <div class="container">
-    <div style="text-align:center;margin-bottom:2.5rem;">
-      <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#006875;margin-bottom:0.75rem;">نتيجة حقيقية</div>
-      <h2 id="results-heading">من يعاني يومياً من إدخال البيانات يدوياً</h2>
+    <div class="section-header">
+      <h2 id="scenarios-heading">كيف يبدو تكامل الذكاء الاصطناعي على أرض الواقع</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">أمثلة ملموسة لما قبل وبعد، توضح ما تكسبه الشركات عند إضافة طبقة ذكاء اصطناعي إلى أنظمتها الحالية.</p>
     </div>
     <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
       <img src="https://images.unsplash.com/photo-1573164713988-8665fc963095?w=1200&q=80&auto=format&fit=crop" alt="مهندس يربط أنظمة الذكاء الاصطناعي عبر شاشات متعددة" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
     </div>
-    <div class="card" style="max-width:800px;margin:0 auto;">
-      <div class="results-grid">
-        <div class="result-col">
-          <div class="result-label">المشكلة</div>
-          <p style="color:#42474e;line-height:1.8;">شركة لوجستيات كبرى في دبي: نظام ERP لا يتحدث مع بوابة العملاء. كل تحديث للطلبات كان يتم يدوياً بواسطة موظف يقضي ساعتين يومياً في نسخ البيانات بين النظامين.</p>
+    <div class="scenario-tabs" data-scenario-tabs>
+      <div class="tab-buttons" role="tablist" aria-label="اختر النظام الذي تستخدمه">
+        <button type="button" class="tab-btn active" role="tab" aria-selected="true" data-tab="crm">CRM</button>
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="erp">ERP</button>
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="ecom">التجارة الإلكترونية</button>
+      </div>
+      <div class="tab-panel ba-grid" data-panel="crm">
+        <div>
+          <p class="ba-label ba-before">قبل: CRM عادي</p>
+          <p class="ba-copy">يُسجّل المندوبون ملاحظات المكالمات يدوياً. يُحدَّث المسار عندما يتذكر أحدهم ذلك. تقارير الفوز والخسارة تستغرق يوماً كاملاً لإعدادها. لا أحد يعرف أي الصفقات سليمة فعلياً حتى فوات الأوان.</p>
         </div>
-        <div class="result-col">
-          <div class="result-label">الحل</div>
-          <p style="color:#42474e;line-height:1.8;">بنينا جسر ذكاء اصطناعي يزامن الطلبات لحظياً ويُحدّث العملاء تلقائياً، دون أي تدخل يدوي.</p>
+        <div>
+          <p class="ba-label ba-after">بعد: CRM بطبقة ذكاء اصطناعي</p>
+          <p class="ba-copy">يُثري الذكاء الاصطناعي كل جهة اتصال تلقائياً. يُقيّم صحة الصفقات يومياً، يُحدد الفرص المعرّضة للخطر، ويُظهر أفضل خطوة تالية لكل مندوب. واجهة CRM لديك لم تتغيّر. لكن الذكاء الذي تحتها تغيّر.</p>
         </div>
       </div>
-      <div class="metrics-row">
-        <div class="metric-item">
-          <div class="metric-val">٠ تحديث</div>
-          <div class="metric-desc">يدوي يومياً (كانت ٢ ساعة/يوم)</div>
+      <div class="tab-panel ba-grid hidden" data-panel="erp">
+        <div>
+          <p class="ba-label ba-before">قبل: ERP عادي</p>
+          <p class="ba-copy">تجديد المخزون يعتمد على نقاط إعادة طلب ثابتة. مفاجآت الطلب تُباغت الفريق. يُراجع القسم المالي التقارير شهرياً، ويتفاعل مع مشكلات كان يمكن اكتشافها قبل أسابيع.</p>
         </div>
-        <div class="metric-item">
-          <div class="metric-val">٩٠٪-</div>
-          <div class="metric-desc">تراجع في أخطاء إدخال البيانات</div>
+        <div>
+          <p class="ba-label ba-after">بعد: ERP بطبقة ذكاء اصطناعي</p>
+          <p class="ba-copy">يُنمذج الذكاء الاصطناعي الطلب الموسمي، يُحدد شذوذات المخزون في الوقت الفعلي، ويُولّد توصيات تجديد قبل نفاد المخزون. يرى القسم المالي تدفقاً نقدياً تنبؤياً، لا مجرد تقارير تاريخية.</p>
+        </div>
+      </div>
+      <div class="tab-panel ba-grid hidden" data-panel="ecom">
+        <div>
+          <p class="ba-label ba-before">قبل: منصة تجارة إلكترونية عادية</p>
+          <p class="ba-copy">نفس المنتجات تُعرض لجميع العملاء. تحديثات الأسعار يدوية. لا رؤية لمعرفة أي العملاء على وشك المغادرة وأيهم مُرجّح أن يشتري مجدداً قريباً.</p>
+        </div>
+        <div>
+          <p class="ba-label ba-after">بعد: تجارة إلكترونية بطبقة ذكاء اصطناعي</p>
+          <p class="ba-copy">توصيات منتجات مخصصة لكل زائر. تسعير ديناميكي بناءً على إشارات الطلب. توقع مغادرة العملاء يُطلق عروض استبقاء قبل أن يختفي العميل.</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 5. HOW IT WORKS -->
+<!-- PROCESS -->
 <section class="section" aria-labelledby="process-heading">
   <div class="container">
-    <div style="text-align:center;margin-bottom:3rem;">
-      <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#006875;margin-bottom:0.75rem;">كيف نعمل</div>
-      <h2 id="process-heading">ثلاث خطوات لدمج الذكاء الاصطناعي في أنظمتك</h2>
+    <div class="section-header">
+      <h2 id="process-heading">كيف نُضيف الذكاء الاصطناعي إلى أنظمتك الحالية</h2>
     </div>
-    <div class="process-steps">
-      <div class="process-step">
-        <div class="process-num">١</div>
-        <h3>تحليل أنظمتك الحالية</h3>
-        <p style="color:#42474e;font-size:0.9rem;line-height:1.8;">ندرس أنظمتك وتدفق البيانات وواجهات API المتاحة، ثم نحدد بالضبط أين يُحدث الذكاء الاصطناعي أعلى قيمة.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-num">٢</div>
-        <h3>بناء جسور التكامل</h3>
-        <p style="color:#42474e;font-size:0.9rem;line-height:1.8;">نصمم طبقة الذكاء الاصطناعي ونبني الاتصالات الآمنة ونطور التكاملات في بيئة اختبار منفصلة تماماً عن أنظمتك الحية.</p>
-      </div>
-      <div class="process-step">
-        <div class="process-num">٣</div>
-        <h3>اختبار ونشر وتدريب</h3>
-        <p style="color:#42474e;font-size:0.9rem;line-height:1.8;">نتحقق من التكامل على بياناتك الحقيقية، ننشره دون تأثير على عملياتك، ثم ندرّب فريقك على الاستخدام، مع دعم ٩٠ يوماً بعد الإطلاق.</p>
-      </div>
+    <div style="border-radius:20px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 20px 48px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1200&q=80&auto=format&fit=crop" alt="مهندس تكامل يربط اتصالات API بين نظام CRM لشركة إماراتية وطبقة الذكاء الاصطناعي الجديدة" loading="lazy" width="1200" height="320" style="width:100%; height:clamp(180px, 26vw, 320px); object-fit:cover; display:block;" />
     </div>
+    <ProcessSteps steps={processSteps} />
   </div>
 </section>
 
-<!-- 6. GUARANTEE -->
-<section class="section" style="background:#e7eeff;padding:4rem 0;text-align:center;">
-  <div class="container">
-    <div class="guarantee-badge" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:18px;direction:ltr;" aria-hidden="true">shield</span>
-      ضمان الاسترداد الكامل، الوحيد في الإمارات
-    </div>
-    <h2 style="margin-bottom:1rem;">إذا لم تكن راضياً، لا تدفع أي شيء.</h2>
-    <p style="color:#42474e;max-width:560px;margin:0 auto 2rem;line-height:1.8;">نبني، تختبر، وإذا لم تكن راضياً تماماً نردّ ١٠٠٪ خلال ٣٠ يوماً من التسليم. بدون أسئلة.</p>
-    <button onclick="openModal(this)" data-source="ar_ai_integration_guarantee" class="btn-primary">ابدأ بدون مخاطرة</button>
-  </div>
-</section>
-
-<!-- 7. FAQ -->
+<!-- FAQ -->
 <section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
   <div class="container" style="max-width:720px;">
-    <div style="text-align:center;margin-bottom:2.5rem;">
-      <h2 id="faq-heading">أسئلة شائعة</h2>
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
     </div>
-    <div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل يمكنكم دمج الذكاء الاصطناعي مع أنظمة CRM الشائعة؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نعم، هذا بالضبط ما نفعله. ندمج الذكاء الاصطناعي مع أي نظام CRM تستخدمه دون الحاجة لتغيير النظام. فريقك يواصل العمل بنفس الطريقة، لكن النظام يصبح أذكى وأكثر كفاءة.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          ما الأنظمة التي تدعمون دمجها مع الذكاء الاصطناعي؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">أي نظام يملك API. الأكثر شيوعاً: أنظمة CRM وERP وأدوات التواصل الداخلي والبريد الإلكتروني ومنصات المراسلة وإدارة المستندات، وأكثر من ٥٠ نظاماً آخر.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          كم يستغرق مشروع التكامل عادةً؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">الجدول الزمني يعتمد على عدد الأنظمة وتعقيد التكاملات. نعطيك جدولاً زمنياً دقيقاً بعد جلسة التحليل الأولى.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل ستتأثر عملياتنا اليومية أثناء التكامل؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">لا. نبني التكامل في بيئة اختبار منفصلة كلياً ولا نلمس أنظمتك الحية حتى يكتمل الاختبار بالكامل. لديك دائماً خيار التراجع كشبكة أمان، لا مخاطر على استمرارية عملك.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          ماذا يحدث بعد إطلاق التكامل؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">جميع مشاريع التكامل تشمل دعماً كاملاً لمدة ٩٠ يوماً بعد الإطلاق. نراقب الأنظمة ونصلح أي مشكلة ونجري التحديثات اللازمة مع تطور احتياجاتك. بعد ذلك تتوفر خطط صيانة مستمرة.</div>
-      </div>
-    </div>
+    <FaqAccordion items={faqItems} />
   </div>
 </section>
 
-<!-- 8. FINAL CTA -->
-<section class="cta-band" style="border-radius:24px;margin:2rem 2rem 4rem;">
-  <div style="position:relative;z-index:1;text-align:center;">
-    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem);margin-bottom:1rem;">ابدأ بربط أنظمتك بالذكاء الاصطناعي</h2>
-    <p style="font-size:1.125rem;max-width:36rem;margin:0 auto 2.5rem;line-height:1.7;">أخبرنا بالأنظمة التي تستخدمها. سنريك بالضبط أين يُحدث الذكاء الاصطناعي أعلى قيمة، مجاناً وبدون التزام.</p>
-    <button onclick="openModal(this)" data-source="ar_ai_integration_cta" class="btn-primary" style="font-size:1.125rem;padding:1.125rem 2.75rem;">احجز جلسة مجانية</button>
-    <p style="font-size:0.875rem;margin-top:1.25rem;">مجاني · بدون التزام · ضمان استرداد ١٠٠٪</p>
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">مكالمة استكشافية مجانية</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">هل أنت مستعد لجعل أدواتك الحالية أذكى بشكل ملحوظ؟</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">أخبرنا بالأنظمة التي تستخدمها. سيُريك فريقنا في دبي بالضبط أين يخلق تكامل الذكاء الاصطناعي أعلى قيمة. مجاناً وبدون التزام.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ مجاني 100%</span>
+      <span class="cta-trust-badge">✓ بدون التزام</span>
+      <span class="cta-trust-badge">✓ ضمان استرداد</span>
+    </div>
+    <button onclick="openModal(this)" data-source="ar_integration_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجز مكالمة استكشافية مجانية</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة 30 دقيقة · بدون ضغط للبيع</p>
   </div>
-</section>
+</div>
+
+<script>
+document.querySelectorAll('[data-scenario-tabs]').forEach((wrap) => {
+  wrap.querySelectorAll('.tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      wrap.querySelectorAll('.tab-btn').forEach((b) => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+      wrap.querySelectorAll('.tab-panel').forEach((p) => p.classList.add('hidden'));
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      const target = (btn as HTMLElement).dataset.tab;
+      wrap.querySelector(`[data-panel="${target}"]`)?.classList.remove('hidden');
+    });
+  });
+});
+</script>
 
 </ArBaseLayout>
 
 <style>
-.stats-strip { background:linear-gradient(135deg,#001e30,#00253b,#003b5c);padding:4rem 0; }
-.stats-grid { display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;gap:1.5rem;align-items:center; }
-.stat-div { width:1px;height:70px;background:rgba(255,255,255,0.15); }
-.stat-item { text-align:center; }
-.stat-val { font-size:2rem;font-weight:800;color:#00e3fd;line-height:1;margin-bottom:0.5rem; }
-.stat-desc { color:rgba(255,255,255,0.55);font-size:0.8125rem;line-height:1.6; }
-
-.icon-box { width:48px;height:48px;border-radius:14px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.25);display:flex;align-items:center;justify-content:center;margin-bottom:1rem; }
-.builds-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem; }
-
-.results-grid { display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem; }
-.result-col { position: relative; }
-.result-col:first-child::after { content: ''; position: absolute; top: 0; bottom: 0; inset-inline-end: -1rem; width: 1px; background: rgba(0,37,59,0.10); }
-@media (max-width: 768px) { .result-col:first-child::after { display: none; } }
-.result-label { font-size:0.75rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#006875;margin-bottom:0.75rem; }
-.metrics-row { display:flex;gap:2rem;border-top:1px solid #e2e8f0;padding-top:1.5rem; }
-.metric-item { flex:1;text-align:center; }
-.metric-val { font-size:2rem;font-weight:800;color:#00253b;line-height:1;margin-bottom:0.375rem; }
-.metric-desc { color:#42474e;font-size:0.875rem; }
-
-.process-steps { display:grid;grid-template-columns:repeat(3,1fr);gap:2rem; }
-.process-step { background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:2rem;position:relative; }
-.process-num { width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#00253b,#006875);color:#00e3fd;font-size:1.25rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:1rem; }
-
-@media (max-width:900px) {
-  .stats-grid { grid-template-columns:1fr 1fr;gap:1rem; }
-  .stat-div { display:none; }
-  .builds-grid { grid-template-columns:1fr 1fr; }
-  .results-grid { grid-template-columns:1fr; }
-  .process-steps { grid-template-columns:1fr; }
-}
-@media (max-width:580px) {
-  .builds-grid { grid-template-columns:1fr; }
-  .stats-grid { grid-template-columns:1fr; }
-  .metrics-row { flex-direction:column;gap:1rem; }
-}
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+.builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+.explain-split { display:grid; grid-template-columns:1.3fr 1fr; gap:3rem; align-items:center; max-width:1080px; margin:0 auto; }
+.explain-img-wrap { border-radius:20px; overflow:hidden; box-shadow:0 20px 48px rgba(0,59,92,0.12); }
+.explain-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; min-height:280px; }
+.scenario-tabs { max-width:920px; margin:0 auto; background:#fff; border:1px solid rgba(0,37,59,0.08); border-radius:20px; padding:2rem; box-shadow:0 8px 32px rgba(0,37,59,0.06); }
+.tab-buttons { display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.75rem; border-bottom:1px solid rgba(0,37,59,0.10); padding-bottom:1.25rem; }
+.tab-btn { background:#f0f3ff; border:1px solid transparent; border-radius:100px; padding:0.625rem 1.25rem; font-size:0.875rem; font-weight:600; color:#42474e; cursor:pointer; font-family:inherit; transition:background .2s, color .2s, border-color .2s; }
+.tab-btn:hover { color:#006875; }
+.tab-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+.tab-btn.active { background:#00253b; color:#fff; border-color:#00253b; }
+.tab-panel.hidden { display:none; }
+.ba-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; }
+.ba-label { font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.75rem; }
+.ba-before { color:#ba1a1a; }
+.ba-after { color:#006875; }
+.ba-copy { color:#42474e; font-size:0.9rem; line-height:1.7; }
+.tech-pill { display:inline-block; background:#fff; border:1px solid #dde3ea; border-radius:100px; padding:0.375rem 1rem; font-size:0.8125rem; font-weight:600; color:#00253b; }
+@media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } .explain-split { grid-template-columns:1fr; } .explain-img-wrap img { min-height:220px; } }
+@media(max-width:700px) { .ba-grid { grid-template-columns:1fr; gap:1.25rem; } .scenario-tabs { padding:1.5rem; } }
+@media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
 </style>
