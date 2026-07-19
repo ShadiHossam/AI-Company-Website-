@@ -5,78 +5,7 @@ import '../../styles/homepage-redesign.css';
 
 export const prerender = false;
 
-type Testimonial = {
-  client_name: string;
-  client_title: string | null;
-  ar_client_title: string | null;
-  client_company: string | null;
-  industry: string | null;
-  client_image_url: string | null;
-  quote: string;
-  ar_quote: string | null;
-};
-
-const industryAr: Record<string, string> = {
-  'Real Estate': 'العقارات',
-  'Retail': 'التجزئة',
-  'Hospitality': 'الضيافة',
-  'Logistics': 'الخدمات اللوجستية',
-};
-
-const fallbackTestimonials: Testimonial[] = [
-  {
-    client_name: 'Ahmed Al Rashidi',
-    client_title: 'CEO',
-    ar_client_title: 'الرئيس التنفيذي',
-    client_company: 'Al Rashidi Properties',
-    industry: 'Real Estate',
-    quote: '',
-    ar_quote: 'بنت لنا Lenoo AI روبوت محادثة على واتساب يرد على كل استفسار خلال ثوانٍ. فريقنا يوفر ساعات كل أسبوع ونتابع عملاء محتملين أكثر من أي وقت مضى. أفضل استثمار قمنا به.',
-    client_image_url: null,
-  },
-  {
-    client_name: 'Sarah Mitchell',
-    client_title: 'Operations Director',
-    ar_client_title: 'مديرة العمليات',
-    client_company: 'Bloom Retail Group',
-    industry: 'Retail',
-    quote: '',
-    ar_quote: 'نظام المخزون بالذكاء الاصطناعي الذي بنوه حلّ مشكلة نفاد المخزون لدينا بالكامل. كنا نخسر مبيعات كل نهاية أسبوع، والآن يتولى النظام إعادة الطلب تلقائياً. عاد علينا بالفائدة أسرع مما توقعنا.',
-    client_image_url: null,
-  },
-  {
-    client_name: 'Khalid Al Mansoori',
-    client_title: 'General Manager',
-    ar_client_title: 'المدير العام',
-    client_company: 'Noor Hospitality Group',
-    industry: 'Hospitality',
-    quote: '',
-    ar_quote: 'مساعد الاستقبال بالذكاء الاصطناعي يتعامل مع طلبات الضيوف على مدار الساعة. أصبح فريقنا يركّز على التفاعلات المهمة بدلاً من تكرار نفس الإجابات. غيّر طريقة إدارتنا للفندق.',
-    client_image_url: null,
-  },
-];
-
 const supabase = getSupabaseAdmin();
-const { data: rawTestimonials } = await supabase
-  .from('testimonials')
-  .select('client_name, client_title, ar_client_title, client_company, industry, client_image_url, quote, ar_quote')
-  .eq('published', true)
-  .is('deleted_at', null)
-  .order('sort_order', { ascending: true })
-  .limit(6);
-
-const testimonials: Testimonial[] = (rawTestimonials && rawTestimonials.length > 0)
-  ? (rawTestimonials as Testimonial[]).filter(t => t.ar_quote)
-  : [];
-const finalTestimonials = testimonials.length > 0 ? testimonials : fallbackTestimonials;
-
-const getInitials = (name: string): string => {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return '';
-  const first = parts[0].charAt(0);
-  const last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : '';
-  return (first + last).toUpperCase();
-};
 
 type HomeBlogPost = {
   id: string;
@@ -214,8 +143,18 @@ const homeLdJson = [
 
 <div class="hp-redesign">
 
-<!-- HERO -->
+<!-- HERO — Dubai Marina photo behind the gradient, same photo reused from the AUTHORITY section below -->
 <header class="hero-section hero-home hp-hero">
+  <div class="hp-hero-media" aria-hidden="true">
+    <img
+      src="https://images.unsplash.com/photo-1489516408517-0c0a15662682?w=1600&q=80&auto=format&fit=crop"
+      alt=""
+      loading="eager"
+      width="1600"
+      height="1000"
+    />
+    <div class="hp-hero-scrim"></div>
+  </div>
   <div class="container">
     <div class="hp-hero-copy">
       <h1>
@@ -226,7 +165,6 @@ const homeLdJson = [
       </p>
       <div class="trust-chips">
         <span class="tchip"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">shield</span>ضمان الاسترداد</span>
-        <span class="tchip"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">forum</span>استشارة استراتيجية مجانية</span>
         <span class="tchip"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">support_agent</span>دعم ٩٠ يوماً</span>
       </div>
       <div class="hp-hero-cta-row">
@@ -270,39 +208,6 @@ const homeLdJson = [
           اعثر على خدمة الذكاء الاصطناعي المناسبة لشركتك
           <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;">arrow_downward</span>
         </a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- WHO THIS IS FOR -->
-<section class="section hp-who" aria-labelledby="who-heading">
-  <div class="container">
-    <div class="section-header">
-      <h2 id="who-heading">بُنينا لأجل الشركات المستعدة للتحرك</h2>
-      <p>إذا بدا لك أي مما يلي مألوفاً، فأنت في المكان الصحيح.</p>
-    </div>
-    <div class="bento-grid bento-grid-3">
-      <div class="value-card">
-        <div class="service-icon">
-          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">timer</span>
-        </div>
-        <h3 style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">فريقك لا يستطيع مجاراة حجم العمل.</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">العملاء المحتملون يبردون. الاستفسارات تتراكم. فريقك مشدود إلى أقصى حد. المشكلة ليست في الجهد، بل في الحجم. الذكاء الاصطناعي يتولى الأعمال المتكررة ليتفرّغ فريقك لما يحتاج فعلاً إلى إنسان.</p>
-      </div>
-      <div class="value-card">
-        <div class="service-icon">
-          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">tune</span>
-        </div>
-        <h3 style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">جرّبت أدوات ذكاء اصطناعي. لم تناسب شركتك أياً منها.</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">ChatGPT لا يعرف منتجاتك. قوالب Zapier لا تطابق طريقة عملك. الأدوات الجاهزة تُعطي نتائج عامة. أنت تحتاج شيئاً مبنياً حول طريقة عمل شركتك فعلياً.</p>
-      </div>
-      <div class="value-card">
-        <div class="service-icon">
-          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">explore</span>
-        </div>
-        <h3 style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">تعرف أن الذكاء الاصطناعي قد يساعد. لكنك لا تعرف من أين تبدأ.</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">كل مزود يعدك بتحوّل كامل. قلة من يعطيك خطة فعلية. نبدأ بأكبر مشكلة تشغيلية عندك، نحدد ما هو واقعي، ونخبرك بصراحة إن كان الذكاء الاصطناعي هو الخيار الصحيح قبل أن تصرف أي شيء.</p>
       </div>
     </div>
   </div>
@@ -373,6 +278,84 @@ const homeLdJson = [
   </div>
 </section>
 
+<!-- WHO THIS IS FOR -->
+<section class="section hp-who" aria-labelledby="who-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="who-heading">بُنينا لأجل الشركات المستعدة للتحرك</h2>
+      <p>إذا بدا لك أي مما يلي مألوفاً، فأنت في المكان الصحيح.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">timer</span>
+        </div>
+        <h3 style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">فريقك لا يستطيع مجاراة حجم العمل.</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">العملاء المحتملون يبردون. الاستفسارات تتراكم. فريقك مشدود إلى أقصى حد. المشكلة ليست في الجهد، بل في الحجم. الذكاء الاصطناعي يتولى الأعمال المتكررة ليتفرّغ فريقك لما يحتاج فعلاً إلى إنسان.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">tune</span>
+        </div>
+        <h3 style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">جرّبت أدوات ذكاء اصطناعي. لم تناسب شركتك أياً منها.</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">ChatGPT لا يعرف منتجاتك. قوالب Zapier لا تطابق طريقة عملك. الأدوات الجاهزة تُعطي نتائج عامة. أنت تحتاج شيئاً مبنياً حول طريقة عمل شركتك فعلياً.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">explore</span>
+        </div>
+        <h3 style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">تعرف أن الذكاء الاصطناعي قد يساعد. لكنك لا تعرف من أين تبدأ.</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">كل مزود يعدك بتحوّل كامل. قلة من يعطيك خطة فعلية. نبدأ بأكبر مشكلة تشغيلية عندك، نحدد ما هو واقعي، ونخبرك بصراحة إن كان الذكاء الاصطناعي هو الخيار الصحيح قبل أن تصرف أي شيء.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI STATS -->
+<section class="section hp-stats" aria-labelledby="stats-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="stats-heading">السرعة هي كل الفرق</h2>
+      <p>هذا ما يتغيّر عندما يحل نظام ذكاء اصطناعي محل صندوق بريد يُدار يدوياً.</p>
+    </div>
+    <div class="bento-grid bento-grid-4">
+      <div class="value-card hp-stat-tile">
+        <div class="stat-number">&lt;١٠<span class="hp-stat-unit">ثانية</span></div>
+        <div class="stat-label">متوسط وقت الرد على استفسار جديد</div>
+      </div>
+      <div class="value-card hp-stat-tile">
+        <div class="stat-number">24/7</div>
+        <div class="stat-label">متاح دائماً، ليلاً ونهاراً وفي العطلات</div>
+      </div>
+      <div class="value-card hp-stat-tile">
+        <div class="stat-number">٩٠<span class="hp-stat-unit">يوماً</span></div>
+        <div class="stat-label">دعم مشمول بعد كل إطلاق</div>
+      </div>
+      <div class="value-card hp-stat-tile">
+        <div class="stat-number">١٠٠<span class="hp-stat-unit">٪</span></div>
+        <div class="stat-label">ضمان استرداد إن لم يكن النظام مناسباً</div>
+      </div>
+    </div>
+    <div class="hp-stat-compare">
+      <div class="hp-compare-row">
+        <div class="hp-compare-label">صندوق دعم تقليدي</div>
+        <div class="hp-compare-track">
+          <div class="hp-compare-bar hp-compare-bar-muted" style="width:94%;"></div>
+          <span class="hp-compare-value">ساعات</span>
+        </div>
+      </div>
+      <div class="hp-compare-row">
+        <div class="hp-compare-label">وكيل Lenoo AI</div>
+        <div class="hp-compare-track">
+          <div class="hp-compare-bar hp-compare-bar-accent" style="width:6%;"></div>
+          <span class="hp-compare-value">ثوانٍ</span>
+        </div>
+      </div>
+      <p class="hp-compare-caption">الوقت من الاستفسار إلى أول رد.</p>
+    </div>
+  </div>
+</section>
+
 <!-- INDUSTRIES — photo cards -->
 <section class="section hp-industries" aria-labelledby="industries-heading">
   <div class="container">
@@ -388,8 +371,8 @@ const homeLdJson = [
           <div class="industry-icon">
             <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">apartment</span>
           </div>
-          <h3 style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0.75rem;">العقارات</h3>
-          <p style="color:rgba(255,255,255,0.82); line-height:1.8; margin-bottom:1.5rem;">روبوتات محادثة على واتساب، وأتمتة لأنظمة CRM، وذكاء اصطناعي يؤهّل المشترين ويحجز المعاينات على مدار الساعة، بالعربي والإنجليزي.</p>
+          <h3 style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0.75rem; text-shadow:0 1px 4px rgba(0,0,0,0.55);">العقارات</h3>
+          <p style="color:rgba(255,255,255,0.9); line-height:1.8; margin-bottom:1.5rem; text-shadow:0 1px 4px rgba(0,0,0,0.55);">روبوتات محادثة على واتساب، وأتمتة لأنظمة CRM، وذكاء اصطناعي يؤهّل المشترين ويحجز المعاينات على مدار الساعة، بالعربي والإنجليزي.</p>
           <span class="industry-link">استكشف ذكاء العقارات <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span></span>
         </div>
       </a>
@@ -400,8 +383,8 @@ const homeLdJson = [
           <div class="industry-icon">
             <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">shopping_bag</span>
           </div>
-          <h3 style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0.75rem;">التجزئة</h3>
-          <p style="color:rgba(255,255,255,0.82); line-height:1.8; margin-bottom:1.5rem;">توقّع الطلب، وأتمتة إدارة المخزون، ودعم عملاء يتوسّع عبر الفروع دون زيادة عدد الموظفين.</p>
+          <h3 style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0.75rem; text-shadow:0 1px 4px rgba(0,0,0,0.55);">التجزئة</h3>
+          <p style="color:rgba(255,255,255,0.9); line-height:1.8; margin-bottom:1.5rem; text-shadow:0 1px 4px rgba(0,0,0,0.55);">توقّع الطلب، وأتمتة إدارة المخزون، ودعم عملاء يتوسّع عبر الفروع دون زيادة عدد الموظفين.</p>
           <span class="industry-link">استكشف ذكاء التجزئة <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span></span>
         </div>
       </a>
@@ -412,8 +395,8 @@ const homeLdJson = [
           <div class="industry-icon">
             <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">hotel</span>
           </div>
-          <h3 style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0.75rem;">الضيافة</h3>
-          <p style="color:rgba(255,255,255,0.82); line-height:1.8; margin-bottom:1.5rem;">مساعدو استقبال بالذكاء الاصطناعي يتعاملون مع طلبات الضيوف على مدار الساعة، ليتفرّغ فريقك للتفاعلات التي تحتاج لمسة إنسانية.</p>
+          <h3 style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0.75rem; text-shadow:0 1px 4px rgba(0,0,0,0.55);">الضيافة</h3>
+          <p style="color:rgba(255,255,255,0.9); line-height:1.8; margin-bottom:1.5rem; text-shadow:0 1px 4px rgba(0,0,0,0.55);">مساعدو استقبال بالذكاء الاصطناعي يتعاملون مع طلبات الضيوف على مدار الساعة، ليتفرّغ فريقك للتفاعلات التي تحتاج لمسة إنسانية.</p>
           <span class="industry-link">استكشف ذكاء الضيافة <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span></span>
         </div>
       </a>
@@ -430,7 +413,7 @@ const homeLdJson = [
     </div>
     <div class="picker-wrap">
       <div class="picker-buttons" role="group" aria-label="اختر أكبر تحدٍ يواجهك">
-        <button class="picker-btn" data-target="picker-leads" aria-expanded="false">نفقد عملاء محتملين</button>
+        <button class="picker-btn active" data-target="picker-leads" aria-expanded="true">نفقد عملاء محتملين</button>
         <button class="picker-btn" data-target="picker-repetitive" aria-expanded="false">فريقنا غارق في أعمال متكررة</button>
         <button class="picker-btn" data-target="picker-start" aria-expanded="false">لا نعرف من أين نبدأ مع الذكاء الاصطناعي</button>
         <button class="picker-btn" data-target="picker-tools" aria-expanded="false">أدواتنا الداخلية لا تناسب طريقة عملنا</button>
@@ -438,12 +421,12 @@ const homeLdJson = [
       </div>
 
       <div class="picker-result" aria-live="polite">
-        <div id="picker-hint" class="picker-hint">
+        <div id="picker-hint" class="picker-hint" style="display:none;">
           <span class="material-symbols-outlined" aria-hidden="true" style="font-size:28px; color:#c2c7ce; display:block; margin-bottom:0.5rem;direction:ltr;">touch_app</span>
           اختر تحدياً أعلاه وسنُريك من أين نبدأ.
         </div>
 
-        <div id="picker-leads" class="picker-panel">
+        <div id="picker-leads" class="picker-panel show">
           <div class="picker-card">
             <div class="service-icon"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">smart_toy</span></div>
             <div>
@@ -527,95 +510,24 @@ const homeLdJson = [
   var buttons = document.querySelectorAll('.picker-btn');
   var panels = document.querySelectorAll('.picker-panel');
   var hint = document.getElementById('picker-hint');
+  function select(target) {
+    if (hint) hint.style.display = 'none';
+    buttons.forEach(function (b) {
+      var active = b.getAttribute('data-target') === target;
+      b.classList.toggle('active', active);
+      b.setAttribute('aria-expanded', active ? 'true' : 'false');
+    });
+    panels.forEach(function (p) {
+      p.classList.toggle('show', p.id === target);
+    });
+  }
   buttons.forEach(function (btn) {
     btn.addEventListener('click', function () {
-      var target = btn.getAttribute('data-target');
-      if (hint) hint.style.display = 'none';
-      buttons.forEach(function (b) {
-        var active = b === btn;
-        b.classList.toggle('active', active);
-        b.setAttribute('aria-expanded', active ? 'true' : 'false');
-      });
-      panels.forEach(function (p) {
-        p.classList.toggle('show', p.id === target);
-      });
+      select(btn.getAttribute('data-target'));
     });
   });
 })();
 </script>
-
-<!-- WHAT MAKES US DIFFERENT -->
-<section class="section hp-different" aria-labelledby="different-heading">
-  <div class="container">
-    <div class="section-header">
-      <h2 id="different-heading">ما الذي يميزنا</h2>
-      <p>الكثير من الوكالات في دبي ستبني لك أداة ذكاء اصطناعي. إليك كيف يبدو العمل معنا بدلاً من ذلك.</p>
-    </div>
-    <div class="bento-grid value-grid">
-      <div class="value-card">
-        <div class="service-icon">
-          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">architecture</span>
-        </div>
-        <h3 class="hp-value-heading" style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">مبني لأجل شركتك</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">لا قوالب جاهزة. كل نظام مصمم حول سير عملك، وأدواتك، وعملائك.</p>
-      </div>
-      <div class="value-card">
-        <div class="service-icon">
-          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">school</span>
-        </div>
-        <h3 class="hp-value-heading" style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">فريقك يحصل على تدريب</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">لا نُسلّمك أداة ونغادر. فريقك يحصل على تدريب عملي حتى يستخدم النظام بثقة.</p>
-      </div>
-      <div class="value-card">
-        <div class="service-icon">
-          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">fact_check</span>
-        </div>
-        <h3 class="hp-value-heading" style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">تحديد نطاق صادق أولاً</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">قبل أن تدفع أي شيء، نخبرك بما يستطيع الذكاء الاصطناعي فعله لشركتك وما لا يستطيع. إن لم يكن مناسباً، نقول ذلك بصراحة.</p>
-      </div>
-      <div class="value-card">
-        <div class="service-icon">
-          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">support_agent</span>
-        </div>
-        <h3 class="hp-value-heading" style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">دعم بعد الإطلاق</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">٩٠ يوماً من الدعم مع كل مشروع. إن احتاج أي شيء إصلاحاً بعد الإطلاق، نُصلحه دون أي تكلفة إضافية.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- COMPARISON TABLE -->
-<section class="section hp-compare" aria-labelledby="compare-heading">
-  <div class="container">
-    <div class="section-header">
-      <h2 id="compare-heading">شريك الذكاء الاصطناعي الذي يبني ويدعم ويضمن النتائج.</h2>
-    </div>
-    <div class="compare-wrap" style="overflow-x:auto;">
-      <table class="compare-table">
-        <thead>
-          <tr>
-            <th style="width:40%; text-align:right; border-radius:0;">الميزة</th>
-            <th class="hp-compare-highlight" style="text-align:center;">
-              <span style="display:inline-flex; align-items:center; gap:6px;">
-                <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px; color:#d97706;direction:ltr;">shield</span>
-                Lenoo AI
-              </span>
-            </th>
-            <th style="text-align:center; color:#72787e; font-weight:600;">وكالات ذكاء اصطناعي أخرى</th>
-            <th style="text-align:center; color:#72787e; font-weight:600;">شركات التدريب</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td style="font-weight:500; color:#111c2d;">أنظمة ذكاء اصطناعي مخصصة</td><td class="check-yes">✓</td><td class="check-yes">✓</td><td class="check-no">✗</td></tr>
-          <tr><td style="font-weight:500; color:#111c2d;">تدريب الموظفين مشمول</td><td class="check-yes">✓</td><td class="check-no">✗</td><td class="check-yes">✓</td></tr>
-          <tr><td style="font-weight:500; color:#111c2d;">تسعير مخصص</td><td class="check-yes">✓</td><td class="check-no">✗</td><td class="check-rarely">يختلف</td></tr>
-          <tr><td style="font-weight:500; color:#111c2d;">دعم مستمر</td><td class="check-yes">✓</td><td class="check-rarely">نادراً</td><td class="check-no">✗</td></tr>
-          <tr><td style="font-weight:500; color:#111c2d;">ضمان استرداد ١٠٠٪</td><td class="check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
 
 <!-- PROCESS -->
 <section class="section" aria-labelledby="process-heading">
@@ -653,32 +565,75 @@ const homeLdJson = [
   </div>
 </section>
 
-<!-- TESTIMONIALS -->
-<section class="section hp-testimonials" aria-labelledby="testimonials-heading">
+<!-- COMPARISON TABLE -->
+<section class="section hp-compare" aria-labelledby="compare-heading">
   <div class="container">
     <div class="section-header">
-      <h2 id="testimonials-heading">ماذا تقول شركات دبي عن العمل معنا</h2>
-      <p>مشاريع حقيقية، فرق حقيقية، وما تغيّر بعد إطلاق النظام.</p>
+      <h2 id="compare-heading">شريك الذكاء الاصطناعي الذي يبني ويدعم ويضمن النتائج.</h2>
     </div>
-    <div class="bento-grid bento-grid-3">
-      {finalTestimonials.map((t) => (
-        <figure class="testimonial-card">
-          <span class="material-symbols-outlined testimonial-quote-icon" style="direction:ltr;" aria-hidden="true">format_quote</span>
-          <blockquote class="testimonial-quote">{t.ar_quote || t.quote}</blockquote>
-          <figcaption class="testimonial-footer">
-            {t.client_image_url ? (
-              <img class="testimonial-avatar" src={t.client_image_url} alt={t.client_name} loading="lazy" width="48" height="48" />
-            ) : (
-              <span class="testimonial-avatar testimonial-avatar-initials" aria-hidden="true">{getInitials(t.client_name)}</span>
-            )}
-            <div>
-              <p class="testimonial-name">{t.client_name}</p>
-              <p class="testimonial-role">{[t.ar_client_title || t.client_title, t.client_company].filter(Boolean).join('، ')}</p>
-            </div>
-            {t.industry && <span class="testimonial-industry">{industryAr[t.industry] || t.industry}</span>}
-          </figcaption>
-        </figure>
-      ))}
+    <div class="compare-wrap" style="overflow-x:auto;">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th style="width:40%; text-align:right; border-radius:0;">الميزة</th>
+            <th class="hp-compare-highlight" style="text-align:center;">
+              <span style="display:inline-flex; align-items:center; gap:6px;">
+                <img src="/assets/brand/logo-navy.png" alt="" width="1000" height="175" style="height:16px; width:auto;" />
+                Lenoo AI
+              </span>
+            </th>
+            <th style="text-align:center; color:#72787e; font-weight:600;">وكالات ذكاء اصطناعي أخرى</th>
+            <th style="text-align:center; color:#72787e; font-weight:600;">شركات التدريب</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style="font-weight:500; color:#111c2d;">أنظمة ذكاء اصطناعي مخصصة</td><td class="check-yes">✓</td><td class="check-yes">✓</td><td class="check-no">✗</td></tr>
+          <tr><td style="font-weight:500; color:#111c2d;">تدريب الموظفين مشمول</td><td class="check-yes">✓</td><td class="check-no">✗</td><td class="check-yes">✓</td></tr>
+          <tr><td style="font-weight:500; color:#111c2d;">تسعير مخصص</td><td class="check-yes">✓</td><td class="check-no">✗</td><td class="check-rarely">يختلف</td></tr>
+          <tr><td style="font-weight:500; color:#111c2d;">دعم مستمر</td><td class="check-yes">✓</td><td class="check-rarely">نادراً</td><td class="check-no">✗</td></tr>
+          <tr><td style="font-weight:500; color:#111c2d;">ضمان استرداد ١٠٠٪</td><td class="check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT MAKES US DIFFERENT -->
+<section class="section hp-different" aria-labelledby="different-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="different-heading">ما الذي يميزنا</h2>
+      <p>الكثير من الوكالات في دبي ستبني لك أداة ذكاء اصطناعي. إليك كيف يبدو العمل معنا بدلاً من ذلك.</p>
+    </div>
+    <div class="bento-grid value-grid">
+      <div class="value-card">
+        <div class="service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">architecture</span>
+        </div>
+        <h3 class="hp-value-heading" style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">مبني لأجل شركتك</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">لا قوالب جاهزة. كل نظام مصمم حول سير عملك، وأدواتك، وعملائك.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">school</span>
+        </div>
+        <h3 class="hp-value-heading" style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">فريقك يحصل على تدريب</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">لا نُسلّمك أداة ونغادر. فريقك يحصل على تدريب عملي حتى يستخدم النظام بثقة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">fact_check</span>
+        </div>
+        <h3 class="hp-value-heading" style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">تحديد نطاق صادق أولاً</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">قبل أن تدفع أي شيء، نخبرك بما يستطيع الذكاء الاصطناعي فعله لشركتك وما لا يستطيع. إن لم يكن مناسباً، نقول ذلك بصراحة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">support_agent</span>
+        </div>
+        <h3 class="hp-value-heading" style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">دعم بعد الإطلاق</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">٩٠ يوماً من الدعم مع كل مشروع. إن احتاج أي شيء إصلاحاً بعد الإطلاق، نُصلحه دون أي تكلفة إضافية.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -871,7 +826,7 @@ const homeLdJson = [
   .industry-card:hover .industry-card-photo { transform: scale(1.05); }
   .industry-card-overlay {
     position: absolute; inset: 0;
-    background: linear-gradient(to top, rgba(0,19,32,0.92) 0%, rgba(0,19,32,0.58) 42%, rgba(0,19,32,0.18) 72%, rgba(0,19,32,0.05) 100%);
+    background: linear-gradient(to top, rgba(0,19,32,0.96) 0%, rgba(0,19,32,0.90) 38%, rgba(0,19,32,0.62) 62%, rgba(0,19,32,0.22) 85%, rgba(0,19,32,0.05) 100%);
   }
   .industry-card-content { position: relative; z-index: 1; padding: 2.25rem; display: flex; flex-direction: column; flex: 1; justify-content: flex-end; }
   .industry-icon {

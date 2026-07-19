@@ -1,49 +1,8 @@
 ---
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { getSupabaseAdmin } from "../lib/supabase";
 import { loadPageContent, getVal } from "../lib/page-content";
 import FaqAccordion from "../components/FaqAccordion.astro";
-
-// Hardcoded fallback team members
-const fallbackTeam = [
-  {
-    name: "Faris Al-Hashemi",
-    title: "Founder & CEO",
-    bio: "Faris spent 12 years watching AI projects fail across multiple industries and markets. Usually because the system didn't fit the business, or the team wasn't trained to use it. He started Lenoo AI to fix that.",
-    image_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80&auto=format&fit=crop&crop=face",
-  },
-  {
-    name: "Dr. Elena Rostova",
-    title: "Head of Engineering",
-    bio: "Elena has a PhD in Machine Learning and leads our engineering team. She's the reason our AI systems work in production, not just in demos. Rigorous about testing before anything goes live.",
-    image_url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80&auto=format&fit=crop&crop=face",
-  },
-  {
-    name: "Tareq Al-Mansoori",
-    title: "Head of Training",
-    bio: "Tareq has trained over 1,500 professionals across multiple markets and industries. He knows that most training fails not because of content, but because it doesn't connect to the job people actually do.",
-    image_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80&auto=format&fit=crop&crop=face",
-  },
-];
-
-let teamMembers = fallbackTeam;
-
-try {
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from('team_members')
-    .select('name, title, bio, image_url, sort_order')
-    .eq('active', true)
-    .is('deleted_at', null)
-    .order('sort_order');
-
-  if (!error && data && data.length > 0) {
-    teamMembers = data;
-  }
-} catch (err) {
-  // Fallback to hardcoded content on error
-}
 
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 const pc = await loadPageContent('about');
@@ -77,14 +36,6 @@ const aboutSchema = [
       '@type': 'Organization',
       name: 'Lenoo AI',
       url: 'https://lenooai.com',
-      employee: teamMembers.map(m => ({
-        '@type': 'Person',
-        name: m.name,
-        jobTitle: m.title,
-        description: m.bio,
-        ...(m.image_url ? { image: m.image_url } : {}),
-        worksFor: { '@type': 'Organization', name: 'Lenoo AI' },
-      })),
     },
   },
   {
@@ -185,6 +136,9 @@ const aboutSchema = [
     <div class="section-header">
       <h2 id="different-heading">Why We're Different</h2>
     </div>
+    <div style="border-radius:20px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 20px 48px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&q=80&auto=format&fit=crop" alt="Lenoo AI team presenting a project plan to a Dubai business during a build and training session" loading="lazy" width="1200" height="320" style="width:100%; height:clamp(180px, 26vw, 320px); object-fit:cover; display:block;" />
+    </div>
     <div class="bento-grid bento-grid-4">
       <div class="value-card">
         <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">construction</span></div>
@@ -210,32 +164,15 @@ const aboutSchema = [
   </div>
 </section>
 
-<!-- TEAM -->
-<section class="section" style="background:#f9f9ff;" aria-labelledby="team-heading">
-  <div class="container">
-    <div class="section-header">
-      <h2 id="team-heading">Meet the People Building Lenoo AI</h2>
-      <p>A small, hands-on team. These are the people you'll actually work with.</p>
-    </div>
-    <div class="team-grid">
-      {teamMembers.map((m) => (
-        <div class="team-card">
-          {m.image_url && <img src={m.image_url} alt={m.name} loading="lazy" width="88" height="88" />}
-          <h3>{m.name}</h3>
-          <p class="team-title">{m.title}</p>
-          {m.bio && <p class="team-bio">{m.bio}</p>}
-        </div>
-      ))}
-    </div>
-  </div>
-</section>
-
 <!-- BUSINESS OWNER MESSAGE -->
 <section class="section" style="background:#00253b; padding:5rem 0;" aria-labelledby="owner-heading">
   <div class="container" style="max-width:820px;">
     <div style="text-align:center; margin-bottom:2.5rem;">
       <p style="color:#00e3fd; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.12em; font-weight:700; margin-bottom:0.75rem;">For Business Owners</p>
       <h2 id="owner-heading" style="color:#fff; font-size:clamp(1.375rem,2.5vw,1.75rem); font-weight:800; margin-bottom:0;">If you're running a business right now, you already feel it.</h2>
+    </div>
+    <div style="border-radius:20px; overflow:hidden; margin-bottom:2rem; box-shadow:0 20px 48px rgba(0,0,0,0.25);">
+      <img src="https://images.unsplash.com/photo-1573497620053-ea5300f94f21?w=1200&q=80&auto=format&fit=crop" alt="Business owner discussing AI adoption with a Lenoo AI consultant" loading="lazy" width="1200" height="320" style="width:100%; height:clamp(180px, 26vw, 320px); object-fit:cover; display:block;" />
     </div>
     <div style="background:rgba(255,255,255,0.05); border:1px solid rgba(0,227,253,0.15); border-radius:20px; padding:2rem 2.5rem;">
       <p style="color:rgba(255,255,255,0.80); font-size:0.9375rem; line-height:1.8; margin-bottom:1rem;">Decisions that used to take a day now need to happen in an hour. Your customers expect faster replies, faster delivery, faster everything. Your margins are tighter than they were three years ago. And somewhere in your industry, a competitor just started using AI, and their team is getting more done without burning out.</p>
@@ -269,6 +206,9 @@ const aboutSchema = [
   <div class="container">
     <div class="section-header">
       <h2 id="values-heading">Four things we won't compromise on.</h2>
+    </div>
+    <div style="border-radius:20px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 20px 48px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=1200&q=80&auto=format&fit=crop" alt="Team members stacking hands to represent Lenoo AI's partnership with client teams" loading="lazy" width="1200" height="320" style="width:100%; height:clamp(180px, 26vw, 320px); object-fit:cover; display:block;" />
     </div>
     <div class="bento-grid bento-grid-4">
       <div class="value-card">

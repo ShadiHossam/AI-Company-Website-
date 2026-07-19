@@ -1,65 +1,6 @@
 ---
 export const prerender = false;
 import ArBaseLayout from '../../layouts/ArBaseLayout.astro';
-import { getSupabaseAdmin } from '../../lib/supabase';
-
-interface TeamMember {
-  name: string;
-  title: string;
-  bio: string | null;
-  image_url: string | null;
-  ar_name: string | null;
-  ar_title: string | null;
-  ar_bio: string | null;
-}
-
-const fallbackTeam: TeamMember[] = [
-  {
-    name: "Faris Al-Hashemi",
-    title: "Founder & CEO",
-    bio: null,
-    image_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80&auto=format&fit=crop&crop=face",
-    ar_name: "فارس الهاشمي",
-    ar_title: "المؤسس والرئيس التنفيذي",
-    ar_bio: "أمضى فارس ١٢ عاماً يشاهد مشاريع الذكاء الاصطناعي تفشل عبر قطاعات وأسواق متعددة. غالباً لأن النظام لم يناسب الشركة، أو لأن الفريق لم يكن مُدرّباً على استخدامه. أسس Lenoo AI ليُصلح ذلك.",
-  },
-  {
-    name: "Dr. Elena Rostova",
-    title: "Head of Engineering",
-    bio: null,
-    image_url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80&auto=format&fit=crop&crop=face",
-    ar_name: "د. إيلينا روستوفا",
-    ar_title: "رئيسة الهندسة",
-    ar_bio: "تحمل إيلينا دكتوراه في تعلّم الآلة وتقود فريق الهندسة لدينا. هي السبب في أن أنظمتنا تعمل في الإنتاج الفعلي، لا في العروض التجريبية فقط. صارمة في الاختبار قبل أي إطلاق.",
-  },
-  {
-    name: "Tareq Al-Mansoori",
-    title: "Head of Training",
-    bio: null,
-    image_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80&auto=format&fit=crop&crop=face",
-    ar_name: "طارق المنصوري",
-    ar_title: "رئيس التدريب",
-    ar_bio: "دَرّب طارق أكثر من ١٥٠٠ محترف عبر أسواق وقطاعات متعددة. يعرف أن معظم برامج التدريب تفشل ليس بسبب المحتوى، بل لأنها لا ترتبط بالعمل الفعلي الذي يؤديه الناس.",
-  },
-];
-
-let teamMembers: TeamMember[] = fallbackTeam;
-
-try {
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from('team_members')
-    .select('name, title, bio, image_url, ar_name, ar_title, ar_bio, sort_order')
-    .eq('active', true)
-    .is('deleted_at', null)
-    .order('sort_order');
-
-  if (!error && data && data.length > 0) {
-    teamMembers = data;
-  }
-} catch (err) {
-  // Fallback to hardcoded content on error
-}
 
 const ldJson = [
   {
@@ -300,27 +241,6 @@ const ldJson = [
     </div>
   </div>
 </section>
-
-{teamMembers.length > 0 && (
-<section class="section">
-  <div class="container">
-    <div style="text-align:center;max-width:600px;margin:0 auto 3rem;">
-      <div class="eyebrow">فريقنا</div>
-      <h2>تعرف على فريق Lenoo AI</h2>
-    </div>
-    <div class="team-grid">
-      {teamMembers.map(m => (
-        <div class="team-card">
-          {m.image_url && <img src={m.image_url} alt={m.ar_name ?? m.name} loading="lazy" />}
-          <h3>{m.ar_name ?? m.name}</h3>
-          <p class="team-title">{m.ar_title ?? m.title}</p>
-          {(m.ar_bio ?? m.bio) && <p class="team-bio">{m.ar_bio ?? m.bio}</p>}
-        </div>
-      ))}
-    </div>
-  </div>
-</section>
-)}
 
 <!-- Business Owner Message -->
 <section class="section" style="background:#00253b;padding:5rem 0;" aria-labelledby="owner-heading">
