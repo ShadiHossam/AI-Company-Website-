@@ -15,7 +15,6 @@ const NOW = new Date().toISOString().replace(/\.\d{3}Z$/, '+00:00');
 const PAGES: PageEntry[] = [
   { url: '/',                                  lastmod: NOW, priority: '1.0', changefreq: 'weekly',  arUrl: '/ar' },
   { url: '/services',                          lastmod: NOW, priority: '0.8', changefreq: 'monthly', arUrl: '/ar/services' },
-  { url: '/products',                          lastmod: NOW, priority: '0.8', changefreq: 'monthly', arUrl: '/ar/products' },
   { url: '/services/custom-ai-development',   lastmod: NOW, priority: '0.7', changefreq: 'monthly', arUrl: '/ar/services/custom-ai-development' },
   { url: '/services/ai-agents',               lastmod: NOW, priority: '0.7', changefreq: 'monthly', arUrl: '/ar/services/ai-agents' },
   { url: '/services/ai-automation',           lastmod: NOW, priority: '0.7', changefreq: 'monthly', arUrl: '/ar/services/ai-automation' },
@@ -28,7 +27,6 @@ const PAGES: PageEntry[] = [
   { url: '/services/ai-model-finetuning',    lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
   { url: '/services/claude-agent-builds',    lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
   { url: '/services/prompt-engineering',     lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
-  { url: '/results',                           lastmod: NOW, priority: '0.7', changefreq: 'monthly', arUrl: '/ar/results' },
   { url: '/industries/real-estate',           lastmod: NOW, priority: '0.6', changefreq: 'monthly', arUrl: '/ar/industries/real-estate' },
   { url: '/industries/retail',                lastmod: NOW, priority: '0.6', changefreq: 'monthly', arUrl: '/ar/industries/retail' },
   { url: '/industries/hospitality',           lastmod: NOW, priority: '0.6', changefreq: 'monthly', arUrl: '/ar/industries/hospitality' },
@@ -51,7 +49,6 @@ const AR_ONLY: PageEntry[] = [
   { url: '/ar/services/internal-ai-tools',      lastmod: NOW, priority: '0.7', changefreq: 'monthly' },
   { url: '/ar/services/custom-gpt-development', lastmod: NOW, priority: '0.7', changefreq: 'monthly' },
   { url: '/ar/services/vibe-coding',            lastmod: NOW, priority: '0.7', changefreq: 'monthly' },
-  { url: '/ar/results',                          lastmod: NOW, priority: '0.7', changefreq: 'monthly' },
   { url: '/ar/industries/real-estate',          lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
   { url: '/ar/industries/retail',               lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
   { url: '/ar/industries/hospitality',          lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
@@ -59,7 +56,6 @@ const AR_ONLY: PageEntry[] = [
   { url: '/ar/about',                            lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
   { url: '/ar/contact',                          lastmod: NOW, priority: '0.6', changefreq: 'monthly' },
   { url: '/ar/blog',                             lastmod: NOW, priority: '0.6', changefreq: 'weekly'  },
-  { url: '/ar/products',                         lastmod: NOW, priority: '0.8', changefreq: 'monthly' },
   { url: '/ar/careers',                          lastmod: NOW, priority: '0.5', changefreq: 'weekly'  },
 ];
 
