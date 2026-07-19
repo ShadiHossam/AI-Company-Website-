@@ -1,9 +1,9 @@
 export const COMPANY = {
   name: "Lenoo AI",
   domain: "lenooai.com",
-  phone: "+971 4 321 8888",
-  whatsapp: "971501234567",
-  email: "hello@lenooai.com",
+  phone: "+971 50 195 1590",
+  whatsapp: "971501951590",
+  email: "info@lenooai.com",
   address: "Business Bay, Dubai, UAE",
   hours: "Sun–Thu · 9:00 am–6:00 pm GST",
   linkedinSlug: "lenoo-ai-dubai",
