@@ -269,12 +269,69 @@ body.rtl .faq-btn {
 }
 .bento-grid-3 { grid-template-columns: repeat(3, 1fr); }
 .bento-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.bento-grid-4 { grid-template-columns: repeat(4, 1fr); }
 @media (max-width: 900px) {
-  .bento-grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .bento-grid-3, .bento-grid-4 { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 600px) {
-  .bento-grid-3, .bento-grid-2 { grid-template-columns: 1fr; }
+  .bento-grid-3, .bento-grid-2, .bento-grid-4 { grid-template-columns: 1fr; }
 }
+
+/* ── Split section (photo + text, side by side) ──
+   Matches lenoo-redesign's .pace-grid pattern: a two-column section used
+   throughout the mockups for "text on one side, real photo on the other".
+   Add .split-media-right to flip which column the photo sits in. */
+.split-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 4rem;
+  align-items: center;
+}
+.split-grid.split-media-right { grid-template-columns: 0.95fr 1.05fr; }
+.split-grid.split-media-right .split-media { order: 2; }
+.split-media {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+.split-media img { width: 100%; height: 100%; min-height: 320px; object-fit: cover; display: block; }
+@media (max-width: 768px) {
+  .split-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .split-grid.split-media-right .split-media { order: 0; }
+}
+
+/* ── Card "learn more" link — teal arrow link at the bottom of a .value-card/.card,
+   matching lenoo-redesign's .learn / .service-card-footer link pattern. ── */
+.learn-link {
+  margin-top: auto; padding-top: 8px;
+  font-size: 0.84375rem; font-weight: 700; color: #006875;
+  display: inline-flex; gap: 6px; align-items: center;
+  text-decoration: none;
+}
+.learn-link:hover { color: #008a9a; }
+
+/* ── Value card + service icon — the standard white bordered card used across
+   every restyled inner page (icon chip + heading + body, in a .bento-grid).
+   Promoted here from what was originally a homepage-only scoped style, since
+   Astro scopes per-file <style> blocks and these are used site-wide. ── */
+.value-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow .25s var(--ease), transform .25s var(--ease), border-color .25s;
+}
+.value-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-4px); border-color: rgba(0,227,253,0.35); }
+.service-icon {
+  width: 56px; height: 56px; border-radius: var(--radius-md);
+  background: rgba(0,227,253,0.12);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1.5rem; color: #006875; flex-shrink: 0;
+  transition: transform .25s var(--ease), background .25s;
+}
+.value-card .service-icon { width: 48px; height: 48px; margin-bottom: 1.25rem; }
+.value-card:hover .service-icon { transform: scale(1.06); background: rgba(0,227,253,0.20); }
 
 /* ── Feature ledger ──
    Editorial alternative to the icon-card grid: a two-column ruled list.
@@ -491,6 +548,20 @@ div.feature-ledger > div.card > p {
   background: rgba(255,255,255,0.08); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   border-color: rgba(255,255,255,0.16);
 }
+
+/* ── Trust chips — small glass pills used inline in hero copy, matching
+   lenoo-redesign's .trust-chips/.tchip pattern. Shared sitewide (every
+   hero is dark), not scoped to the homepage stylesheet. ── */
+.trust-chips { display: flex; gap: 10px; flex-wrap: wrap; }
+.tchip {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 0.8125rem; font-weight: 700; color: #fff;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 999px; padding: 8px 15px;
+}
+.tchip .material-symbols-outlined { font-size: 16px; color: #00e3fd; }
 
 /* ── Page hero (inner pages, AR) — distinct padding/alignment only; dark bg + text colors come from the shared rules above ── */
 .page-hero {

@@ -1,9 +1,7 @@
 ---
-import { Image } from "astro:assets";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { loadPageContent, getVal } from "../lib/page-content";
 import { getSupabaseAdmin } from "../lib/supabase";
-import heroDubai from "../assets/hero-dubai-skyline.jpg";
 import "../styles/homepage-redesign.css";
 
 export const prerender = false;
@@ -227,17 +225,23 @@ const homeLdJson = [
 
 <div class="hp-redesign">
 
-<!-- HERO — white background with contained Dubai skyline photo panel -->
+<!-- HERO — full-bleed dark gradient, text-only, matching lenoo-redesign's hero structure
+     (the Dubai skyline photo lives in the AUTHORITY section below, same as the mockup's
+     hero -> "Dubai Doesn't Wait" pace section pairing; no separate photo belongs here). -->
 <header class="hero-section hero-home hp-hero">
   <div class="container">
     <div class="hp-hero-copy">
-      <div class="hp-hero-eyebrow"><span class="hp-hero-eyebrow-dot"></span>Dubai's AI Agency for Growing Businesses</div>
       <h1>
         Dubai's AI agency building systems<span class="hp-orb hp-orb-a" aria-hidden="true"></span> that actually fit how your business <span class="hp-accent">already works</span><span class="hp-orb hp-orb-b" aria-hidden="true"></span>.
       </h1>
       <p class="hp-hero-lede">
         Custom AI systems, agents, and automation for Dubai companies, built around how you already work. Every project includes team training, 90 days of support, and a 100% refund guarantee.
       </p>
+      <div class="trust-chips">
+        <span class="tchip"><span class="material-symbols-outlined" aria-hidden="true">shield</span>Refund Guarantee</span>
+        <span class="tchip"><span class="material-symbols-outlined" aria-hidden="true">forum</span>Free Strategy Call</span>
+        <span class="tchip"><span class="material-symbols-outlined" aria-hidden="true">support_agent</span>90-Day Support</span>
+      </div>
       <div class="hp-hero-cta-row">
         <button onclick="openModal(this)" data-source="homepage_hero" class="btn-primary">
           {g('hero_cta', 'Book Free Strategy Call')}
@@ -249,97 +253,8 @@ const homeLdJson = [
         </a>
       </div>
     </div>
-    <div class="hp-hero-photo">
-      <Image
-        src={heroDubai}
-        widths={[640, 960, 1280, 1920]}
-        sizes="(max-width: 900px) 100vw, 1100px"
-        format="webp"
-        quality={70}
-        alt="Dubai skyline at dusk with the Burj Khalifa and Downtown towers"
-        loading="eager"
-        fetchpriority="high"
-      />
-      <div class="hp-hero-photo-badge">
-        <span class="hp-hero-photo-badge-num">100%</span>
-        <span class="hp-hero-photo-badge-label">Refund guarantee on every engagement, no risk to try Lenoo</span>
-      </div>
-    </div>
   </div>
 </header>
-
-<!-- STAT BAND — animated count-up -->
-<section class="stat-band" aria-label="Our guarantees">
-  <div class="container">
-    <div class="stat-band-grid">
-      <div class="stat-band-item">
-        <div class="stat-band-icon stat-band-icon-amber" aria-hidden="true">
-          <span class="material-symbols-outlined" aria-hidden="true">shield</span>
-        </div>
-        <p class="stat-band-number" data-countup="100" data-suffix="%">100%</p>
-        <p class="stat-band-label">Refund Guarantee</p>
-      </div>
-      <div class="stat-band-item">
-        <div class="stat-band-icon" aria-hidden="true">
-          <span class="material-symbols-outlined" aria-hidden="true">forum</span>
-        </div>
-        <p class="stat-band-number">Free</p>
-        <p class="stat-band-label">Strategy Call</p>
-      </div>
-      <div class="stat-band-item">
-        <div class="stat-band-icon" aria-hidden="true">
-          <span class="material-symbols-outlined" aria-hidden="true">support_agent</span>
-        </div>
-        <p class="stat-band-number" data-countup="90" data-suffix="-Day">90-Day</p>
-        <p class="stat-band-label">Support Included</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<script is:inline>
-(function () {
-  var els = document.querySelectorAll('[data-countup]');
-  if (!els.length) return;
-  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  function finalText(el) {
-    return el.getAttribute('data-countup') + (el.getAttribute('data-suffix') || '');
-  }
-
-  function animate(el) {
-    var target = parseInt(el.getAttribute('data-countup') || '0', 10);
-    var suffix = el.getAttribute('data-suffix') || '';
-    var duration = 1400;
-    var start = null;
-    function step(ts) {
-      if (start === null) start = ts;
-      var p = Math.min((ts - start) / duration, 1);
-      var eased = 1 - Math.pow(1 - p, 3);
-      el.textContent = Math.round(eased * target) + suffix;
-      if (p < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
-
-  if (reduced || !('IntersectionObserver' in window)) {
-    els.forEach(function (el) { el.textContent = finalText(el); });
-    return;
-  }
-
-  var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (entry) {
-      if (entry.isIntersecting && !entry.target.hasAttribute('data-counted')) {
-        entry.target.setAttribute('data-counted', '1');
-        animate(entry.target);
-        io.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.4 });
-
-  els.forEach(function (el) { io.observe(el); });
-})();
-</script>
 
 <!-- AUTHORITY / WHY NOW -->
 <section class="section" aria-labelledby="authority-heading">
@@ -381,27 +296,27 @@ const homeLdJson = [
       <h2 id="who-heading">Built for Businesses That Are Ready to Move</h2>
       <p>If any of these sound familiar, you're in the right place.</p>
     </div>
-    <div class="statement-rows">
-      <div class="statement-row">
-        <div class="statement-icon">
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon">
           <span class="material-symbols-outlined" aria-hidden="true">timer</span>
         </div>
-        <h3>Your team can't keep up with the volume.</h3>
-        <p>Leads go cold. Enquiries pile up. Your people are stretched. The problem isn't effort, it's volume. AI handles the repetitive workload so your team can focus on what actually needs a human.</p>
+        <h3 style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">Your team can't keep up with the volume.</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">Leads go cold. Enquiries pile up. Your people are stretched. The problem isn't effort, it's volume. AI handles the repetitive workload so your team can focus on what actually needs a human.</p>
       </div>
-      <div class="statement-row">
-        <div class="statement-icon">
+      <div class="value-card">
+        <div class="service-icon">
           <span class="material-symbols-outlined" aria-hidden="true">tune</span>
         </div>
-        <h3>You've tried AI tools. None of them fit.</h3>
-        <p>ChatGPT doesn't know your products. Zapier templates don't match your process. Off-the-shelf tools give generic results. You need something built around how your business actually works.</p>
+        <h3 style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">You've tried AI tools. None of them fit.</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">ChatGPT doesn't know your products. Zapier templates don't match your process. Off-the-shelf tools give generic results. You need something built around how your business actually works.</p>
       </div>
-      <div class="statement-row">
-        <div class="statement-icon">
+      <div class="value-card">
+        <div class="service-icon">
           <span class="material-symbols-outlined" aria-hidden="true">explore</span>
         </div>
-        <h3>You know AI could help. You don't know where to start.</h3>
-        <p>Every vendor promises transformation. Few give you a plan. We start with your biggest operational problem, figure out what's realistic, and tell you straight whether AI is the right move before you spend anything.</p>
+        <h3 style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">You know AI could help. You don't know where to start.</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">Every vendor promises transformation. Few give you a plan. We start with your biggest operational problem, figure out what's realistic, and tell you straight whether AI is the right move before you spend anything.</p>
       </div>
     </div>
   </div>
@@ -888,40 +803,8 @@ const homeLdJson = [
 </BaseLayout>
 
 <style>
-  /* ── Hero (full-bleed Dubai photo) ── */
-  .hero-home { padding: 9rem 0 7rem; }
-
-  /* ── Stat band ── */
-  .stat-band {
-    background:
-      radial-gradient(900px 400px at 85% 130%, rgba(0,227,253,0.14) 0%, transparent 60%),
-      linear-gradient(165deg, #001320 0%, #00253b 100%);
-    padding: 3.5rem 0;
-  }
-  .stat-band-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; text-align: center; }
-  .stat-band-item { position: relative; }
-  .stat-band-item + .stat-band-item::before {
-    content: ''; position: absolute; left: -1rem; top: 15%; bottom: 15%;
-    width: 1px; background: rgba(255,255,255,0.12);
-  }
-  .stat-band-icon {
-    width: 44px; height: 44px; border-radius: 12px;
-    margin: 0 auto 1rem;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(0,227,253,0.10); border: 1px solid rgba(0,227,253,0.22);
-    color: #00e3fd;
-  }
-  .stat-band-icon-amber { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.30); color: #f59e0b; }
-  .stat-band-number {
-    font-size: clamp(2.25rem, 4.5vw, 3.25rem);
-    font-weight: 800; letter-spacing: -0.03em; line-height: 1;
-    margin: 0 0 0.5rem;
-    background: linear-gradient(120deg, #6df3ff 0%, #00e3fd 60%, #ffffff 100%);
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-variant-numeric: tabular-nums;
-  }
-  .stat-band-label { color: rgba(255,255,255,0.60); font-size: 0.9375rem; font-weight: 600; margin: 0; }
+  /* ── Hero ── */
+  .hero-home { padding: 7.5rem 0 4rem; }
 
   /* ── Authority / why-now split ── */
   .authority-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
@@ -1175,10 +1058,6 @@ const homeLdJson = [
     .authority-grid { grid-template-columns: 1fr; gap: 2.5rem; }
     .authority-media img { min-height: 300px; }
     .value-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 700px) {
-    .stat-band-grid { grid-template-columns: 1fr; gap: 2.25rem; }
-    .stat-band-item + .stat-band-item::before { display: none; }
   }
   @media (max-width: 600px) {
     .value-grid { grid-template-columns: 1fr; }
