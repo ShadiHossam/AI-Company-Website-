@@ -13,7 +13,37 @@ interface TeamMember {
   ar_bio: string | null;
 }
 
-let teamMembers: TeamMember[] = [];
+const fallbackTeam: TeamMember[] = [
+  {
+    name: "Faris Al-Hashemi",
+    title: "Founder & CEO",
+    bio: null,
+    image_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80&auto=format&fit=crop&crop=face",
+    ar_name: "فارس الهاشمي",
+    ar_title: "المؤسس والرئيس التنفيذي",
+    ar_bio: "أمضى فارس ١٢ عاماً يشاهد مشاريع الذكاء الاصطناعي تفشل عبر قطاعات وأسواق متعددة. غالباً لأن النظام لم يناسب الشركة، أو لأن الفريق لم يكن مُدرّباً على استخدامه. أسس Lenoo AI ليُصلح ذلك.",
+  },
+  {
+    name: "Dr. Elena Rostova",
+    title: "Head of Engineering",
+    bio: null,
+    image_url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80&auto=format&fit=crop&crop=face",
+    ar_name: "د. إيلينا روستوفا",
+    ar_title: "رئيسة الهندسة",
+    ar_bio: "تحمل إيلينا دكتوراه في تعلّم الآلة وتقود فريق الهندسة لدينا. هي السبب في أن أنظمتنا تعمل في الإنتاج الفعلي، لا في العروض التجريبية فقط. صارمة في الاختبار قبل أي إطلاق.",
+  },
+  {
+    name: "Tareq Al-Mansoori",
+    title: "Head of Training",
+    bio: null,
+    image_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80&auto=format&fit=crop&crop=face",
+    ar_name: "طارق المنصوري",
+    ar_title: "رئيس التدريب",
+    ar_bio: "دَرّب طارق أكثر من ١٥٠٠ محترف عبر أسواق وقطاعات متعددة. يعرف أن معظم برامج التدريب تفشل ليس بسبب المحتوى، بل لأنها لا ترتبط بالعمل الفعلي الذي يؤديه الناس.",
+  },
+];
+
+let teamMembers: TeamMember[] = fallbackTeam;
 
 try {
   const supabase = getSupabaseAdmin();
@@ -24,11 +54,11 @@ try {
     .is('deleted_at', null)
     .order('sort_order');
 
-  if (!error && data) {
+  if (!error && data && data.length > 0) {
     teamMembers = data;
   }
 } catch (err) {
-  // No team section if the query fails; rest of the page still renders.
+  // Fallback to hardcoded content on error
 }
 
 const ldJson = [
@@ -325,6 +355,37 @@ const ldJson = [
   </div>
 </section>
 
+
+<!-- VALUES -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="values-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="values-heading">أربعة أمور لن نتنازل عنها.</h2>
+    </div>
+    <div class="bento-grid bento-grid-4">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">trending_up</span></div>
+        <h3 style="font-weight:700; color:#00253b; font-size:1.0625rem; margin-bottom:0.5rem;">النتائج قبل الإيرادات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.6; margin:0;">لن نبيعك ذكاء اصطناعي لا تحتاجه. إن لم يكن منطقياً لشركتك، سنخبرك، حتى لو كلّفنا ذلك صفقة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">home</span></div>
+        <h3 style="font-weight:700; color:#00253b; font-size:1.0625rem; margin-bottom:0.5rem;">مبني لسوقك</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.6; margin:0;">نتكيّف مع سياقك المحلي: اللغة، الأنظمة، القوى العاملة، وأعراف العمل. حلولنا تُصاغ حول طريقة عمل سوقك فعلياً.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">group</span></div>
+        <h3 style="font-weight:700; color:#00253b; font-size:1.0625rem; margin-bottom:0.5rem;">الذكاء الاصطناعي يعمل مع فريقك، لا بدلاً منه.</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.6; margin:0;">هدفنا مساعدة فريقك على أداء عمله بشكل أفضل باستخدام الذكاء الاصطناعي. لسنا هنا لتقليص عدد الموظفين. نحن هنا لجعل فريقك أكثر قدرة وتحقيق نتائج أفضل بنفس الأشخاص الذين لديك.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">visibility</span></div>
+        <h3 style="font-weight:700; color:#00253b; font-size:1.0625rem; margin-bottom:0.5rem;">بلا مفاجآت، أبداً.</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.6; margin:0;">جداول زمنية واضحة. نطاق واضح. تسعير واضح. لن تحصل على عرض غامض أو تكتشف مشكلة بعد وصول الفاتورة.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- What makes us different -->
 <section class="section">

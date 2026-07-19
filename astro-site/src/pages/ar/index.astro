@@ -1,30 +1,205 @@
 ---
-export const prerender = false;
 import ArBaseLayout from '../../layouts/ArBaseLayout.astro';
+import { getSupabaseAdmin } from '../../lib/supabase';
+import '../../styles/homepage-redesign.css';
 
-const ldJson = [
+export const prerender = false;
+
+type Testimonial = {
+  client_name: string;
+  client_title: string | null;
+  ar_client_title: string | null;
+  client_company: string | null;
+  industry: string | null;
+  client_image_url: string | null;
+  quote: string;
+  ar_quote: string | null;
+};
+
+const industryAr: Record<string, string> = {
+  'Real Estate': 'العقارات',
+  'Retail': 'التجزئة',
+  'Hospitality': 'الضيافة',
+  'Logistics': 'الخدمات اللوجستية',
+};
+
+const fallbackTestimonials: Testimonial[] = [
+  {
+    client_name: 'Ahmed Al Rashidi',
+    client_title: 'CEO',
+    ar_client_title: 'الرئيس التنفيذي',
+    client_company: 'Al Rashidi Properties',
+    industry: 'Real Estate',
+    quote: '',
+    ar_quote: 'بنت لنا Lenoo AI روبوت محادثة على واتساب يرد على كل استفسار خلال ثوانٍ. فريقنا يوفر ساعات كل أسبوع ونتابع عملاء محتملين أكثر من أي وقت مضى. أفضل استثمار قمنا به.',
+    client_image_url: null,
+  },
+  {
+    client_name: 'Sarah Mitchell',
+    client_title: 'Operations Director',
+    ar_client_title: 'مديرة العمليات',
+    client_company: 'Bloom Retail Group',
+    industry: 'Retail',
+    quote: '',
+    ar_quote: 'نظام المخزون بالذكاء الاصطناعي الذي بنوه حلّ مشكلة نفاد المخزون لدينا بالكامل. كنا نخسر مبيعات كل نهاية أسبوع، والآن يتولى النظام إعادة الطلب تلقائياً. عاد علينا بالفائدة أسرع مما توقعنا.',
+    client_image_url: null,
+  },
+  {
+    client_name: 'Khalid Al Mansoori',
+    client_title: 'General Manager',
+    ar_client_title: 'المدير العام',
+    client_company: 'Noor Hospitality Group',
+    industry: 'Hospitality',
+    quote: '',
+    ar_quote: 'مساعد الاستقبال بالذكاء الاصطناعي يتعامل مع طلبات الضيوف على مدار الساعة. أصبح فريقنا يركّز على التفاعلات المهمة بدلاً من تكرار نفس الإجابات. غيّر طريقة إدارتنا للفندق.',
+    client_image_url: null,
+  },
+];
+
+const supabase = getSupabaseAdmin();
+const { data: rawTestimonials } = await supabase
+  .from('testimonials')
+  .select('client_name, client_title, ar_client_title, client_company, industry, client_image_url, quote, ar_quote')
+  .eq('published', true)
+  .is('deleted_at', null)
+  .order('sort_order', { ascending: true })
+  .limit(6);
+
+const testimonials: Testimonial[] = (rawTestimonials && rawTestimonials.length > 0)
+  ? (rawTestimonials as Testimonial[]).filter(t => t.ar_quote)
+  : [];
+const finalTestimonials = testimonials.length > 0 ? testimonials : fallbackTestimonials;
+
+const getInitials = (name: string): string => {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '';
+  const first = parts[0].charAt(0);
+  const last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : '';
+  return (first + last).toUpperCase();
+};
+
+type HomeBlogPost = {
+  id: string;
+  ar_title: string;
+  slug: string;
+  ar_description: string | null;
+  category: string | null;
+  pub_date: string | null;
+  author_name: string | null;
+  og_image: string | null;
+};
+
+let latestPosts: HomeBlogPost[] = [];
+try {
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('id, ar_title, slug, ar_description, category, pub_date, author_name, og_image')
+    .eq('status', 'published')
+    .is('deleted_at', null)
+    .not('ar_title', 'is', null)
+    .order('pub_date', { ascending: false })
+    .limit(3);
+  if (!error && data) {
+    latestPosts = data as HomeBlogPost[];
+  }
+} catch {
+  latestPosts = [];
+}
+
+const truncate = (text: string | null, max = 110): string => {
+  if (!text) return '';
+  if (text.length <= max) return text;
+  return text.slice(0, max).replace(/\s+\S*$/, '') + '…';
+};
+
+const homeLdJson = [
   {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": ["Organization", "ProfessionalService"],
     "name": "Lenoo AI",
     "url": "https://lenooai.com",
-    "logo": "https://lenooai.com/favicon-192.png",
-    "description": "شركة Lenoo AI هي وكالة الذكاء الاصطناعي في دبي، تبني أنظمة ذكاء اصطناعي مخصصة وتُدرّب الفرق على استخدامها لخدمة الشركات في الإمارات.",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://lenooai.com/favicon-192.png",
+      "width": 192,
+      "height": 192
+    },
+    "description": "شركة Lenoo AI هي وكالة الذكاء الاصطناعي في دبي، تبني أنظمة ذكاء اصطناعي مخصصة وأتمتة وأدوات داخلية للشركات في الإمارات، وتضمن استرداد كامل المبلغ لكل مشروع.",
     "email": "hello@lenooai.com",
     "telephone": "+97143218888",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Business Bay",
+      "addressLocality": "Dubai",
+      "addressCountry": "AE"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 25.1850,
+      "longitude": 55.2592
+    },
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"],
+      "opens": "09:00",
+      "closes": "18:00"
+    },
     "areaServed": [
-      {"@type": "Country", "name": "United Arab Emirates"}
+      { "@type": "Country", "name": "United Arab Emirates" }
     ],
     "inLanguage": "ar",
     "sameAs": ["https://www.linkedin.com/company/lenoo-ai-dubai"]
   },
   {
     "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Lenoo AI",
+    "url": "https://lenooai.com",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": { "@type": "EntryPoint", "urlTemplate": "https://lenooai.com/ar/blog?q={search_term_string}" },
+      "query-input": "required name=search_term_string"
+    }
+  },
+  {
+    "@context": "https://schema.org",
     "@type": "WebPage",
-    "name": "حلول الذكاء الاصطناعي للشركات في دبي | Lenoo AI",
+    "name": "وكالة الذكاء الاصطناعي في دبي: حلول تبني الذكاء الاصطناعي للشركات في الإمارات | Lenoo AI",
     "url": "https://lenooai.com/ar",
     "inLanguage": "ar",
-    "isPartOf": { "@type": "WebSite", "url": "https://lenooai.com" }
+    "isPartOf": { "@type": "WebSite", "url": "https://lenooai.com" },
+    "about": { "@type": "Organization", "name": "Lenoo AI" }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "كيف أعرف إن كان الذكاء الاصطناعي مناسباً لشركتي فعلاً؟",
+        "acceptedAnswer": { "@type": "Answer", "text": "بصراحة: يعتمد على ما تريد إصلاحه. الذكاء الاصطناعي يعمل جيداً عندما يكون لديك مهام متكررة تستهلك وقت الموظفين، أو قرارات تعتمد على بيانات تجمعها بالفعل، أو تفاعلات مع العملاء تحدث بكثرة. لن نأخذ أموالك إن لم نعتقد أن الذكاء الاصطناعي سيساعدك." }
+      },
+      {
+        "@type": "Question",
+        "name": "هل أحتاج لموظفين تقنيين في فريقي حتى ينجح هذا؟",
+        "acceptedAnswer": { "@type": "Answer", "text": "لا. بنينا أنظمة لشركات يديرها بالكامل أشخاص غير تقنيين. تحتاج فقط لشخص يفهم عملك جيداً بما يكفي ليشرحه لنا. نحن نتولى الجانب التقني." }
+      },
+      {
+        "@type": "Question",
+        "name": "كيف يعمل ضمان الاسترداد ١٠٠٪ فعلياً؟",
+        "acceptedAnswer": { "@type": "Answer", "text": "إذا سلّمنا النظام المتفق عليه ولم يكن فريقك راضياً عنه فعلاً، نرد كل ما دفعته. نتفق مسبقاً على تعريف النجاح لمشروعك." }
+      },
+      {
+        "@type": "Question",
+        "name": "ماذا يحدث في الاجتماع الأول؟",
+        "acceptedAnswer": { "@type": "Answer", "text": "مكالمة مدتها ٣٠ دقيقة. سنسألك عن أكبر مشكلة تشغيلية تواجهها، والأدوات التي تستخدمها، والميزانية التقريبية المتاحة، ثم نكون صريحين حول ما إذا كان الذكاء الاصطناعي سيساعد وما هي التكلفة." }
+      },
+      {
+        "@type": "Question",
+        "name": "هل يتصل بأنظمتنا الحالية؟",
+        "acceptedAnswer": { "@type": "Answer", "text": "غالباً نعم. نتصل بمعظم أنظمة CRM وERP وأدوات المراسلة ومنصات التجارة الإلكترونية. إذا كنت تستخدم نظاماً أقل شيوعاً، سنتحقق إن كان لديه واجهة برمجية." }
+      }
+    ]
   }
 ];
 ---
@@ -34,316 +209,408 @@ const ldJson = [
   description="Lenoo AI وكالة ذكاء اصطناعي في دبي تساعد شركات الإمارات على تبني الذكاء الاصطناعي وتحقيق نتائج حقيقية: تطوير مخصص، تدريب، استراتيجية، وأتمتة. ضمان استرداد ١٠٠٪."
   canonicalPath="/ar"
   enPath="/"
-  ldJson={ldJson}
+  ldJson={homeLdJson}
 >
 
-<!-- HERO -->
-<header class="hero" role="banner">
-  <div class="container">
-    <div class="hero-badge">
-      <span class="pulse" aria-hidden="true"></span>
-      شركاؤك في الذكاء الاصطناعي بدبي · ضمان استرداد ١٠٠٪
-    </div>
-    <h1>
-      حلول الذكاء الاصطناعي<br>
-      <span class="gradient-text">لشركتك في دبي</span>
-    </h1>
-    <p>
-      نبني أنظمة ذكاء اصطناعي مخصصة لعملياتك ونُدرّب فريقك على استخدامها، لخدمة الشركات الصغيرة والمتوسطة في دبي في قطاعات العقارات والتجزئة والضيافة والخدمات اللوجستية.
-    </p>
-    <div class="hero-ctas">
-      <button onclick="openModal(this)" data-source="ar_home_hero" class="btn-primary">احجز استشارة مجانية ←</button>
-      <a href="/" class="btn-outline" lang="en">عرض بالإنجليزية</a>
-    </div>
+<div class="hp-redesign">
 
-    <div class="hero-stats">
-      <div style="text-align:center;">
-        <p class="stat-val">١٠٠٪</p>
-        <p class="stat-lbl">ضمان استرداد الأموال</p>
+<!-- HERO -->
+<header class="hero-section hero-home hp-hero">
+  <div class="container">
+    <div class="hp-hero-copy">
+      <h1>
+        وكالة الذكاء الاصطناعي في دبي التي تبني أنظمة<span class="hp-orb hp-orb-a" aria-hidden="true"></span> تناسب طريقة عمل شركتك <span class="hp-accent">فعلياً</span><span class="hp-orb hp-orb-b" aria-hidden="true"></span>.
+      </h1>
+      <p class="hp-hero-lede">
+        أنظمة ذكاء اصطناعي مخصصة ووكلاء وأتمتة لشركات دبي، مبنية حول طريقة عملك الحالية. كل مشروع يشمل تدريب الفريق و٩٠ يوماً من الدعم وضمان استرداد كامل ١٠٠٪.
+      </p>
+      <div class="trust-chips">
+        <span class="tchip"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">shield</span>ضمان الاسترداد</span>
+        <span class="tchip"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">forum</span>استشارة استراتيجية مجانية</span>
+        <span class="tchip"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">support_agent</span>دعم ٩٠ يوماً</span>
       </div>
-      <div class="stat-divider" aria-hidden="true"></div>
-      <div style="text-align:center;">
-        <p class="stat-val">عربي + إنجليزي</p>
-        <p class="stat-lbl">دعم ثنائي اللغة</p>
-      </div>
-      <div class="stat-divider" aria-hidden="true"></div>
-      <div style="text-align:center;">
-        <p class="stat-val">٩٠ يوم</p>
-        <p class="stat-lbl">دعم ما بعد الإطلاق</p>
+      <div class="hp-hero-cta-row">
+        <button onclick="openModal(this)" data-source="ar_homepage_hero" class="btn-primary">
+          احجز استشارة استراتيجية مجانية
+          <span class="material-symbols-outlined" aria-hidden="true" style="font-size:20px;direction:ltr;transform:scaleX(-1);">arrow_forward</span>
+        </button>
+        <a href="/ar/services" class="btn-outline">
+          استكشف الخدمات
+          <span class="material-symbols-outlined" aria-hidden="true" style="font-size:20px;direction:ltr;transform:scaleX(-1);">arrow_forward</span>
+        </a>
       </div>
     </div>
   </div>
 </header>
 
-<!-- CUSTOM VISUAL BAND (built in-house, no stock photography) -->
-<div class="net-band" aria-hidden="true">
-  <svg class="net-band-svg" viewBox="0 0 1400 280" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="700" cy="140" r="110" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-    <circle cx="700" cy="140" r="170" stroke="rgba(255,255,255,0.05)" stroke-width="1" stroke-dasharray="2 8"/>
-    <circle cx="700" cy="140" r="240" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
-    <path d="M120 60 Q300 110 560 130" stroke="rgba(0,227,253,0.16)" stroke-width="1"/>
-    <path d="M240 230 Q420 190 580 160" stroke="rgba(0,227,253,0.18)" stroke-width="1"/>
-    <path d="M1280 70 Q1080 110 840 130" stroke="rgba(0,227,253,0.16)" stroke-width="1"/>
-    <path d="M1160 236 Q1000 200 830 160" stroke="rgba(0,227,253,0.18)" stroke-width="1"/>
-    <path d="M420 40 Q540 80 640 110" stroke="rgba(0,227,253,0.14)" stroke-width="1"/>
-    <path d="M980 42 Q880 80 760 110" stroke="rgba(0,227,253,0.14)" stroke-width="1"/>
-    <path d="M120 60 L240 230" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-    <path d="M1280 70 L1160 236" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-    <path class="net-flow" d="M240 230 Q420 190 580 160" stroke="rgba(0,227,253,0.75)" stroke-width="1.5" stroke-linecap="round"/>
-    <path class="net-flow" style="animation-delay:3s" d="M1280 70 Q1080 110 840 130" stroke="rgba(0,227,253,0.75)" stroke-width="1.5" stroke-linecap="round"/>
-    <g>
-      <circle class="net-halo" cx="120" cy="60" r="11" fill="rgba(0,227,253,0.20)"/><circle cx="120" cy="60" r="3" fill="#00e3fd"/>
-      <circle class="net-halo" style="animation-delay:.8s" cx="240" cy="230" r="10" fill="rgba(0,227,253,0.18)"/><circle cx="240" cy="230" r="3" fill="#6df3ff"/>
-      <circle class="net-halo" style="animation-delay:1.6s" cx="420" cy="40" r="9" fill="rgba(0,227,253,0.16)"/><circle cx="420" cy="40" r="2.5" fill="#00e3fd"/>
-      <circle class="net-halo" style="animation-delay:2.4s" cx="700" cy="140" r="14" fill="rgba(0,227,253,0.24)"/><circle cx="700" cy="140" r="4" fill="#6df3ff"/>
-      <circle class="net-halo" style="animation-delay:3.2s" cx="980" cy="42" r="9" fill="rgba(0,227,253,0.16)"/><circle cx="980" cy="42" r="2.5" fill="#00e3fd"/>
-      <circle class="net-halo" style="animation-delay:4s" cx="1280" cy="70" r="11" fill="rgba(0,227,253,0.20)"/><circle cx="1280" cy="70" r="3" fill="#8beaf5"/>
-      <circle class="net-halo" style="animation-delay:4.8s" cx="1160" cy="236" r="10" fill="rgba(0,227,253,0.18)"/><circle cx="1160" cy="236" r="3" fill="#00e3fd"/>
-    </g>
-  </svg>
-</div>
-
-<!-- TRUST STRIP -->
-<div class="trust-strip" aria-label="مؤشرات الثقة">
+<!-- AUTHORITY / WHY NOW -->
+<section class="section" aria-labelledby="authority-heading">
   <div class="container">
-    <div class="trust-inner">
-      <div class="trust-item">
-        <span class="material-symbols-outlined" style="color:#d97706;font-size:20px;direction:ltr;" aria-hidden="true">shield</span>
-        لا تدفع شيئاً إذا لم تكن راضياً
+    <div class="authority-grid">
+      <div class="authority-media">
+        <img
+          src="https://images.unsplash.com/photo-1489516408517-0c0a15662682?w=900&q=80&auto=format&fit=crop"
+          alt="منظر جوي لمرسى دبي وأبراجها التجارية"
+          loading="lazy"
+          width="900"
+          height="640"
+        />
+        <div class="authority-badge">
+          <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;direction:ltr;">shield</span>
+          ضمان استرداد ١٠٠٪
+        </div>
       </div>
-      <div class="trust-sep" aria-hidden="true"></div>
-      <div class="trust-item">
-        <span class="material-symbols-outlined" style="color:#006875;font-size:20px;direction:ltr;" aria-hidden="true">location_on</span>
-        فريق مقيم في دبي
-      </div>
-      <div class="trust-sep" aria-hidden="true"></div>
-      <div class="trust-item">
-        <span class="material-symbols-outlined" style="color:#006875;font-size:20px;direction:ltr;" aria-hidden="true">language</span>
-        دعم عربي وإنجليزي
-      </div>
-      <div class="trust-sep" aria-hidden="true"></div>
-      <div class="trust-item">
-        <span class="material-symbols-outlined" style="color:#006875;font-size:20px;direction:ltr;" aria-hidden="true">schedule</span>
-        دعم ٩٠ يوم بعد الإطلاق
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- WHO THIS IS FOR -->
-<section class="section" style="background:#fff;" aria-labelledby="who-heading">
-  <div class="container">
-    <div class="sec-header">
-      <h2 id="who-heading">بُنينا لأجل الشركات المستعدة للتحرك</h2>
-      <p>إذا بدا لك أي مما يلي مألوفاً، فأنت في المكان الصحيح.</p>
-    </div>
-    <div class="statement-rows">
-      <div class="statement-row">
-        <div class="statement-icon"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">timer</span></div>
-        <h3>فريقك لا يستطيع مجاراة حجم العمل.</h3>
-        <p>العملاء المحتملون يبردون. الاستفسارات تتراكم. فريقك مشدود إلى أقصى حد. المشكلة ليست في الجهد، بل في الحجم. الذكاء الاصطناعي يتولى الأعمال المتكررة ليتفرّغ فريقك لما يحتاج فعلاً إلى إنسان.</p>
-      </div>
-      <div class="statement-row">
-        <div class="statement-icon"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">tune</span></div>
-        <h3>جرّبت أدوات ذكاء اصطناعي. لم تناسب شركتك أياً منها.</h3>
-        <p>ChatGPT لا يعرف منتجاتك. قوالب Zapier لا تطابق طريقة عملك. الأدوات الجاهزة تُعطي نتائج عامة. أنت تحتاج شيئاً مبنياً حول طريقة عمل شركتك فعلياً.</p>
-      </div>
-      <div class="statement-row">
-        <div class="statement-icon"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">explore</span></div>
-        <h3>تعرف أن الذكاء الاصطناعي قد يساعد. لكنك لا تعرف من أين تبدأ.</h3>
-        <p>كل مزود يعدك بتحوّل كامل. قلة من يعطيك خطة فعلية. نبدأ بأكبر مشكلة تشغيلية عندك، نحدد ما هو واقعي، ونخبرك بصراحة إن كان الذكاء الاصطناعي هو الخيار الصحيح قبل أن تصرف أي شيء.</p>
+      <div>
+        <span class="authority-eyebrow">لماذا الذكاء الاصطناعي، ولماذا الآن</span>
+        <h2 id="authority-heading">دبي لا تنتظر. فلا تنتظر شركتك أيضاً.</h2>
+        <p class="authority-para">دبي تتحرك بسرعة. عملاؤك هنا يتوقعون رداً على واتساب خلال دقائق، بالعربي أو الإنجليزي، وينتقلون إلى منافسك إن لم يحصلوا عليه. الشركات الرابحة في هذا السوق ترد أولاً، وتتابع كل مرة، ولا تترك استفساراً معلّقاً طوال الليل.</p>
+        <p class="authority-para">الذكاء الاصطناعي هو كيف تحافظ الشركات المتوسطة على هذه الوتيرة دون مضاعفة عدد الموظفين. نظام مبني جيداً يرد على الاستفسارات في الثانية صباحاً، ويؤهّل العملاء المحتملين أثناء نوم فريقك، ويُبقي عملياتك تعمل بنفس الكفاءة في اليوم المزدحم كما في اليوم الهادئ.</p>
+        <p class="authority-para">نبني هذه الأنظمة لشركات دبي أسبوعاً بعد أسبوع. نعرف السوق والأدوات وما ينجح فعلياً هنا. وإن لم يقم ما نبنيه بالمهمة، تسترد أموالك.</p>
+        <a href="#picker" class="authority-link">
+          اعثر على خدمة الذكاء الاصطناعي المناسبة لشركتك
+          <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;">arrow_downward</span>
+        </a>
       </div>
     </div>
   </div>
 </section>
 
-<!-- CASE STUDIES -->
-<section class="section" aria-labelledby="results-heading">
+<!-- WHO THIS IS FOR -->
+<section class="section hp-who" aria-labelledby="who-heading">
   <div class="container">
-    <div class="sec-header">
-      <div class="eyebrow">نتائج العملاء</div>
-      <h2 id="results-heading">ماذا بنت Lenoo AI للشركات في الإمارات</h2>
-      <p>مشاريع حقيقية، نتائج حقيقية، عبر أبرز القطاعات في دبي.</p>
+    <div class="section-header">
+      <h2 id="who-heading">بُنينا لأجل الشركات المستعدة للتحرك</h2>
+      <p>إذا بدا لك أي مما يلي مألوفاً، فأنت في المكان الصحيح.</p>
     </div>
-    <div class="grid-2">
-      <div class="card">
-        <div class="industry-badge">
-          <span class="material-symbols-outlined" style="font-size:14px;direction:ltr;" aria-hidden="true">home</span>
-          وكالة عقارية · دبي
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">timer</span>
         </div>
-        <p class="card-body">وكالة من ٣٠ موظفاً كانت تخسر عملاءها بسبب بطء الرد. متوسط وقت الرد كان ٤ ساعات. بنينا نظام ذكاء اصطناعي للمراسلة الفورية يرد على كل استفسار في أقل من دقيقتين، على مدار الساعة، بالعربي والإنجليزي.</p>
-        <div style="display:flex;gap:2rem;">
-          <div><p class="metric-val">٤٧٪</p><p class="metric-lbl">ارتفاع في تحويل العملاء</p></div>
-          <div><p class="metric-val">أقل من ٢ دقيقة</p><p class="metric-lbl">متوسط وقت الرد الأول</p></div>
-        </div>
+        <h3 style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">فريقك لا يستطيع مجاراة حجم العمل.</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">العملاء المحتملون يبردون. الاستفسارات تتراكم. فريقك مشدود إلى أقصى حد. المشكلة ليست في الجهد، بل في الحجم. الذكاء الاصطناعي يتولى الأعمال المتكررة ليتفرّغ فريقك لما يحتاج فعلاً إلى إنسان.</p>
       </div>
-      <div class="card">
-        <div class="industry-badge">
-          <span class="material-symbols-outlined" style="font-size:14px;direction:ltr;" aria-hidden="true">shopping_bag</span>
-          سلسلة تجزئة · الإمارات
+      <div class="value-card">
+        <div class="service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">tune</span>
         </div>
-        <p class="card-body">سلسلة متاجر من ١٢ فرعاً كانت تدير مخزونها يدوياً عبر Excel، مما أدى إلى فائض مستمر ونفاد في المخزون. بنينا لوحة ذكاء اصطناعي تُزامن جميع الفروع في الوقت الفعلي وتتنبأ بالطلب.</p>
-        <div style="display:flex;gap:2rem;">
-          <div><p class="metric-val">٣ ساعات</p><p class="metric-lbl">توفير يومي في التقارير</p></div>
-          <div><p class="metric-val">٣٠٪</p><p class="metric-lbl">تخفيض تكاليف الفائض</p></div>
-        </div>
+        <h3 style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">جرّبت أدوات ذكاء اصطناعي. لم تناسب شركتك أياً منها.</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">ChatGPT لا يعرف منتجاتك. قوالب Zapier لا تطابق طريقة عملك. الأدوات الجاهزة تُعطي نتائج عامة. أنت تحتاج شيئاً مبنياً حول طريقة عمل شركتك فعلياً.</p>
       </div>
-      <div class="card">
-        <div class="industry-badge">
-          <span class="material-symbols-outlined" style="font-size:14px;direction:ltr;" aria-hidden="true">hotel</span>
-          مجموعة فندقية · دبي
+      <div class="value-card">
+        <div class="service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">explore</span>
         </div>
-        <p class="card-body">مجموعة فندقية كانت تدير جميع طلبات الضيوف عبر قناة مراسلة واحدة. موظف واحد، تأخيرات مستمرة. نشرنا كونسيرج ذكاء اصطناعي ثنائي اللغة يتعامل مع ٨٠٪ من الطلبات بشكل مستقل.</p>
-        <div style="display:flex;gap:2rem;">
-          <div><p class="metric-val">٨٠٪</p><p class="metric-lbl">من الاستفسارات يجيبها الذكاء الاصطناعي</p></div>
-          <div><p class="metric-val">٢٤/٧</p><p class="metric-lbl">دعم ثنائي اللغة للضيوف</p></div>
-        </div>
+        <h3 style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">تعرف أن الذكاء الاصطناعي قد يساعد. لكنك لا تعرف من أين تبدأ.</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">كل مزود يعدك بتحوّل كامل. قلة من يعطيك خطة فعلية. نبدأ بأكبر مشكلة تشغيلية عندك، نحدد ما هو واقعي، ونخبرك بصراحة إن كان الذكاء الاصطناعي هو الخيار الصحيح قبل أن تصرف أي شيء.</p>
       </div>
-      <div class="card">
-        <div class="industry-badge">
-          <span class="material-symbols-outlined" style="font-size:14px;direction:ltr;" aria-hidden="true">local_shipping</span>
-          شركة لوجستية · الإمارات
-        </div>
-        <p class="card-body">شركة توصيل كانت تخطط لمسارات التوصيل يدوياً. سائقون يتداخلون في نفس المناطق، وقود يُهدر، وتأخيرات في التسليم. بنينا لوحة تحسين مسارات بالذكاء الاصطناعي تُخطط لكل رحلة تلقائياً.</p>
-        <div style="display:flex;gap:2rem;">
-          <div><p class="metric-val">−٢٢٪</p><p class="metric-lbl">تخفيض تكاليف التوصيل</p></div>
-          <div><p class="metric-val">+١٨٪</p><p class="metric-lbl">ارتفاع معدل التسليم في الوقت</p></div>
-        </div>
-      </div>
-    </div>
-    <div style="text-align:center;margin-top:2.5rem;">
-      <a href="/ar/results" style="display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:0.9375rem;color:#006875;">
-        عرض جميع نتائج العملاء
-        <span class="material-symbols-outlined" style="font-size:18px;direction:ltr;transform:scaleX(-1);" aria-hidden="true">arrow_back</span>
-      </a>
     </div>
   </div>
 </section>
 
 <!-- SERVICES -->
-<section class="section" style="background:#e7eeff;" aria-labelledby="services-heading">
+<section id="services" class="section hp-services" aria-labelledby="services-heading">
   <div class="container">
-    <div class="sec-header">
-      <div class="eyebrow">خدماتنا</div>
-      <h2 id="services-heading">ذكاء اصطناعي يعمل. فرق تعرف كيف تستخدمه.</h2>
-      <p>ثلاث خدمات، مهمة واحدة: جعل شركتك جاهزة للذكاء الاصطناعي حقاً، وليس مجرد فضول تجاهه.</p>
+    <div class="section-header">
+      <h2 id="services-heading">رحلة تبني الذكاء الاصطناعي كاملة، في مكان واحد</h2>
+      <p>نغطي كل ما تحتاجه شركتك لتبني الذكاء الاصطناعي بالشكل الصحيح: من معرفة نقطة البداية، إلى بناء الأنظمة المناسبة، إلى التأكد من أن فريقك يستخدمها فعلياً.</p>
     </div>
-    <div class="grid-3">
-      <div class="card" style="text-align:center;">
-        <div class="svc-icon"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">monitor_heart</span></div>
-        <h3>تطوير أنظمة ذكاء اصطناعي مخصصة</h3>
-        <p class="card-body">نبني أنظمة ذكاء اصطناعي مصممة خصيصاً لعملياتك: روبوتات محادثة، وأتمتة، ولوحات تحكم، وأدوات تنبؤية. مدمجة مع ما تستخدمه بالفعل.</p>
-        <div class="guarantee-pill-sm">
-          <span class="material-symbols-outlined" style="font-size:14px;direction:ltr;" aria-hidden="true">shield</span>
-          مشمولة بضمان الاسترداد الكامل
+    <div class="bento-grid bento-grid-3 hp-service-grid">
+      <div class="service-card hp-service-card">
+        <div class="service-icon hp-service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">smart_toy</span>
         </div>
+        <h3>وكلاء الذكاء الاصطناعي</h3>
+        <p>وكلاء ذكاء اصطناعي مخصصون يتولون مهام محددة في شركتك تلقائياً، من تفاعلات العملاء إلى معالجة البيانات واتخاذ القرار.</p>
+        <a href="/ar/services" class="hp-service-link">اعرف المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span></a>
       </div>
-      <div class="card" style="text-align:center;">
-        <div class="svc-icon"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">group</span></div>
-        <h3>تدريب الفرق على الذكاء الاصطناعي</h3>
-        <p class="card-body">ندرّب فريقك على استخدام الذكاء الاصطناعي بثقة. ورش عمل عملية بالعربي والإنجليزي، مُصمَّمة لقطاعك وأدواتك.</p>
-        <div class="guarantee-pill-sm">
-          <span class="material-symbols-outlined" style="font-size:14px;direction:ltr;" aria-hidden="true">shield</span>
-          مشمولة بضمان الاسترداد الكامل
+      <div class="service-card hp-service-card">
+        <div class="service-icon hp-service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">group</span>
         </div>
+        <h3>تدريب الفريق على الذكاء الاصطناعي</h3>
+        <p>معظم استثمارات الذكاء الاصطناعي تفشل لأن الفرق لا تتبناها. ندرّب فريقك على استخدام الذكاء الاصطناعي بثقة في عملهم اليومي، بشكل عملي ومخصص لدورهم وقطاعهم.</p>
+        <a href="/ar/services/ai-training" class="hp-service-link">اعرف المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span></a>
       </div>
-      <div class="card" style="text-align:center;">
-        <div class="svc-icon"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">bar_chart</span></div>
-        <h3>استشارات استراتيجية للذكاء الاصطناعي</h3>
-        <p class="card-body">نضع خارطة طريق الذكاء الاصطناعي لشركتك، ونحسب العائد على الاستثمار لكل فرصة، ونُقدّم لك خطة تنفيذ واضحة لـ ١٢ شهراً.</p>
-        <div class="guarantee-pill-sm">
-          <span class="material-symbols-outlined" style="font-size:14px;direction:ltr;" aria-hidden="true">shield</span>
-          مشمولة بضمان الاسترداد الكامل
+      <div class="service-card hp-service-card">
+        <div class="service-icon hp-service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">bolt</span>
         </div>
+        <h3>أتمتة سير العمل</h3>
+        <p>نربط أدواتك ونُؤتمت العمليات المتكررة ليتوقف فريقك عن أدائها يدوياً. نُحلل سير عملك ونبني الأتمتة حوله.</p>
+        <a href="/ar/services" class="hp-service-link">اعرف المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span></a>
+      </div>
+      <div class="service-card hp-service-card">
+        <div class="service-icon hp-service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">dns</span>
+        </div>
+        <h3>أنظمة داخلية</h3>
+        <p>لوحات تحكم وبوابات وأدوات داخلية مخصصة لطريقة عمل فريقك. ليست برامج جاهزة تحتاج إلى حلول بديلة، بل شيء مبني خصيصاً لعمليتك.</p>
+        <a href="/ar/services" class="hp-service-link">اعرف المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span></a>
+      </div>
+      <div class="service-card hp-service-card">
+        <div class="service-icon hp-service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">monitor_heart</span>
+        </div>
+        <h3>تطوير ذكاء اصطناعي مخصص</h3>
+        <p>حلول ذكاء اصطناعي مخصصة بالكامل مبنية حول سير عملك ومتطلباتك. مدمجة مع الأدوات التي تستخدمها بالفعل، ومبنية لتدوم.</p>
+        <a href="/ar/services/custom-ai-development" class="hp-service-link">اعرف المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span></a>
+      </div>
+      <div class="service-card hp-service-card">
+        <div class="service-icon hp-service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">bar_chart</span>
+        </div>
+        <h3>استراتيجية الذكاء الاصطناعي</h3>
+        <p>نحدد أين يكون للذكاء الاصطناعي أكبر فائدة في شركتك ونمنحك خطة واضحة قبل أن تصرف أي شيء. اعرف بالضبط ما الذي تُقدم عليه قبل أن نبدأ.</p>
+        <a href="/ar/services/ai-strategy" class="hp-service-link">اعرف المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span></a>
       </div>
     </div>
-    <div style="text-align:center;margin-top:2.5rem;">
-      <a href="/ar/services" class="btn-outline">عرض جميع الخدمات ←</a>
+    <div style="text-align:center;">
+      <a href="/ar/services" class="hp-view-all-link">
+        عرض جميع الخدمات <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span>
+      </a>
     </div>
   </div>
 </section>
 
-<!-- INDUSTRIES -->
-<section class="section" style="background:#fff;" aria-labelledby="industries-heading">
+<!-- INDUSTRIES — photo cards -->
+<section class="section hp-industries" aria-labelledby="industries-heading">
   <div class="container">
-    <div class="sec-header">
+    <div class="section-header">
       <h2 id="industries-heading">القطاعات التي نخدمها</h2>
       <p>نركّز على عدد محدود من القطاعات ونتعمّق فيها. هذا يعني مفاجآت أقل، وبناء أسرع، وذكاء اصطناعي يناسب سياق عملك من اليوم الأول.</p>
     </div>
-    <div class="industries-flow">
-      <a href="/ar/industries/real-estate" class="industry-card industry-feature">
-        <div class="industry-feature-media" aria-hidden="true">
-          <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=900&q=80&auto=format&fit=crop" alt="" loading="lazy" width="900" height="260" />
-          <div class="industry-feature-grade"></div>
-        </div>
-        <div class="industry-feature-body">
+    <div class="bento-grid bento-grid-3">
+      <a href="/ar/industries/real-estate" class="industry-card">
+        <img class="industry-card-photo" src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=900&q=80&auto=format&fit=crop" alt="واجهة فيلا حديثة عند الغروب تمثل العقارات السكنية في دبي" loading="lazy" width="900" height="620" />
+        <div class="industry-card-overlay" aria-hidden="true"></div>
+        <div class="industry-card-content">
           <div class="industry-icon">
             <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">apartment</span>
           </div>
-          <h3 style="font-size:1.25rem;font-weight:700;color:#00253b;margin-bottom:0.75rem;">العقارات</h3>
-          <p style="color:#42474e;line-height:1.8;margin-bottom:1.5rem;">روبوتات محادثة على واتساب، وأتمتة لأنظمة CRM، وذكاء اصطناعي يؤهّل المشترين ويحجز المعاينات على مدار الساعة، بالعربي والإنجليزي.</p>
-          <span class="industry-link">استكشف ذكاء العقارات <span class="material-symbols-outlined" style="font-size:18px;direction:ltr;transform:scaleX(-1);" aria-hidden="true">arrow_forward</span></span>
+          <h3 style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0.75rem;">العقارات</h3>
+          <p style="color:rgba(255,255,255,0.82); line-height:1.8; margin-bottom:1.5rem;">روبوتات محادثة على واتساب، وأتمتة لأنظمة CRM، وذكاء اصطناعي يؤهّل المشترين ويحجز المعاينات على مدار الساعة، بالعربي والإنجليزي.</p>
+          <span class="industry-link">استكشف ذكاء العقارات <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span></span>
         </div>
       </a>
-      <div class="industries-side">
-        <a href="/ar/industries/retail" class="industry-card industry-row">
+      <a href="/ar/industries/retail" class="industry-card">
+        <img class="industry-card-photo" src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80&auto=format&fit=crop" alt="رفّ ملابس داخل متجر تجزئة" loading="lazy" width="900" height="620" />
+        <div class="industry-card-overlay" aria-hidden="true"></div>
+        <div class="industry-card-content">
           <div class="industry-icon">
             <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">shopping_bag</span>
           </div>
-          <div class="industry-row-body">
-            <h3 style="font-size:1.25rem;font-weight:700;color:#00253b;margin-bottom:0.75rem;">التجزئة</h3>
-            <p style="color:#42474e;line-height:1.8;margin-bottom:1.5rem;">توقّع الطلب، وأتمتة إدارة المخزون، ودعم عملاء يتوسّع عبر الفروع دون زيادة عدد الموظفين.</p>
-            <span class="industry-link">استكشف ذكاء التجزئة <span class="material-symbols-outlined" style="font-size:18px;direction:ltr;transform:scaleX(-1);" aria-hidden="true">arrow_forward</span></span>
-          </div>
-          <div class="industry-row-media" aria-hidden="true">
-            <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80&auto=format&fit=crop" alt="" loading="lazy" width="400" height="300" />
-          </div>
-        </a>
-        <a href="/ar/industries/hospitality" class="industry-card industry-row">
+          <h3 style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0.75rem;">التجزئة</h3>
+          <p style="color:rgba(255,255,255,0.82); line-height:1.8; margin-bottom:1.5rem;">توقّع الطلب، وأتمتة إدارة المخزون، ودعم عملاء يتوسّع عبر الفروع دون زيادة عدد الموظفين.</p>
+          <span class="industry-link">استكشف ذكاء التجزئة <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span></span>
+        </div>
+      </a>
+      <a href="/ar/industries/hospitality" class="industry-card">
+        <img class="industry-card-photo" src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=900&q=80&auto=format&fit=crop" alt="مسبح منتجع فندقي مضاء في المساء" loading="lazy" width="900" height="620" />
+        <div class="industry-card-overlay" aria-hidden="true"></div>
+        <div class="industry-card-content">
           <div class="industry-icon">
             <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">hotel</span>
           </div>
-          <div class="industry-row-body">
-            <h3 style="font-size:1.25rem;font-weight:700;color:#00253b;margin-bottom:0.75rem;">الضيافة</h3>
-            <p style="color:#42474e;line-height:1.8;margin-bottom:1.5rem;">مساعدو استقبال بالذكاء الاصطناعي يتعاملون مع طلبات الضيوف على مدار الساعة، ليتفرّغ فريقك للتفاعلات التي تحتاج لمسة إنسانية.</p>
-            <span class="industry-link">استكشف ذكاء الضيافة <span class="material-symbols-outlined" style="font-size:18px;direction:ltr;transform:scaleX(-1);" aria-hidden="true">arrow_forward</span></span>
+          <h3 style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:0.75rem;">الضيافة</h3>
+          <p style="color:rgba(255,255,255,0.82); line-height:1.8; margin-bottom:1.5rem;">مساعدو استقبال بالذكاء الاصطناعي يتعاملون مع طلبات الضيوف على مدار الساعة، ليتفرّغ فريقك للتفاعلات التي تحتاج لمسة إنسانية.</p>
+          <span class="industry-link">استكشف ذكاء الضيافة <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span></span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- INTERACTIVE PICKER -->
+<section id="picker" class="section hp-picker" aria-labelledby="picker-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="picker-heading">أي خدمة ذكاء اصطناعي تناسب شركتك؟</h2>
+      <p>اختر المشكلة الأقرب لوضعك. سنوجّهك إلى الخدمة التي تستخدمها شركات دبي لحلّها.</p>
+    </div>
+    <div class="picker-wrap">
+      <div class="picker-buttons" role="group" aria-label="اختر أكبر تحدٍ يواجهك">
+        <button class="picker-btn" data-target="picker-leads" aria-expanded="false">نفقد عملاء محتملين</button>
+        <button class="picker-btn" data-target="picker-repetitive" aria-expanded="false">فريقنا غارق في أعمال متكررة</button>
+        <button class="picker-btn" data-target="picker-start" aria-expanded="false">لا نعرف من أين نبدأ مع الذكاء الاصطناعي</button>
+        <button class="picker-btn" data-target="picker-tools" aria-expanded="false">أدواتنا الداخلية لا تناسب طريقة عملنا</button>
+        <button class="picker-btn" data-target="picker-adoption" aria-expanded="false">اشترينا أدوات ذكاء اصطناعي ولا أحد يستخدمها</button>
+      </div>
+
+      <div class="picker-result" aria-live="polite">
+        <div id="picker-hint" class="picker-hint">
+          <span class="material-symbols-outlined" aria-hidden="true" style="font-size:28px; color:#c2c7ce; display:block; margin-bottom:0.5rem;direction:ltr;">touch_app</span>
+          اختر تحدياً أعلاه وسنُريك من أين نبدأ.
+        </div>
+
+        <div id="picker-leads" class="picker-panel">
+          <div class="picker-card">
+            <div class="service-icon"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">smart_toy</span></div>
+            <div>
+              <p class="picker-card-label">توصيتنا</p>
+              <h3 class="picker-card-title">وكلاء الذكاء الاصطناعي</h3>
+              <p class="picker-card-desc">وكيل ذكاء اصطناعي يرد على كل استفسار خلال ثوانٍ، يؤهّل العميل المحتمل، ويحجز الاجتماع قبل أن يرد منافسك أصلاً. على واتساب أو موقعك أو أينما يتواجد عملاؤك.</p>
+              <div class="picker-actions">
+                <button onclick="openModal(this)" data-source="ar_homepage_picker" class="btn-primary">احجز استشارة استراتيجية مجانية</button>
+                <a href="/ar/services" class="picker-learn-link">اعرف المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span></a>
+              </div>
+            </div>
           </div>
-          <div class="industry-row-media" aria-hidden="true">
-            <img src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&q=80&auto=format&fit=crop" alt="" loading="lazy" width="400" height="300" />
+        </div>
+
+        <div id="picker-repetitive" class="picker-panel">
+          <div class="picker-card">
+            <div class="service-icon"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">bolt</span></div>
+            <div>
+              <p class="picker-card-label">توصيتنا</p>
+              <h3 class="picker-card-title">أتمتة سير العمل</h3>
+              <p class="picker-card-desc">نُحلل العمل اليدوي الذي يستهلك أسبوع فريقك، ثم نُؤتمته، مرتبطاً بالأدوات التي تستخدمها بالفعل. فريقك يحتفظ بالقرارات التي تحتاج حكماً بشرياً، والنظام يتولى التكرار.</p>
+              <div class="picker-actions">
+                <button onclick="openModal(this)" data-source="ar_homepage_picker" class="btn-primary">احجز استشارة استراتيجية مجانية</button>
+                <a href="/ar/services" class="picker-learn-link">اعرف المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span></a>
+              </div>
+            </div>
           </div>
-        </a>
+        </div>
+
+        <div id="picker-start" class="picker-panel">
+          <div class="picker-card">
+            <div class="service-icon"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">bar_chart</span></div>
+            <div>
+              <p class="picker-card-label">توصيتنا</p>
+              <h3 class="picker-card-title">استراتيجية الذكاء الاصطناعي</h3>
+              <p class="picker-card-desc">ننظر إلى شركتك، نخبرك أين يكون للذكاء الاصطناعي معنى وأين لا يكون، ونمنحك خطة واضحة بالتكاليف قبل أن تصرف أي شيء. بلا مصطلحات معقدة وبلا ضغط.</p>
+              <div class="picker-actions">
+                <button onclick="openModal(this)" data-source="ar_homepage_picker" class="btn-primary">احجز استشارة استراتيجية مجانية</button>
+                <a href="/ar/services/ai-strategy" class="picker-learn-link">اعرف المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span></a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="picker-tools" class="picker-panel">
+          <div class="picker-card">
+            <div class="service-icon"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">dns</span></div>
+            <div>
+              <p class="picker-card-label">توصيتنا</p>
+              <h3 class="picker-card-title">أنظمة داخلية</h3>
+              <p class="picker-card-desc">لوحات تحكم وبوابات وأدوات داخلية مبنية حول عمليتك، وليست برامج جاهزة يضطر فريقك للتحايل عليها. مبنية لتطابق طريقة عمل شركتك فعلياً.</p>
+              <div class="picker-actions">
+                <button onclick="openModal(this)" data-source="ar_homepage_picker" class="btn-primary">احجز استشارة استراتيجية مجانية</button>
+                <a href="/ar/services" class="picker-learn-link">اعرف المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span></a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="picker-adoption" class="picker-panel">
+          <div class="picker-card">
+            <div class="service-icon"><span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">group</span></div>
+            <div>
+              <p class="picker-card-label">توصيتنا</p>
+              <h3 class="picker-card-title">تدريب الفريق على الذكاء الاصطناعي</h3>
+              <p class="picker-card-desc">تدريب عملي ومخصص لدور كل موظف ليستخدم فريقك الذكاء الاصطناعي فعلياً في عمله اليومي. نعمل بأدواتك الحقيقية ومهامك الحقيقية، لا شرائح عرض ونظريات.</p>
+              <div class="picker-actions">
+                <button onclick="openModal(this)" data-source="ar_homepage_picker" class="btn-primary">احجز استشارة استراتيجية مجانية</button>
+                <a href="/ar/services/ai-training" class="picker-learn-link">اعرف المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+(function () {
+  var buttons = document.querySelectorAll('.picker-btn');
+  var panels = document.querySelectorAll('.picker-panel');
+  var hint = document.getElementById('picker-hint');
+  buttons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var target = btn.getAttribute('data-target');
+      if (hint) hint.style.display = 'none';
+      buttons.forEach(function (b) {
+        var active = b === btn;
+        b.classList.toggle('active', active);
+        b.setAttribute('aria-expanded', active ? 'true' : 'false');
+      });
+      panels.forEach(function (p) {
+        p.classList.toggle('show', p.id === target);
+      });
+    });
+  });
+})();
+</script>
+
+<!-- WHAT MAKES US DIFFERENT -->
+<section class="section hp-different" aria-labelledby="different-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="different-heading">ما الذي يميزنا</h2>
+      <p>الكثير من الوكالات في دبي ستبني لك أداة ذكاء اصطناعي. إليك كيف يبدو العمل معنا بدلاً من ذلك.</p>
+    </div>
+    <div class="bento-grid value-grid">
+      <div class="value-card">
+        <div class="service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">architecture</span>
+        </div>
+        <h3 class="hp-value-heading" style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">مبني لأجل شركتك</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">لا قوالب جاهزة. كل نظام مصمم حول سير عملك، وأدواتك، وعملائك.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">school</span>
+        </div>
+        <h3 class="hp-value-heading" style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">فريقك يحصل على تدريب</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">لا نُسلّمك أداة ونغادر. فريقك يحصل على تدريب عملي حتى يستخدم النظام بثقة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">fact_check</span>
+        </div>
+        <h3 class="hp-value-heading" style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">تحديد نطاق صادق أولاً</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">قبل أن تدفع أي شيء، نخبرك بما يستطيع الذكاء الاصطناعي فعله لشركتك وما لا يستطيع. إن لم يكن مناسباً، نقول ذلك بصراحة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon">
+          <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">support_agent</span>
+        </div>
+        <h3 class="hp-value-heading" style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">دعم بعد الإطلاق</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">٩٠ يوماً من الدعم مع كل مشروع. إن احتاج أي شيء إصلاحاً بعد الإطلاق، نُصلحه دون أي تكلفة إضافية.</p>
       </div>
     </div>
   </div>
 </section>
 
 <!-- COMPARISON TABLE -->
-<section class="section" style="background:#e7eeff;" aria-labelledby="compare-heading">
+<section class="section hp-compare" aria-labelledby="compare-heading">
   <div class="container">
-    <div class="sec-header">
-      <h2 id="compare-heading">شريك الذكاء الاصطناعي الذي يبني ويدعم ويضمن النتائج</h2>
+    <div class="section-header">
+      <h2 id="compare-heading">شريك الذكاء الاصطناعي الذي يبني ويدعم ويضمن النتائج.</h2>
     </div>
     <div class="compare-wrap" style="overflow-x:auto;">
       <table class="compare-table">
         <thead>
           <tr>
-            <th style="width:40%;text-align:right;border-radius:0;">الميزة</th>
-            <th style="text-align:center;color:#006875;">
-              <span style="display:inline-flex;align-items:center;gap:6px;">
-                <span class="material-symbols-outlined" style="font-size:16px;color:#d97706;" aria-hidden="true">shield</span>
+            <th style="width:40%; text-align:right; border-radius:0;">الميزة</th>
+            <th class="hp-compare-highlight" style="text-align:center;">
+              <span style="display:inline-flex; align-items:center; gap:6px;">
+                <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px; color:#d97706;direction:ltr;">shield</span>
                 Lenoo AI
               </span>
             </th>
-            <th style="text-align:center;color:#72787e;font-weight:600;">وكالات ذكاء اصطناعي أخرى</th>
-            <th style="text-align:center;color:#72787e;font-weight:600;">شركات التدريب</th>
+            <th style="text-align:center; color:#72787e; font-weight:600;">وكالات ذكاء اصطناعي أخرى</th>
+            <th style="text-align:center; color:#72787e; font-weight:600;">شركات التدريب</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td style="font-weight:500;color:#111c2d;">أنظمة ذكاء اصطناعي مخصصة</td><td class="check-yes">✓</td><td class="check-yes">✓</td><td class="check-no">✗</td></tr>
-          <tr><td style="font-weight:500;color:#111c2d;">تدريب الموظفين مشمول</td><td class="check-yes">✓</td><td class="check-no">✗</td><td class="check-yes">✓</td></tr>
-          <tr><td style="font-weight:500;color:#111c2d;">تسعير مخصص</td><td class="check-yes">✓</td><td class="check-no">✗</td><td class="check-rarely">يختلف</td></tr>
-          <tr><td style="font-weight:500;color:#111c2d;">دعم مستمر</td><td class="check-yes">✓</td><td class="check-rarely">نادراً</td><td class="check-no">✗</td></tr>
-          <tr><td style="font-weight:500;color:#111c2d;">ضمان استرداد ١٠٠٪</td><td class="check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td style="font-weight:500; color:#111c2d;">أنظمة ذكاء اصطناعي مخصصة</td><td class="check-yes">✓</td><td class="check-yes">✓</td><td class="check-no">✗</td></tr>
+          <tr><td style="font-weight:500; color:#111c2d;">تدريب الموظفين مشمول</td><td class="check-yes">✓</td><td class="check-no">✗</td><td class="check-yes">✓</td></tr>
+          <tr><td style="font-weight:500; color:#111c2d;">تسعير مخصص</td><td class="check-yes">✓</td><td class="check-no">✗</td><td class="check-rarely">يختلف</td></tr>
+          <tr><td style="font-weight:500; color:#111c2d;">دعم مستمر</td><td class="check-yes">✓</td><td class="check-rarely">نادراً</td><td class="check-no">✗</td></tr>
+          <tr><td style="font-weight:500; color:#111c2d;">ضمان استرداد ١٠٠٪</td><td class="check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
         </tbody>
       </table>
     </div>
@@ -353,45 +620,75 @@ const ldJson = [
 <!-- PROCESS -->
 <section class="section" aria-labelledby="process-heading">
   <div class="container">
-    <div class="sec-header">
+    <div class="section-header">
       <h2 id="process-heading">من المكالمة الأولى إلى شركة مدعومة بالذكاء الاصطناعي</h2>
     </div>
     <div class="process-thread">
       <div class="thread-step">
         <div class="thread-node">١</div>
-        <h3 style="font-size:1.0625rem;font-weight:700;color:#00253b;margin-bottom:0.625rem;">مكالمة استكشافية</h3>
-        <p style="color:#42474e;font-size:0.9375rem;line-height:1.7;margin:0;">نجلس مع فريقك لنفهم كيف تعمل شركتك، وأين يُهدر الوقت، وما الذي يمكن للذكاء الاصطناعي إصلاحه فعلياً.</p>
+        <h3 class="hp-thread-heading" style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">مكالمة استكشافية</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin:0;">نجلس مع فريقك لنفهم كيف تعمل شركتك، وأين يُهدر الوقت، وما الذي يمكن للذكاء الاصطناعي إصلاحه فعلياً.</p>
       </div>
       <div class="thread-step">
         <div class="thread-node">٢</div>
-        <h3 style="font-size:1.0625rem;font-weight:700;color:#00253b;margin-bottom:0.625rem;">الاستراتيجية والعرض</h3>
-        <p style="color:#42474e;font-size:0.9375rem;line-height:1.7;margin:0;">نضع استراتيجية ذكاء اصطناعي مخصصة ونُريك بالضبط ما سنبنيه. ترى الخطة والنتيجة المتوقعة قبل أن نبدأ.</p>
+        <h3 class="hp-thread-heading" style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">الاستراتيجية والعرض</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin:0;">نضع استراتيجية ذكاء اصطناعي مخصصة ونُريك بالضبط ما سنبنيه. ترى الخطة والنتيجة المتوقعة قبل أن نبدأ.</p>
       </div>
       <div class="thread-step">
         <div class="thread-node">٣</div>
-        <h3 style="font-size:1.0625rem;font-weight:700;color:#00253b;margin-bottom:0.625rem;">التنفيذ</h3>
-        <p style="color:#42474e;font-size:0.9375rem;line-height:1.7;margin:0;">نبني وننشر حل الذكاء الاصطناعي الخاص بك، مدمجاً بالكامل مع أدواتك وسير عملك الحالي. مُختبر وجاهز للاستخدام.</p>
+        <h3 class="hp-thread-heading" style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">التنفيذ</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin:0;">نبني وننشر حل الذكاء الاصطناعي الخاص بك، مدمجاً بالكامل مع أدواتك وسير عملك الحالي. مُختبر وجاهز للاستخدام.</p>
       </div>
       <div class="thread-step">
         <div class="thread-node">٤</div>
-        <h3 style="font-size:1.0625rem;font-weight:700;color:#00253b;margin-bottom:0.625rem;">تأهيل الفريق</h3>
-        <p style="color:#42474e;font-size:0.9375rem;line-height:1.7;margin:0;">ندرّب فريقك على استخدام النظام بثقة. جلسات عملية مصممة حسب طريقة عمل فريقك الفعلية، وليست عروضاً عامة.</p>
+        <h3 class="hp-thread-heading" style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">تأهيل الفريق</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin:0;">ندرّب فريقك على استخدام النظام بثقة. جلسات عملية مصممة حسب طريقة عمل فريقك الفعلية، وليست عروضاً عامة.</p>
       </div>
       <div class="thread-step thread-step-final">
         <div class="thread-node">٥</div>
-        <h3 style="font-size:1.0625rem;font-weight:700;color:#00253b;margin-bottom:0.625rem;">التحسين المستمر</h3>
-        <p style="color:#42474e;font-size:0.9375rem;line-height:1.7;margin:0;">نُحسّن النظام بناءً على الاستخدام الفعلي. أي تعديل مطلوب خلال أول ٩٠ يوماً نتولاه دون أي تكلفة إضافية.</p>
+        <h3 class="hp-thread-heading" style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">التحسين المستمر</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin:0;">نُحسّن النظام بناءً على الاستخدام الفعلي. أي تعديل مطلوب خلال أول ٩٠ يوماً نتولاه دون أي تكلفة إضافية.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- FAQ PREVIEW -->
-<section class="section" style="background:#f0f3ff;" aria-labelledby="faq-preview-heading">
+<!-- TESTIMONIALS -->
+<section class="section hp-testimonials" aria-labelledby="testimonials-heading">
   <div class="container">
-    <div class="sec-header">
+    <div class="section-header">
+      <h2 id="testimonials-heading">ماذا تقول شركات دبي عن العمل معنا</h2>
+      <p>مشاريع حقيقية، فرق حقيقية، وما تغيّر بعد إطلاق النظام.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {finalTestimonials.map((t) => (
+        <figure class="testimonial-card">
+          <span class="material-symbols-outlined testimonial-quote-icon" style="direction:ltr;" aria-hidden="true">format_quote</span>
+          <blockquote class="testimonial-quote">{t.ar_quote || t.quote}</blockquote>
+          <figcaption class="testimonial-footer">
+            {t.client_image_url ? (
+              <img class="testimonial-avatar" src={t.client_image_url} alt={t.client_name} loading="lazy" width="48" height="48" />
+            ) : (
+              <span class="testimonial-avatar testimonial-avatar-initials" aria-hidden="true">{getInitials(t.client_name)}</span>
+            )}
+            <div>
+              <p class="testimonial-name">{t.client_name}</p>
+              <p class="testimonial-role">{[t.ar_client_title || t.client_title, t.client_company].filter(Boolean).join('، ')}</p>
+            </div>
+            {t.industry && <span class="testimonial-industry">{industryAr[t.industry] || t.industry}</span>}
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- FAQ PREVIEW -->
+<section class="section hp-faq-preview" aria-labelledby="faq-preview-heading">
+  <div class="container">
+    <div class="section-header">
       <h2 id="faq-preview-heading">أسئلة قبل الحجز؟</h2>
-      <p>أكثر الأسئلة شيوعاً قبل التحدث معنا في مكالمة.</p>
+      <p>أكثر الأسئلة شيوعاً قبل الحصول على مكالمة معنا.</p>
     </div>
     <div class="faq-preview-list">
       <details class="faq-item">
@@ -418,268 +715,339 @@ const ldJson = [
   </div>
 </section>
 
-<!-- GUARANTEE -->
-<section class="guarantee-section" aria-labelledby="guarantee-heading">
+<!-- BLOG / RESOURCES PREVIEW -->
+{latestPosts.length > 0 && (
+  <section class="section" aria-labelledby="resources-heading">
+    <div class="container">
+      <div class="section-header">
+        <h2 id="resources-heading">أدلة ذكاء اصطناعي مكتوبة لشركات دبي</h2>
+        <p>قراءة عملية قبل مكالمتك الأولى: تكلفة الذكاء الاصطناعي، وأين ينجح، وكيف تستخدمه شركات دبي.</p>
+      </div>
+      <div class="bento-grid bento-grid-3">
+        {latestPosts.map((post) => (
+          <a href={`/ar/blog/${post.slug}`} class="resource-card">
+            {post.og_image ? (
+              <div class="resource-card-media">
+                <img src={post.og_image} alt={post.ar_title} loading="lazy" width="600" height="200" />
+              </div>
+            ) : (
+              <div class="resource-card-media resource-card-media-fallback">
+                <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">article</span>
+              </div>
+            )}
+            <div class="resource-card-body">
+              {post.category && <span class="resource-card-pill">{post.category}</span>}
+              <h3 class="resource-card-title">{post.ar_title}</h3>
+              <p class="resource-card-excerpt">{truncate(post.ar_description)}</p>
+              <span class="resource-card-link">اقرأ المقال <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span></span>
+            </div>
+          </a>
+        ))}
+      </div>
+      <div style="text-align:center; margin-top:2.5rem;">
+        <a href="/ar/blog" class="hp-view-all-link">
+          عرض جميع المقالات <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;transform:scaleX(-1);">arrow_forward</span>
+        </a>
+      </div>
+    </div>
+  </section>
+)}
+
+<!-- FINAL CTA -->
+<section class="section">
   <div class="container">
-    <div style="text-align:center;max-width:720px;margin:0 auto;">
-      <div class="shield-icon">
-        <span class="material-symbols-outlined" style="color:#d97706;font-size:36px;direction:ltr;" aria-hidden="true">shield</span>
-      </div>
-      <div class="guarantee-pill">الضمان الوحيد من نوعه في الإمارات</div>
-      <h2 id="guarantee-heading">
-        إذا لم تكن راضياً عمّا نبنيه،<br>
-        <span style="color:#d97706;">لا تدفع أي شيء.</span>
+    <div class="cta-band" style="text-align:center; max-width:780px; margin:0 auto;">
+      <p class="cta-eyebrow">مكالمة استكشافية مجانية</p>
+      <h2 class="hp-cta-heading">
+        كل أسبوع بدون ذكاء اصطناعي،<br>
+        <span class="hp-accent">تتراجع أكثر عن المنافسين.</span>
       </h2>
-      <p style="color:#42474e;font-size:1.0625rem;line-height:1.8;margin:0 auto 2.5rem;">نحن نتحمل كل المخاطرة. تحصل على نتائج تفخر بها، أو تغادر باسترداد كل درهم.</p>
-    </div>
-    <div class="guarantee-steps">
-      <div class="step-card">
-        <div class="step-num">١</div>
-        <h3>نبني نظام الذكاء الاصطناعي الخاص بك</h3>
-        <p>نصمم ونبني وننشر نظام الذكاء الاصطناعي المخصص لك، مدمج بالكامل مع عملياتك وأدواتك.</p>
+      <p style="font-size:1.0625rem; line-height:1.8; max-width:480px; margin:0 auto 2rem;">احجز مكالمة مجانية لمدة ٣٠ دقيقة. سنُريك بالضبط ما يستطيع الذكاء الاصطناعي فعله لشركتك وما ستكلفه عملية البناء.</p>
+      <div class="cta-trust-badges" style="margin-bottom:2rem;">
+        <span class="cta-trust-badge">✓ مجانية ١٠٠٪</span>
+        <span class="cta-trust-badge">✓ بلا التزام</span>
+        <span class="cta-trust-badge">✓ ضمان الاسترداد</span>
       </div>
-      <div class="step-card">
-        <div class="step-num">٢</div>
-        <h3>فريقك يختبره في الواقع</h3>
-        <p>استخدمه مع فريقك في العمل الحقيقي. تحقق إذا كان يوفر الوقت ويخفض التكاليف ويُنجز ما وعد به.</p>
-      </div>
-      <div class="step-card refund-card">
-        <div style="width:48px;height:48px;border-radius:50%;background:#f59e0b;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;">
-          <span class="material-symbols-outlined" style="color:#fff;font-size:22px;direction:ltr;" aria-hidden="true">shield</span>
-        </div>
-        <h3>غير راضٍ؟ استرداد كامل.</h3>
-        <p>إذا لم تكن راضياً تماماً، فقط أخبرنا. نردّ ١٠٠٪ دون أسئلة ودون تأخير. الطلب خلال ٣٠ يوماً من التسليم.</p>
-      </div>
-    </div>
-    <div style="text-align:center;">
-      <div class="guarantee-badge-box">
-        <span class="material-symbols-outlined" style="color:#d97706;font-size:32px;flex-shrink:0;direction:ltr;" aria-hidden="true">shield</span>
-        <p><strong style="color:#00253b;">ضمان الرضا ١٠٠٪</strong>: شركة الذكاء الاصطناعي الوحيدة في الإمارات التي تقدم استرداداً كاملاً للمشاريع المكتملة.</p>
-      </div>
-      <br>
-      <button onclick="openModal(this)" data-source="ar_home_guarantee" class="btn-primary" style="font-size:1.0625rem;padding:0.9375rem 2.5rem;">
-        ابدأ بدون مخاطرة اليوم ←
+      <button onclick="openModal(this)" data-source="ar_homepage_cta_bottom" class="btn-primary" style="font-size:1.0625rem; padding:1rem 2.75rem; margin-bottom:2rem;">
+        احجز استشارة استراتيجية مجانية
+        <span class="material-symbols-outlined" aria-hidden="true" style="font-size:20px;direction:ltr;transform:scaleX(-1);">arrow_forward</span>
       </button>
-      <p style="font-size:0.875rem;color:#72787e;margin-top:1rem;">استشارة مجانية · بدون التزام مسبق · بدون مخاطرة</p>
+      <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:1.5rem; color:#94a3b8; font-size:0.875rem;">
+        <span style="display:flex; align-items:center; gap:6px;"><span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">schedule</span> رد سريع، بالعربي والإنجليزي</span>
+        <span style="display:flex; align-items:center; gap:6px;"><span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">shield</span> استرداد ١٠٠٪ إن لم تكن راضياً</span>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- FINAL CTA -->
-<section class="cta-band" style="border-radius:0;margin:0;" aria-labelledby="cta-heading">
-  <div class="container">
-    <div style="max-width:640px;margin:0 auto;text-align:center;">
-      <div class="cta-badge">
-        <span class="pulse" aria-hidden="true"></span>
-        <span>استشارة مجانية، بدون التزام</span>
-      </div>
-      <h2 id="cta-heading">
-        هل أنت مستعد لجعل<br>
-        <span class="gradient-text">شركتك مدعومة بالذكاء الاصطناعي؟</span>
-      </h2>
-      <p>احجز مكالمة استراتيجية مجانية لمدة ٣٠ دقيقة. لا ضغط مبيعات. فقط وضوح تام حول ما يمكن للذكاء الاصطناعي تحقيقه لشركتك.</p>
-      <button onclick="openModal(this)" data-source="ar_home_cta" class="btn-primary" style="font-size:1.0625rem;padding:1rem 2.75rem;margin-bottom:2rem;">
-        احجز مكالمة استراتيجية مجانية ←
-      </button>
-      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:1.5rem;color:#5a6475;font-size:0.875rem;margin-top:1rem;">
-        <span style="display:flex;align-items:center;gap:6px;"><span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">language</span> بالعربي والإنجليزي</span>
-        <span style="display:flex;align-items:center;gap:6px;"><span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">location_on</span> مقيمون في دبي</span>
-        <span style="display:flex;align-items:center;gap:6px;"><span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">schedule</span> رد خلال ٤ ساعات</span>
-      </div>
-    </div>
-  </div>
-</section>
+<script>
+  import '../../scripts/homepage-motion.ts';
+</script>
+
+</div>
 
 </ArBaseLayout>
 
 <style>
-  /* Hero */
-  .hero {
-    position: relative; overflow: hidden;
-    background:
-      radial-gradient(1100px 650px at 12% -12%, rgba(0,227,253,0.22) 0%, transparent 55%),
-      radial-gradient(900px 620px at 94% 108%, rgba(0,104,117,0.32) 0%, transparent 58%),
-      linear-gradient(160deg, #001420 0%, #001b2e 50%, #00253b 100%);
-    padding: 8rem 0 5rem;
-    text-align: center;
+  /* ── Hero ── */
+  .hero-home { padding: 7.5rem 0 4rem; }
+
+  /* ── Authority / why-now split ── */
+  .authority-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+  .authority-media {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-pop);
   }
-  .hero-badge {
+  .authority-media img { display: block; width: 100%; height: 100%; min-height: 420px; object-fit: cover; }
+  .authority-media::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,19,32,0.38), transparent 45%);
+  }
+  .authority-badge {
+    position: absolute; bottom: 1.25rem; inset-inline-start: 1.25rem; z-index: 1;
     display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(0,227,253,0.14); border: 1px solid rgba(0,227,253,0.32);
-    border-radius: 100px; padding: 6px 18px; color: #a8f2ff;
-    font-size: 0.875rem; font-weight: 600; margin-bottom: 1.75rem;
+    background: rgba(0,19,32,0.72);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(245,158,11,0.35);
+    border-radius: 100px; padding: 0.5rem 1.125rem;
+    color: #fbbf24; font-weight: 700; font-size: 0.8125rem;
   }
-  .pulse {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: #00e3fd; flex-shrink: 0;
-    animation: pulse 2s ease-in-out infinite;
+  .authority-eyebrow {
+    display: inline-block; color: #006875;
+    font-size: 0.8125rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.10em;
+    margin-bottom: 1rem;
   }
-  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.85)} }
-  .hero h1 { margin-bottom: 1.5rem; color: #fff; font-size: clamp(2.75rem, 5.5vw, 5rem); }
-  .hero .gradient-text {
-    background: linear-gradient(120deg, #6df3ff 0%, #00e3fd 55%, #ffffff 100%);
-    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
-  }
-  .hero p { font-size: 1.125rem; color: rgba(255,255,255,0.72); line-height: 1.9; max-width: 580px; margin: 0 auto 2.5rem; }
-  .hero-ctas { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
-  .hero .btn-outline { color: #fff; border-color: rgba(255,255,255,0.35); }
-  .hero .btn-outline:hover { background: rgba(255,255,255,0.08); }
-  .hero-stats {
-    display: inline-flex; flex-wrap: wrap; gap: 1.5rem;
-    background: rgba(255,255,255,0.06); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.14);
-    border-radius: 16px; padding: 1.25rem 1.75rem;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.20); margin-top: 3rem;
-  }
-  .stat-val { font-size: 1.5rem; font-weight: 800; color: #fff; margin: 0; }
-  .stat-lbl { font-size: 0.75rem; color: rgba(255,255,255,0.55); margin: 0; }
-  .stat-divider { width: 1px; background: rgba(255,255,255,0.14); }
-
-  /* Custom network band (replaces the old stock-photo banner) */
-  .net-band {
-    position: relative; overflow: hidden; height: 280px;
-    border-top: 1px solid rgba(0,227,253,0.18);
-    background:
-      radial-gradient(70% 120% at 85% 0%, rgba(0,227,253,0.14) 0%, transparent 55%),
-      radial-gradient(70% 120% at 12% 100%, rgba(0,104,117,0.38) 0%, transparent 60%),
-      linear-gradient(150deg, #001826 0%, #002337 55%, #00314a 100%);
-  }
-  .net-band-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .net-band .net-halo { animation: netPulse 5.5s ease-in-out infinite; }
-  @keyframes netPulse { 0%, 100% { opacity: .3; } 50% { opacity: .85; } }
-  .net-band .net-flow { stroke-dasharray: 12 180; animation: netFlow 7s linear infinite; }
-  @keyframes netFlow { to { stroke-dashoffset: -192; } }
-
-  /* Trust strip */
-  .trust-strip { background: #fff; border-bottom: 1px solid rgba(0,37,59,0.08); padding: 1.25rem 0; }
-  .trust-inner { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem 2.5rem; align-items: center; }
-  .trust-item { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; font-weight: 600; color: #42474e; }
-  .trust-sep { width: 1px; height: 20px; background: rgba(0,37,59,0.12); }
-
-  /* Section header */
-  .sec-header { text-align: center; max-width: 640px; margin: 0 auto 3rem; }
-  .sec-header h2 { margin-bottom: 1rem; }
-  .sec-header p { color: #42474e; font-size: 1rem; line-height: 1.8; }
-  .eyebrow { display: none; }
-
-  /* Industry badge */
-  .industry-badge {
+  .authority-para { color: #42474e; line-height: 1.85; margin: 0 0 1.25rem; }
+  .authority-link {
     display: inline-flex; align-items: center; gap: 6px;
-    background: rgba(0,104,117,0.10); border-radius: 8px;
-    padding: 5px 10px; margin-bottom: 1rem;
-    font-size: 0.75rem; font-weight: 700; color: #006875; text-transform: uppercase;
+    font-weight: 700; font-size: 0.9375rem; color: #006875;
+    text-decoration: none; margin-top: 0.5rem;
+    transition: color .2s;
   }
+  .authority-link:hover { color: #004f58; }
 
-  /* Industry cards (with photo) */
-  .industry-card { display: flex; flex-direction: column; background: #fff; border: 1px solid rgba(0,37,59,0.08); border-radius: 24px; padding: 2.5rem; box-shadow: 0 20px 40px rgba(0,59,92,0.04); text-decoration: none; transition: box-shadow .3s var(--ease), transform .3s var(--ease), border-color .3s; }
-  .industry-card:hover { box-shadow: 0 24px 56px rgba(0,59,92,0.12); transform: translateY(-6px); border-color: rgba(0,227,253,0.35); }
-  .industry-icon {
-    width: 56px; height: 56px; border-radius: 16px;
-    background: rgba(0,227,253,0.12); border: 1px solid rgba(0,227,253,0.24);
-    display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;
-    color: #006875; transition: transform .3s var(--ease);
+  /* ── Service cards ── */
+  .service-card {
+    background: #fff; border-radius: var(--radius-lg); padding: 2.5rem;
+    border: 1px solid rgba(0,37,59,0.08);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow .25s var(--ease), transform .25s var(--ease), border-color .25s;
   }
-  .industry-card:hover .industry-icon { transform: scale(1.08) rotate(4deg); }
-  .industry-link { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; font-size: 0.875rem; color: #006875; margin-top: auto; }
+  .service-card:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-4px);
+    border-color: rgba(0,227,253,0.35);
+  }
+  .service-icon {
+    width: 56px; height: 56px; border-radius: var(--radius-md);
+    background: rgba(0,227,253,0.12);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 1.5rem; color: #006875; flex-shrink: 0;
+    transition: transform .25s var(--ease), background .25s;
+  }
+  .service-card:hover .service-icon { transform: scale(1.06); background: rgba(0,227,253,0.20); }
 
-  /* Featured-plus-list industries layout (mirrors EN homepage; flex/grid follow RTL) */
-  .industries-flow { display: grid; grid-template-columns: 1.05fr 1fr; gap: 24px; align-items: stretch; }
-  .industry-feature { padding: 0; overflow: hidden; }
-  .industry-feature-media { position: relative; height: 235px; flex-shrink: 0; }
-  .industry-feature-media img { width: 100%; height: 100%; object-fit: cover; object-position: center 55%; transition: transform .6s var(--ease); }
-  .industry-feature:hover .industry-feature-media img { transform: scale(1.04); }
-  .industry-feature-grade {
+  /* ── Industry photo cards ── */
+  .industry-card {
+    position: relative;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    min-height: 440px;
+    border-radius: var(--radius-lg); overflow: hidden;
+    border: 1px solid rgba(0,37,59,0.08);
+    box-shadow: var(--shadow-card);
+    text-decoration: none;
+    transition: box-shadow .25s var(--ease), transform .25s var(--ease);
+  }
+  .industry-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-4px); }
+  .industry-card-photo {
     position: absolute; inset: 0;
-    background:
-      linear-gradient(to top, rgba(0,19,32,0.45) 0%, transparent 55%),
-      linear-gradient(160deg, rgba(0,104,117,0.30), rgba(0,37,59,0.15));
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform .6s var(--ease);
   }
-  .industry-feature-body { padding: 2.25rem 2.5rem 2.5rem; display: flex; flex-direction: column; flex: 1; }
-  .industries-side { display: flex; flex-direction: column; gap: 24px; }
-  .industry-row { flex-direction: row; align-items: flex-start; gap: 1.5rem; padding: 2rem; flex: 1; }
-  .industry-row .industry-icon { margin-bottom: 0; flex-shrink: 0; }
-  .industry-row-body { display: flex; flex-direction: column; flex: 1; }
-  .industry-row-media { flex-shrink: 0; width: 132px; align-self: stretch; min-height: 120px; border-radius: 16px; overflow: hidden; }
-  .industry-row-media img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease); }
-  .industry-row:hover .industry-row-media img { transform: scale(1.05); }
-  @media (max-width: 900px) {
-    .industries-flow { grid-template-columns: 1fr; }
-    .industry-feature-media { height: 200px; }
+  .industry-card:hover .industry-card-photo { transform: scale(1.05); }
+  .industry-card-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,19,32,0.92) 0%, rgba(0,19,32,0.58) 42%, rgba(0,19,32,0.18) 72%, rgba(0,19,32,0.05) 100%);
   }
-  @media (max-width: 480px) {
-    .industry-row { flex-direction: column; gap: 1.25rem; }
-    .industry-row-media { width: 100%; height: 150px; align-self: auto; min-height: 0; }
+  .industry-card-content { position: relative; z-index: 1; padding: 2.25rem; display: flex; flex-direction: column; flex: 1; justify-content: flex-end; }
+  .industry-icon {
+    width: 48px; height: 48px; border-radius: 14px;
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 1.25rem; color: #6df3ff;
   }
+  .industry-link { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; font-size: 0.875rem; color: #6df3ff; margin-top: auto; }
 
-  /* Cards */
-  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
-  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-  .card-body { font-size: 0.9375rem; line-height: 1.75; margin-bottom: 1.5rem; color: #42474e; }
-  .metric-val { font-size: 1.5rem; font-weight: 800; color: #006875; margin: 0 0 2px; }
-  .metric-lbl { font-size: 0.75rem; color: #72787e; margin: 0; }
+  /* ── Interactive picker ── */
+  .picker-wrap { max-width: 880px; margin: 0 auto; }
+  .picker-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 2rem; }
+  .picker-btn {
+    padding: 0.875rem 1.5rem; border-radius: 100px;
+    border: 1.5px solid rgba(0,37,59,0.16);
+    background: #fff; color: #00253b;
+    font-weight: 600; font-size: 0.9375rem; font-family: inherit;
+    cursor: pointer;
+    transition: border-color .2s, background .2s, color .2s, transform .2s var(--ease), box-shadow .2s var(--ease);
+  }
+  .picker-btn:hover { border-color: rgba(0,104,117,0.45); color: #006875; transform: translateY(-1px); box-shadow: var(--shadow-card); }
+  .picker-btn.active { background: #00253b; border-color: #00253b; color: #fff; box-shadow: var(--shadow-card); }
+  .picker-btn:focus-visible { outline: 3px solid #006875; outline-offset: 2px; }
+  .picker-hint {
+    text-align: center; color: #72787e; font-size: 0.9375rem;
+    padding: 2.5rem 1.5rem;
+    border: 1.5px dashed rgba(0,37,59,0.18);
+    border-radius: var(--radius-md);
+  }
+  .picker-panel { display: none; }
+  .picker-panel.show { display: block; animation: pickerIn .35s var(--ease); }
+  @keyframes pickerIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .picker-panel.show { animation: none; } }
+  .picker-card {
+    background: #fff;
+    border: 1px solid rgba(0,227,253,0.35);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    box-shadow: var(--shadow-card-hover);
+    display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 1.5rem;
+    align-items: start;
+  }
+  .picker-card .service-icon { margin-bottom: 0; }
+  .picker-card-label {
+    margin: 0 0 0.375rem;
+    font-size: 0.6875rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: #006875;
+  }
+  .picker-card-title { font-size: 1.375rem; font-weight: 700; color: #00253b; margin: 0 0 0.75rem; }
+  .picker-card-desc { color: #42474e; line-height: 1.8; margin: 0; }
+  .picker-actions { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-top: 1.5rem; }
+  .picker-learn-link {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-weight: 600; font-size: 0.9375rem; color: #006875;
+    text-decoration: none; transition: color .2s;
+  }
+  .picker-learn-link:hover { color: #004f58; }
 
-  /* Service cards */
-  .svc-icon {
-    width: 56px; height: 56px; border-radius: 16px;
-    background: rgba(0,227,253,0.12); display: flex; align-items: center;
-    justify-content: center; margin: 0 auto 1.5rem; color: #006875;
+  /* ── Value-prop cards ── */
+  .value-grid { grid-template-columns: repeat(4, 1fr); }
+  .value-card {
+    background: #fff;
+    border: 1px solid rgba(0,37,59,0.08);
+    border-radius: var(--radius-lg);
+    padding: 2.25rem;
+    box-shadow: var(--shadow-card);
+    transition: box-shadow .25s var(--ease), transform .25s var(--ease), border-color .25s;
   }
-  .guarantee-pill-sm {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: rgba(245,158,11,0.10); border: 1px solid rgba(245,158,11,0.25);
-    border-radius: 8px; padding: 6px 12px; color: #d97706; font-size: 0.75rem; font-weight: 600;
-  }
+  .value-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-4px); border-color: rgba(0,227,253,0.35); }
+  .value-card .service-icon { width: 48px; height: 48px; margin-bottom: 1.25rem; }
 
-  /* Guarantee section */
-  .guarantee-section { background: #e7eeff; padding: 5rem 0; text-align: center; }
-  .shield-icon {
-    width: 80px; height: 80px; border-radius: 50%;
-    background: rgba(245,158,11,0.15); border: 2px solid rgba(245,158,11,0.40);
-    display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;
-  }
-  .guarantee-pill {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: rgba(245,158,11,0.10); border: 1px solid rgba(245,158,11,0.30);
-    border-radius: 100px; padding: 5px 14px; color: #d97706;
-    font-weight: 600; font-size: 0.75rem; letter-spacing: 0.05em; margin-bottom: 1.25rem;
-  }
-  .guarantee-section h2 { font-size: clamp(1.75rem, 4vw, 3rem); margin-bottom: 1rem; }
-  .guarantee-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; max-width: 900px; margin: 2.5rem auto; }
-  .step-card { background: #f0f3ff; border: 1px solid rgba(0,37,59,0.08); border-radius: 20px; padding: 1.75rem; text-align: center; }
-  .step-num { width: 48px; height: 48px; border-radius: 50%; background: #00e3fd; color: #00253b; font-weight: 800; font-size: 1.125rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; }
-  .step-card h3 { font-size: 1rem; font-weight: 700; color: #00253b; margin-bottom: 0.5rem; }
-  .step-card p { font-size: 0.9rem; color: #42474e; line-height: 1.7; margin: 0; }
-  .refund-card { background: rgba(245,158,11,0.07); border-color: rgba(245,158,11,0.25); }
-  .guarantee-badge-box {
-    display: inline-flex; align-items: center; gap: 0.875rem;
-    background: #fff; border: 1px solid rgba(245,158,11,0.30);
-    border-radius: 16px; padding: 1rem 1.5rem; text-align: right; margin-bottom: 2rem;
-  }
-  .guarantee-badge-box p { color: #42474e; font-size: 0.875rem; line-height: 1.6; margin: 0; }
-
-  /* Comparison table wrapper */
+  /* ── Comparison table ── */
   .compare-wrap { background: #fff; border: 1px solid rgba(0,37,59,0.10); border-radius: 20px; overflow: hidden; }
+  .compare-table { width: 100%; border-collapse: collapse; }
+  .compare-table th { background: #e7eeff; color: #00253b; padding: 0.875rem 1.25rem; font-weight: 700; font-size: 0.875rem; }
+  .compare-table td { padding: 0.875rem 1.25rem; color: #42474e; border-bottom: 1px solid rgba(0,37,59,0.07); }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .check-yes { color: #006875; font-weight: 700; font-size: 1.1rem; text-align: center; }
+  .check-no { color: #c2c7ce; text-align: center; }
+  .check-rarely { color: #b45309; font-size: 0.8125rem; font-weight: 600; text-align: center; }
 
-  /* FAQ preview accordion */
+  /* ── Testimonials ── */
+  .testimonial-card {
+    background: #fff; border: 1px solid rgba(0,37,59,0.08);
+    border-radius: 20px; padding: 2rem;
+    box-shadow: var(--shadow-card);
+    display: flex; flex-direction: column;
+    margin: 0;
+    transition: box-shadow .25s var(--ease), transform .25s var(--ease);
+  }
+  .testimonial-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-4px); }
+  .testimonial-quote-icon { color: #00e3fd; font-size: 34px; margin-bottom: 0.75rem; }
+  .testimonial-quote { margin: 0 0 1.75rem; color: #42474e; line-height: 1.8; font-size: 0.9375rem; flex: 1; }
+  .testimonial-footer {
+    display: flex; align-items: center; gap: 12px;
+    padding-top: 1.25rem; margin: 0;
+    border-top: 1px solid rgba(0,37,59,0.08);
+  }
+  .testimonial-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+  .testimonial-avatar-initials {
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #00253b, #006875);
+    color: #fff; font-weight: 700; font-size: 0.9375rem; letter-spacing: 0.02em;
+  }
+  .testimonial-name { margin: 0; font-weight: 700; font-size: 0.9375rem; color: #00253b; }
+  .testimonial-role { margin: 0; font-size: 0.8125rem; color: #72787e; }
+  .testimonial-industry {
+    margin-inline-start: auto;
+    font-size: 0.6875rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: #004f58;
+    background: rgba(0,104,117,0.10);
+    border: 1px solid rgba(0,104,117,0.20);
+    border-radius: 100px; padding: 3px 10px;
+    white-space: nowrap;
+  }
+
+  /* ── FAQ preview ── */
   .faq-preview-list { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 0; }
   .faq-item { background: #fff; border: 1px solid rgba(0,37,59,0.08); border-radius: 16px; margin-bottom: 0.75rem; overflow: hidden; }
   .faq-question { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; font-weight: 600; font-size: 1rem; color: #00253b; cursor: pointer; list-style: none; gap: 1rem; }
   .faq-question::-webkit-details-marker { display: none; }
-  .faq-question::after { content: 'expand_more'; font-family: 'Material Symbols Outlined'; font-size: 20px; color: #72787e; flex-shrink: 0; transition: transform .2s var(--ease); }
+  .faq-question::after { content: 'expand_more'; font-family: 'Material Symbols Outlined'; font-size: 20px; color: #72787e; flex-shrink: 0; transition: transform .2s; }
   details[open] .faq-question::after { transform: rotate(180deg); }
   .faq-answer { padding: 0 1.5rem 1.25rem; color: #42474e; line-height: 1.8; font-size: 0.9375rem; margin: 0; }
 
-  /* CTA badge */
-  .cta-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(0,104,117,0.10); border: 1px solid rgba(0,104,117,0.25);
-    border-radius: 100px; padding: 6px 16px; margin-bottom: 1.5rem;
-    font-size: 0.875rem; font-weight: 600; color: #006875;
+  /* ── Blog / resources preview ── */
+  .resource-card {
+    background: #fff;
+    border: 1px solid rgba(0,37,59,0.08);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    text-decoration: none;
+    box-shadow: var(--shadow-card);
+    transition: box-shadow .25s var(--ease), transform .25s var(--ease), border-color .25s;
   }
+  .resource-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-4px); border-color: rgba(0,104,117,0.16); }
+  .resource-card-media { height: 190px; overflow: hidden; position: relative; }
+  .resource-card-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s var(--ease); }
+  .resource-card:hover .resource-card-media img { transform: scale(1.05); }
+  .resource-card-media-fallback {
+    background: linear-gradient(135deg, #e7eeff, #f0f8ff);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .resource-card-media-fallback .material-symbols-outlined { font-size: 40px; color: #c2c7ce; }
+  .resource-card-body { padding: 1.625rem; flex: 1; display: flex; flex-direction: column; align-items: flex-start; }
+  .resource-card-pill {
+    display: inline-flex; align-items: center;
+    padding: 3px 12px; border-radius: 100px;
+    font-size: 0.6875rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: #004f58;
+    background: rgba(0,104,117,0.10);
+    border: 1px solid rgba(0,104,117,0.20);
+    margin-bottom: 0.875rem;
+  }
+  .resource-card-title { font-size: 1.0625rem; font-weight: 700; color: #00253b; line-height: 1.42; letter-spacing: -0.015em; margin: 0 0 0.625rem; }
+  .resource-card-excerpt { color: #72787e; font-size: 0.875rem; line-height: 1.65; margin: 0 0 1.125rem; }
+  .resource-card-link { display: inline-flex; align-items: center; gap: 4px; font-size: 0.8125rem; font-weight: 700; color: #006875; margin-top: auto; }
 
-  @media (max-width: 768px) {
-    .grid-3, .guarantee-steps { grid-template-columns: 1fr; }
-    .grid-2 { grid-template-columns: 1fr; }
-    .hero { padding: 6rem 0 3.5rem; }
-    .trust-sep { display: none; }
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .hero-home { padding: 8rem 0 5rem; }
+    .authority-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+    .authority-media img { min-height: 300px; }
+    .value-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .value-grid { grid-template-columns: 1fr; }
+    .picker-card { grid-template-columns: 1fr; }
+    .industry-card { min-height: 380px; }
   }
 </style>
