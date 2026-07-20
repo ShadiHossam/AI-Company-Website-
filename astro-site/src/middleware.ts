@@ -25,16 +25,17 @@ const isStaging = import.meta.env.IS_STAGING === 'true';
 // unconditionally so both deploy targets get them (redundant-but-harmless on Vercel,
 // since Response.headers.set() just overwrites the value Vercel already set).
 // Only the vendor origins for currently-configured integrations belong here — verified
-// against live site_config (2026-07-16): every integration.* key is empty except a
-// placeholder Mailchimp URL, so no tracking/chat vendor is actually wired up yet. Add an
-// origin back only when its integration is turned on for real in the admin settings.
+// against live site_config (2026-07-21): gtm_container_id, ga_measurement_id, and
+// clarity_project_id are all set, so their origins are allowlisted below. Every other
+// integration.* key is still empty. Add an origin back only when its integration is
+// turned on for real in the admin settings.
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.clarity.ms",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: blob: https:",
-  "connect-src 'self' https://*.supabase.co",
+  "connect-src 'self' https://*.supabase.co https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://www.clarity.ms",
   // 'self' is required for the sandboxed snippet-preview iframe (admin/settings/snippets) —
   // safe because that iframe uses sandbox="allow-scripts" with no allow-same-origin, so
   // embedded content still can't touch this page's DOM, cookies, or storage.
