@@ -114,9 +114,6 @@ function openModal(el?: HTMLElement | Event) {
   modalTriggerEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
-  const today = new Date().toISOString().split('T')[0];
-  const dateEl = document.getElementById('pref-date') as HTMLInputElement | null;
-  if (dateEl) dateEl.min = today;
   // Move keyboard focus into the dialog — aria-modal="true" only holds up if focus
   // actually goes there instead of staying on the trigger behind the overlay.
   getModalFocusable()[0]?.focus();
@@ -127,9 +124,9 @@ function closeModal() {
   if (!modal) return;
   modal.classList.remove('open');
   document.body.style.overflow = '';
-  // Undo the success-screen swap from submitForm() so reopening starts clean on step 1.
-  document.getElementById('step-success')?.classList.add('hidden');
-  const ind = document.getElementById('step-indicator');
+  // Undo the success-screen swap from the Calendly listener so reopening starts clean on step 1.
+  modal.querySelector('#step-success')?.classList.add('hidden');
+  const ind = modal.querySelector('#step-indicator') as HTMLElement | null;
   if (ind) ind.style.display = '';
   goToStep(1);
   modalTriggerEl?.focus();
@@ -164,7 +161,7 @@ document.addEventListener('keydown', (e: KeyboardEvent) => {
 // its inputs never triggers native browser validation on its own — enforce it
 // here before letting the user advance past a step with empty required fields.
 function validateStep(n: number): boolean {
-  const container = document.getElementById('step-' + n);
+  const container = document.querySelector('#modal #step-' + n);
   if (!container) return true;
   const fields = container.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
     'input[required], select[required], textarea[required]'
@@ -181,7 +178,7 @@ function validateStep(n: number): boolean {
 let currentStep = 1;
 function goToStep(n: number) {
   if (n > currentStep && !validateStep(currentStep)) return;
-  document.getElementById('step-' + currentStep)?.classList.add('hidden');
+  document.querySelector('#modal #step-' + currentStep)?.classList.add('hidden');
   [1, 2, 3].forEach(i => {
     const dot = document.getElementById('dot-' + i);
     if (!dot) return;
@@ -192,13 +189,16 @@ function goToStep(n: number) {
   });
   [1, 2].forEach(i => document.getElementById('line-' + i)?.classList.toggle('done', i < n));
   currentStep = n;
-  document.getElementById('step-' + n)?.classList.remove('hidden');
+  document.querySelector('#modal #step-' + n)?.classList.remove('hidden');
 }
 
-async function submitForm() {
-  const btn = document.querySelector('[onclick="submitForm()"]') as HTMLButtonElement | null;
-  const isAr = document.documentElement.lang.startsWith('ar');
-  if (btn) { btn.disabled = true; btn.textContent = isAr ? 'جاري الإرسال...' : 'Submitting…'; }
+// Submits the qualification data collected in steps 1-2, then reveals the Calendly
+// widget in step 3. Best-effort: scheduling shouldn't be blocked by a CRM hiccup, so a
+// failed submit doesn't stop the user from reaching the calendar.
+async function continueToSchedule() {
+  if (!validateStep(2)) return;
+  const btn = document.querySelector('#modal [onclick="continueToSchedule()"]') as HTMLButtonElement | null;
+  if (btn) btn.disabled = true;
 
   const waVal = (document.getElementById('whatsapp') as HTMLInputElement)?.value ?? '';
   const countryCode = (document.getElementById('country-code') as HTMLSelectElement)?.value ?? '+971';
@@ -213,9 +213,6 @@ async function submitForm() {
     main_challenge: (document.getElementById('challenge') as HTMLTextAreaElement)?.value?.trim() ?? '',
     budget_range:   (document.getElementById('budget') as HTMLSelectElement)?.value ?? '',
     ai_experience:  (document.querySelector('input[name="ai-exp"]:checked') as HTMLInputElement)?.value ?? '',
-    meeting_format: (document.querySelector('input[name="meeting-type"]:checked') as HTMLInputElement)?.value ?? '',
-    preferred_date: (document.getElementById('pref-date') as HTMLInputElement)?.value ?? '',
-    preferred_time: (document.getElementById('pref-time') as HTMLSelectElement)?.value ?? '',
     notes:          (document.getElementById('notes') as HTMLTextAreaElement)?.value?.trim() ?? '',
     source:         'modal',
     page_source:    (document.getElementById('modal-source-field') as HTMLInputElement)?.value ?? 'unknown',
@@ -226,22 +223,32 @@ async function submitForm() {
   };
 
   try {
-    const res = await fetch('/api/submit-lead', {
+    await fetch('/api/submit-lead', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    if (!res.ok && res.status !== 200) throw new Error('Failed');
-    document.getElementById('step-3')?.classList.add('hidden');
-    document.getElementById('step-success')?.classList.remove('hidden');
-    const ind = document.getElementById('step-indicator');
-    if (ind) ind.style.display = 'none';
   } catch {
-    if (btn) { btn.disabled = false; btn.innerHTML = isAr ? 'تأكيد الحجز' : 'Confirm Booking'; }
-    const errEl = document.getElementById('modal-submit-error');
-    if (errEl) { errEl.classList.remove('hidden'); }
+    // Silent — Calendly scheduling still proceeds even if the CRM lead write failed.
   }
+  goToStep(3);
+  if (btn) btn.disabled = false;
 }
+
+// Calendly posts this message to the parent window once a slot is actually booked.
+// Scoped to the sitewide modal only — the /contact page's own embedded widget listens
+// for the same event independently, guarding on whether the modal is open so the two
+// success screens (which share DOM ids on that page) don't both fire at once.
+window.addEventListener('message', (e: MessageEvent) => {
+  if (!e.origin.includes('calendly.com')) return;
+  if ((e.data as { event?: string })?.event !== 'calendly.event_scheduled') return;
+  const modal = document.getElementById('modal');
+  if (!modal?.classList.contains('open')) return;
+  modal.querySelector('#step-3')?.classList.add('hidden');
+  modal.querySelector('#step-success')?.classList.remove('hidden');
+  const ind = modal.querySelector('#step-indicator') as HTMLElement | null;
+  if (ind) ind.style.display = 'none';
+});
 
 window.addEventListener('scroll', () => {
   document.getElementById('navbar')?.classList.toggle('scrolled', window.scrollY > 20);
@@ -329,7 +336,7 @@ declare global {
     closeModal: typeof closeModal;
     handleOverlayClick: typeof handleOverlayClick;
     goToStep: typeof goToStep;
-    submitForm: typeof submitForm;
+    continueToSchedule: typeof continueToSchedule;
     handleNewsletterSubmit: typeof handleNewsletterSubmit;
     handleFooterNewsletterSubmit: typeof handleFooterNewsletterSubmit;
     toggleFaq: typeof toggleFaq;
@@ -345,7 +352,7 @@ Object.assign(window, {
   closeModal,
   handleOverlayClick,
   goToStep,
-  submitForm,
+  continueToSchedule,
   handleNewsletterSubmit,
   handleFooterNewsletterSubmit,
   toggleFaq,

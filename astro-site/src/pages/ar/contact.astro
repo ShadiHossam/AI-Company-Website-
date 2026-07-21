@@ -2,6 +2,10 @@
 export const prerender = false;
 import ArBaseLayout from '../../layouts/ArBaseLayout.astro';
 import { COMPANY } from '../../config/company';
+import { getSiteConfig } from '../../lib/config';
+
+const siteConfig = await getSiteConfig();
+const calendlyUrl = siteConfig['integration.calendly_url'] || COMPANY.calendlyUrl;
 
 const ldJson = [
   {
@@ -29,7 +33,7 @@ const ldJson = [
       {
         "@type": "Question",
         "name": "هل يمكنني حجز لقاء شخصي في دبي؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "بالتأكيد. اختر لقاء شخصي في الخطوة الثالثة من نموذج الحجز، ونحدد موعداً في مكتبنا في Business Bay أو في مقر شركتك." }
+        "acceptedAnswer": { "@type": "Answer", "text": "بالتأكيد. اذكر ذلك في حقل الملاحظات عند الحجز، أو راسلنا عبر واتساب، ونحدد موعداً في مكتبنا في Business Bay أو في مقر شركتك." }
       },
       {
         "@type": "Question",
@@ -170,9 +174,17 @@ const ldJson = [
                 </select>
               </div>
             </div>
+            <div style="margin-bottom:1rem;">
+              <label class="form-label" for="cf-notes">أي شيء آخر تريد إخبارنا به؟ (اختياري)</label>
+              <textarea class="form-textarea" id="cf-notes" rows="2" placeholder="أي أسئلة أو سياق محدد يساعدنا على التحضير..."></textarea>
+            </div>
+
+            <!-- Honeypot: leave empty, bots fill this -->
+            <input type="text" id="cf-honeypot" autocomplete="off" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" />
+
             <div style="margin-top:1.5rem;display:flex;justify-content:space-between;">
               <button onclick="arContactStep(1)" class="btn-outline">→ رجوع</button>
-              <button onclick="arContactStep(3)" class="btn-primary">التالي: حدد الموعد ←</button>
+              <button id="cf-submit-btn" onclick="arContinueToSchedule()" class="btn-primary">التالي: حدد الموعد ←</button>
             </div>
           </div>
 
@@ -180,57 +192,15 @@ const ldJson = [
           <div class="form-step" id="cf-step-3">
             <p style="color:#006875;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:1rem;">الخطوة ٣ من ٣: حدد موعد مكالمتك</p>
 
-            <label class="form-label" style="display:block;margin-bottom:0.75rem;">صيغة الاجتماع المفضلة *</label>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.25rem;">
-              <div class="meeting-type-card selected" onclick="arSelectMeeting(this, 'Video call')" id="cf-meet-video">
-                <span class="material-symbols-outlined" aria-hidden="true" style="font-size:24px;color:#006875;display:block;margin:0 auto 6px;">videocam</span>
-                <p class="meet-label" style="font-size:0.75rem;font-weight:600;color:#006875;margin:0;">مكالمة فيديو</p>
-              </div>
-              <div class="meeting-type-card" onclick="arSelectMeeting(this, 'Phone call')" id="cf-meet-phone">
-                <span class="material-symbols-outlined" aria-hidden="true" style="font-size:24px;color:#72787e;display:block;margin:0 auto 6px;">call</span>
-                <p class="meet-label" style="font-size:0.75rem;font-weight:600;color:#72787e;margin:0;">مكالمة هاتفية</p>
-              </div>
-              <div class="meeting-type-card" onclick="arSelectMeeting(this, 'In-person Dubai')" id="cf-meet-inperson">
-                <span class="material-symbols-outlined" aria-hidden="true" style="font-size:24px;color:#72787e;display:block;margin:0 auto 6px;">location_on</span>
-                <p class="meet-label" style="font-size:0.75rem;font-weight:600;color:#72787e;margin:0;">لقاء شخصي</p>
-              </div>
-            </div>
-            <input type="hidden" id="cf-meeting-type" value="Video call" />
+            <div class="calendly-inline-widget" data-url={calendlyUrl} style="min-width:280px;height:650px;"></div>
 
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
-              <div>
-                <label class="form-label" for="cf-date">التاريخ المفضل *</label>
-                <input class="form-input" id="cf-date" type="date" required style="direction:ltr;" />
-              </div>
-              <div>
-                <label class="form-label" for="cf-time">الوقت المفضل</label>
-                <select class="form-select" id="cf-time">
-                  <option value="Morning (9am – 12pm)">صباحاً (٩ص – ١٢ظ)</option>
-                  <option value="Afternoon (12pm – 4pm)">بعد الظهر (١٢ظ – ٤م)</option>
-                  <option value="Late Afternoon (4pm – 6pm)">عصراً (٤م – ٦م)</option>
-                </select>
-              </div>
-            </div>
-            <div style="margin-bottom:1rem;">
-              <label class="form-label" for="cf-notes">أي شيء آخر تريد إخبارنا به؟ (اختياري)</label>
-              <textarea class="form-textarea" id="cf-notes" rows="2" placeholder="أي أسئلة أو سياق محدد يساعدنا على التحضير..."></textarea>
-            </div>
-
-            <div style="background:rgba(0,104,117,0.06);border:1px solid rgba(0,104,117,0.20);border-radius:12px;padding:1rem;margin-bottom:1.25rem;display:flex;align-items:flex-start;gap:12px;">
+            <div style="background:rgba(0,104,117,0.06);border:1px solid rgba(0,104,117,0.20);border-radius:12px;padding:1rem;margin-top:1.25rem;display:flex;align-items:flex-start;gap:12px;">
               <span class="material-symbols-outlined" aria-hidden="true" style="color:#d97706;font-size:20px;flex-shrink:0;margin-top:2px;">shield</span>
               <p style="color:#42474e;font-size:0.8125rem;line-height:1.6;margin:0;"><strong style="color:#00253b;">بدون مخاطرة، ١٠٠٪.</strong> المكالمة مجانية. وإذا تابعت معنا ولم تكن راضياً عن نظام الذكاء الاصطناعي الذي نبنيه، نرد لك كامل استثمارك. بدون أي شروط.</p>
             </div>
 
-            <!-- Honeypot: leave empty, bots fill this -->
-            <input type="text" id="cf-honeypot" autocomplete="off" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" />
-
-            <div id="cf-submit-error" style="display:none;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:0.75rem 1rem;font-size:0.8125rem;margin-bottom:1rem;">
-              حدث خطأ ما. يرجى <a href={`https://wa.me/${COMPANY.whatsapp}`} style="color:#ef4444;font-weight:bold;">مراسلتنا عبر واتساب</a> أو البريد الإلكتروني <a href={`mailto:${COMPANY.email}`} style="color:#ef4444;font-weight:bold;">{COMPANY.email}</a>.
-            </div>
-
-            <div style="display:flex;justify-content:space-between;">
+            <div style="margin-top:1.5rem;">
               <button onclick="arContactStep(2)" class="btn-outline">→ رجوع</button>
-              <button id="cf-submit-btn" onclick="arSubmitContact()" class="btn-primary">احجز استشارتك ←</button>
             </div>
           </div>
 
@@ -239,8 +209,8 @@ const ldJson = [
             <div style="width:64px;height:64px;border-radius:50%;background:rgba(0,227,253,0.12);border:2px solid rgba(0,227,253,0.35);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;">
               <span class="material-symbols-outlined" aria-hidden="true" style="color:#006875;font-size:32px;">check_circle</span>
             </div>
-            <h3 style="font-size:1.25rem;font-weight:700;color:#00253b;margin-bottom:0.5rem;">تم استلام طلبك!</h3>
-            <p style="color:#42474e;font-size:0.875rem;margin-bottom:1.5rem;max-width:360px;margin-left:auto;margin-right:auto;line-height:1.6;">شكراً لك. سنتواصل معك قريباً لتأكيد موعد استشارتك، عبر واتساب أو البريد الإلكتروني، أيهما تفضل.</p>
+            <h3 style="font-size:1.25rem;font-weight:700;color:#00253b;margin-bottom:0.5rem;">تم الحجز!</h3>
+            <p style="color:#42474e;font-size:0.875rem;margin-bottom:1.5rem;max-width:360px;margin-left:auto;margin-right:auto;line-height:1.6;">تحقق من بريدك الإلكتروني لدعوة التقويم من Calendly. سنتواصل معك عبر واتساب مسبقاً إذا احتجنا أي شيء منك.</p>
             <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(0,227,253,0.10);border:1px solid rgba(0,227,253,0.25);border-radius:100px;padding:8px 20px;font-size:0.8125rem;font-weight:600;color:#004f58;">
               <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">shield</span>
               ضمان الرضا ١٠٠٪ يشمل كل ما نبنيه
@@ -375,7 +345,7 @@ const ldJson = [
           هل يمكنني حجز لقاء شخصي في دبي؟
           <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
         </button>
-        <div class="faq-body">بالتأكيد. اختر "لقاء شخصي" في الخطوة الثالثة من نموذج الحجز، ونحدد موعداً في مكتبنا في Business Bay أو في مقر شركتك.</div>
+        <div class="faq-body">بالتأكيد. اذكر ذلك في حقل الملاحظات عند الحجز، أو راسلنا عبر واتساب، ونحدد موعداً في مكتبنا في Business Bay أو في مقر شركتك.</div>
       </div>
 
       <div class="faq-item">
@@ -438,23 +408,10 @@ const ldJson = [
     document.querySelector('.form-box').scrollIntoView({behavior:'smooth', block:'start'});
   }
 
-  function arSelectMeeting(el, type) {
-    document.querySelectorAll('.meeting-type-card').forEach(c => {
-      c.classList.remove('selected');
-      const lbl = c.querySelector('.meet-label');
-      const ico = c.querySelector('.material-symbols-outlined');
-      if (lbl) lbl.style.color = '#72787e';
-      if (ico) ico.style.color = '#72787e';
-    });
-    el.classList.add('selected');
-    const lbl = el.querySelector('.meet-label');
-    const ico = el.querySelector('.material-symbols-outlined');
-    if (lbl) lbl.style.color = '#006875';
-    if (ico) ico.style.color = '#006875';
-    document.getElementById('cf-meeting-type').value = type;
-  }
-
-  async function arSubmitContact() {
+  // Submits the qualification data collected in steps 1-2, then reveals the Calendly
+  // widget in step 3. Best-effort: scheduling shouldn't be blocked by a CRM hiccup, so a
+  // failed submit doesn't stop the user from reaching the calendar.
+  async function arContinueToSchedule() {
     const name    = (document.getElementById('cf-name') as HTMLInputElement).value.trim();
     const email   = (document.getElementById('cf-email') as HTMLInputElement).value.trim();
     const wa      = (document.getElementById('cf-whatsapp') as HTMLInputElement).value.trim();
@@ -464,14 +421,10 @@ const ldJson = [
       validateArContactStep(1);
       return;
     }
-    if (!validateArContactStep(2)) {
-      arContactStep(2);
-      return;
-    }
+    if (!validateArContactStep(2)) return;
 
     const btn = document.getElementById('cf-submit-btn') as HTMLButtonElement;
     btn.disabled = true;
-    btn.textContent = 'جارٍ الإرسال…';
 
     const payload = {
       full_name:      name,
@@ -484,9 +437,6 @@ const ldJson = [
       main_challenge: (document.getElementById('cf-challenge') as HTMLTextAreaElement)?.value?.trim() ?? '',
       budget_range:   (document.getElementById('cf-budget') as HTMLSelectElement)?.value ?? '',
       ai_experience:  (document.getElementById('cf-ai-exp') as HTMLSelectElement)?.value ?? '',
-      meeting_format: (document.getElementById('cf-meeting-type') as HTMLInputElement)?.value ?? '',
-      preferred_date: (document.getElementById('cf-date') as HTMLInputElement)?.value ?? '',
-      preferred_time: (document.getElementById('cf-time') as HTMLSelectElement)?.value ?? '',
       notes:          (document.getElementById('cf-notes') as HTMLTextAreaElement)?.value?.trim() ?? '',
       source:         'contact_form',
       page_source:    'ar_contact_page',
@@ -497,39 +447,43 @@ const ldJson = [
     };
 
     try {
-      const res = await fetch('/api/submit-lead', {
+      await fetch('/api/submit-lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error('Failed');
-      for (let i = 1; i <= 3; i++) {
-        const s = document.getElementById('cf-step-' + i);
-        if (s) s.classList.remove('active');
-      }
-      document.getElementById('cf-step-indicator')!.style.display = 'none';
-      document.getElementById('cf-success-screen')!.style.display = 'block';
     } catch {
-      btn.disabled = false;
-      btn.textContent = 'احجز استشارتك ←';
-      const errEl = document.getElementById('cf-submit-error') as HTMLElement;
-      if (errEl) errEl.style.display = 'block';
+      // Silent — Calendly scheduling still proceeds even if the CRM lead write failed.
     }
+    btn.disabled = false;
+    arContactStep(3);
   }
 
-  const cfDateInput = document.getElementById('cf-date');
-  if (cfDateInput) cfDateInput.setAttribute('min', new Date().toISOString().split('T')[0]);
+  // Calendly posts this message to the parent window once a slot is actually booked.
+  // Guard on the sitewide modal not being open — if it is, its own listener in site.ts
+  // owns the event instead.
+  window.addEventListener('message', (e: MessageEvent) => {
+    if (!(e.origin ?? '').includes('calendly.com')) return;
+    if ((e.data as { event?: string })?.event !== 'calendly.event_scheduled') return;
+    const modal = document.getElementById('modal');
+    if (modal?.classList.contains('open')) return;
+    for (let i = 1; i <= 3; i++) {
+      const s = document.getElementById('cf-step-' + i);
+      if (s) s.classList.remove('active');
+    }
+    document.getElementById('cf-step-indicator')!.style.display = 'none';
+    document.getElementById('cf-success-screen')!.style.display = 'block';
+  });
 
   /* This script compiles to an ES module, so top-level functions are module-scoped,
      not global — the inline onclick="" attributes above need them on window. */
   declare global {
     interface Window {
       arContactStep: typeof arContactStep;
-      arSelectMeeting: typeof arSelectMeeting;
-      arSubmitContact: typeof arSubmitContact;
+      arContinueToSchedule: typeof arContinueToSchedule;
     }
   }
-  Object.assign(window, { arContactStep, arSelectMeeting, arSubmitContact });
+  Object.assign(window, { arContactStep, arContinueToSchedule });
 </script>
 
 <style>
@@ -558,8 +512,6 @@ const ldJson = [
   .guarantee-box p { font-size:0.875rem; line-height:1.6; color:#42474e; margin:0; }
 
   .form-box { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:24px; padding:2.5rem; box-shadow:0 20px 40px rgba(0,59,92,0.04); }
-  .meeting-type-card { border:1px solid rgba(0,37,59,0.12); border-radius:14px; padding:1rem; cursor:pointer; transition:all 0.2s; text-align:center; background:#fff; }
-  .meeting-type-card:hover, .meeting-type-card.selected { border-color:rgba(0,227,253,0.45); background:rgba(0,227,253,0.08); }
   .step-indicator { display:flex; align-items:center; justify-content:center; gap:0; margin-bottom:2rem; }
   .step-dot-sm { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.78rem; font-weight:700; border:1px solid rgba(0,37,59,0.15); color:#9ca3af; background:#fff; transition:all 0.3s; position:relative; z-index:1; }
   .step-dot-sm.active { border-color:#00e3fd; background:#00e3fd; color:#00253b; }

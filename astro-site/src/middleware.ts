@@ -29,17 +29,20 @@ const isStaging = import.meta.env.IS_STAGING === 'true';
 // clarity_project_id are all set, so their origins are allowlisted below. Every other
 // integration.* key is still empty. Add an origin back only when its integration is
 // turned on for real in the admin settings.
+// Calendly is allowlisted unconditionally (not gated on a site_config check like the
+// others) because the inline booking widget is now load-bearing UI in Modal/ArModal and
+// both contact pages, not an optional marketing pixel.
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.clarity.ms",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.clarity.ms https://assets.calendly.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://assets.calendly.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: blob: https:",
-  "connect-src 'self' https://*.supabase.co https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://www.clarity.ms",
+  "connect-src 'self' https://*.supabase.co https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://www.clarity.ms https://calendly.com",
   // 'self' is required for the sandboxed snippet-preview iframe (admin/settings/snippets) —
   // safe because that iframe uses sandbox="allow-scripts" with no allow-same-origin, so
   // embedded content still can't touch this page's DOM, cookies, or storage.
-  "frame-src 'self'",
+  "frame-src 'self' https://calendly.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

@@ -2,19 +2,22 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { COMPANY } from "../config/company";
 import { loadPageContent, getVal } from "../lib/page-content";
+import { getSiteConfig } from "../lib/config";
 import FaqAccordion from "../components/FaqAccordion.astro";
 
 export const prerender = false;
 
 const pc = await loadPageContent('contact');
 const g = (key: string, fallback: string) => getVal(pc, key, fallback);
+const siteConfig = await getSiteConfig();
+const calendlyUrl = siteConfig['integration.calendly_url'] || COMPANY.calendlyUrl;
 
 const contactFaqs = [
   { question: "How fast will you respond?", answer: "WhatsApp messages get a reply within 4 hours during business hours. Emails and form submissions get a same business day response. If you book a specific time slot in the form, we'll confirm it directly." },
   { question: "What should I prepare before the call?", answer: "Nothing formal. It helps if you can roughly describe the task or process that's eating your team's time, but you don't need numbers, a deck, or a technical brief. We'll ask the right questions on the call." },
   { question: "Is the consultation really free, no strings attached?", answer: "Yes. The 30-minute call costs nothing and carries no obligation. If AI doesn't make sense for your business right now, we'll tell you that directly instead of pushing a sale." },
   { question: "Can we talk in Arabic?", answer: "Yes. Our team is available in Arabic and English. Tell us your preference when you book, or just message us on WhatsApp in whichever language you're comfortable with." },
-  { question: "Do you meet in person in Dubai?", answer: "Yes. Select \"In-Person\" as the meeting format in the booking form and we'll arrange a time to meet at our Business Bay office, or we can visit your premises depending on the project." },
+  { question: "Do you meet in person in Dubai?", answer: "Yes. Mention it in the notes field when booking, or just tell us on WhatsApp, and we'll arrange a time to meet at our Business Bay office, or we can visit your premises depending on the project." },
 ];
 
 const contactFaqLdJson = {
@@ -289,68 +292,33 @@ const contactLdJson = [
                 </select>
               </div>
             </div>
+            <div style="margin-bottom:1rem;">
+              <label class="form-label" for="c-notes">Anything else we should know? (optional)</label>
+              <textarea class="form-textarea" id="c-notes" rows="2" placeholder="Any specific questions or context that would help us prepare..."></textarea>
+            </div>
+
+            <!-- Honeypot: leave empty — bots fill this -->
+            <input type="text" id="c-honeypot" autocomplete="off" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" />
+
             <div style="margin-top:1.5rem; display:flex; justify-content:space-between;">
               <button type="button" onclick="contactStep(1)" class="btn-outline">← Back</button>
-              <button type="button" onclick="contactStep(3)" class="btn-primary">Next: Schedule →</button>
+              <button type="button" id="contact-submit-btn" onclick="continueToScheduleContact()" class="btn-primary">Next: Schedule →</button>
             </div>
           </div>
 
           <!-- STEP 3 -->
           <div class="form-step" id="step-3">
             <p style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:1rem;">Step 3 of 3: Schedule Your Call</p>
-            <div id="step-3-error-summary" role="alert" class="step-error-summary" style="display:none;">Please fill in the required fields below.</div>
 
-            <label class="form-label" style="display:block; margin-bottom:0.75rem;">Preferred Meeting Format *</label>
-            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:1.25rem;">
-              <div class="meeting-type-card selected" onclick="selectMeeting(this, 'Video call')" id="meet-video">
-                <span class="material-symbols-outlined" aria-hidden="true" style="font-size:24px; color:#006875; display:block; margin:0 auto 6px;">videocam</span>
-                <p class="meet-label" style="font-size:0.75rem; font-weight:600; color:#006875; margin:0;">Video Call</p>
-              </div>
-              <div class="meeting-type-card" onclick="selectMeeting(this, 'Phone call')" id="meet-phone">
-                <span class="material-symbols-outlined" aria-hidden="true" style="font-size:24px; color:#72787e; display:block; margin:0 auto 6px;">call</span>
-                <p class="meet-label" style="font-size:0.75rem; font-weight:600; color:#72787e; margin:0;">Phone Call</p>
-              </div>
-              <div class="meeting-type-card" onclick="selectMeeting(this, 'In-person Dubai')" id="meet-inperson">
-                <span class="material-symbols-outlined" aria-hidden="true" style="font-size:24px; color:#72787e; display:block; margin:0 auto 6px;">location_on</span>
-                <p class="meet-label" style="font-size:0.75rem; font-weight:600; color:#72787e; margin:0;">In-Person</p>
-              </div>
-            </div>
-            <input type="hidden" id="c-meeting-type" value="Video call" />
+            <div class="calendly-inline-widget" data-url={calendlyUrl} style="min-width:280px;height:650px;"></div>
 
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
-              <div>
-                <label class="form-label" for="c-date">Preferred Date *</label>
-                <input class="form-input" id="c-date" type="date" required />
-              </div>
-              <div>
-                <label class="form-label" for="c-time">Preferred Time</label>
-                <select class="form-select" id="c-time">
-                  <option>Morning (9am – 12pm)</option>
-                  <option>Afternoon (12pm – 4pm)</option>
-                  <option>Late Afternoon (4pm – 6pm)</option>
-                </select>
-              </div>
-            </div>
-            <div style="margin-bottom:1rem;">
-              <label class="form-label" for="c-notes">Anything else we should know? (optional)</label>
-              <textarea class="form-textarea" id="c-notes" rows="2" placeholder="Any specific questions or context that would help us prepare..."></textarea>
-            </div>
-
-            <div style="background:rgba(0,104,117,0.06); border:1px solid rgba(0,104,117,0.20); border-radius:12px; padding:1rem; margin-bottom:1.25rem; display:flex; align-items:flex-start; gap:12px;">
+            <div style="background:rgba(0,104,117,0.06); border:1px solid rgba(0,104,117,0.20); border-radius:12px; padding:1rem; margin-top:1.25rem; display:flex; align-items:flex-start; gap:12px;">
               <span class="material-symbols-outlined" aria-hidden="true" style="color:#d97706; font-size:20px; flex-shrink:0; margin-top:2px;">shield</span>
               <p style="color:#42474e; font-size:0.8125rem; line-height:1.6; margin:0;"><strong style="color:#00253b;">100% risk-free.</strong> The call is free. If you proceed and aren't satisfied with the AI system we build, we refund 100% of your investment. No conditions.</p>
             </div>
 
-            <!-- Honeypot: leave empty — bots fill this -->
-            <input type="text" id="c-honeypot" autocomplete="off" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" />
-
-            <div id="contact-submit-error" style="display:none; background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:0.75rem 1rem; font-size:0.8125rem; margin-bottom:1rem;">
-              Something went wrong. Please <a href={`https://wa.me/${COMPANY.whatsapp}`} style="color:#ef4444;font-weight:bold;">message us on WhatsApp</a> or email <a href={`mailto:${COMPANY.email}`} style="color:#ef4444;font-weight:bold;">{COMPANY.email}</a>.
-            </div>
-
-            <div style="display:flex; justify-content:space-between;">
+            <div style="margin-top:1.5rem;">
               <button type="button" onclick="contactStep(2)" class="btn-outline">← Back</button>
-              <button type="submit" id="contact-submit-btn" class="btn-primary">Book Consultation →</button>
             </div>
           </div>
 
@@ -361,8 +329,8 @@ const contactLdJson = [
             <div style="width:64px; height:64px; border-radius:50%; background:rgba(0,227,253,0.12); border:2px solid rgba(0,227,253,0.35); display:flex; align-items:center; justify-content:center; margin:0 auto 1.25rem;">
               <span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:32px;">check_circle</span>
             </div>
-            <h3 style="font-size:1.25rem; font-weight:700; color:#00253b; margin-bottom:0.5rem;">Request Received!</h3>
-            <p style="color:#42474e; font-size:0.875rem; margin-bottom:1.5rem; max-width:360px; margin-left:auto; margin-right:auto; line-height:1.6;">Thank you. We'll reach out shortly to confirm your consultation time, via WhatsApp or email, whichever you prefer.</p>
+            <h3 style="font-size:1.25rem; font-weight:700; color:#00253b; margin-bottom:0.5rem;">You're Booked!</h3>
+            <p style="color:#42474e; font-size:0.875rem; margin-bottom:1.5rem; max-width:360px; margin-left:auto; margin-right:auto; line-height:1.6;">Check your email for the calendar invite from Calendly. We'll reach out on WhatsApp beforehand if we need anything from you.</p>
             <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(0,227,253,0.10); border:1px solid rgba(0,227,253,0.25); border-radius:100px; padding:8px 20px; font-size:0.8125rem; font-weight:600; color:#004f58;">
               <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">shield</span>
               100% Satisfaction Guarantee applies to everything we build
@@ -465,23 +433,10 @@ const contactLdJson = [
     document.querySelector('.form-box').scrollIntoView({behavior:'smooth', block:'start'});
   }
 
-  function selectMeeting(el, type) {
-    document.querySelectorAll('.meeting-type-card').forEach(c => {
-      c.classList.remove('selected');
-      const lbl = c.querySelector('.meet-label');
-      const ico = c.querySelector('.material-symbols-outlined');
-      if (lbl) lbl.style.color = '#72787e';
-      if (ico) ico.style.color = '#72787e';
-    });
-    el.classList.add('selected');
-    const lbl = el.querySelector('.meet-label');
-    const ico = el.querySelector('.material-symbols-outlined');
-    if (lbl) lbl.style.color = '#006875';
-    if (ico) ico.style.color = '#006875';
-    document.getElementById('c-meeting-type').value = type;
-  }
-
-  async function submitContact() {
+  // Submits the qualification data collected in steps 1-2, then reveals the Calendly
+  // widget in step 3. Best-effort: scheduling shouldn't be blocked by a CRM hiccup, so a
+  // failed submit doesn't stop the user from reaching the calendar.
+  async function continueToScheduleContact() {
     const name    = (document.getElementById('c-name') as HTMLInputElement).value.trim();
     const email   = (document.getElementById('c-email') as HTMLInputElement).value.trim();
     const wa      = (document.getElementById('c-whatsapp') as HTMLInputElement).value.trim();
@@ -491,17 +446,10 @@ const contactLdJson = [
       validateContactStep(1);
       return;
     }
-    if (!validateContactStep(2)) {
-      contactStep(2);
-      return;
-    }
-    if (!validateContactStep(3)) {
-      return;
-    }
+    if (!validateContactStep(2)) return;
 
     const btn = document.getElementById('contact-submit-btn') as HTMLButtonElement;
     btn.disabled = true;
-    btn.textContent = 'Submitting…';
 
     const payload = {
       full_name:      name,
@@ -514,9 +462,6 @@ const contactLdJson = [
       main_challenge: (document.getElementById('c-challenge') as HTMLTextAreaElement)?.value?.trim() ?? '',
       budget_range:   (document.getElementById('c-budget') as HTMLSelectElement)?.value ?? '',
       ai_experience:  (document.getElementById('c-ai-exp') as HTMLSelectElement)?.value ?? '',
-      meeting_format: (document.getElementById('c-meeting-type') as HTMLInputElement)?.value ?? '',
-      preferred_date: (document.getElementById('c-date') as HTMLInputElement)?.value ?? '',
-      preferred_time: (document.getElementById('c-time') as HTMLSelectElement)?.value ?? '',
       notes:          (document.getElementById('c-notes') as HTMLTextAreaElement)?.value?.trim() ?? '',
       source:         'contact_form',
       page_source:    'contact_page',
@@ -527,40 +472,42 @@ const contactLdJson = [
     };
 
     try {
-      const res = await fetch('/api/submit-lead', {
+      await fetch('/api/submit-lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error('Failed');
-      for (let i = 1; i <= 3; i++) {
-        const s = document.getElementById('step-' + i);
-        if (s) s.classList.remove('active');
-      }
-      document.getElementById('step-indicator')!.style.display = 'none';
-      document.getElementById('success-screen')!.style.display = 'block';
     } catch {
-      btn.disabled = false;
-      btn.textContent = 'Book Consultation →';
-      const errEl = document.getElementById('contact-submit-error') as HTMLElement;
-      if (errEl) errEl.style.display = 'block';
+      // Silent — Calendly scheduling still proceeds even if the CRM lead write failed.
     }
+    btn.disabled = false;
+    contactStep(3);
   }
 
-  const dateInput = document.getElementById('c-date');
-  if (dateInput) dateInput.setAttribute('min', new Date().toISOString().split('T')[0]);
+  // Calendly posts this message to the parent window once a slot is actually booked.
+  // Guard on the sitewide modal not being open — if it is, its own listener in site.ts
+  // owns the event instead, since this page's step ids match the modal's.
+  window.addEventListener('message', (e: MessageEvent) => {
+    if (!(e.origin ?? '').includes('calendly.com')) return;
+    if ((e.data as { event?: string })?.event !== 'calendly.event_scheduled') return;
+    const modal = document.getElementById('modal');
+    if (modal?.classList.contains('open')) return;
+    for (let i = 1; i <= 3; i++) {
+      const s = document.getElementById('step-' + i);
+      if (s) s.classList.remove('active');
+    }
+    document.getElementById('step-indicator')!.style.display = 'none';
+    document.getElementById('success-screen')!.style.display = 'block';
+  });
 
-  // Enter key inside any step submits the nearest <form> — route that to the same
-  // step-advance / submit logic the buttons use, instead of a native full-page submit.
+  // Enter key inside step 1/2 submits the nearest <form> — route that to the same
+  // step-advance logic the buttons use, instead of a native full-page submit.
   const contactForm = document.getElementById('contact-form');
   if (contactForm) {
     contactForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      if (currentContactStep < 3) {
-        contactStep(currentContactStep + 1);
-      } else {
-        submitContact();
-      }
+      if (currentContactStep === 1) contactStep(2);
+      else if (currentContactStep === 2) continueToScheduleContact();
     });
   }
 
@@ -569,11 +516,10 @@ const contactLdJson = [
   declare global {
     interface Window {
       contactStep: typeof contactStep;
-      selectMeeting: typeof selectMeeting;
-      submitContact: typeof submitContact;
+      continueToScheduleContact: typeof continueToScheduleContact;
     }
   }
-  Object.assign(window, { contactStep, selectMeeting, submitContact });
+  Object.assign(window, { contactStep, continueToScheduleContact });
 </script>
 
 </BaseLayout>
@@ -586,8 +532,6 @@ const contactLdJson = [
     .contact-card:hover { border-color:rgba(0,227,253,0.35); box-shadow:0 12px 48px rgba(0,227,253,0.10); }
     .form-box { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:24px; padding:2.5rem; box-shadow:0 20px 40px rgba(0,59,92,0.04); }
     .trust-pill { display:flex; align-items:center; gap:8px; padding:10px 16px; background:rgba(0,227,253,0.08); border:1px solid rgba(0,227,253,0.20); border-radius:12px; font-size:0.82rem; color:#42474e; font-weight:500; }
-    .meeting-type-card { border:1px solid rgba(0,37,59,0.12); border-radius:14px; padding:1rem; cursor:pointer; transition:all 0.2s; text-align:center; background:#fff; }
-    .meeting-type-card:hover, .meeting-type-card.selected { border-color:rgba(0,227,253,0.45); background:rgba(0,227,253,0.08); }
     .step-indicator { display:flex; align-items:center; justify-content:center; gap:0; margin-bottom:2rem; }
     .step-dot-sm { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.78rem; font-weight:700; border:1px solid rgba(0,37,59,0.15); color:#9ca3af; background:#fff; transition:all 0.3s; position:relative; z-index:1; }
     .step-dot-sm.active { border-color:#00e3fd; background:#00e3fd; color:#00253b; }
