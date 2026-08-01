@@ -1,0 +1,259 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+
+const faqItems = [
+  {
+    question: "Should managers learn AI themselves, or just approve tools for staff to use?",
+    answer: "Both, but in that order. A manager who's never used the tools personally is poorly positioned to judge whether a vendor's claims are realistic, whether staff are using AI appropriately, or whether the promised time savings are actually showing up. Hands-on experience, even at a basic level, makes every approval decision that follows more grounded.",
+  },
+  {
+    question: "What's the ROI of AI training for managers specifically?",
+    answer: "The direct ROI is faster, better-informed decisions about which AI tools are worth rolling out and which aren't, which avoids wasted spend on tools that sound good in a demo but don't fit real workflows. The indirect ROI is often larger: a manager who understands AI adoption from the inside runs a smoother rollout, with less resistance and fewer false starts, than one directing it from a distance.",
+  },
+  {
+    question: "Can this be delivered as a private session for our leadership team?",
+    answer: "Yes, and for a leadership team this is usually the better format over individual self-study. A shared session means the whole team leaves with the same vocabulary and the same baseline understanding, which matters when they're making joint decisions about AI investment and policy afterward. Sessions can run on-site or remotely depending on where your team is based.",
+  },
+  {
+    question: "Is this different from the AI Foundations training Lenoo offers for whole teams?",
+    answer: "This page is written for an individual manager learning at their own pace, or a small leadership group. Our full AI training and workshops service covers structured programs delivered to your whole team, including a dedicated managers track. If you're past self-study and ready to roll out training company-wide, that's the better next step.",
+  },
+  {
+    question: "How much technical knowledge does a manager actually need?",
+    answer: "Less than most managers assume. You don't need to understand how a model is built to make good decisions about it. You need enough hands-on familiarity to ask sharp questions, spot an unrealistic vendor claim, and understand roughly what's possible versus what's still marketing. That's a manageable amount of learning, not a technical degree.",
+  },
+];
+
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
+const courseLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'Course',
+  name: "AI Course for Managers and Team Leaders",
+  description: "An AI course for managers and team leaders covering how to evaluate AI tools, delegate work to AI, measure ROI, and lead change management during AI adoption.",
+  provider: { '@type': 'Organization', name: 'Lenoo AI', sameAs: 'https://lenooai.com' },
+  url: 'https://lenooai.com/services/ai-courses/managers',
+};
+
+const breadcrumbLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+    { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://lenooai.com/services' },
+    { '@type': 'ListItem', position: 3, name: 'AI Courses', item: 'https://lenooai.com/services/ai-courses' },
+    { '@type': 'ListItem', position: 4, name: 'AI Course for Managers', item: 'https://lenooai.com/services/ai-courses/managers' },
+  ],
+};
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+---
+
+<BaseLayout
+  title="AI Course for Managers and Team Leaders | Lenoo AI"
+  description="An AI course built for managers: evaluating AI tools, delegating work to AI, measuring ROI, and leading your team through AI adoption without the guesswork."
+  canonicalPath="/services/ai-courses/managers"
+  ldJson={[faqLdJson, courseLdJson, breadcrumbLdJson]}
+>
+
+<!-- ── HERO ── -->
+<header class="hero-section" style="padding-top: 10rem; padding-bottom: 5rem; text-align: center;">
+  <div class="container" style="position: relative; z-index: 1;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services" style="color:inherit;text-decoration:none;opacity:0.65;">Services</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-courses" style="color:inherit;text-decoration:none;opacity:0.65;">AI Courses</a><span style="opacity:0.4;padding:0 4px;"> / </span>AI Course for Managers</div>
+    <h1 style="max-width: 46rem; margin: 0 auto 1.5rem;">
+      AI Course for <span class="gradient-text">Managers</span>
+    </h1>
+    <p style="color: rgba(255,255,255,0.72); font-size: 1.125rem; line-height: 1.75; max-width: 40rem; margin: 0 auto 0;">
+      Most AI training talks to individual contributors: how to write better prompts, how to save time on a task. Managers need a different angle entirely. You're not just using AI, you're deciding which tools your team adopts, setting expectations, and being accountable for whether the investment pays off. This page covers what that actually requires, from evaluating vendors to leading your team through the change.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">Built for decision-makers, not just users</span>
+      <span class="tchip">Covers evaluation, ROI, and rollout</span>
+      <span class="tchip">Individual or leadership team format</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;">
+      <button onclick="openModal(this)" data-source="courses_managers_hero" class="btn-primary" style="font-size: 1rem;">Request Training Quote →</button>
+      <a href="#curriculum" class="btn-outline" style="font-size: 1rem;">See the Curriculum ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- ── WHY THIS MATTERS ── -->
+<section class="section" aria-labelledby="why-heading">
+  <div class="container" style="max-width: 800px;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <h2 id="why-heading">Why Managers Need a Different Kind of AI Course</h2>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      A generic AI course teaches you to use a tool better. That's useful, but it's not the hardest part of a manager's job when it comes to AI. The harder part is deciding which of the dozens of AI tools pitched to you every quarter are actually worth adopting, setting realistic expectations with a team that's either overly enthusiastic or quietly resistant, and knowing afterward whether the investment actually changed anything.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      There's also a credibility problem that shows up fast when a manager hasn't used the tools personally. Staff can tell the difference between a manager who understands what AI can and can't do and one who's repeating a vendor's pitch deck. The first earns trust during a rollout. The second usually gets quiet pushback that never surfaces directly in a meeting.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      None of this requires becoming technical. It requires enough direct experience to ask good questions and enough of a framework to make a defensible decision instead of a gut call based on the last demo you sat through.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      There's also a timing problem specific to managers. By the time AI adoption becomes visibly urgent, staff are often already using tools informally, unevenly, and without much thought about data handling. Getting ahead of that with a clear, informed stance is far easier than trying to retrofit good habits onto a team that's already formed its own inconsistent ones.
+    </p>
+  </div>
+</section>
+
+<!-- ── CURRICULUM ── -->
+<section id="curriculum" class="section" style="background: #e7eeff;" aria-labelledby="curriculum-heading">
+  <div class="container">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <p style="color: #006875; font-size: .8rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-family: 'Inter', sans-serif; margin-bottom: 1rem;">What You'll Learn</p>
+      <h2 id="curriculum-heading">Core Curriculum</h2>
+    </div>
+    <div class="path-grid">
+      <div class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Evaluating AI Tools and Vendors</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">A practical framework for cutting through vendor claims: what questions to ask in a sales demo, how to tell a genuinely useful feature from a flashy one, and how to run a small pilot before committing budget to a full rollout.</p>
+      </div>
+      <div class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Delegating Work to AI</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Thinking through which tasks on your team are genuinely suited to AI assistance and which still need a person, using the same judgment you'd apply to delegating work to a junior staff member.</p>
+      </div>
+      <div class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Measuring ROI Honestly</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Setting a baseline before rollout, choosing metrics that reflect real time or cost savings rather than vanity numbers, and being willing to conclude a tool isn't working if the data says so.</p>
+      </div>
+      <div class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Leading Change Management</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Handling the two failure modes that derail most AI rollouts: staff who are quietly anxious about job security, and staff who over-adopt without checking output, and how to address both directly instead of hoping they resolve themselves.</p>
+      </div>
+      <div class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Setting Team Guidelines</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Drafting clear, practical rules for what's appropriate to put into an AI tool, what needs a human check before it goes out, and what stays off-limits, without writing a policy so restrictive nobody follows it.</p>
+      </div>
+      <div class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Avoiding Common Pitfalls</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">The mistakes that show up most often in AI rollouts: mandating a tool before staff understand why, measuring adoption instead of outcomes, and underestimating how much a rollout needs active management in the first month.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOR IT LEADERS ── -->
+<section class="section" aria-labelledby="it-leaders-heading">
+  <div class="container" style="max-width: 800px;">
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+      <h2 id="it-leaders-heading">For IT and Technical Leaders</h2>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      If you're an IT leader rather than a functional manager, the curriculum above still applies, with a heavier emphasis on two areas: vendor security and compliance review, and integration feasibility. Evaluating an AI vendor for a finance or HR team means asking not just whether the tool works, but how it handles your company's data, where that data is processed, and what happens to it if you cancel the contract.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      IT leaders are also usually the ones fielding requests from other departments to approve tools nobody has technically reviewed. Having a consistent evaluation process, rather than an ad hoc yes or no each time, saves real time and reduces the chance of approving something that creates a data exposure problem down the line.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      A practical habit worth building early: keep a short, running log of every AI tool a department has asked to use, whether it was approved, and why. It sounds bureaucratic, but it turns a string of one-off decisions into a consistent policy you can actually explain and defend later, which matters more than most IT leaders expect once a security review or audit comes around.
+    </p>
+  </div>
+</section>
+
+<!-- ── FORMAT & PATH ── -->
+<section class="section" style="background: #f0f3ff;" aria-labelledby="format-heading">
+  <div class="container" style="max-width: 760px;">
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+      <h2 id="format-heading">Self-Directed Learning vs. Bringing In Structured Training</h2>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      A single manager can work through this material on their own, using it as a checklist against their next tool evaluation or rollout decision. That's a reasonable path if you're the only one who needs to level up right now.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      If your whole leadership team needs the same grounding before making a joint decision on AI investment, self-study stops being efficient. Everyone ends up with a different level of understanding walking into the same meeting. Our <a href="/services/ai-training" style="color:#006875; font-weight:600;">AI training and workshops</a> service includes a dedicated managers track built for exactly this, delivered to your leadership team together so decisions get made from a shared baseline.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      A common pattern that works well: the manager or leadership team goes through the material here first, individually, to build a shared vocabulary. Then a private session covers the specific decisions your business is facing, like which tool to pilot next quarter or how to roll out a policy across departments, using your team's real situation instead of hypothetical examples that don't quite match what you're dealing with.
+    </p>
+  </div>
+</section>
+
+<!-- ── RELATED PATHS ── -->
+<section class="section" aria-labelledby="related-heading">
+  <div class="container" style="max-width: 900px;">
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+      <h2 id="related-heading">What Your Team Might Need Next</h2>
+      <p style="color: #42474e; max-width: 40rem; margin: 1rem auto 0; line-height: 1.7;">Once you understand AI adoption at the leadership level, it helps to know what each function on your team actually needs to learn. These pages go deeper on the specifics for each role, so you can point a specific team member to the right one instead of sending everyone the same generic overview.</p>
+    </div>
+    <div class="path-grid">
+      <a href="/services/ai-courses/finance" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Finance</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">What your finance team needs for reporting, forecasting, and reconciliation work without compromising accuracy or audit trails.</p>
+        <span class="learn-link">See the Finance path →</span>
+      </a>
+      <a href="/services/ai-courses/sales" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Sales</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">What your sales team needs for prospect research, follow-ups, and deal prep without losing the personal touch that closes deals.</p>
+        <span class="learn-link">See the Sales path →</span>
+      </a>
+      <a href="/services/ai-courses/marketing" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Marketing</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">What your marketing team needs for campaign drafts, content repurposing, and bilingual output on tighter timelines.</p>
+        <span class="learn-link">See the Marketing path →</span>
+      </a>
+      <a href="/services/ai-courses/hr" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">HR</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">What your HR team needs for screening support, policy drafting, and staff communication without compromising candidate data.</p>
+        <span class="learn-link">See the HR path →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FAQ ── -->
+<section class="section" style="background: #e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width: 48rem;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- ── FINAL CTA ── -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position: relative; z-index: 1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size: clamp(1.75rem, 3vw, 2.5rem); margin-bottom: 1rem;">Ready to Lead AI Adoption With Confidence?</h2>
+        <p style="font-size: 1.125rem; max-width: 36rem; margin: 0 auto 2rem; line-height: 1.7;">Request a quote for private AI training built for your leadership team, covering evaluation, rollout, and ROI from day one.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="courses_managers" class="btn-primary" style="font-size: 1.125rem; padding: 1.125rem 2.75rem;">Request Training Quote →</button>
+        <p style="font-size: .875rem; margin-top: 1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+  .path-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+  }
+  .path-card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+  }
+</style>
