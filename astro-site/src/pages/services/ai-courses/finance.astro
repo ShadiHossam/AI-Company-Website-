@@ -1,0 +1,272 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+
+const faqItems = [
+  {
+    question: "Is this course only for accountants, or also for analysts and bookkeepers?",
+    answer: "It's built for anyone doing finance work, not just credentialed accountants. Analysts, bookkeepers, controllers, and finance managers all deal with the same core tasks this course covers: turning raw data into reports, drafting forecasts, and reconciling numbers. The curriculum focuses on those tasks rather than assuming a specific job title or qualification.",
+  },
+  {
+    question: "Does this cover using AI with sensitive financial data safely?",
+    answer: "Yes, directly. Financial data carries real confidentiality requirements, and the course covers what's reasonable to input into an AI tool versus what should stay out entirely, along with how to use enterprise-grade tools with proper data handling agreements when sensitive figures are genuinely involved.",
+  },
+  {
+    question: "Is this tax or accounting advice?",
+    answer: "No. This is a skills course for using AI tools effectively in finance work. It is not tax, audit, or accounting advice, and any AI-assisted output involving compliance or regulatory matters should be reviewed by a qualified professional before you rely on it.",
+  },
+  {
+    question: "Is there a good free finance AI course?",
+    answer: "General AI tutorials are free and teach the basics of drafting and summarizing. What's harder to find for free is guidance specific to finance's accuracy and confidentiality requirements, where a wrong or fabricated number is far more costly than a slightly awkward sentence in a marketing draft. That gap is what this course is built to close.",
+  },
+  {
+    question: "How is this different from what our accounting software already does?",
+    answer: "Accounting and ERP software automates defined, repeatable calculations. AI tools are better suited to work that requires judgment and language: summarizing what changed and why, drafting the narrative that goes around the numbers, and flagging patterns worth a closer look. The two are complementary, not competing.",
+  },
+];
+
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
+const courseLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'Course',
+  name: "AI Course for Finance Professionals",
+  description: "An AI course for finance professionals covering reporting automation, forecasting support, reconciliation assistance, and safe use of AI with sensitive financial data.",
+  provider: { '@type': 'Organization', name: 'Lenoo AI', sameAs: 'https://lenooai.com' },
+  url: 'https://lenooai.com/services/ai-courses/finance',
+};
+
+const breadcrumbLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+    { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://lenooai.com/services' },
+    { '@type': 'ListItem', position: 3, name: 'AI Courses', item: 'https://lenooai.com/services/ai-courses' },
+    { '@type': 'ListItem', position: 4, name: 'AI Course for Finance', item: 'https://lenooai.com/services/ai-courses/finance' },
+  ],
+};
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+---
+
+<BaseLayout
+  title="AI Course for Finance Professionals | Lenoo AI"
+  description="An AI course built for finance: reporting automation, forecasting support, reconciliation assistance, and how to handle sensitive financial data with AI tools safely."
+  canonicalPath="/services/ai-courses/finance"
+  ldJson={[faqLdJson, courseLdJson, breadcrumbLdJson]}
+>
+
+<!-- ── HERO ── -->
+<header class="hero-section" style="padding-top: 10rem; padding-bottom: 5rem; text-align: center;">
+  <div class="container" style="position: relative; z-index: 1;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services" style="color:inherit;text-decoration:none;opacity:0.65;">Services</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-courses" style="color:inherit;text-decoration:none;opacity:0.65;">AI Courses</a><span style="opacity:0.4;padding:0 4px;"> / </span>AI Course for Finance</div>
+    <h1 style="max-width: 46rem; margin: 0 auto 1.5rem;">
+      AI Course for <span class="gradient-text">Finance Professionals</span>
+    </h1>
+    <p style="color: rgba(255,255,255,0.72); font-size: 1.125rem; line-height: 1.75; max-width: 40rem; margin: 0 auto 0;">
+      Finance work runs on accuracy and confidentiality, which is exactly why generic AI advice doesn't transfer cleanly here. This page covers what a finance-specific AI course should teach: where AI genuinely speeds up reporting and analysis, and where a fabricated number or an exposed spreadsheet can cause real damage to a business that depends on getting the numbers right.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">Built around accuracy and confidentiality</span>
+      <span class="tchip">For analysts, bookkeepers, and controllers alike</span>
+      <span class="tchip">Not a substitute for tax or audit advice</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;">
+      <button onclick="openModal(this)" data-source="courses_finance_hero" class="btn-primary" style="font-size: 1rem;">Request Training Quote →</button>
+      <a href="#curriculum" class="btn-outline" style="font-size: 1rem;">See the Curriculum ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- ── WHY THIS MATTERS ── -->
+<section class="section" aria-labelledby="why-heading">
+  <div class="container" style="max-width: 800px;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <h2 id="why-heading">Why Finance Teams Need a Different Kind of AI Course</h2>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      Finance professionals spend a disproportionate share of their week turning raw numbers into something a non-finance audience can understand: a board summary, a variance explanation, a forecast narrative. That's exactly the kind of writing task AI tools handle well, once you know how to check the output properly.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      The catch is that finance carries a specific risk most general AI courses don't address: models can produce a confident, well-formatted, completely wrong number. In most jobs, a factual error in an AI draft is embarrassing. In finance, it can mean a bad decision gets made on top of it. This course treats verification as a core skill, not an afterthought.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      There's also a confidentiality dimension. Financial data, budgets, forecasts, salary information, deal terms, is some of the most sensitive information a company holds. Knowing what's reasonable to put into an AI tool, and what needs to stay out entirely, matters more here than in almost any other function.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      None of this means finance should be cautious to the point of avoiding AI altogether. It means the skill set looks slightly different from a marketing or sales course: less about generating creative variations quickly, more about producing accurate, well-structured drafts you can verify fast and trust to hand upward without a second full rewrite.
+    </p>
+  </div>
+</section>
+
+<!-- ── CURRICULUM ── -->
+<section id="curriculum" class="section" style="background: #e7eeff;" aria-labelledby="curriculum-heading">
+  <div class="container">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <p style="color: #006875; font-size: .8rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-family: 'Inter', sans-serif; margin-bottom: 1rem;">What You'll Learn</p>
+      <h2 id="curriculum-heading">Core Curriculum</h2>
+    </div>
+    <div class="path-grid">
+      <div class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Reporting Automation</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Turning exported ledgers and spreadsheets into structured summaries a non-finance reader can actually follow, without losing the precision the underlying numbers require.</p>
+      </div>
+      <div class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Forecasting Support</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Using AI to draft the narrative around a forecast, explaining assumptions and trends in plain language, while keeping the actual modeling and calculations in your existing tools.</p>
+      </div>
+      <div class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Reconciliation Assistance</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Using AI to flag likely discrepancies and summarize patterns worth investigating, then applying your own judgment to confirm before closing anything out.</p>
+      </div>
+      <div class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Compliance-Adjacent Drafting</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Drafting first versions of VAT-related and compliance-adjacent documentation for informational purposes, always framed as a starting draft for review, never as tax or legal advice.</p>
+      </div>
+      <div class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Verifying AI Output</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">A practical checklist for catching fabricated or incorrect figures before they leave your desk: cross-checking totals, spot-verifying calculations, and knowing which claims need a source.</p>
+      </div>
+      <div class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Data Confidentiality Habits</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Working with redacted or anonymized figures where possible, understanding what a given AI tool does with the data you input, and knowing when a task needs to stay on an internal, enterprise-grade tool instead.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SENSITIVE DATA TRUST NOTE ── -->
+<section class="section" aria-labelledby="trust-heading">
+  <div class="container" style="max-width: 800px;">
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+      <h2 id="trust-heading">Working With Sensitive Financial Data</h2>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      Not every AI tool handles input data the same way, and finance is exactly the function where that difference matters most. Free consumer tools may use conversation data to improve their models unless you've explicitly opted out. Enterprise-grade tools typically offer contractual guarantees about data handling that make them the safer default for anything involving real company financials.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      A practical habit that removes most of the risk: work with structure and patterns rather than raw sensitive figures wherever possible. Ask an AI tool to help you build a report template or a formula logic explanation using placeholder numbers, then apply the structure to your real, confidential data yourself, outside the AI conversation.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      When genuine sensitive data does need to go into a tool, confirm with your IT or compliance function which tools are approved for that use before you rely on informal judgment alone.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      This applies just as much to smaller businesses without a formal IT function as it does to large enterprises. If you're a solo bookkeeper or work at a small company with no dedicated compliance team, the same principle holds: default to caution with real figures, and ask directly rather than assuming a tool is safe because it's popular.
+    </p>
+  </div>
+</section>
+
+<!-- ── FOR SOLO PRACTITIONERS ── -->
+<section class="section" aria-labelledby="solo-heading">
+  <div class="container" style="max-width: 800px;">
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+      <h2 id="solo-heading">For Bookkeepers and Solo Finance Professionals</h2>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      A meaningful share of "AI course for finance" searches come from bookkeepers and solo finance professionals managing accounts for one company or a handful of small clients, not from analysts inside a large corporate finance team. If that's your situation, the curriculum above still applies directly, and the time savings often matter even more, since there's no team to spread reporting work across.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      The verification habits covered in this course matter just as much, if not more, for a solo practitioner. Without a second reviewer checking your work before it goes to a client or business owner, catching an AI-fabricated figure before you send it out is entirely on you. Build the habit of treating every AI-drafted number as a claim to verify, not a fact to trust.
+    </p>
+  </div>
+</section>
+
+<!-- ── COMMON MISTAKES ── -->
+<section class="section" style="background: #f0f3ff;" aria-labelledby="mistakes-heading">
+  <div class="container" style="max-width: 800px;">
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+      <h2 id="mistakes-heading">The Most Common Mistake This Course Corrects</h2>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      The single most common mistake finance professionals make with AI is trusting a specific number it produces without independently checking it. Language models are built to produce fluent, plausible-sounding text, not to guarantee arithmetic accuracy, and a wrong total can look exactly as confident and well-formatted as a correct one.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      The fix isn't avoiding AI for numeric work entirely. It's using AI for the parts it's genuinely good at, structuring a report, drafting the narrative, summarizing a trend, while keeping the actual calculations in a spreadsheet or your existing finance tools where the math is verifiable. This course is built around that division of labor throughout.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      A related mistake worth naming: assuming a wrong number is rare. In practice, the failure mode isn't a model making an obvious error you'd catch immediately, it's a plausible-looking figure that's subtly off, close enough to the right ballpark that it doesn't trigger any instinctive doubt. That's exactly why a habit of verification matters more than a habit of skepticism alone.
+    </p>
+  </div>
+</section>
+
+<!-- ── RELATED PATHS ── -->
+<section class="section" style="background: #f0f3ff;" aria-labelledby="related-heading">
+  <div class="container" style="max-width: 900px;">
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+      <h2 id="related-heading">Related Paths</h2>
+      <p style="color: #42474e; max-width: 40rem; margin: 1rem auto 0; line-height: 1.7;">Finance work often overlaps with these functions. If you collaborate closely with them, these pages are worth a look too.</p>
+    </div>
+    <div class="path-grid">
+      <a href="/services/ai-courses/managers" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Managers</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">For finance leads who also need to evaluate AI tools and lead adoption decisions across their team, not just use AI personally.</p>
+        <span class="learn-link">See the Managers path →</span>
+      </a>
+      <a href="/services/ai-courses/sales" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Sales</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">For finance teams working closely with sales on deal terms, pricing, and revenue reporting, where shared AI fluency speeds up the back-and-forth.</p>
+        <span class="learn-link">See the Sales path →</span>
+      </a>
+      <a href="/services/ai-courses/real-estate" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Real Estate</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">For finance professionals working within real estate and property firms, where market reporting and transaction summaries follow a distinct rhythm.</p>
+        <span class="learn-link">See the Real Estate path →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FAQ ── -->
+<section class="section" style="background: #e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width: 48rem;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- ── FINAL CTA ── -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position: relative; z-index: 1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size: clamp(1.75rem, 3vw, 2.5rem); margin-bottom: 1rem;">Ready to Bring AI Into Your Finance Function?</h2>
+        <p style="font-size: 1.125rem; max-width: 36rem; margin: 0 auto 2rem; line-height: 1.7;">Request a quote for private finance AI training that takes accuracy and confidentiality as seriously as your team does.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="courses_finance" class="btn-primary" style="font-size: 1.125rem; padding: 1.125rem 2.75rem;">Request Training Quote →</button>
+        <p style="font-size: .875rem; margin-top: 1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+  .path-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+  }
+  .path-card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+  }
+</style>
