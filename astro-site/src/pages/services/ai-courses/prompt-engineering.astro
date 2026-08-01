@@ -1,0 +1,246 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+
+const faqItems = [
+  {
+    question: "Is prompt engineering still relevant, or has AI gotten good enough not to need it?",
+    answer: "Models have gotten better at guessing what you mean, which has made bad prompts less catastrophic than they used to be. That's different from prompt structure not mattering. A vague request still gets a vague, generic answer. A well-structured one still gets something closer to what you actually need on the first try. The skill has become less about tricks and more about clear communication, which isn't going away.",
+  },
+  {
+    question: "Do I need a technical background for a prompt engineering course?",
+    answer: "No. Prompt engineering, despite the name, is closer to clear written communication than to programming. If you can write a clear email explaining what you need and why, you have most of the underlying skill already. The course teaches you to apply that clarity specifically to how AI models respond.",
+  },
+  {
+    question: "Is there a good free prompt engineering course?",
+    answer: "Yes, several AI providers publish free prompting guides, and there's no shortage of free tutorials online covering the basics. They're a reasonable way to pick up the core techniques. Where free resources tend to fall short is practice with feedback: knowing your prompt techniques are correct in theory is different from being able to tell, in the moment, why a specific prompt produced a weak answer and how to fix it.",
+  },
+  {
+    question: "How is this different from the generative AI course?",
+    answer: "Our Generative AI Course covers the full picture: how the tools work, prompting basics, and applied use cases across writing, research, and more. This course goes deeper on one piece of that picture, prompt structure specifically, with more advanced techniques like chain-of-thought prompting and few-shot examples. Most people should take the Generative AI Course first, then come back here to sharpen this specific skill.",
+  },
+  {
+    question: "What's the single biggest mistake people make with prompts?",
+    answer: "Assuming the model knows more context than it does. People ask a question the way they'd ask a colleague who already knows their job, their company, and the background of the situation, then get frustrated when the answer is generic. The model only knows what's in the conversation. Most weak answers trace back to missing context, not a weak model.",
+  },
+  {
+    question: "Can prompt engineering skills transfer between ChatGPT, Claude, and Gemini?",
+    answer: "Mostly yes. The core techniques, giving clear context, specifying format, breaking complex requests into steps, work similarly across major models. Minor differences exist in how each model responds to certain phrasing, but someone who's genuinely good at prompt structure adapts to a new tool within a few tries, not a few weeks.",
+  },
+];
+
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
+const courseLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'Course',
+  name: "Prompt Engineering Course",
+  description: "A practical prompt engineering course covering prompt structure, role-based prompting, chain-of-thought techniques, and few-shot examples for getting reliable AI output.",
+  provider: { '@type': 'Organization', name: 'Lenoo AI', sameAs: 'https://lenooai.com' },
+  url: 'https://lenooai.com/services/ai-courses/prompt-engineering',
+};
+
+const breadcrumbLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+    { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://lenooai.com/services' },
+    { '@type': 'ListItem', position: 3, name: 'AI Courses', item: 'https://lenooai.com/services/ai-courses' },
+    { '@type': 'ListItem', position: 4, name: 'Prompt Engineering Course', item: 'https://lenooai.com/services/ai-courses/prompt-engineering' },
+  ],
+};
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+---
+
+<BaseLayout
+  title="Prompt Engineering Course: Learn to Write Effective AI Prompts | Lenoo AI"
+  description="A practical prompt engineering course: prompt structure, role-based prompting, chain-of-thought techniques, and real use cases for writing, coding, and analysis."
+  canonicalPath="/services/ai-courses/prompt-engineering"
+  ldJson={[faqLdJson, courseLdJson, breadcrumbLdJson]}
+>
+
+<!-- ── HERO ── -->
+<header class="hero-section" style="padding-top: 10rem; padding-bottom: 5rem; text-align: center;">
+  <div class="container" style="position: relative; z-index: 1;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services" style="color:inherit;text-decoration:none;opacity:0.65;">Services</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-courses" style="color:inherit;text-decoration:none;opacity:0.65;">AI Courses</a><span style="opacity:0.4;padding:0 4px;"> / </span>Prompt Engineering Course</div>
+    <h1 style="max-width: 46rem; margin: 0 auto 1.5rem;">
+      Prompt Engineering <span class="gradient-text">Course</span>
+    </h1>
+    <p style="color: rgba(255,255,255,0.72); font-size: 1.125rem; line-height: 1.75; max-width: 40rem; margin: 0 auto 0;">
+      Two people can ask an AI model the exact same question and get very different answers, purely based on how they phrased it. Prompt engineering is the skill of closing that gap on purpose. This page covers the real techniques worth learning, why they still matter as models improve, and practical use cases across writing, coding, and analysis.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">No technical background required</span>
+      <span class="tchip">Transfers across ChatGPT, Claude, and Gemini</span>
+      <span class="tchip">The most beginner-accessible AI skill</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;">
+      <button onclick="openModal(this)" data-source="courses_prompt_engineering_hero" class="btn-primary" style="font-size: 1rem;">Request Training Quote →</button>
+      <a href="#curriculum" class="btn-outline" style="font-size: 1rem;">See the Curriculum ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- ── WHY THIS MATTERS ── -->
+<section class="section" aria-labelledby="why-heading">
+  <div class="container" style="max-width: 800px;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <h2 id="why-heading">Why Prompting Still Matters</h2>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      There's a common assumption that as AI models get smarter, prompting becomes less important, since the model will just figure out what you mean. In practice, the opposite tends to be true for anyone doing real, repeated work with these tools. Smarter models make bad prompts less obviously broken, but the gap between a vague request and a well-structured one still shows up clearly in the quality of what comes back.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      Think of it less as a technical trick and more as a communication skill. A colleague who explains a request clearly, with the right context and a clear sense of what "done" looks like, gets better results from other people too. AI models respond to the same clarity, just more literally and more consistently than a person would.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      It's also the fastest AI skill to learn relative to how much it improves your results. Unlike agentic AI or automation, which require new tools and new concepts, prompt engineering is mostly about changing habits you already have. Most people see a noticeable improvement in output quality within their first few practice sessions.
+    </p>
+  </div>
+</section>
+
+<!-- ── CURRICULUM ── -->
+<section id="curriculum" class="section" style="background: #e7eeff;" aria-labelledby="curriculum-heading">
+  <div class="container">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <p style="color: #006875; font-size: .8rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-family: 'Inter', sans-serif; margin-bottom: 1rem;">What You'll Learn</p>
+      <h2 id="curriculum-heading">Core Curriculum</h2>
+    </div>
+    <div class="path-grid">
+      <div class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Prompt Structure Fundamentals</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">The four elements that separate a strong prompt from a weak one: clear context, a specific task, defined constraints, and the output format you actually need. Most weak prompts are missing at least two of these without the person realizing it.</p>
+      </div>
+      <div class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Role-Based Prompting</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Assigning the model a specific role or perspective, such as asking it to respond as a skeptical editor or a first-time user, to shape the angle and depth of its answer in a way a plain question rarely produces on its own.</p>
+      </div>
+      <div class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Chain-of-Thought Prompting</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Asking a model to reason step by step before giving a final answer, which noticeably improves accuracy on anything involving multiple steps of logic, like analysis, calculations, or decisions with several factors to weigh.</p>
+      </div>
+      <div class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Few-Shot Examples</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Showing the model one or two examples of the output style you want instead of only describing it. This single technique often fixes formatting and tone problems that plain instructions struggle to solve.</p>
+      </div>
+      <div class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Iteration and Debugging Prompts</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">What to do when the first answer isn't right: how to diagnose whether the problem is missing context, unclear instructions, or a genuinely hard task, and how to fix each case differently instead of just repeating the same request louder.</p>
+      </div>
+      <div class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Reusable Prompt Templates</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Building a small personal library of prompt templates for tasks you do often, so you're not reconstructing the same structure from scratch every time. Participants leave with templates for their own real, recurring tasks.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PRACTICAL USE CASES ── -->
+<section class="section" aria-labelledby="use-cases-heading">
+  <div class="container" style="max-width: 800px;">
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+      <h2 id="use-cases-heading">Where This Shows Up in Real Work</h2>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      For writing, good prompting is the difference between a draft that needs a full rewrite and one that needs light editing. It affects tone matching, structure, and whether the AI actually addresses the specific audience and purpose you had in mind, rather than producing something generic.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      For coding, precise prompts matter even more, since a slightly ambiguous request can produce code that runs but does the wrong thing. Specifying the exact behavior, edge cases, and constraints upfront saves far more time than debugging a misunderstood request after the fact.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      For analysis, chain-of-thought prompting in particular changes the reliability of the answer. Asking a model to show its reasoning before concluding catches errors that would otherwise slip through in a short, confident-sounding final answer.
+    </p>
+  </div>
+</section>
+
+<!-- ── COMMON MISTAKES ── -->
+<section class="section" aria-labelledby="mistakes-heading">
+  <div class="container" style="max-width: 800px;">
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+      <h2 id="mistakes-heading">Common Mistakes the Course Corrects</h2>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      The most frequent mistake is assuming the model remembers or infers more context than it actually has. People ask a question the way they'd ask a colleague who already understands their company, their project, and the history behind the request, then get a generic answer and conclude the AI "isn't very smart." Almost always, the model simply wasn't given enough to work with.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      A second common mistake is stacking too many unrelated requests into a single prompt: asking for a summary, a tone rewrite, a list of action items, and a follow-up email all in one breath. Each of those is easy for a model to do well individually. Combined, quality tends to slip on at least one of them. Breaking a complex ask into smaller, sequential prompts almost always produces a better final result than one long, crowded instruction.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      A third is treating the first response as final. The most useful prompting habit isn't writing a perfect prompt on the first try, it's recognizing quickly what's wrong with an imperfect answer and knowing exactly what to add or change to fix it. That's a trainable skill, and it's most of what separates people who feel like they're "good with AI" from people who feel like they're fighting it.
+    </p>
+  </div>
+</section>
+
+<!-- ── WHO THIS IS FOR / NEXT STEP ── -->
+<section class="section" style="background: #f0f3ff;" aria-labelledby="who-heading">
+  <div class="container" style="max-width: 800px;">
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+      <h2 id="who-heading">Who This Is For, and What Comes Next</h2>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      This is the right course for anyone who already uses generative AI tools but feels like their results are inconsistent, good one day and disappointing the next, without understanding why. It's also a strong fit for people who've never used AI at all and want to start with strong habits rather than picking up bad ones by trial and error, though our <a href="/services/ai-courses/generative-ai" style="color:#006875; font-weight:600;">Generative AI Course</a> covers a broader foundation if that's genuinely your starting point.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      Once prompting feels natural, the next step for most people is our <a href="/services/ai-courses/agentic-ai" style="color:#006875; font-weight:600;">Agentic AI Course</a>, which builds on these same habits to cover systems that carry out multi-step tasks rather than responding to a single prompt at a time. Good prompting is the foundation agentic AI is built on, so this order matters more than people expect.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      There's no fixed timeline for making that jump. Some people move on within a week once the core techniques click. Others stay with prompting alone for months, applying it steadily to their own work, and that's a perfectly reasonable place to stop if it's already solving the problem you came here to solve.
+    </p>
+  </div>
+</section>
+
+<!-- ── FAQ ── -->
+<section class="section" style="background: #e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width: 48rem;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- ── FINAL CTA ── -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position: relative; z-index: 1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size: clamp(1.75rem, 3vw, 2.5rem); margin-bottom: 1rem;">Want Your Team Prompting Consistently?</h2>
+        <p style="font-size: 1.125rem; max-width: 36rem; margin: 0 auto 2rem; line-height: 1.7;">Request a quote for private prompt engineering training built around the tasks your team actually does every day.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="courses_prompt_engineering" class="btn-primary" style="font-size: 1.125rem; padding: 1.125rem 2.75rem;">Request Training Quote →</button>
+        <p style="font-size: .875rem; margin-top: 1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+  .path-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+  }
+  .path-card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+  }
+</style>
