@@ -1,0 +1,220 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "Which framework does Lenoo use, and why?", answer: "It depends on the project. We work across LangChain, LangGraph, CrewAI, AutoGen, OpenAI's Agents SDK, and Claude's Agent SDK, choosing based on the orchestration pattern the task needs, the ecosystem the client is already invested in, and how much control the workflow requires over the reasoning loop. We don't default to one framework regardless of fit; a single-agent tool-calling workflow and a complex multi-agent orchestration have different requirements, and we scope accordingly." },
+  { question: "Open-source vs. proprietary: what are the actual trade-offs?", answer: "Open-source frameworks (LangChain, LangGraph, CrewAI, AutoGen) give you full visibility into the orchestration logic and no vendor lock-in on that layer, at the cost of more integration work and no official support line. Proprietary SDKs (OpenAI's, Anthropic's) integrate tightly with their own models and often ship faster for straightforward patterns, at the cost of being tied to that provider's ecosystem for the agent layer. Neither is universally better; we pick based on your actual constraints, not a blanket preference." },
+  { question: "How is security handled by default, not as an afterthought?", answer: "Every agent gets a defined action allowlist, not a general instruction to behave safely, tool permissions scoped to only what the task requires, and input handling designed with prompt injection in mind, not assumed away. Security review happens during design, before a single line of integration code is written, not as a pass we run right before launch." },
+  { question: "Do you build with a specific LLM provider, or is it flexible?", answer: "It's flexible by design. We select a model per project based on reasoning quality needed, latency tolerance, and cost at your expected volume, and most of our agent architectures are built so the underlying model can be swapped without rewriting the orchestration logic around it. Locking a client into one provider's model for the life of an agent is a decision we make deliberately, not by default." },
+  { question: "What does 'human-in-the-loop' actually look like in a real build?", answer: "A specific approval checkpoint before any action with real consequences: a payment, a customer-facing message, a record deletion. The agent reasons and proposes; a person confirms before it executes, until enough track record exists to justify removing that checkpoint for lower-stakes cases. It's a designed control point, not a vague promise of oversight." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_agents_architecture')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Agent Architecture & System Design',
+    url: 'https://lenooai.com/services/ai-agents/architecture',
+    description: 'AI agent architecture and system design: orchestration patterns, frameworks, LLM selection, workflow and state management, security, and governance.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Agents', item: 'https://lenooai.com/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'Architecture', item: 'https://lenooai.com/services/ai-agents/architecture' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI Agent Architecture & System Design | Lenoo AI"
+  description="AI agent architecture and system design: orchestration patterns, frameworks, LLM selection, workflow and state management, security, and governance."
+  canonicalPath="/services/ai-agents/architecture"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">AI Agents</a><span style="opacity:0.4;padding:0 4px;"> / </span>Architecture</div>
+    <h1>AI Agent Architecture <span class="gradient-text">& System Design</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      This page is for the technical evaluator: orchestration patterns, framework trade-offs, LLM selection, state management, and how security and governance actually get built in, not bolted on.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_agents_architecture_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#patterns" class="btn-outline">See the Patterns ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- CORE PATTERNS -->
+<section id="patterns" class="section" aria-labelledby="patterns-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="patterns-heading" style="margin-bottom:1.5rem;">Core Architecture Patterns</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        <strong>Single-agent vs. multi-agent/orchestrator.</strong> A single agent handles a task within one reasoning process: it reads context, decides, acts, and repeats until the task is done. A multi-agent architecture splits the work across specialized agents, each with a narrow responsibility, coordinated by an orchestrator that routes tasks and combines results. We default to single-agent designs, since they're easier to test, debug, and trust, and move to multi-agent only when a workflow genuinely spans distinct domains that don't belong in one agent's judgment.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        <strong>The reasoning loop.</strong> Most agent implementations follow some variant of a perceive-reason-act cycle: the agent receives input, reasons about what it means and what should happen next, calls a tool or takes an action, observes the result, and loops until the task is complete or it needs to hand off. How tightly that loop is bounded, how many iterations it's allowed, what happens if it doesn't converge, is a design decision we make explicitly per project, not something left to default framework behavior.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        <strong>Tool-calling.</strong> An agent's actual capability comes from the tools it's given access to: API calls, database queries, code execution, other agents. The architecture question isn't just which tools exist, but how the agent decides which one to use when, and what happens when a tool call fails or returns something unexpected. We design explicit fallback behavior for tool failures rather than letting an agent guess at what to do when a system it depends on doesn't respond as expected.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FRAMEWORKS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="frameworks-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="frameworks-heading" style="margin-bottom:1.5rem;">Framework Landscape</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        We work across the current generation of agent frameworks rather than committing to one regardless of fit. <strong>LangChain</strong> remains the broadest general-purpose toolkit for chaining LLM calls and tools together. <strong>LangGraph</strong>, built on top of it, is better suited to workflows needing explicit state machines and cyclical reasoning rather than a linear chain. <strong>CrewAI</strong> is purpose-built for multi-agent "crews" with defined roles, useful when the orchestration pattern itself, not just the individual agent logic, is the hard part. <strong>AutoGen</strong> focuses on multi-agent conversation patterns, agents talking to each other to solve a problem collaboratively.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        On the proprietary side, <strong>OpenAI's Agents SDK</strong> and <strong>Claude's Agent SDK</strong> give tighter integration with their respective models and often ship faster for straightforward tool-calling patterns, since less glue code is needed between the framework and the model provider. The trade-off is closer coupling to that provider's ecosystem. We pick based on the orchestration pattern the task needs, how much of the client's stack is already invested in one ecosystem, and how much long-term flexibility to swap models or providers the project realistically needs, not a fixed default we apply to every build.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- LLM SELECTION -->
+<section class="section" aria-labelledby="llm-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="llm-heading" style="margin-bottom:1.5rem;">LLM Selection</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Model choice comes down to three factors we weigh per project: the reasoning complexity the task actually requires, the latency your workflow can tolerate, and cost at the volume you expect to run. A high-volume, low-complexity classification task, sorting incoming tickets by category, say, doesn't need the most capable model available; it needs a fast, cheap one that's accurate enough for the job. A low-volume, high-stakes research or drafting task justifies a more capable, slower, more expensive model, because the cost of a wrong answer outweighs the cost difference between models. We architect most agents so the underlying model is swappable without rewriting the orchestration logic around it, since model capability and pricing shift often enough that hard-coding a dependency on one specific model is a decision worth avoiding by default.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- WORKFLOW/STATE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="state-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="state-heading" style="margin-bottom:1.5rem;">Workflow &amp; State Management</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        An agent's state, what it remembers within a single task versus across sessions, is one of the most consequential design decisions and one of the easiest to get wrong in either direction. Too little state and the agent loses context it needs, producing inconsistent or repetitive behavior. Too much state, retaining conversation history or data longer than the task requires, creates a data-handling liability and, often, unnecessary cost as context grows. We define the minimum state a given task genuinely needs, where it's stored, how long it persists, and who can access it, as an explicit design decision, not a default a framework happens to ship with.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SECURITY -->
+<section class="section" aria-labelledby="security-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="security-heading" style="margin-bottom:1.5rem;">Security</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        <strong>Prompt injection</strong> is the most agent-specific security concern: if an agent reads untrusted input, an email, a document, a webhook payload, that input could contain text designed to manipulate the agent's behavior. We treat all external input as potentially adversarial by default, and design tool permissions so that even a successfully manipulated reasoning step can't take an action outside its defined boundary. The defense isn't "the model won't fall for it"; it's "even if it does, the blast radius is contained."
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        <strong>Tool permission scoping</strong> means an agent only gets access to the specific actions it needs for its task, not broad system access "in case it's useful later." A support agent that needs to look up order status doesn't get write access to your entire database; it gets a narrowly scoped read query and, if applicable, a specific, limited write action, reviewed and approved during design.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        <strong>Data exposure</strong> covers what the agent logs, where that log lives, and who can see it, especially when the agent handles anything containing personal or sensitive business data. We scope logging and retention against your actual compliance requirements during discovery, not as a generic policy applied identically to every client regardless of what data they're actually handling.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- GOVERNANCE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="governance-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="governance-heading" style="margin-bottom:1.5rem;">Governance</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        <strong>Audit logging</strong> means every action an agent takes gets recorded and is reviewable: what it read, what it concluded, what it did, and why. This isn't optional instrumentation added if a client asks; it's built into every agent we ship, because a result that looks wrong needs to be traceable back to the exact input that produced it, not treated as an unexplainable black box.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        <strong>Human-in-the-loop checkpoints</strong> are specific approval gates, not a vague promise of oversight. For any action with real consequences, a payment, a customer-facing message, a record deletion, we define a checkpoint where a person confirms before the agent executes, until enough track record justifies removing it for lower-stakes cases. This is a designed control point defined during architecture, not an afterthought added after something goes wrong.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        <strong>Action limits</strong> bound what an agent can do even within its permitted tool set: rate limits, value thresholds, scope boundaries. An agent permitted to send customer emails might be limited to a maximum per hour, or an agent permitted to approve refunds might be capped at a specific value above which it must escalate. These limits contain the damage of an edge case the agent misjudges, rather than relying entirely on the reasoning being correct every time.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Want to go deeper on the architecture for a specific workflow? Bring your technical questions to a free call.</p>
+    <button onclick="openModal(this)" data-source="ai_agents_architecture_mid" class="btn-primary">Book a Free Discovery Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Talk Architecture?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Bring us the technical constraints. We'll walk through the orchestration pattern, framework, and security design that fits before you commit to anything.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_agents_architecture_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
