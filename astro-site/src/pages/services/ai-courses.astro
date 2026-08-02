@@ -1,0 +1,327 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+
+const faqItems = [
+  {
+    question: "What's the difference between an AI course and AI training?",
+    answer: "\"AI course\" on this hub means self-directed, individual learning: pages you can read and apply on your own, for free, at your own pace. \"AI training\" refers to our private, structured programs delivered to your whole team by us, built around your company's specific roles and workflows. Both cover real skills. Training adds a shared pace, live instruction, and content tailored to your business.",
+  },
+  {
+    question: "Are these courses actually free?",
+    answer: "Every page on this hub is free to read and use as a self-study guide, no sign-up required. If you want private, structured training delivered to your team, that's a paid service, and every course page links to it as the next step once self-study has taken you as far as it can.",
+  },
+  {
+    question: "Can my company book private training instead of self-study?",
+    answer: "Yes. That's exactly what our AI training and workshops service is for, private sessions delivered to your team, built around your roles and your business rather than a generic curriculum. Every page on this hub links to it.",
+  },
+  {
+    question: "Which course should I start with?",
+    answer: "If you've never used an AI tool meaningfully, start with our Beginners page. If you already have basic comfort and want to go deeper, start with Generative AI. If you know exactly which role or skill you need, like finance, sales, or agentic AI, skip straight to that page.",
+  },
+  {
+    question: "Do you offer these courses in both Dubai and Abu Dhabi?",
+    answer: "Self-study course pages work the same regardless of location, no login or city selection needed. If you want private team training delivered in person, our Dubai and Abu Dhabi pages cover what that looks like in each city specifically.",
+  },
+];
+
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
+const courseLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'Course',
+  name: "AI Courses in the UAE",
+  description: "A complete guide to AI courses organized by role, skill, and city, covering generative AI, agentic AI, prompt engineering, and role-specific paths for UAE professionals.",
+  provider: { '@type': 'Organization', name: 'Lenoo AI', sameAs: 'https://lenooai.com' },
+  url: 'https://lenooai.com/services/ai-courses',
+};
+
+const breadcrumbLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+    { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://lenooai.com/services' },
+    { '@type': 'ListItem', position: 3, name: 'AI Courses', item: 'https://lenooai.com/services/ai-courses' },
+  ],
+};
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+---
+
+<BaseLayout
+  title="AI Courses in the UAE: The Complete Guide by Role, Skill, and City | Lenoo AI"
+  description="Free AI courses organized by role, skill, and city for UAE professionals. Generative AI, agentic AI, prompt engineering, and dedicated paths for every function."
+  canonicalPath="/services/ai-courses"
+  ldJson={[faqLdJson, courseLdJson, breadcrumbLdJson]}
+>
+
+<!-- ── HERO ── -->
+<header class="hero-section" style="padding-top: 10rem; padding-bottom: 5rem; text-align: center;">
+  <div class="container" style="position: relative; z-index: 1;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services" style="color:inherit;text-decoration:none;opacity:0.65;">Services</a><span style="opacity:0.4;padding:0 4px;"> / </span>AI Courses</div>
+    <h1 style="max-width: 50rem; margin: 0 auto 1.5rem;">
+      AI Courses in the <span class="gradient-text">UAE</span>
+    </h1>
+    <p style="color: rgba(255,255,255,0.72); font-size: 1.125rem; line-height: 1.75; max-width: 42rem; margin: 0 auto 0;">
+      A complete, free guide to learning AI, organized the way people actually search for it: by role, by skill, and by city. No sign-up, no generic overview, just the page that matches what you actually need to learn, whichever way you got here.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">15 dedicated course pages</span>
+      <span class="tchip">Free to read, no sign-up</span>
+      <span class="tchip">Private team training available</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;">
+      <a href="#by-role" class="btn-primary" style="font-size: 1rem;">Find Your Path ↓</a>
+      <button onclick="openModal(this)" data-source="courses_hub_hero" class="btn-outline" style="font-size: 1rem;">Request Training Quote →</button>
+    </div>
+  </div>
+</header>
+
+<!-- ── INTRO ── -->
+<section class="section" aria-labelledby="intro-heading">
+  <div class="container" style="max-width: 800px;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <h2 id="intro-heading">One Hub, Every Starting Point</h2>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      "AI course" means something different depending on who's searching. A finance manager wants something different from a marketing coordinator, and someone in Dubai evaluating options for their whole team wants something different from someone in Abu Dhabi teaching themselves from scratch on a Sunday afternoon. A single generic course tries to serve everyone and ends up genuinely useful to almost no one.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      This hub takes the opposite approach: dedicated pages by role, by skill, by city, and by starting point, each with real curriculum, honest FAQs, and no padding. Pick the path below that matches you, or browse by category if you're not sure yet.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      Every page here is written for the same underlying reality: AI skill only matters once it's applied to your actual work, not as a general concept. A generic overview of "what AI can do" rarely changes what someone does differently on Monday morning. A page that speaks directly to your role, with real curriculum and honest limits, usually does.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      You don't need to work through every page in order. If you already know your role or the specific skill you need, jump straight there. The organization below exists to help you find that page fast, not to impose a curriculum you have to follow start to finish.
+    </p>
+  </div>
+</section>
+
+<!-- ── BY ROLE ── -->
+<section id="by-role" class="section" style="background: #e7eeff;" aria-labelledby="role-heading">
+  <div class="container">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <p style="color: #006875; font-size: .8rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-family: 'Inter', sans-serif; margin-bottom: 1rem;">Choose Your Path</p>
+      <h2 id="role-heading">By Role</h2>
+      <p style="color: #42474e; max-width: 40rem; margin: 1rem auto 0; line-height: 1.7;">Each role page covers what that function specifically needs, not a generic overview with the job title swapped in.</p>
+    </div>
+    <div class="path-grid">
+      <a href="/services/ai-courses/managers" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Managers</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Evaluating tools, delegating to AI, measuring ROI, and leading change management.</p>
+        <span class="learn-link">See the Managers path →</span>
+      </a>
+      <a href="/services/ai-courses/hr" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">HR</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">CV screening support, job description drafting, and safe candidate data handling.</p>
+        <span class="learn-link">See the HR path →</span>
+      </a>
+      <a href="/services/ai-courses/finance" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Finance</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Reporting automation, forecasting support, and safe use with sensitive data.</p>
+        <span class="learn-link">See the Finance path →</span>
+      </a>
+      <a href="/services/ai-courses/marketing" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Marketing</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Campaign copy, content repurposing, and bilingual English/Arabic drafting.</p>
+        <span class="learn-link">See the Marketing path →</span>
+      </a>
+      <a href="/services/ai-courses/sales" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Sales</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Prospect research, follow-ups in your own voice, and WhatsApp-based workflows.</p>
+        <span class="learn-link">See the Sales path →</span>
+      </a>
+      <a href="/services/ai-courses/real-estate" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Real Estate</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Listing descriptions, lead-response drafting, and bilingual client communication.</p>
+        <span class="learn-link">See the Real Estate path →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── BY SKILL ── -->
+<section class="section" aria-labelledby="skill-heading">
+  <div class="container">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <p style="color: #006875; font-size: .8rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-family: 'Inter', sans-serif; margin-bottom: 1rem;">Choose Your Path</p>
+      <h2 id="skill-heading">By Skill</h2>
+      <p style="color: #42474e; max-width: 40rem; margin: 1rem auto 0; line-height: 1.7;">Organized roughly by progression, from foundational generative AI through to more advanced agentic systems.</p>
+    </div>
+    <div class="path-grid">
+      <a href="/services/ai-courses/generative-ai" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Generative AI</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">The foundational skill: prompt structure, everyday use cases, and how these tools actually work.</p>
+        <span class="learn-link">See the Generative AI path →</span>
+      </a>
+      <a href="/services/ai-courses/agentic-ai" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Agentic AI</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Systems that plan and act with limited supervision, for people ready to go past single prompts.</p>
+        <span class="learn-link">See the Agentic AI path →</span>
+      </a>
+      <a href="/services/ai-courses/prompt-engineering" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Prompt Engineering</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Getting consistent, reliable output through better prompt structure and technique.</p>
+        <span class="learn-link">See the Prompt Engineering path →</span>
+      </a>
+      <a href="/services/ai-courses/automation" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">AI Automation</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Connecting AI-generated decisions into workflows that run with less manual work.</p>
+        <span class="learn-link">See the Automation path →</span>
+      </a>
+      <a href="/services/ai-courses/ai-agents" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">AI Agents + Careers</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Building AI agents, plus a full careers guide: jobs, salaries, and interview prep.</p>
+        <span class="learn-link">See the AI Agents path →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── BY CITY ── -->
+<section class="section" style="background: #e7eeff;" aria-labelledby="city-heading">
+  <div class="container">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <p style="color: #006875; font-size: .8rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-family: 'Inter', sans-serif; margin-bottom: 1rem;">Choose Your Path</p>
+      <h2 id="city-heading">By City</h2>
+      <p style="color: #42474e; max-width: 40rem; margin: 1rem auto 0; line-height: 1.7;">The core skills don't change by city, but the local context and private training logistics genuinely do.</p>
+    </div>
+    <div class="path-grid" style="max-width: 700px; margin: 0 auto;">
+      <a href="/services/ai-courses/dubai" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Dubai</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Private-sector and free-zone focused, covering the roles and skills most in demand across Dubai.</p>
+        <span class="learn-link">See AI Courses in Dubai →</span>
+      </a>
+      <a href="/services/ai-courses/abu-dhabi" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Abu Dhabi</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Government, semi-government, and ADGM-focused, addressing public sector context directly.</p>
+        <span class="learn-link">See AI Courses in Abu Dhabi →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── STARTING POINTS ── -->
+<section class="section" aria-labelledby="start-heading">
+  <div class="container">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <p style="color: #006875; font-size: .8rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-family: 'Inter', sans-serif; margin-bottom: 1rem;">New to AI?</p>
+      <h2 id="start-heading">Starting Points</h2>
+    </div>
+    <div class="path-grid" style="max-width: 700px; margin: 0 auto;">
+      <a href="/services/ai-courses/beginners" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Beginners</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Never used an AI tool for anything real? Start here, no jargon, no assumed experience.</p>
+        <span class="learn-link">See the Beginners path →</span>
+      </a>
+      <a href="/services/ai-courses/free-ai-courses-uae" class="value-card path-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem; color:#00253b;">Free Resources</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">An honest breakdown of what's genuinely free and worth your time, and what isn't.</p>
+        <span class="learn-link">See Free AI Courses in the UAE →</span>
+      </a>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin: 0 auto 2rem; text-align:center;">
+      If neither the beginner path nor the free-resources roundup feels right, it's usually because you already know more than you're giving yourself credit for. In that case, scroll back up and pick a role or skill page directly. You'll get more out of a page written for exactly your situation than a general starting point built for someone earlier in the process than you are.
+    </p>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;max-width:640px;margin-left:auto;margin-right:auto;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Not sure where to start?</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Tell us your role and we'll point you to the right path, or talk through private training for your team.</p>
+      <button onclick="openModal(this)" data-source="courses_hub_mid" class="btn-primary">Request Training Quote →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ── WHO THIS HUB IS FOR ── -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container" style="max-width: 800px;">
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+      <h2 id="who-heading">Who This Hub Is Actually For</h2>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      This hub is built for individuals: professionals in the UAE trying to build real AI skill for their own work, whether that's a specific role, a specific technical skill, or starting from complete scratch. Every page is free to read and use, with no login and no email required.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      It's a genuinely different thing from our corporate AI training service, which is private, structured programs delivered to a company's team by us. Both matter, and they solve different problems: this hub is for the individual learner, our training service is for the coordinated team rollout. Neither replaces the other, and each course page is upfront about which one it's covering and where the other option lives.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      If you land here looking for either one, you're in the right place. The path grids below sort by what you already know about your situation, your role, the skill you need, or your city, so you don't have to guess which page applies to you.
+    </p>
+  </div>
+</section>
+
+<!-- ── SELF-STUDY VS TRAINING ── -->
+<section class="section" style="background: #f0f3ff;" aria-labelledby="compare-heading">
+  <div class="container" style="max-width: 800px;">
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+      <h2 id="compare-heading">Self-Study vs. Private Team Training</h2>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      Every page on this hub is genuinely useful for self-study, free, no sign-up, real curriculum. For one person learning at their own pace, that's often enough. Work through the fundamentals, apply them to real tasks, and build skill over a few weeks.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      It breaks down the moment a whole team needs to move together. Ten people learning independently end up with ten different habits and no shared standard for how your company actually wants AI used. That's what our <a href="/services/ai-training" style="color:#006875; font-weight:600;">AI training and workshops</a> service is for: private sessions delivered to your team, built around your roles, your tools, and your business, not a generic curriculum.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      Neither path is objectively better. Self-study through this hub is genuinely enough for a lot of people, and there's no pressure to "upgrade" to paid training if it's meeting your needs. The right call depends on whether you're solving an individual skill gap or a team-wide coordination problem, and most people know which one they actually have once it's framed that way.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      A useful test: if you're the only person who needs this right now, self-study almost always wins on speed and cost. If you're picturing three, five, or twenty colleagues each independently trying to figure this out on their own time, with no shared standard for how your company wants AI handled, that's the moment private training starts paying for itself.
+    </p>
+  </div>
+</section>
+
+<!-- ── FAQ ── -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width: 48rem;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- ── FINAL CTA ── -->
+<section class="section-sm" style="background: #e7eeff;" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position: relative; z-index: 1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size: clamp(1.75rem, 3vw, 2.5rem); margin-bottom: 1rem;">Ready to Bring AI to Your Whole Team?</h2>
+        <p style="font-size: 1.125rem; max-width: 36rem; margin: 0 auto 2rem; line-height: 1.7;">Self-study gets one person started. Request a quote for private training built around your team's roles and your business.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="courses_hub_cta" class="btn-primary" style="font-size: 1.125rem; padding: 1.125rem 2.75rem;">Request Training Quote →</button>
+        <p style="font-size: .875rem; margin-top: 1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+  .path-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+  }
+  .path-card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+  }
+</style>
