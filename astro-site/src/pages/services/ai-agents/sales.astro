@@ -1,0 +1,196 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "Does this work with our CRM?", answer: "Yes, for any CRM exposing a modern API, which covers the large majority of platforms UAE sales teams run: HubSpot, Salesforce, Zoho, Pipedrive, and others. The agent reads and writes to your CRM directly, so reps see updated records without a separate tool to check." },
+  { question: "Can the agent handle WhatsApp-based sales conversations?", answer: "Yes, and it's one of the more common requests we get. A large share of UAE sales conversations happen over WhatsApp rather than email, and the agent reads and drafts through that channel the same way it would through email, checking CRM context before responding." },
+  { question: "Does a human review outreach before it sends?", answer: "That's a decision you make per workflow, not something we default silently. Some clients want every drafted email or message reviewed before it sends, especially early on; others move to fully autonomous sending once they trust the agent's output on a given task. We scope that during discovery and can adjust the review threshold as confidence builds." },
+  { question: "How is this different from the AI sales training you offer?", answer: "This page is Lenoo building an agent that does sales work for your team, drafting outreach, researching prospects, updating your CRM. Our AI training service teaches your sales team to use AI tools themselves. Different problems: one replaces manual work with an agent, the other builds a skill in your people. Some clients use both." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_agents_sales')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Agents for Sales & Marketing',
+    url: 'https://lenooai.com/services/ai-agents/sales',
+    description: 'AI agents for sales and marketing teams: prospect research, personalized outreach, follow-up sequencing, and CRM updates, built for your existing stack.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'AI agent projects for sales and marketing: pricing based on decision complexity and scope. Book a free discovery call for a quote.' },
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Agents', item: 'https://lenooai.com/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'Sales & Marketing', item: 'https://lenooai.com/services/ai-agents/sales' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI Agents for Sales & Marketing | Lenoo AI"
+  description="AI agents for sales and marketing teams: prospect research, personalized outreach, follow-up sequencing, and CRM updates, built for your existing stack."
+  canonicalPath="/services/ai-agents/sales"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">AI Agents</a><span style="opacity:0.4;padding:0 4px;"> / </span>Sales &amp; Marketing</div>
+    <h1>AI Agents for <span class="gradient-text">Sales &amp; Marketing</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      An agent researches prospects, drafts outreach in your voice, follows up without being asked, and keeps your CRM current, so your reps spend their time on conversations, not admin.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_agents_sales_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#use-cases" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- SALES USE CASES -->
+<section id="use-cases" class="section" aria-labelledby="sales-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="sales-heading">Sales Agents</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Handling the research and admin that eats a rep's day, so they spend it selling instead.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">manage_search</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Prospect-Research Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Pulls together public information on a lead or company, checks recent activity, and returns a structured brief a rep reads in under a minute before a call.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Personalized-Outreach Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Drafts outreach referencing something specific to each prospect, in a tone matched to how your team actually writes, ready for a rep to review and send.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">schedule_send</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Follow-Up-Sequencing Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Tracks who hasn't replied and drafts the next follow-up at the right interval, so a lead never goes quiet just because nobody remembered to check.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">update</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">CRM-Update Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Logs call notes, updates deal stage based on the conversation, and keeps the pipeline accurate without a rep filling in fields after every call.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARKETING USE CASES -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="marketing-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="marketing-heading">Marketing Agents</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Turning one piece of work into every format it needs to reach, without redoing it manually each time.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">campaign</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Campaign-Variant-Generation Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Takes a core campaign message and generates variants tuned for each channel and audience segment, ready for review rather than written from scratch every time.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">content_copy</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Content-Repurposing Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Turns one long-form piece into shorter formats, social posts, an email version, a summary, matching the tone and length rules for each channel.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DISTINCT FROM TRAINING NOTE -->
+<section class="section" aria-labelledby="distinct-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        <strong>A quick distinction worth making:</strong> this page is Lenoo building an agent that does sales and marketing work for your team. If what you actually want is your own people learning to use AI tools themselves, that's a different service, see our <a href="/services/ai-training">AI training</a> page instead. Some clients use both: an agent handling the repetitive volume, and training so the team gets more out of AI directly.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Tell us what's eating your reps' time on admin, and we'll show you what an agent would handle.</p>
+    <button onclick="openModal(this)" data-source="ai_agents_sales_mid" class="btn-primary">Book a Free Discovery Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Give Your Reps Their Time Back?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Tell us what your sales workflow actually looks like. We'll design an agent that handles the admin and show you exactly how it works before we build.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_agents_sales_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>
