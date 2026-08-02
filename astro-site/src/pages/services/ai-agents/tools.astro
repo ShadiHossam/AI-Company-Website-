@@ -1,0 +1,265 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+
+const tools = [
+  {
+    slug: "n8n-ai-agent",
+    name: "n8n",
+    logoSlug: "n8n",
+    logoColor: "EA4B71",
+    teaser: "Self-hostable and built for custom code steps alongside the reasoning step. We reach for it when data residency matters or a workflow needs logic no visual node library covers.",
+  },
+  {
+    slug: "gumloop",
+    name: "Gumloop",
+    logoSlug: "gumloop",
+    logoColor: "6E56CF",
+    teaser: "A visual, no-code agent builder where every step is a node your team can see and edit. It fits businesses without an in-house developer who still want to understand what the agent is doing.",
+  },
+  {
+    slug: "lindy",
+    name: "Lindy",
+    logoSlug: "lindy",
+    logoColor: "6C5CE7",
+    teaser: "An agent builder with a very wide native-integration library, thousands of apps deep. It fits a mainstream SaaS stack, email, calendar, CRM, Slack, where most connectors already exist.",
+  },
+  {
+    slug: "pipedream",
+    name: "Pipedream",
+    logoSlug: "pipedream",
+    logoColor: "000000",
+    teaser: "A code-first workflow platform where every step can be real code. We use it when an agent's logic is too specific, or reaches too deep into a custom system, for a visual builder to express.",
+  },
+  {
+    slug: "salesforce-agentforce",
+    name: "Salesforce Agentforce",
+    logoSlug: "salesforce",
+    logoColor: "00A1E0",
+    teaser: "Salesforce's native agent layer, running inside data and permissions you already have. It only makes sense if Salesforce is already your CRM of record, and it's the lowest-friction path when it is.",
+  },
+];
+
+const fallbackFaqs = [
+  { question: "How do you decide which AI agent platform to use for a client?", answer: "We start from your actual workflow, not a preferred platform. During discovery we look at what systems the agent needs to touch, whether any of them lack a modern API, whether your team wants to edit the agent's logic directly afterward, whether a data residency or compliance requirement rules out a managed cloud platform, and whether Salesforce is already your CRM of record. Those answers usually point clearly at one platform, sometimes at one specific tool within it, before we design a single step." },
+  { question: "Can you switch us between platforms after we've started with one?", answer: "Yes. We audit what's already built, rebuild the parts worth keeping on the new platform, and validate the new version against the old before cutover. This happens more often than you'd expect, usually when a workflow that started simple grows logic a no-code builder can no longer express cleanly." },
+  { question: "Do we need to already own a license for one of these tools?", answer: "It depends on the platform. Salesforce Agentforce requires an active Salesforce license and org before an agent build makes sense there. n8n, Gumloop, Lindy, and Pipedream don't require anything upfront. If you don't already have an account, we help you pick and set one up as part of the project. If you're already running one of these tools, we build inside what you have." },
+  { question: "How does cost vary by platform?", answer: "Mainly by how much custom logic the agent needs versus how much a platform's existing library already covers, and by how many systems it has to connect to. A Gumloop or Lindy agent using mostly built-in connectors is usually faster and cheaper to build than a Pipedream or n8n agent that needs custom code steps for an internal system with no ready-made connector. Agentforce pricing depends mainly on how many Salesforce objects and permission sets the agent touches. We scope and quote every project individually after a discovery call rather than publishing a flat rate that wouldn't reflect what your workflow actually needs." },
+  { question: "Can one project use more than one of these tools together?", answer: "Yes, and it's not unusual. A common pattern is an agent built on Gumloop or Lindy that calls out to a Pipedream or n8n code step for one piece of custom logic no visual node covers, or a Salesforce-embedded agent that hands a task off to a general-purpose platform for something outside the CRM. We design across platform boundaries when that's genuinely the best way to solve the problem, rather than forcing everything through one tool because it's the one we started the conversation with." },
+  { question: "Do you build agents outside of these five named platforms?", answer: "Yes. Some workflows are better served by a fully custom-coded agent than any of the platforms on this page, especially when performance at scale, cost at volume, or a very specific requirement rules out an off-the-shelf builder. We'll tell you honestly when that's the better route instead of forcing a fit that isn't there." },
+  { question: "What if we just want to try a free agent-building tool first before hiring anyone?", answer: "That's a reasonable way to learn what an agent can do. OpenAI, Google, and Microsoft each publish free or low-cost SDKs and tools for building an agent yourself, and they're worth using if you or someone on your team wants to experiment hands-on. What they don't give you is a delivered, tested, monitored system built around your actual workflow and data, that's the gap we fill once you're ready to move past a personal experiment." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_agents_tools')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Agent Tools & Platforms We Build With',
+    url: 'https://lenooai.com/services/ai-agents/tools',
+    description: 'The AI agent builders and platforms Lenoo AI implements for UAE clients: n8n, Gumloop, Lindy, Pipedream, and Salesforce Agentforce.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'AI agent platform implementation: pricing based on the platform and scope of work. Book a free discovery call for a quote.' },
+    serviceType: 'AI Agent Platform Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Agents', item: 'https://lenooai.com/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'Tools', item: 'https://lenooai.com/services/ai-agents/tools' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI Agent Tools & Platforms We Build With | Lenoo AI"
+  description="The AI agent builders and platforms Lenoo AI implements for UAE clients: n8n, Gumloop, Lindy, Pipedream, and Salesforce Agentforce."
+  canonicalPath="/services/ai-agents/tools"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">AI Agents</a><span style="opacity:0.4;padding:0 4px;"> / </span>Tools</div>
+    <h1>AI Agent Tools <span class="gradient-text">&amp; Platforms We Build With</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      We're not locked into one ai agent platform. Lenoo AI builds on the tools below and picks whichever fits your workflow, your team's technical comfort, and the stack you already run, rather than the one we'd rather sell.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ai_agents_tools_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#platforms" class="btn-outline">See the Tools ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- INTRO -->
+<section class="section" aria-labelledby="intro-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="intro-heading" style="margin-bottom:1.5rem;">One Implementation Partner, Many Tools</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Search "ai agent builder" or "ai agent platform" and you'll find dozens of vendors, each convinced their product is the only one worth using. We're not a vendor. We're an agency that builds agents for a living, and we've never found one ai agent platform that fits every business we work with. A recruiting team on Salesforce needs something different from a support team running on Gmail and Slack, which needs something different again from a business automating a legacy system with no public API. So instead of pushing you toward a single tool, we start from your workflow and your existing stack, then pick the platform that actually fits.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        That also means we're not an ai agent marketplace or an ai agent store selling you a license and walking away. We design the agent, build it on whichever platform makes sense, test it against your real data, and hand over something your team can actually run. Below is the current list of platforms we implement, each with its own page covering how we use it, who it fits, and what we typically build.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        The decision happens during discovery, before we design a single step. We ask what systems the agent needs to read from and write to, whether any of them lack a modern API, how technical your team is and whether they want to edit the agent's logic directly after launch, whether a data residency or compliance rule limits where the agent's data can live, and whether Salesforce is already your CRM of record. Those answers usually point clearly at one category of platform, and often at one specific tool within it, well before we get to the technical design. If two platforms would genuinely both work, we say so and let cost and your team's existing skills settle it.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORY COMPARISON -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="category-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="category-heading" style="margin-bottom:1.5rem;">Three Categories of AI Agent Platform, and When Each Fits</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        No-code, purpose-built agent builders like Gumloop and Lindy trade a small amount of flexibility for speed and visibility. The agent's logic sits on a canvas or inside a configured integration, something a non-technical person on your team can look at, understand, and often edit directly, without calling us for every small wording change. Gumloop leans toward visual clarity of the reasoning itself. Lindy leans toward breadth, a very wide native-integration library that gets an agent live fast when your stack is mostly mainstream SaaS tools it already connects to. These fit businesses without an in-house developer who still want a real, working ai agent management platform they can see inside, not a black box.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Developer, code-first platforms like Pipedream and n8n earn their place the moment a workflow's logic gets too specific for a visual node library to express cleanly, an internal API with unusual authentication, a calculation with real business rules behind it, or branching that keeps needing one more exception. Both let every step be real code. The difference between them is mostly hosting: n8n self-hosts, which matters when a compliance or data residency rule says the agent's input can't leave infrastructure you control, while Pipedream runs on its own managed infrastructure and is code-first from the ground up rather than visual-first with code as an escape hatch.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Enterprise-embedded platforms are a category of one here: Salesforce Agentforce. It isn't a general-purpose ai agent platform competing on features the way the other four do. It exists specifically for businesses already running Salesforce as their CRM of record, and its entire value is that the agent reads and writes inside data and permissions you've already built, rather than an external tool reaching in through an API. If you're not on Salesforce, this category doesn't apply to you at all, and one of the general-purpose platforms above is almost always the better starting point.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HONEST FREE SECTION -->
+<section class="section" aria-labelledby="free-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="free-heading" style="margin-bottom:1.5rem;">What About Free Agent Tools From OpenAI, Google, or Microsoft?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        If you're searching for an ai agent free option, or an ai agent for free starting point, it's worth being upfront: OpenAI, Google, and Microsoft each ship their own agent-building offerings. Ai agent openai generally means OpenAI's Agents SDK and the Assistants-style tooling built around its models. Ai agent google points to Google's agent frameworks and Vertex AI Agent Builder. Ai agent microsoft usually means Copilot Studio or the agent tooling inside Azure AI. All three are real, and none of them are a trick, they're built for a developer who wants to experiment solo, prototype an idea, or wire together something from scratch with code and API keys.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        What they don't give you is a delivered system. A free SDK gets you a starting point, not error handling for the edge cases your real data will throw at it, not monitoring so you know when the agent's decisions drift from what you'd want, not a defined permission boundary so it can't take an action it shouldn't, and not someone on the other end when a connected app changes its API and something breaks quietly. Building that layer is most of the actual work in a production agent, and it's the part a free tool leaves entirely on you.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        So the honest answer is: if you or someone on your team wants to learn how agents work by building one solo, start with whichever of these free tools matches your existing cloud provider, there's real value in that hands-on experience. If you want an agent running your business's actual workflow, tested against your real data, monitored after launch, and maintained when something upstream changes, that's a different project, and it's the one we build. A free starting point and a delivered, maintained system solve different problems, and we won't pretend otherwise to make a sale.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Already tried a free agent tool and hit its limits? Tell us what you're trying to build, and we'll tell you honestly what it takes to make it production-ready.</p>
+    <button onclick="openModal(this)" data-source="ai_agents_tools_mid" class="btn-primary">Book a Free Discovery Call</button>
+  </div>
+</section>
+
+<!-- PLATFORM GRID -->
+<section id="platforms" class="section" style="background:#f0f3ff;" aria-labelledby="platforms-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="platforms-heading">The Platforms We Build On</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Five ai agent tools, five different strengths. Each page below covers how we use the platform, who it fits, and what we typically build.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {tools.map((tool) => (
+        <div class="value-card">
+          <div class="tool-logo-wrap"><img src={`https://cdn.simpleicons.org/${tool.logoSlug}/${tool.logoColor}`} alt={`${tool.name} logo`} width="32" height="32" loading="lazy" /></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{tool.name}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">{tool.teaser}</p>
+          <a href={`/services/ai-agents/tools/${tool.slug}`} class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- WRAP-UP -->
+<section class="section-sm" aria-label="How we choose">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        None of the five platforms above are ranked, and there isn't a single best one; each solves a different shape of problem. What stays consistent across every project is how we work: we scope the decision the agent needs to make first, name the platform that fits it second, and build with logging, monitoring, and documentation included so your team isn't dependent on us for every small change afterward. If your project doesn't map cleanly onto any single platform, or genuinely needs two of them working together, we design across that boundary rather than force everything through one tool because it's the one we started the conversation with.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- BACK TO HUB -->
+<section class="section-sm" aria-label="Related">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1rem;">Looking for the bigger picture? See the full <a href="/services/ai-agents" class="learn-link" style="display:inline;">AI agents overview →</a></p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Not Sure Which Agent Platform Fits Your Business?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Book a free discovery call with our Dubai team. We'll look at your workflow and existing stack, then tell you which platform makes sense, honestly.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_agents_tools_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.tool-logo-wrap { background:#fff; border:1px solid #e6e9f0; border-radius:12px; width:56px; height:56px; display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+.value-card { display:flex; flex-direction:column; }
+</style>
