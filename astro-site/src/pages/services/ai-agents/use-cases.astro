@@ -1,0 +1,202 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "How specific can an agent actually get?", answer: "Very. The examples on this page are starting points, not a menu you pick from as-is. A real agent build is scoped to your specific criteria, your specific tools, and your specific edge cases, which is exactly why two businesses in the same industry end up with meaningfully different agents even when the category, 'lead qualification,' say, sounds identical." },
+  { question: "Can one agent do multiple jobs?", answer: "It can be given multiple capabilities, but we generally build narrowly scoped agents that do one job extremely well rather than one generalist trying to cover everything. For workflows that genuinely span multiple domains, that's what an agent team is for, see the section below, rather than overloading a single agent with responsibilities it wasn't designed to juggle." },
+  { question: "How does an 'agent team' differ from one agent with a lot of tools?", answer: "One agent with many tools still makes every decision through a single reasoning process, which gets harder to trust as the task gets more complex. An agent team splits the work across specialized agents, each with a narrow job, coordinated by an orchestrator that routes tasks and combines results. It's the difference between one generalist trying to do everything and a small team where each member has a clear role." },
+  { question: "Is a personal assistant agent realistic for one person, or only for teams?", answer: "It's realistic for one person. A personal assistant agent scoped to an individual executive, handling scheduling, inbox triage, and task follow-up, is one of the more contained builds we do, since the scope is naturally bounded to what one person's workday actually involves." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_agents_use_cases')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Agent Examples & Use Cases',
+    url: 'https://lenooai.com/services/ai-agents/use-cases',
+    description: 'Real AI agent examples and use cases by function: research, sales, support, operations, compliance, scheduling, agent teams, and personal assistants.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Agents', item: 'https://lenooai.com/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'Use Cases', item: 'https://lenooai.com/services/ai-agents/use-cases' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI Agent Examples & Use Cases | Lenoo AI"
+  description="Real AI agent examples and use cases by function: research, sales, support, operations, compliance, scheduling, agent teams, and personal assistants."
+  canonicalPath="/services/ai-agents/use-cases"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">AI Agents</a><span style="opacity:0.4;padding:0 4px;"> / </span>Use Cases</div>
+    <h1>AI Agent Examples <span class="gradient-text">by Function</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      A broad catalog of what businesses actually deploy agents to do, organized by function, plus what an "agent team" is and how a personal assistant agent works for a single individual.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_agents_use-cases_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#by-function" class="btn-outline">See the Examples ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- BY FUNCTION -->
+<section id="by-function" class="section" aria-labelledby="function-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="function-heading">Agents by Function</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Examples, not a fixed catalog. Every real build is scoped to your specific criteria and tools.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">manage_search</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Research Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Given a question like "summarize what our top competitors changed about pricing this quarter," a research agent searches public sources, reads pricing pages and coverage, cross-checks dates, and returns a structured report with sources cited, in minutes rather than a day of manual digging.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">trending_up</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Sales Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Pulls matching leads from the CRM, checks recent activity on each, and drafts personalized outreach referencing something specific to the prospect, so a rep opens their day with 20 ready-to-review drafts instead of 20 blank emails to write.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">support_agent</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Support Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Reads an incoming ticket, checks order or account status, and answers directly when the case is routine, escalating with full context the moment something needs a person's judgment rather than a script.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">settings_suggest</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Operations Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Turns messy exported data, spreadsheets, scanned documents, disconnected systems, into clean, structured reports and SOPs, catching the manual reconciliation work that usually falls to whoever has the most patience for spreadsheets.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">gavel</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Compliance Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Reviews documents or transactions against a defined policy on a schedule, flags anything that looks like a violation with the specific clause it conflicts with, and alerts the right person instead of the finding sitting in a log nobody reads.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">calendar_month</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Scheduling Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Reads availability across calendars, proposes meeting times that actually work, and handles the confirmation back-and-forth, so coordinating a call with five people stops costing five separate email threads.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AGENT TEAM -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="team-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="team-heading" style="margin-bottom:1.5rem;">What Is an "AI Agent Team"?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        An agent team is a multi-agent system: several specialized agents, each with a narrow, well-defined job, coordinated by an orchestrator that routes work between them and combines their output. A common pattern is one agent that researches, one that drafts, one that reviews, and one that publishes, each doing its own piece rather than a single agent trying to hold the whole process in its head at once.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        The reason this beats one generalist agent isn't philosophical, it's practical. A narrowly scoped agent is easier to test thoroughly, easier to debug when something goes wrong, and easier to trust, because you can verify each piece of the process independently. We reach for an agent team specifically when a workflow genuinely spans multiple distinct domains that don't belong in one agent's judgment, not as a default for every project, since added coordination between agents is added complexity that only pays off when the task actually needs it.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PERSONAL ASSISTANT -->
+<section class="section" aria-labelledby="assistant-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="assistant-heading" style="margin-bottom:1.5rem;">A Personal Assistant Agent, for One Person</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Not every agent is built for a team or a department. A personal assistant agent scoped to a single executive handles scheduling (proposing and confirming meeting times against real availability), inbox triage (sorting by priority, drafting replies to routine messages, flagging what genuinely needs a personal response), and task follow-up (tracking commitments made in meetings or emails and nudging when something's about to slip).
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        The scope here is naturally bounded, one person's actual workday, which makes it one of the more contained builds we do. It's also a useful entry point for a business that wants to see an agent working well before committing to a larger, team-wide deployment.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">See a use case close to your workflow? Tell us the specifics, and we'll scope what it would take to build.</p>
+    <button onclick="openModal(this)" data-source="ai_agents_use-cases_mid" class="btn-primary">Book a Free Discovery Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Build Your Own Use Case?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">None of these examples are a perfect fit for every business. Tell us what your actual task looks like, and we'll scope an agent for exactly that.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_agents_use-cases_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>
