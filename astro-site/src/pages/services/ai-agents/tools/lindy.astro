@@ -1,0 +1,252 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+
+const h1 = 'AI Agents Built on Lindy';
+const metaTitle = 'AI Agents Built on Lindy | Lenoo AI';
+const metaDescription = 'Lenoo AI builds AI agents on Lindy for UAE businesses: an agent builder with a very wide native-integration library across email, calendar, CRM, and Slack.';
+const heroSubtext = "Lindy is an AI agent builder with one thing most platforms don't have: a very wide library of native integrations, over 4,000 apps, built in. We use it when your stack is mostly mainstream SaaS tools Lindy already connects to, so the build is mostly configuration, not custom integration work.";
+
+const useCases = [
+  { title: 'Meeting-Notes-to-CRM Agent', description: 'Joins a call, takes structured notes, pulls out action items and next steps, and writes the summary directly into the right CRM record, so a rep leaves the call with the follow-up already logged instead of typing it up an hour later.' },
+  { title: 'Recruiting-Screener Agent', description: 'Reads incoming applications against the criteria for a role, scores each one, and drafts a short summary of why it ranked where it did, so a hiring manager reviews a shortlist with reasoning attached instead of a folder of unsorted resumes.' },
+  { title: 'Customer-Onboarding Agent', description: 'Sends the right sequence of setup emails after a new customer signs, checks whether each step has actually been completed, and nudges the customer or a team member when something stalls, so onboarding does not depend on someone remembering to follow up.' },
+  { title: 'Calendar-Coordination Agent', description: "Reads availability across everyone's calendars, proposes meeting times that actually work, and handles the back-and-forth of confirming a slot, so scheduling a call with five people stops costing five separate email threads." },
+  { title: 'Renewal-Reminder Agent', description: "Tracks contract or subscription end dates already sitting in your CRM, drafts a renewal outreach message ahead of the deadline, and flags accounts that have gone quiet, so a renewal never slips because nobody happened to check the date." },
+];
+
+const faqFallback = [
+  { question: 'What if we need an integration Lindy doesn’t have?', answer: "Lindy's library covers most mainstream SaaS tools, but not everything, especially internal or custom-built systems. If that's your situation, Lindy can often still reach a system through its API or webhook connector, and if the logic needed is more involved than that, we'll tell you honestly and point you toward n8n or Pipedream instead, both of which handle custom integrations more directly." },
+  { question: 'How does Lindy pricing work?', answer: "Lindy prices on a subscription tied to usage, generally the number of tasks or agent runs per month. We scope your workflow against expected volume during discovery, so you know roughly what tier you'll land in before committing, rather than finding out after the agent is already handling real traffic." },
+  { question: 'Where does our data actually live?', answer: "Data the agent processes flows through Lindy's cloud infrastructure and whichever of your connected tools it's reading from or writing to. If a genuine data residency requirement rules out a managed cloud platform for your business, that points to n8n's self-hosting option instead, and it's a question we settle explicitly during discovery rather than assuming." },
+  { question: 'What does maintenance look like once the agent is live?', answer: "We monitor the agent closely for the first few weeks to catch anything that needs adjusting against real inputs, then move to a lighter maintenance retainer covering updates, new steps, and fixes if a connected app changes its API in a way that affects the agent." },
+  { question: 'Can one Lindy agent handle more than one task?', answer: "It can be given multiple capabilities, but we generally build narrowly scoped agents that do one job well rather than one agent trying to do everything. If your business needs several distinct workflows automated, that usually means several purpose-built agents working alongside each other, which is more reliable than a single generalist agent juggling unrelated tasks." },
+  { question: 'How long does a typical Lindy build take?', answer: "Because most of the connectors already exist in Lindy's library, a single-workflow agent usually goes from discovery to launch in one to three weeks, depending on how many systems it touches and how much testing the edge cases need before we trust it against live data." },
+];
+
+let faqItems = faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_agents_tools_lindy')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: h1,
+    url: 'https://lenooai.com/services/ai-agents/tools/lindy',
+    description: metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'Lindy agent projects: pricing based on workflow complexity and integration count. Book a free discovery call for a quote.' },
+    serviceType: 'Lindy AI Agent Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Agents', item: 'https://lenooai.com/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'Tools', item: 'https://lenooai.com/services/ai-agents/tools' },
+      { '@type': 'ListItem', position: 4, name: 'Lindy', item: 'https://lenooai.com/services/ai-agents/tools/lindy' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonicalPath="/services/ai-agents/tools/lindy"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">AI Agents</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents/tools" style="color:inherit;text-decoration:none;opacity:0.65;">Tools</a><span style="opacity:0.4;padding:0 4px;"> / </span>Lindy</div>
+    <div class="tool-logo-hero"><img src="https://cdn.simpleicons.org/lindy/6C5CE7" alt="Lindy logo" width="56" height="56" loading="eager" /></div>
+    <h1>{h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ai_agents_tools_lindy_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#use-cases" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- WHAT IS LINDY -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">What Is Lindy?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Lindy is an AI agent builder, and its defining feature is breadth: a native-integration library covering thousands of apps, from email and calendar to CRMs, spreadsheets, and team communication tools. Where some agent platforms make you build a custom connector for every system you want the agent to touch, Lindy's library means the connection to Gmail, Google Calendar, HubSpot, Slack, or Salesforce is usually already there, ready to configure rather than build from scratch.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        That breadth changes what a project actually involves. Instead of spending build time on custom API work, most of the effort goes into defining what the agent should decide and how it should behave inside tools it can already reach. For a business running a fairly standard SaaS stack, that trade shows up directly in how fast the agent gets to a working state.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW LENOO USES LINDY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="how-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="how-heading" style="margin-bottom:1.5rem;">How Lenoo AI Uses Lindy for UAE Agent Builds</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        We implement and configure Lindy agents for your business; we don't sell Lindy itself. Because so much of the platform's value sits in its existing integrations, our discovery process for a Lindy project starts differently than it would for n8n or a custom build: we take an inventory of every tool the agent needs to touch and check it against Lindy's library before we design anything.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Where a tool is already covered, configuration is fast. Where something in your stack isn't in the library, usually an internal system or something custom-built, we evaluate whether Lindy can still reach it through an API or webhook connector, or whether the workflow is better suited to a platform built for custom integration work from the ground up. Being upfront about that at the start avoids discovering it halfway through a build.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO THIS FITS -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">Is Lindy Right for You?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Lindy fits businesses running a fairly mainstream SaaS stack, email through Gmail or Outlook, a standard CRM, Slack for internal communication, a calendar tool most people recognize, where the value of the agent comes from coordinating across those tools rather than reaching into something unusual. If your day-to-day tools are the kind almost any vendor already integrates with, Lindy typically gets an agent live with the least custom work.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        It fits less well when the workflow depends on an internal or custom-built system with no public API, when data residency rules out a managed cloud platform, or when the logic needs a code step no configuration option covers. Those situations point toward n8n or Pipedream instead, and if your CRM specifically is Salesforce, Agentforce is worth comparing directly since it runs the agent inside data you already have there. A quick way to tell which camp you are in: list the tools the agent needs to touch, and check how many of them are common, recognizable SaaS products versus something built in-house. Mostly the former usually means Lindy. A mix that leans toward internal systems usually means a code-capable platform instead.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">What a Typical Lindy Project With Us Looks Like</h2>
+      <ol style="color:#42474e; font-size:1.0625rem; line-height:1.85; padding-left:1.25rem; margin:0;">
+        <li style="margin-bottom:0.75rem;"><strong>Discovery.</strong> We take an inventory of every tool the agent needs to touch and check each one against Lindy's integration library before designing anything.</li>
+        <li style="margin-bottom:0.75rem;"><strong>Design.</strong> We map exactly what the agent should read, decide, and do inside each connected tool, and flag anything outside Lindy's native library early.</li>
+        <li style="margin-bottom:0.75rem;"><strong>Build and test.</strong> We configure the integrations, define the agent's decision logic, and test it against real scenarios pulled from your actual workflow, not generic examples.</li>
+        <li><strong>Launch and monitor.</strong> We deploy the agent, document what it does and where, and monitor its output for the first few weeks so anything off gets caught quickly.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">Lindy vs. the Alternatives</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Gumloop puts more emphasis on visual clarity of the logic itself, which matters more when your team wants to edit the workflow directly rather than just rely on wide integration coverage. Pipedream and n8n both let every step be real code, so they pull ahead the moment a workflow needs custom logic or reaches into a system with no ready-made connector, at the cost of more setup work. Salesforce Agentforce isn't really a comparison so much as a different starting point: it only makes sense if Salesforce is already your CRM of record. We recommend Lindy specifically when your stack is mostly mainstream SaaS tools and the project's main value is coordinating across them quickly, not when the workflow needs deep custom integration or self-hosting.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- RELIABILITY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="reliability-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="reliability-heading" style="margin-bottom:1.5rem;">Keeping a Lindy Agent Reliable After Launch</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Wide integration coverage means a Lindy agent typically touches several of your systems at once, so we build logging that tracks not just what the agent decided but which tool it read from and wrote to at each step. That makes it possible to trace an unexpected result back to a specific connection rather than treating the whole agent as one opaque process. Because Lindy's connectors depend on the APIs of the tools it's plugged into, part of ongoing maintenance is watching for when a connected app changes something on its end, since that's the most common source of a previously reliable agent suddenly behaving differently. Our retainer covers exactly that kind of monitoring and the fix when it's needed, and for agents touching customer-facing systems, we also check periodically that the decisions being made still match what your team would actually want, not only that the connections are still technically working.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="use-cases" class="section" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">What We Build With Lindy</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Common Lindy agent projects for UAE clients, from meeting follow-ups to recruiting. Every build starts from the tools you're already using, not a generic template.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {useCases.map((uc) => (
+        <div class="value-card">
+          <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Running a standard SaaS stack and want an agent coordinating across it? Tell us what it should do, and we'll build it on Lindy.</p>
+    <button onclick="openModal(this)" data-source="ai_agents_tools_lindy_mid" class="btn-primary">Book a Free Lindy Consultation</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Build Your Agent on Lindy?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Tell us what you want coordinated across your tools. We'll design and build the agent on Lindy, then show you exactly how it works before it goes live.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_agents_tools_lindy_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.tool-logo-hero { width:64px; height:64px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; }
+.value-card { display:flex; flex-direction:column; }
+</style>
