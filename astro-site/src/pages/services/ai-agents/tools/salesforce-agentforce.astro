@@ -1,0 +1,252 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+
+const h1 = 'AI Agents Built on Salesforce Agentforce';
+const metaTitle = 'AI Agents Built on Salesforce Agentforce | Lenoo AI';
+const metaDescription = "Lenoo AI builds AI agents on Salesforce Agentforce for UAE businesses already running Salesforce: agents that run inside your existing CRM data and permissions.";
+const heroSubtext = "Agentforce is Salesforce's native agent layer. It runs inside the CRM data and permissions you already have, not as a separate tool bolted on the side. If Salesforce is already your system of record, this is how we build the agent on top of it.";
+
+const useCases = [
+  { title: 'Lead-Scoring-and-Routing Agent', description: "Reads incoming leads against your scoring criteria and territory rules, assigns each one to the right rep automatically, and leaves a note on the record explaining why it scored the way it did, so the rep opens a lead with context already attached." },
+  { title: 'Case-Triage Agent', description: "Reads a new support case the moment it lands, categorizes it, checks it against known issues and past cases, and either drafts a response or escalates to the right queue, working inside the same case object your support team already uses." },
+  { title: 'Opportunity-Follow-Up Agent', description: "Watches open opportunities for stalled activity, drafts a follow-up email or task for the owning rep, and flags deals that have gone quiet longer than your pipeline rules allow, so nothing valuable ages out silently." },
+  { title: 'Pipeline-Hygiene Agent', description: "Checks open records against your data quality rules, missing fields, stale close dates, unrealistic stage jumps, and either fixes what it safely can or flags the record and owner for a manual review." },
+  { title: 'Renewal-Risk Agent', description: "Reads account activity, support case history, and usage signals already sitting in your org, flags accounts trending toward churn ahead of their renewal date, and drafts a briefing note for the account owner explaining exactly what changed." },
+];
+
+const faqFallback = [
+  { question: "Do we need an existing Salesforce license to use Agentforce?", answer: "Yes. Agentforce runs on top of your existing Salesforce org, so you need an active Salesforce license and org before an agent build makes sense. If you are not already on Salesforce, this is not the right starting point, and we would look at Lindy, Gumloop, or n8n instead depending on your actual CRM and stack." },
+  { question: "Does this replace our Salesforce admin?", answer: "No. Your admin still owns the org, its permissions, and its configuration. What we add is the agent layer on top: the logic that reads records, reasons about them, and takes action within the permissions your admin has already set. We work with your admin during the build, not around them." },
+  { question: "What actually drives the cost of an Agentforce build?", answer: "Mainly how many Salesforce objects and permission sets the agent needs to work across, how many distinct actions it needs to take, and how much testing is required inside a sandbox org before we trust it against live customer and deal data." },
+  { question: "Does data stay inside Salesforce?", answer: "Yes, that is the core advantage of building here specifically. The agent reads and writes within your existing Salesforce data model and permission structure, rather than pulling records out to a separate platform. For businesses with strict rules about where CRM data lives, that matters more than almost anything else in the comparison." },
+  { question: "How long does a typical Agentforce project take?", answer: "Discovery and permission mapping usually take one to two weeks, since we need a clear picture of which objects and fields the agent touches before building anything. Build and sandbox testing typically add another two to four weeks depending on how many actions the agent needs to take and how much validation each one requires." },
+  { question: "Do we need to change our existing Salesforce setup for this to work?", answer: "Rarely. Most Agentforce builds work within your existing object structure and permission sets as they stand. If the agent needs a new field or a permission set that does not exist yet, we flag that during discovery and design it alongside your admin, rather than restructuring parts of your org that already work." },
+];
+
+let faqItems = faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_agents_tools_salesforce-agentforce')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: h1,
+    url: 'https://lenooai.com/services/ai-agents/tools/salesforce-agentforce',
+    description: metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'Salesforce Agentforce projects: pricing based on the objects and permissions the agent needs. Book a free discovery call for a quote.' },
+    serviceType: 'Salesforce Agentforce Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Agents', item: 'https://lenooai.com/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'Tools', item: 'https://lenooai.com/services/ai-agents/tools' },
+      { '@type': 'ListItem', position: 4, name: 'Salesforce Agentforce', item: 'https://lenooai.com/services/ai-agents/tools/salesforce-agentforce' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonicalPath="/services/ai-agents/tools/salesforce-agentforce"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">AI Agents</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents/tools" style="color:inherit;text-decoration:none;opacity:0.65;">Tools</a><span style="opacity:0.4;padding:0 4px;"> / </span>Salesforce Agentforce</div>
+    <div class="tool-logo-hero"><img src="https://cdn.simpleicons.org/salesforce/00A1E0" alt="Salesforce logo" width="56" height="56" loading="eager" /></div>
+    <h1>{h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ai_agents_tools_salesforce-agentforce_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#use-cases" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- WHAT IS AGENTFORCE -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">What Is Salesforce Agentforce?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Agentforce is Salesforce's own agent layer, built to run inside the org you already have. Instead of exporting data to a separate AI platform, connecting it back with an integration, and managing a second system with its own permissions, an Agentforce agent reads and acts on your Salesforce records directly, governed by the same permission sets and sharing rules your admin already configured.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        That matters more than it sounds. A lead-scoring agent built on an external platform needs its own copy of your lead data, its own sync process, and its own security review. An Agentforce agent doing the same job is reading the actual lead record, respecting the field-level security already in place, and writing back to the same object your reps already work in. There is no second data store to keep in sync, and no bolted-on tool for your team to learn.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW LENOO USES AGENTFORCE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="how-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="how-heading" style="margin-bottom:1.5rem;">How Lenoo AI Uses Agentforce for UAE Salesforce Orgs</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        We build and configure Agentforce agents inside your Salesforce org; we do not sell Salesforce itself, and we assume you already own the license. Every project starts with a permissions map: which objects the agent needs to read, which it needs to write to, and which existing permission sets already cover that, versus what needs a new one defined specifically for the agent.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        We build and test inside a sandbox org before anything touches production data, the same discipline any serious Salesforce change deserves. That sandbox phase is where we validate that the agent's decisions hold up against real record shapes and edge cases in your data, not just the clean examples we started with, before your team ever sees it running live.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO THIS FITS -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">Is Agentforce Right for You?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Agentforce fits one situation clearly: you are already running Salesforce as your CRM of record, and you want an agent working with the data and permissions you already have there, rather than a separate tool sitting alongside it. If that describes your business, Agentforce is usually the lowest-friction way to get an agent live, because most of the plumbing, the data model, the permissions, the object structure, already exists.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        If you are not on Salesforce, this page is not the right starting point, and building on it just to get an agent would mean adopting a CRM migration you did not otherwise need. In that case, Lindy, Gumloop, or n8n reach the same underlying goal, an agent reasoning over your customer data, without requiring a change to your CRM. And if you are on Salesforce but only for a narrow slice of your operation, with the actual workflow you want automated living mostly outside it, in email, a support tool, or an internal system, a general-purpose agent platform that reaches into Salesforce through its API sometimes fits the shape of the problem better than building everything inside the CRM itself. We will tell you which situation you are actually in during the discovery call.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">What a Typical Agentforce Project With Us Looks Like</h2>
+      <ol style="color:#42474e; font-size:1.0625rem; line-height:1.85; padding-left:1.25rem; margin:0;">
+        <li style="margin-bottom:0.75rem;"><strong>Discovery.</strong> We map which Salesforce objects, fields, and permission sets the agent needs to read from and write to, working directly against your existing org structure.</li>
+        <li style="margin-bottom:0.75rem;"><strong>Design.</strong> We define the agent's decision logic and the exact boundary of what it is permitted to change, aligned to permissions your admin has already approved.</li>
+        <li style="margin-bottom:0.75rem;"><strong>Build and test.</strong> We build and test inside a sandbox org, validating the agent's decisions against real record shapes pulled from your actual data before anything goes live.</li>
+        <li><strong>Launch and monitor.</strong> We deploy to production, document the agent's permissions and logic for your admin, and monitor its decisions for the first weeks to catch anything that needs adjusting.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">Why Agentforce Instead of a General Agent Platform</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        This is not really a general comparison the way n8n, Gumloop, Lindy, and Pipedream compare to each other. Those four are general-purpose agent platforms that can connect to almost any CRM, including Salesforce, through an API. Agentforce is different because it is not general purpose at all: it exists specifically for businesses already running Salesforce, and its entire value is that the agent runs inside data and permissions you have already built, rather than an external platform reaching in from outside. If Salesforce is already your system of record, you are already running the investment this agent layer sits on top of. If it is not, one of the general platforms is almost always the better starting point.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- RELIABILITY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="reliability-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="reliability-heading" style="margin-bottom:1.5rem;">Keeping an Agentforce Agent Reliable After Launch</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Because the agent operates inside live CRM data, we build with the same care any production Salesforce change deserves. Every action it takes is logged against the record it touched, so if a lead gets routed or a case gets escalated in a way that looks wrong, your admin can trace it back to exactly what the agent read and why it decided what it did. We keep the agent's permission set narrow and reviewed on a schedule, since the biggest risk in a CRM-embedded agent is not that it reasons badly, but that its permissions drift wider than the task actually requires over time. Sandbox testing before every significant change stays part of our process after launch too, not just at the initial build, and any change to what the agent is permitted to touch goes through the same review your admin would apply to a permission set change made by a person.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="use-cases" class="section" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">What We Build With Agentforce</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Common Agentforce projects for UAE Salesforce customers, from lead routing to pipeline hygiene. Every build is scoped to your actual org, not a generic template.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {useCases.map((uc) => (
+        <div class="value-card">
+          <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Already running Salesforce and want an agent inside it? Tell us what it should handle, and we'll build it on Agentforce.</p>
+    <button onclick="openModal(this)" data-source="ai_agents_tools_salesforce-agentforce_mid" class="btn-primary">Book a Free Agentforce Consultation</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Build Your Agent on Agentforce?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Tell us what you want the agent to handle inside Salesforce. We'll map the permissions, build it in a sandbox, and show you exactly how it works before it touches production.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_agents_tools_salesforce-agentforce_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.tool-logo-hero { width:64px; height:64px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; }
+.value-card { display:flex; flex-direction:column; }
+</style>
