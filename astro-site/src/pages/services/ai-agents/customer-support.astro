@@ -1,0 +1,198 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "Does this replace our support team?", answer: "No. An agent handles the high-volume, repetitive tickets, order status, simple returns, common questions, so your team spends their time on the tickets that actually need a person: complaints, edge cases, and anything requiring judgment or empathy a script can't fake. We scope the split during discovery based on your real ticket volume, not a generic assumption." },
+  { question: "Which helpdesk platforms do you support?", answer: "Zendesk, Intercom, and Freshdesk are the three we work with most, since they cover the large majority of UAE support stacks we see. If you're on something else, tell us during discovery; most modern helpdesk platforms expose an API an agent can read from and write to." },
+  { question: "How is brand voice and tone maintained?", answer: "We train the agent's response style against real examples of how your team actually writes to customers, not a generic customer-service tone. Before launch, we review a batch of drafted responses against your team's own standard and adjust until it reads like your brand, not like an obviously automated reply." },
+  { question: "What happens when a ticket needs a human?", answer: "The agent escalates with context attached: what the customer asked, what the agent already checked, and why it's routing the ticket to a person, so your team isn't starting from zero. We define the escalation triggers during discovery, sentiment, ticket category, account value, whatever signals matter for your business." },
+  { question: "Can it actually process a refund or update an order?", answer: "Yes, within a defined boundary. We set explicit rules for what the agent can approve directly, a straightforward return within policy, say, and what needs a person to confirm first, typically anything above a value threshold or outside standard policy. The agent doesn't get blanket authority; it gets a specific, reviewed scope." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_agents_customer_support')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Agents for Customer Support',
+    url: 'https://lenooai.com/services/ai-agents/customer-support',
+    description: 'AI agents for customer support: Tier 1 and Tier 2 automation integrated with Zendesk, Intercom, or Freshdesk, with clear escalation to a human.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'AI agent projects for customer support: pricing based on ticket volume and integration scope. Book a free discovery call for a quote.' },
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Agents', item: 'https://lenooai.com/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'Customer Support', item: 'https://lenooai.com/services/ai-agents/customer-support' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI Agents for Customer Support | Lenoo AI"
+  description="AI agents for customer support: Tier 1 and Tier 2 automation integrated with Zendesk, Intercom, or Freshdesk, with clear escalation to a human."
+  canonicalPath="/services/ai-agents/customer-support"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">AI Agents</a><span style="opacity:0.4;padding:0 4px;"> / </span>Customer Support</div>
+    <h1>AI Agents for <span class="gradient-text">Customer Support</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      An agent handles Tier 1 and Tier 2 support autonomously, checking order status, processing straightforward refunds, and answering common questions, then escalates to a person the moment a ticket needs judgment.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_agents_customer-support_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#integrations" class="btn-outline">See the Integrations ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- TIER 1/2 -->
+<section class="section" aria-labelledby="tiers-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="tiers-heading" style="margin-bottom:1.5rem;">What Tier 1 and Tier 2 Support Actually Looks Like Automated</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Most support queues are dominated by a small set of repeated questions: where's my order, can I still change it, how do I return this, what's your refund policy. An agent reads the incoming ticket, checks the relevant system, order status, account details, policy rules, and answers directly when the case is standard, day or night, without a customer waiting for business hours.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        For a straightforward return within policy, or an order-status check, the agent acts on its own within a boundary we define during setup. For anything less standard, a complaint, a policy exception request, a customer who's clearly frustrated, it escalates instead of guessing, with the full context attached so your team picks it up without asking the customer to repeat themselves.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATIONS -->
+<section id="integrations" class="section" style="background:#f0f3ff;" aria-labelledby="integrations-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="integrations-heading">Named Integrations</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">We connect directly to the helpdesk platform you already run, not a separate tool your team has to learn.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">support_agent</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Zendesk</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">The most common platform we integrate with. The agent reads incoming tickets, drafts or sends responses, and updates ticket status and tags directly.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">chat</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Intercom</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">The agent handles inbound conversations in real time, with the same escalation logic as ticket-based support, adapted to Intercom's live-chat flow.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">confirmation_number</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Freshdesk</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Full ticket lifecycle support: the agent categorizes, responds, and routes within your existing Freshdesk workflow and SLA rules.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ESCALATION -->
+<section class="section" aria-labelledby="escalation-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="escalation-heading" style="margin-bottom:1.5rem;">When the Agent Hands Off to a Person</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        We define escalation triggers specific to your business during discovery: ticket category, detected sentiment, account value, or anything outside a documented policy. When one of those triggers fires, the agent routes the ticket to your team with a summary of what it already checked and why it's escalating, so a person picks it up with context, not a blank ticket. This isn't a fallback for when the agent fails; it's a designed part of the system, the agent's job is to handle the routine cases well and recognize quickly when a case isn't routine.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 24/7 -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="coverage-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="coverage-heading" style="margin-bottom:1.5rem;">Coverage That Doesn't Stop at 6pm</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Customer questions don't arrive on a schedule, but most support teams only staff during business hours. An agent handles the routine volume around the clock, so a customer asking about their order at 2am gets an answer instead of a queue position, while your team focuses their working hours on the tickets that genuinely need a person's attention.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Tell us which helpdesk you run and your most common ticket type. We'll show you what an agent would handle.</p>
+    <button onclick="openModal(this)" data-source="ai_agents_customer-support_mid" class="btn-primary">Book a Free Discovery Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Clear Your Support Queue?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Tell us what's clogging your queue. We'll design an agent that handles it and show you exactly how it decides before we build.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_agents_customer-support_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>
