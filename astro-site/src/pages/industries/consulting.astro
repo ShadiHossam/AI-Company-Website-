@@ -161,10 +161,10 @@ const ldJson = [
       <h2 id="apps-heading">Where AI is having the biggest impact in professional services</h2>
     </div>
     <div class="consulting-tabs" role="tablist" aria-label="Application categories">
-      <button type="button" class="consulting-tab-btn active" data-consulting-tab="client" role="tab" aria-selected="true">Client-Facing</button>
-      <button type="button" class="consulting-tab-btn" data-consulting-tab="internal" role="tab" aria-selected="false">Internal Operations</button>
+      <button type="button" id="consulting-tab-client" class="consulting-tab-btn active" data-consulting-tab="client" role="tab" aria-selected="true" aria-controls="consulting-panel-client">Client-Facing</button>
+      <button type="button" id="consulting-tab-internal" class="consulting-tab-btn" data-consulting-tab="internal" role="tab" aria-selected="false" aria-controls="consulting-panel-internal">Internal Operations</button>
     </div>
-    <div class="bento-grid bento-grid-3" data-consulting-tab-panel="client">
+    <div class="bento-grid bento-grid-3" id="consulting-panel-client" data-consulting-tab-panel="client" role="tabpanel" aria-labelledby="consulting-tab-client">
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
         <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Proposal Generation</h3>
@@ -184,7 +184,7 @@ const ldJson = [
         <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Speeds up early-stage engagement scoping and analysis</p>
       </div>
     </div>
-    <div class="bento-grid bento-grid-3" data-consulting-tab-panel="internal" hidden>
+    <div class="bento-grid bento-grid-3" id="consulting-panel-internal" data-consulting-tab-panel="internal" role="tabpanel" aria-labelledby="consulting-tab-internal" hidden>
       <div class="card">
         <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">search</span></div>
         <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Internal Knowledge Management AI</h3>
@@ -345,6 +345,7 @@ const ldJson = [
         const match = el.textContent?.match(/^([\d.]+)(.*)$/);
         if (!match) return;
         const [, numStr, suffix] = match;
+        if (!/^[a-zA-Z\s]*$/.test(suffix)) { obs.unobserve(el); return; }
         const target = parseFloat(numStr);
         const isDecimal = numStr.includes('.');
         let start = 0;
