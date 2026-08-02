@@ -1,0 +1,252 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+
+const h1 = 'AI Agents Built on Pipedream';
+const metaTitle = 'AI Agents Built on Pipedream | Lenoo AI';
+const metaDescription = "Lenoo AI builds AI agents on Pipedream for UAE businesses: a code-first workflow platform where every step can be real code, built for teams that want full control.";
+const heroSubtext = "Pipedream is a code-first workflow platform. Every step in a pipeline can be a genuine code block, not just a configured node, which makes it the platform we reach for when an agent's logic is too specific, or too custom, for a visual-only builder to express.";
+
+const useCases = [
+  { title: 'Custom-API-Integration Agent', description: "Connects to an internal system or a third-party API with no ready-made connector, authenticates against it directly in code, and lets the agent read from and write to it as part of a larger decision-making pipeline." },
+  { title: 'Data-Transformation-and-Decision Agent', description: "Pulls in data from one or more sources, reshapes it in code exactly the way your downstream system expects, then hands it to the reasoning step so the agent decides what should happen with the transformed result." },
+  { title: 'Webhook-Triggered Support Agent', description: "Fires the moment a webhook lands from your helpdesk or product, reads the payload, decides how to route or respond, and writes the result back through the same API, all inside one pipeline with no manual handoff." },
+  { title: 'Multi-Step Research Agent', description: "Chains several code steps together, querying an API, parsing the result, checking it against a second source, and having the agent synthesize a final answer, for research tasks too specific for a single reasoning call to handle well." },
+  { title: 'Internal-Tooling Agent', description: "Sits between two or three internal systems that were never designed to talk to each other, writes the code that translates one system's data shape into what the other expects, and lets the agent decide what to do with the result, closing a gap no off-the-shelf connector was ever going to cover." },
+];
+
+const faqFallback = [
+  { question: "Do we need our own developer on staff?", answer: "No. We write, host, and maintain the code steps as part of the build. Having an in-house developer helps if you want to make changes yourself later, but it is not a requirement to get a Pipedream agent built and running." },
+  { question: "Who owns the code and the hosting after the project?", answer: "You do. Pipedream workflows are built from real code, so nothing about the agent's logic is locked behind a proprietary format only we can read. If you ever want to bring the work in-house or move to another provider, the code steps are transparent and portable." },
+  { question: "What actually drives the cost of a Pipedream build?", answer: "Mainly how much custom code the workflow needs versus how much it can use Pipedream's built-in actions, plus how many external systems the agent has to authenticate against and how much testing each integration point requires before it is trusted against live data." },
+  { question: "How does debugging work if something goes wrong?", answer: "Every step logs its input and output, so when a workflow produces an unexpected result, we can trace exactly which step received what and returned what, rather than guessing at where in the pipeline the problem happened. For the agent's reasoning step specifically, we also log what it read and what it decided." },
+  { question: "How is this different from a fully custom-coded system outside Pipedream?", answer: "Pipedream still gives you the trigger infrastructure, the execution environment, and the built-in actions for common services, so we are not writing a workflow engine from scratch for every project. You get the control of real code without also paying to rebuild the plumbing every other platform already provides." },
+  { question: "Can Pipedream workflows call the same APIs a custom backend would?", answer: "Yes. A code step can call any API your business already uses, with the same authentication, headers, and error handling you would write in a standalone service. The difference is that the trigger, scheduling, and execution environment already exist, so we are writing the logic that matters instead of the infrastructure around it." },
+];
+
+let faqItems = faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_agents_tools_pipedream')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: h1,
+    url: 'https://lenooai.com/services/ai-agents/tools/pipedream',
+    description: metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'Pipedream agent projects: pricing based on how much custom code the workflow needs. Book a free discovery call for a quote.' },
+    serviceType: 'Pipedream AI Agent Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Agents', item: 'https://lenooai.com/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'Tools', item: 'https://lenooai.com/services/ai-agents/tools' },
+      { '@type': 'ListItem', position: 4, name: 'Pipedream', item: 'https://lenooai.com/services/ai-agents/tools/pipedream' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonicalPath="/services/ai-agents/tools/pipedream"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">AI Agents</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents/tools" style="color:inherit;text-decoration:none;opacity:0.65;">Tools</a><span style="opacity:0.4;padding:0 4px;"> / </span>Pipedream</div>
+    <div class="tool-logo-hero"><img src="https://cdn.simpleicons.org/pipedream/000000" alt="Pipedream logo" width="56" height="56" loading="eager" /></div>
+    <h1>{h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ai_agents_tools_pipedream_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#use-cases" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- WHAT IS PIPEDREAM -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">What Is Pipedream?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Pipedream is a code-first workflow platform. Where most agent builders offer a set of pre-built nodes and a handful of code snippets bolted on for edge cases, Pipedream treats code as the default: every step in a pipeline can be a real block of JavaScript or Python, with pre-built actions available for common services when writing the step from scratch is not necessary.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        For AI agent builds specifically, that means the reasoning step and the surrounding logic sit in the same environment: the agent's decision can trigger a code step that does exactly what you need, not just what a pre-built action happens to support. It is the platform built for teams who want full control over what each step does, rather than working within a fixed set of building blocks.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW LENOO USES PIPEDREAM -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="how-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="how-heading" style="margin-bottom:1.5rem;">How Lenoo AI Uses Pipedream for UAE Agent Builds</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        We design, write, and maintain Pipedream workflows for your business; we are an implementation partner, not a reseller of the platform. Every Pipedream project starts with a decision most other platforms do not require: which steps genuinely need custom code, and which can use a built-in action and save build time.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Getting that split right matters. Writing custom code for something a built-in action already handles just adds maintenance surface for no real benefit. Using a built-in action where the logic actually needs precision it cannot offer produces a workflow that behaves correctly most of the time and fails silently on the cases that matter. We make that call step by step during design, not as a blanket policy, and document which parts of the pipeline are custom code so a future developer, ours or yours, understands why.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO THIS FITS -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">Is Pipedream Right for You?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Pipedream fits businesses with in-house or contracted developer resources who want to own the code behind their agent, or whose workflow logic is specific enough that a visual-only builder cannot express it cleanly. It also fits teams that expect the agent to grow in complexity over time and want a platform that does not put a ceiling on what a single step can do.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        It fits less well when nobody on your side wants to think about code at all, or when the workflow maps cleanly onto a purpose-built agent platform's existing library. In those cases, Gumloop or Lindy usually gets the same result live faster with less to maintain, and we will recommend that route directly rather than defaulting to the more flexible option because it is the one we happened to start the conversation with. A useful test during discovery is whether you can describe the workflow's logic as a short list of clear rules, or whether it keeps needing an exception, a special case, or a calculation no pre-built action quite covers. The more exceptions a workflow accumulates, the more a code-first platform pays for itself over time, because each exception becomes a normal line of code instead of a workaround bolted onto a visual builder that was never designed for it.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">What a Typical Pipedream Project With Us Looks Like</h2>
+      <ol style="color:#42474e; font-size:1.0625rem; line-height:1.85; padding-left:1.25rem; margin:0;">
+        <li style="margin-bottom:0.75rem;"><strong>Discovery.</strong> We map the workflow end to end and decide which steps genuinely need custom code versus which can use a built-in action without losing precision.</li>
+        <li style="margin-bottom:0.75rem;"><strong>Design.</strong> We design the pipeline step by step, marking where the agent's reasoning sits and which code steps it depends on to read or act on external systems.</li>
+        <li style="margin-bottom:0.75rem;"><strong>Build and test.</strong> We write the code steps, wire the agent to them, and test each step in isolation before testing the pipeline end to end against real data.</li>
+        <li><strong>Launch and monitor.</strong> We deploy, hand over documented code your own developers can read and extend, and monitor execution logs for the first weeks to catch anything that needs adjusting.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">Pipedream vs. the Alternatives</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        The closest comparison here is n8n, since both platforms let every step be real code and both are built with developers in mind. The difference is hosting model and canvas philosophy: n8n is built around a visual node canvas first, with code as an escape hatch, and it self-hosts, which matters for compliance-driven builds. Pipedream is code-first from the ground up and runs on its own managed infrastructure without a self-hosting option. If self-hosting is a hard requirement, that decides it in n8n's favor immediately. If it is not, the choice often comes down to whether your team prefers thinking in a visual canvas with code where needed, or in code with built-in actions where useful. Gumloop and Lindy sit further from both, trading code-level control for a faster path to a working agent when the logic does not require it. Salesforce Agentforce is not really part of this comparison at all, since it only applies if Salesforce is already your CRM of record, and its value comes from running inside data you already have rather than from how code-capable the platform is.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- RELIABILITY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="reliability-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="reliability-heading" style="margin-bottom:1.5rem;">Keeping a Pipedream Agent Reliable After Launch</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Custom code carries more responsibility than a pre-built node, and we treat it that way. Every code step we write gets error handling for the failure modes we can anticipate, and logging detailed enough to diagnose the ones we could not. For the agent's reasoning step, we log what it read and what it decided separately from the surrounding code steps, so a strange result can be traced to whether the problem was in the agent's judgment or in the data a code step handed it. Because the workflow is genuine code, version history is part of how we work: changes are tracked, so if an update introduces a regression, we can roll back to the previous working version rather than debugging live against production traffic. If your team has its own developers, we also hand over the code in a state they can actually pick up: commented, structured, and documented well enough that maintaining it doesn't depend on us remaining involved.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="use-cases" class="section" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">What We Build With Pipedream</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Common Pipedream agent projects for UAE clients, from custom integrations to multi-step research. Every build is scoped to your actual logic, not a generic template.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {useCases.map((uc) => (
+        <div class="value-card">
+          <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Have logic too specific for a visual builder? Tell us what it needs to do, and we'll build it on Pipedream.</p>
+    <button onclick="openModal(this)" data-source="ai_agents_tools_pipedream_mid" class="btn-primary">Book a Free Pipedream Consultation</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Build Your Agent on Pipedream?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Tell us what the workflow needs to do. We'll design and build the agent on Pipedream, then show you exactly how each step works before it goes live.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_agents_tools_pipedream_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.tool-logo-hero { width:64px; height:64px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; }
+.value-card { display:flex; flex-direction:column; }
+</style>
