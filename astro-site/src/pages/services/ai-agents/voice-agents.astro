@@ -1,0 +1,228 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "Does it actually sound robotic?", answer: "The current generation of voice models is significantly more natural than the IVR systems most people picture when they hear 'AI phone agent.' It's not indistinguishable from a person on every call, and we won't pretend it is. What it does well is handle a straightforward, structured conversation (checking availability, confirming an order, answering a common question) without the caller feeling like they're stuck in a phone tree." },
+  { question: "Is the call recorded, and is that compliant?", answer: "Calls are recorded and transcribed for quality and training purposes by default, the same as most business phone systems already do. We build the disclosure and consent flow into the call opening, and adjust retention and handling to whatever your business's compliance requirements are, rather than assuming one default setup fits every client." },
+  { question: "Can it work with our existing phone system?", answer: "In most cases, yes. Voice agents typically connect through a SIP trunk or a number you provision specifically for the agent, which can sit alongside your existing lines rather than replacing your phone system outright. We confirm compatibility with your specific setup during discovery." },
+  { question: "What drives the cost of a voice agent project?", answer: "Mainly call volume, how many distinct scenarios the agent needs to handle (a single-purpose booking line costs less than a multi-topic reception line), and how much integration it needs with your calendar, CRM, or order system. We scope and quote after discovery rather than publishing a flat rate that wouldn't reflect what your use case actually needs." },
+  { question: "What happens when a caller needs something the agent can't handle?", answer: "It transfers to a person, with context. Rather than looping a confused caller through menu options, the agent recognizes when a request is outside its defined scope and hands off to your team, ideally with a summary of what the caller already said so they don't have to repeat themselves." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_agents_voice_agents')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Voice Agents',
+    url: 'https://lenooai.com/services/ai-agents/voice-agents',
+    description: 'AI voice agents for UAE businesses: inbound and outbound calling agents that answer, book, and follow up in English and Arabic.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'AI voice agent projects: pricing based on call volume and scenario complexity. Book a free discovery call for a quote.' },
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Agents', item: 'https://lenooai.com/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'Voice Agents', item: 'https://lenooai.com/services/ai-agents/voice-agents' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI Voice Agents for UAE Businesses | Lenoo AI"
+  description="AI voice agents for UAE businesses: inbound and outbound calling agents that answer, book, and follow up in English and Arabic."
+  canonicalPath="/services/ai-agents/voice-agents"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">AI Agents</a><span style="opacity:0.4;padding:0 4px;"> / </span>Voice Agents</div>
+    <h1>AI Voice Agents <span class="gradient-text">That Answer the Phone</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      A voice agent answers or makes calls, understands what the caller actually wants, and takes action: books, transfers, confirms, or logs, without a person picking up every ring.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_agents_voice-agents_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#use-cases" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- WHAT IT DOES -->
+<section class="section" aria-labelledby="what-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-heading" style="margin-bottom:1.5rem;">What a Voice Agent Actually Does</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        A voice agent listens to a caller in real time, understands the intent behind what they're asking, not just matching keywords like an old IVR tree, and takes the next step: checking availability, pulling up an order, booking a slot, or transferring the call when the request needs a person. It runs the same reasoning an agent uses over text or a workflow, just through a phone conversation instead of a webhook.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        The difference from a chatbot is the channel and the stakes: a phone conversation has no undo button and no typing pause to think. That means voice agents need tighter scope and clearer escalation rules than a text-based agent, and we design them that way, narrow, well-defined tasks handled reliably, rather than a general-purpose assistant trying to handle anything a caller might say.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- INBOUND -->
+<section id="use-cases" class="section" style="background:#f0f3ff;" aria-labelledby="inbound-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="inbound-heading">Inbound Voice Agents</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Answering the phone so your team doesn't have to catch every call.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">call</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Reception Replacement</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Answers general inbound calls, routes to the right department, and answers common questions about hours, location, or services without a person picking up first.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">event</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Appointment Booking by Phone</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Checks real availability against your calendar, books the slot the caller wants, and sends a confirmation, without a person juggling the calendar mid-call.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">local_shipping</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Order-Status by Phone</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Looks up an order by reference number and answers where it is, with a live handoff to a person for anything beyond a status check.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OUTBOUND -->
+<section class="section" aria-labelledby="outbound-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="outbound-heading">Outbound Voice Agents</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Making calls that would otherwise sit on a to-do list nobody gets to.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">check_circle</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Confirmation Calls</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Calls to confirm an appointment, a viewing, or an order ahead of time, and logs whether the person confirmed, rescheduled, or didn't answer.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">redo</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Follow-Up Calls</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Checks in after a viewing, a delivery, or a service visit, and routes anything that sounds like a complaint or a strong lead straight to a person.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">payments</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Missed-Payment Reminders</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Places a polite reminder call ahead of a due date, offers a payment link or transfer to billing, and logs the outcome without a person working down a call list.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BILINGUAL -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="bilingual-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="bilingual-heading" style="margin-bottom:1.5rem;">English and Arabic Call Handling</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        UAE call volume splits across English and Arabic, sometimes within the same conversation, and a voice agent needs to handle that reality rather than force every caller into one language. Current voice models handle Modern Standard Arabic and common Gulf dialect patterns reasonably well for structured tasks like booking or order status, though quality varies more than it does for English, and we test against real regional speech patterns during discovery rather than assuming it works out of the box.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        For any deployment, we set a clear scope for what the agent handles confidently in each language, and route anything outside that confidently to a person rather than pushing through a conversation the agent is likely to get wrong. Honesty about where the line sits matters more than a marketing claim that it handles everything perfectly.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- LIMITATIONS -->
+<section class="section" aria-labelledby="limits-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="limits-heading" style="margin-bottom:1.5rem;">Where a Human Needs to Take the Call Immediately</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        A voice agent is built for structured, predictable conversations, not every call that comes in. Genuine emergencies, distressed callers, complex negotiations, and anything requiring real relationship judgment should route to a person immediately, and we design the agent's escalation logic around recognizing those signals early rather than trying to push a difficult call through a script. The goal is an agent that handles the volume competently and gets out of the way fast when a call needs a human, not one that pretends it can handle everything.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Missing calls outside business hours? Tell us the scenario, and we'll show you what a voice agent would actually handle.</p>
+    <button onclick="openModal(this)" data-source="ai_agents_voice-agents_mid" class="btn-primary">Book a Free Discovery Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Stop Missing Calls?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Tell us what your calls actually sound like. We'll design a voice agent scoped to what it can handle well, and show you exactly how it works before it goes live.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_agents_voice-agents_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>
