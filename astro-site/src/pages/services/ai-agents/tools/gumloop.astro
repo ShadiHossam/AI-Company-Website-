@@ -1,0 +1,252 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+
+const h1 = 'AI Agents Built on Gumloop';
+const metaTitle = 'AI Agents Built on Gumloop | Lenoo AI';
+const metaDescription = 'Lenoo AI builds AI agents on Gumloop for UAE businesses: a visual, no-code agent builder your team can see and understand after we hand it over.';
+const heroSubtext = "Gumloop is a visual, no-code agent builder: a drag-and-drop canvas where every step of the agent's logic is a node you can look at, not a black box. We use it when the priority is an agent your team can actually see and understand, not only one that works.";
+
+const useCases = [
+  { title: 'Content-Repurposing Agent', description: 'Takes a long-form piece, a webinar transcript, or a blog post, and turns it into a set of shorter formats, social posts, an email version, a summary, matching the tone and length rules you give it for each channel.' },
+  { title: 'Inbox-Triage Agent', description: 'Reads incoming email, sorts it by category and urgency, drafts a reply for the routine cases, and flags anything that needs a person to weigh in, so a shared inbox stops being the first thing someone has to clear every morning.' },
+  { title: 'Lead-Research Agent', description: 'Takes a company name or contact, pulls together public information about the business, and returns a structured brief a sales rep can read in under a minute before a call, instead of ten minutes of manual searching.' },
+  { title: 'Report-Generation Agent', description: 'Pulls numbers from your connected sources on a schedule, writes a plain-language summary of what changed, and delivers a formatted report to the people who need it, without anyone assembling the same spreadsheet every week.' },
+  { title: 'FAQ-and-Document-Answering Agent', description: 'Reads a set of internal documents or policies, answers questions from your team against that specific source material, and cites which document the answer came from, so people stop pinging a colleague for something already written down.' },
+];
+
+const faqFallback = [
+  { question: 'Does our team need to touch it after launch?', answer: "Not necessarily, but they can. That's the point of building on Gumloop specifically: the agent's logic sits on a visual canvas, so a non-technical team member can open it, see what each step does, and make a small edit, like changing a wording rule or adding a category, without calling us for every minor change." },
+  { question: 'Is Gumloop free to start?', answer: 'Gumloop has a free tier for smaller workloads, with paid plans as usage and complexity grow. We scope the build against what your workflow actually needs and tell you upfront which tier that puts you in, rather than quoting a number before we know the agent has to do.' },
+  { question: 'How does this compare to a fully custom build?', answer: "A custom-coded agent gives you more control over exact behavior and no platform dependency, but it costs more and takes longer to change later, since every edit is a development task. A Gumloop agent trades a small amount of that flexibility for speed to launch and for logic your team can read without engineering help. Most workflows that don't need custom code or self-hosting are better served by Gumloop." },
+  { question: 'How is our data handled?', answer: "Data the agent processes flows through Gumloop's cloud infrastructure and whatever tools you connect it to. If your workflow has a genuine data residency requirement that rules out a managed cloud platform, that's usually the signal to build on n8n instead, and we'll say so during discovery rather than forcing a self-hosting need onto a tool that doesn't support it." },
+  { question: 'What does maintenance look like after launch?', answer: 'We monitor the agent for the first few weeks after launch to catch anything that needs adjusting, and offer a maintenance retainer after that for updates, new steps, and fixes if a connected app changes on its end. Because the logic is visible on the canvas, maintenance tends to be lighter than a fully custom system.' },
+  { question: 'Can Gumloop connect to tools it doesn’t natively support?', answer: 'Often yes, through its HTTP and API nodes, which let a step call any endpoint that exposes one, even without a pre-built connector. If a workflow needs deeper custom logic than that allows, we’ll flag it and discuss whether n8n or Pipedream fits better before committing to a platform that can’t actually do the job.' },
+];
+
+let faqItems = faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_agents_tools_gumloop')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: h1,
+    url: 'https://lenooai.com/services/ai-agents/tools/gumloop',
+    description: metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'Gumloop agent projects: pricing based on workflow complexity and the number of steps. Book a free discovery call for a quote.' },
+    serviceType: 'Gumloop AI Agent Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Agents', item: 'https://lenooai.com/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'Tools', item: 'https://lenooai.com/services/ai-agents/tools' },
+      { '@type': 'ListItem', position: 4, name: 'Gumloop', item: 'https://lenooai.com/services/ai-agents/tools/gumloop' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonicalPath="/services/ai-agents/tools/gumloop"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">AI Agents</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents/tools" style="color:inherit;text-decoration:none;opacity:0.65;">Tools</a><span style="opacity:0.4;padding:0 4px;"> / </span>Gumloop</div>
+    <div class="tool-logo-hero"><img src="https://cdn.simpleicons.org/gumloop/6E56CF" alt="Gumloop logo" width="56" height="56" loading="eager" /></div>
+    <h1>{h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ai_agents_tools_gumloop_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#use-cases" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- WHAT IS GUMLOOP -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">What Is Gumloop?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Gumloop is a no-code agent builder built around a drag-and-drop canvas. Instead of writing code or reading a workflow config, you look at a chain of connected nodes: a trigger, a step that reads data, a step where the AI reasons about it, a step that takes an action. Each node is a plain visual block, so anyone on your team can trace exactly what the agent does at every stage without needing a developer to explain it.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        That visibility is the actual value of an "ai agent builder" like Gumloop, more than the fact that it's no-code. Plenty of platforms let you build without writing code. Fewer make the finished agent legible to a non-technical person a month later, when the workflow needs a small change and nobody wants to open a support ticket to get it made. Gumloop's canvas is built for that ongoing legibility, not just the initial build.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW LENOO USES GUMLOOP -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="how-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="how-heading" style="margin-bottom:1.5rem;">How Lenoo AI Uses Gumloop for UAE Agent Builds</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        We're a Gumloop implementation partner: we design, build, and hand off Gumloop agents for your business, not a reseller of the platform itself. Most of our Gumloop projects come from teams that want an agent handling a specific piece of repeated work, but don't have a developer on staff who'd otherwise own that build and every future change to it.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Because the canvas is visual, we walk clients through the finished agent node by node before launch, not just the outcome it produces. That handoff is part of the deliverable: your team should be able to open the workflow after we're gone and understand what it does, even if they never touch the underlying logic themselves. For the small edits that come up later, wording changes, a new category, an added condition, someone on your team often can make those directly, which is a meaningfully different maintenance picture than a system only we can open.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO THIS FITS -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">Is Gumloop Right for You?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Gumloop fits businesses without an in-house developer who still want real visibility into what their agent is doing, plus the ability to hand small edits to someone on the team rather than routing every change through us. It also fits teams testing whether an agent is worth building out further before committing to a heavier custom system: the visual canvas makes it easy to see the logic working, or not working, before you've sunk significant budget into it.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        It fits less well when the workflow needs a genuine custom code step, a self-hosting requirement for compliance reasons, or an integration so specific that no visual node covers it cleanly. Those situations usually point toward n8n or Pipedream instead, and we'll say so on the discovery call rather than forcing a build onto a platform that isn't the right fit for the logic you actually need. It is also worth ruling out early if your team already runs Salesforce as its CRM of record and the workflow lives mostly inside customer records, since Agentforce running natively inside that data can end up simpler than reaching into Salesforce from an outside platform.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">What a Typical Gumloop Project With Us Looks Like</h2>
+      <ol style="color:#42474e; font-size:1.0625rem; line-height:1.85; padding-left:1.25rem; margin:0;">
+        <li style="margin-bottom:0.75rem;"><strong>Discovery.</strong> We map the exact task you want the agent to handle, what data it needs to read, and which of your existing tools it needs to connect to.</li>
+        <li style="margin-bottom:0.75rem;"><strong>Design.</strong> We lay out the node sequence on Gumloop's canvas, deciding where the reasoning step sits and what the agent is allowed to do at each stage.</li>
+        <li style="margin-bottom:0.75rem;"><strong>Build and test.</strong> We build the workflow, connect it to your live tools, and test it against real examples, adjusting prompts and node logic until it handles edge cases correctly, not just the clean examples.</li>
+        <li><strong>Launch and handoff.</strong> We walk your team through the finished canvas, document what each node does, and monitor performance for the first few weeks so anything that needs tuning gets caught early.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">Gumloop vs. the Alternatives</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Lindy leans harder into a very wide native-integration library, so if your stack is mostly mainstream SaaS tools it already connects to, Lindy sometimes gets there with less setup. Pipedream and n8n both let every step be real code, which puts them ahead of Gumloop the moment a workflow needs custom logic a visual node can't express, but that flexibility comes with more to build and maintain. Salesforce Agentforce is a different category entirely, since it only makes sense if Salesforce is already your CRM of record. We recommend Gumloop when the priority is a visible, editable agent your team can maintain without a developer, and the underlying logic doesn't require custom code or self-hosting. Where those conditions don't hold, we'll point you to whichever of these actually fits instead.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- RELIABILITY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="reliability-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="reliability-heading" style="margin-bottom:1.5rem;">Keeping a Gumloop Agent Reliable After Launch</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        A visual canvas makes an agent easier to understand, but it doesn't make it self-monitoring. Every Gumloop agent we build gets logging on what it read, what it decided, and what action it took, so a result that looks wrong can be traced back to the exact step that produced it. We review that log in the first few weeks after launch specifically, since real-world inputs surface edge cases that testing data usually doesn't. After that window, a maintenance retainer covers ongoing tuning, new steps as your workflow evolves, and fixes if a connected app changes something on its end that breaks a node the agent relies on. We also keep a version history of the workflow itself, so if a small edit your team makes directly on the canvas causes an unexpected result, reverting to the previous working version takes minutes rather than a rebuild.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="use-cases" class="section" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">What We Build With Gumloop</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Common Gumloop agent projects for UAE clients, from content workflows to internal research. Every build is scoped to your actual task, not a generic template.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {useCases.map((uc) => (
+        <div class="value-card">
+          <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Have a task you want an agent to handle? Tell us what it should do, and we'll build it on Gumloop.</p>
+    <button onclick="openModal(this)" data-source="ai_agents_tools_gumloop_mid" class="btn-primary">Book a Free Gumloop Consultation</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Build Your Agent on Gumloop?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Tell us what task you want handled. We'll design and build the agent on Gumloop, then walk your team through exactly how it works before it goes live.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_agents_tools_gumloop_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.tool-logo-hero { width:64px; height:64px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; }
+.value-card { display:flex; flex-direction:column; }
+</style>
