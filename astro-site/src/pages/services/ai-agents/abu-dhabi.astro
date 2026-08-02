@@ -1,0 +1,291 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../components/ProcessSteps.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Can an agent actually integrate with government portals?", answer: "Where a portal exposes something we can work with, a login flow, a document upload, an API, an agent can act around it. Government and semi-government portals vary widely in how automatable they are; some support proper API access, others require a manual step no agent can fully bypass. We'll tell you during discovery exactly how far an agent can go for a specific portal rather than assume it's fully connectable, because overselling that is the fastest way to lose your trust." },
+  { question: "How does ADGM's data protection regime affect an agent build?", answer: "ADGM operates its own common-law legal system with its own data protection regulations, separate from both the federal PDPL and DIFC's regime. If your company is ADGM-registered and the agent reads or stores anything counting as personal data, we scope the build against ADGM's specific rules, not a generic UAE data-handling assumption." },
+  { question: "Do you work with public-sector and semi-government entities?", answer: "Yes. Semi-government utilities, authorities, and government-adjacent firms make up a real share of our Abu Dhabi work. Procurement and approval timelines tend to run longer than a private-sector project, and we scope the engagement with that reality upfront rather than promising a private-sector timeline we can't hold to." },
+  { question: "Are you based in Abu Dhabi, or served remotely from Dubai?", answer: "We're based in Business Bay, Dubai, and serve Abu Dhabi clients primarily remotely, with on-site visits available for discovery sessions, key milestones, or working sessions with your team when that's genuinely useful. The distance between the two cities is short enough that on-site isn't a logistical problem when it matters." },
+  { question: "What does a typical Abu Dhabi agent project cost?", answer: "It depends on the complexity of the decision the agent needs to make and how many systems it needs to connect to, same as anywhere. Public-sector and semi-government projects sometimes carry extra scoping time for approval and compliance review, which we account for in the timeline rather than the price itself. Every project gets a free discovery call before you commit to anything." },
+  { question: "How long does procurement and approval typically add to an Abu Dhabi project?", answer: "It varies by entity, but it's realistic to budget extra weeks beyond the build itself for internal review and sign-off in a government or semi-government context, compared to a private mainland business. We build that expectation into the timeline we give you rather than quoting a private-sector number and letting you discover the gap later." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_agents_abu_dhabi')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+const processSteps = [
+  { icon: "target", step: "Step 1", title: "Define the Mission", description: "We scope exactly what your agent needs to do, what tools and portals it needs access to, and where humans stay in the loop." },
+  { icon: "extension", step: "Step 2", title: "Build & Connect", description: "We build the agent, connect it to your tools, train it on your context, and define guardrails appropriate to a public-sector or regulated environment." },
+  { icon: "science", step: "Step 3", title: "Test Rigorously", description: "We stress-test with edge cases and real scenarios pulled from your actual workflow before the agent ever touches production." },
+  { icon: "monitoring", step: "Step 4", title: "Monitor & Improve", description: "Full audit logs, performance dashboards, and 90-day support ensure your agent keeps improving after launch." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Agents in Abu Dhabi',
+    url: 'https://lenooai.com/services/ai-agents/abu-dhabi',
+    description: 'AI agent development for Abu Dhabi government, semi-government, and ADGM-adjacent businesses, served from our Dubai-based team.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'Abu Dhabi, United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'AI agent projects for Abu Dhabi organizations: pricing based on decision complexity and scope. Book a free discovery call for a quote.' },
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Agents', item: 'https://lenooai.com/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'Abu Dhabi', item: 'https://lenooai.com/services/ai-agents/abu-dhabi' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI Agent Development in Abu Dhabi | Lenoo AI"
+  description="AI agent development for Abu Dhabi government, semi-government, and ADGM-adjacent businesses, served from our Dubai-based team."
+  canonicalPath="/services/ai-agents/abu-dhabi"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">AI Agents</a><span style="opacity:0.4;padding:0 4px;"> / </span>Abu Dhabi</div>
+    <h1>AI Agents Built for <span class="gradient-text">Abu Dhabi Organizations</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      We work with Abu Dhabi's government entities, semi-government utilities, ADGM-registered firms, and public-sector-adjacent businesses to build agents that respect the compliance and approval realities those organizations actually operate under, not a private-sector template stretched to fit.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">Scoped realistically against approval and procurement timelines</span>
+      <span class="tchip">Refund guarantee if you're not satisfied with what we deliver</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_agents_abu-dhabi_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#use-cases" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1580746738099-79dda9d4c98f?w=1400&q=80&auto=format&fit=crop" alt="Abu Dhabi skyline representing AI agent development for public-sector and enterprise organizations" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "24/7", caption: "agents run around the clock, no breaks, no off days" },
+      { value: "Scoped honestly", caption: "against your actual procurement and approval timeline, not a generic promise" },
+      { value: "100%", caption: "refund guarantee if you're not satisfied with what we deliver" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY THIS DIFFERS FROM PRIVATE SECTOR -->
+<section class="section" aria-labelledby="explain-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="explain-heading" style="margin-bottom:1.5rem;">Building Agents for a Government or Semi-Government Context</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        An agent built for a fast-moving free zone startup and an agent built for a government entity or a semi-government utility solve the same underlying kind of problem, but the surrounding constraints are genuinely different. Approval chains are longer. Data handling gets more scrutiny, often for good reason. And the appetite for an agent taking an irreversible action without a person confirming first is, correctly, much lower. We don't treat an Abu Dhabi public-sector project like a Dubai free zone project with the city name swapped.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        In practice, that means more of the design phase goes into defining exactly what the agent is allowed to decide versus what it can only recommend for a person to approve, and more of the build goes into audit logging that a compliance reviewer, not just an engineer, can read and understand. For the full picture of what an AI agent is and how it differs from a chatbot or plain automation, see our <a href="/services/ai-agents">main AI agents page</a>. This page focuses on what that looks like specifically for an Abu Dhabi government, semi-government, or ADGM-adjacent organization.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        We're based in Dubai, in Business Bay, and serve Abu Dhabi clients primarily remotely, with on-site visits available for the discovery session, key milestones, or a working session with your team when that's genuinely useful. The distance between the two cities is short enough that on-site isn't a real barrier when it matters, but most of the day-to-day collaboration happens over video call, the same way it would for any other client.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- AGENT USE CASES BY ABU DHABI SECTOR -->
+<section id="use-cases" class="section" style="background:#f0f3ff;" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">AI Agents We Build for Abu Dhabi Organizations</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">The same agent categories we build for any client, adapted to what actually shows up in Abu Dhabi's public-sector and enterprise landscape.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">description</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Government-Portal-Adjacent Document Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Reads incoming applications or submissions, checks them against required documentation, and drafts what's missing before a case reaches a human reviewer.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A semi-government entity's intake agent now flags incomplete submissions automatically, instead of a reviewer discovering the gap days later.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">gavel</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">ADGM Compliance Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Reviews documents and transactions against a defined compliance policy, flags anything that looks like a violation with the specific rule it conflicts with, and routes it to the right person.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> An ADGM-registered firm's compliance agent now surfaces policy exceptions the same day, instead of during a quarterly manual review.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">support_agent</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Public-Facing Inquiry Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Answers common citizen or customer questions against approved source material, and escalates anything outside that scope to a person rather than guessing.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A public-facing entity's inquiry agent now clears the majority of routine questions before they reach a call center queue.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Utility &amp; Semi-Government Operations Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Monitors service requests or outage reports, decides on routing and priority, and keeps stakeholders updated without a person manually triaging every ticket.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A utility-adjacent operations team cut manual ticket triage time by automating first-pass categorization and routing.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">health_and_safety</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Healthcare-Adjacent Administrative Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Handles appointment scheduling, insurance pre-authorization paperwork, and patient follow-up messaging, with a defined boundary around what it can decide versus flag.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A clinic's scheduling agent now handles rescheduling and reminders end to end, freeing front-desk staff for in-person patients.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">calculate</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Professional-Services Intake Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Legal and consulting firms working with government and ADGM clients use agents to intake new matters, chase missing documents, and prep files for review.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> An Abu Dhabi advisory firm's intake agent now prepares a complete file before a partner ever opens it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ADGM CALLOUT -->
+<section class="section" aria-labelledby="adgm-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="adgm-heading" style="margin-bottom:1rem;">ADGM Data Rules and What They Mean for an Agent</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">ADGM operates under its own common-law legal system, distinct from onshore Abu Dhabi and distinct from Dubai's DIFC. That includes its own data protection regulations, separate from both the UAE's federal Personal Data Protection Law and DIFC's regime.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">If your organization is ADGM-registered and the agent will read, process, or store anything counting as personal data, that governs which rules apply to the build: what can be logged, where it can be stored, and what access controls the agent's audit trail needs. We scope that explicitly at discovery rather than assuming a generic UAE data policy covers it.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">For government and semi-government entities outside ADGM specifically, the relevant framework is usually the federal PDPL plus whatever internal data governance policy your entity already runs. Either way, we build the agent's logging and permission structure against the actual rules that apply to you, not a template borrowed from a private-sector Dubai project.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1591474200742-8e512e6f98f8?w=800&q=80&auto=format&fit=crop" alt="Abu Dhabi business district" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">From Discovery to a Live Agent</h2>
+    </div>
+    <div style="border-radius:20px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 20px 48px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1200&q=80&auto=format&fit=crop" alt="Team reviewing an AI agent's compliance logic before deployment" loading="lazy" width="1200" height="320" style="width:100%; height:clamp(180px, 26vw, 320px); object-fit:cover; display:block;" />
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:0 auto 2.5rem;">
+      A typical Abu Dhabi project follows the same core process as any other, with more time built into discovery and design for approval and compliance review. Discovery maps the decision the agent needs to make and identifies who internally needs to sign off before build starts. Design defines exactly what the agent reads, how it reasons, and the precise boundary between what it can decide autonomously and what it can only recommend. Build and test run against real data from your organization, with audit logging built in from day one rather than added afterward. We give you a realistic timeline that accounts for your internal approval process during the discovery call, rather than quoting a private-sector timeline and letting the gap surface later.
+    </p>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- CROSS-LINKS -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="more-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="more-heading">More AI Agent Resources</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">apps</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Agents, Full Overview</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">What an AI agent is, how it differs from a chatbot or plain automation, and the full range of agents we build across the UAE.</p>
+        <a href="/services/ai-agents" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">location_city</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Agents in Dubai</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Agent development for Dubai's free zone and mainland businesses, from our Business Bay base.</p>
+        <a href="/services/ai-agents/dubai" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">build</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Tools We Build With</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Gumloop, Lindy, Pipedream, n8n, and Salesforce Agentforce: see what each platform is best at and which one fits your stack.</p>
+        <a href="/services/ai-agents/tools" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Working within a government, semi-government, or ADGM structure? Tell us the constraint, and we'll scope around it honestly.</p>
+    <button onclick="openModal(this)" data-source="ai_agents_abu-dhabi_mid" class="btn-primary">Book an Abu Dhabi Discovery Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Scope Your First Agent in Abu Dhabi?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Book a free discovery call. We'll map the decision worth automating first and give you a timeline that accounts for your actual approval process.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_agents_abu-dhabi_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>
