@@ -1,0 +1,292 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../components/ProcessSteps.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Do you work on-site in Dubai, or only remotely?", answer: "Both. We're based in Business Bay, so we can meet in person for the discovery session, walk through your workflows on-site, and check in at key milestones. Once an agent is live, most support happens remotely because that's faster for everyone, but an on-site visit is always available if you'd rather talk through something face to face." },
+  { question: "Do you work with free zone companies?", answer: "Yes. Whether you're set up in DMCC, JAFZA, DIFC, or on the mainland, an agent connects to the tools you already use, not to your license type. We've built agents for small free zone teams and larger mainland operations alike." },
+  { question: "Can an agent handle WhatsApp Business conversations?", answer: "Yes. WhatsApp is one of the more common channels a Dubai client wants an agent reading and responding through, especially in real estate, hospitality, and retail, since so much day-to-day customer communication here happens on WhatsApp instead of email. We connect it the same way we connect any channel: the agent reads incoming messages, decides how to respond or act, and logs the conversation into your CRM." },
+  { question: "How fast can we start after the discovery call?", answer: "Usually within a week. The discovery call gives us enough to scope the first agent and give you a fixed timeline. From there, build time depends on how many decision points and tool connections the agent needs, but most first agents go live within 2 to 4 weeks." },
+  { question: "Where is your team actually based?", answer: "Business Bay, Dubai. We're not a remote agency that lists a Dubai address for appearances. If you want to sit down with us before committing to anything, we can schedule that." },
+  { question: "Does an agent touching personal data need special handling if we're DIFC-registered?", answer: "Yes. DIFC operates under its own common-law data protection regime, separate from the UAE's federal Personal Data Protection Law that applies onshore. If your company is DIFC-registered and the agent reads or stores anything that counts as personal data, that changes which rules govern the build, and we scope the project with that in mind from the start rather than treating every Dubai client the same." },
+  { question: "What if our workflow doesn't fit any of the categories on this page?", answer: "Most don't, exactly. The categories below are common starting points, not a fixed menu. Tell us the task you want handled during the discovery call and we'll tell you honestly whether an agent is the right tool for it." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_agents_dubai')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+const processSteps = [
+  { icon: "target", step: "Step 1", title: "Define the Mission", description: "We scope exactly what your agent needs to do, what tools it needs access to, and where humans stay in the loop, in person in Business Bay or over video call." },
+  { icon: "extension", step: "Step 2", title: "Build & Connect", description: "We build the agent, connect it to your tools, train it on your context, and define guardrails for safe operation." },
+  { icon: "science", step: "Step 3", title: "Test Rigorously", description: "We stress-test with edge cases, adversarial inputs, and real scenarios pulled from your actual business before the agent ever touches production." },
+  { icon: "monitoring", step: "Step 4", title: "Monitor & Improve", description: "Full audit logs, performance dashboards, and 90-day support ensure your agent keeps improving after launch." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Agents in Dubai',
+    url: 'https://lenooai.com/services/ai-agents/dubai',
+    description: 'AI agent development for Dubai businesses: autonomous agents that reason and act, built and supported by a Business Bay-based team.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'Dubai, United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'AI agent projects for Dubai businesses: pricing based on decision complexity and scope. Book a free discovery call for a quote.' },
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Agents', item: 'https://lenooai.com/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'Dubai', item: 'https://lenooai.com/services/ai-agents/dubai' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI Agent Development in Dubai | Lenoo AI"
+  description="AI agent development for Dubai businesses: autonomous agents that reason and act, built and supported by a Business Bay-based team."
+  canonicalPath="/services/ai-agents/dubai"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">AI Agents</a><span style="opacity:0.4;padding:0 4px;"> / </span>Dubai</div>
+    <h1>AI Agents Built for <span class="gradient-text">Dubai Businesses</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      Lenoo AI is based in Business Bay, Dubai. Whether your company sits on the mainland or in a free zone like DMCC, JAFZA, or DIFC, we can sit down with your team in person to map out which decisions in your workflow are worth handing to an agent, then build it on the tools you already run. No offshore account manager relaying messages back and forth.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">On-site discovery calls available in Dubai</span>
+      <span class="tchip">Refund guarantee if you're not satisfied with what we deliver</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_agents_dubai_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#use-cases" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1400&q=80&auto=format&fit=crop" alt="Dubai skyline representing AI agent development for local businesses" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "24/7", caption: "agents run around the clock, no breaks, no off days" },
+      { value: "2-4 weeks", caption: "typical time from discovery call to a live first agent" },
+      { value: "100%", caption: "refund guarantee if you're not satisfied with what we deliver" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY LOCAL -->
+<section class="section" aria-labelledby="explain-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="explain-heading" style="margin-bottom:1.5rem;">Why Work With a Dubai-Based AI Agent Agency?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        A lot of agencies building agents sell into Dubai from somewhere else. That's fine until an agent misreads a case at 4pm on a Wednesday and you're waiting on a reply from a different time zone to fix it. We're in Business Bay. If you want to walk through a problem in person, or bring us in for a working session with your team, that's a short drive, not a flight.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Being local also means we understand how business actually runs here: the Sunday-to-Thursday week, the split between free zone and mainland paperwork, and the fact that a lot of Dubai companies run lean, without a dedicated ops hire to define exactly what an agent should and shouldn't decide. For the full picture of what an AI agent is and how it's different from a chatbot or plain automation, see our <a href="/services/ai-agents">main AI agents page</a>. This page focuses on what that looks like for a business operating in Dubai specifically.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Dubai's business mix is unusually wide for a city this size: family-run trading houses that have operated for decades sit next to two-year-old free zone startups, and both sit next to regional branch offices of larger multinational companies. Each brings a different starting point for an agent build. A founder-run business often has no ops team at all, so an agent's guardrails have to be simple enough for the owner to review at a glance. A branch office usually already runs on a global CRM with rules set somewhere else, so the work is about designing an agent that respects those constraints rather than working around them. We scope every project around which of these describes your business, not a generic template.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- AGENT USE CASES BY DUBAI INDUSTRY -->
+<section id="use-cases" class="section" style="background:#f0f3ff;" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">AI Agents We Build for Dubai Businesses</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">The same agent categories we build for any client, adapted to what actually shows up in Dubai companies day to day.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">home_work</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Real Estate Lead-Qualification Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Reads an inbound WhatsApp or portal inquiry, checks it against buyer criteria, and decides whether to book a viewing or route it for human follow-up.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A Dubai brokerage that used to lose leads over the weekend now has every inbound inquiry qualified within minutes, any day of the week.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">local_shipping</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Trading &amp; Logistics Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Checks incoming shipment status against expected timelines, decides whether a delay needs a customer notified, and drafts that message before anyone has to ask.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A trading company cut the time spent chasing shipment updates from a full day a week to under an hour.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">hotel</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Hospitality Booking Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Handles inquiry-to-confirmation conversations, checks availability, and answers property questions, escalating to a human the moment a request needs judgment.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A short-term rental operator automated 80% of routine guest messages, freeing staff to handle the ones that actually need a person.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">storefront</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Retail Customer-Service Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Answers order-status and product questions across your storefront and marketplaces, and decides when a return or complaint needs to reach a person.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A Dubai retailer selling on three platforms stopped needing a person to answer the same order-status question dozens of times a day.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">calculate</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Professional-Services Intake Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Legal, accounting, and consulting firms use agents to intake new clients, chase missing documents, and decide when a file is ready to move to the next stage.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> An accounting firm's agent now chases missing documents on its own, cutting the back-and-forth email chain almost entirely.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">business_center</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Free Zone &amp; Mainland Business-Admin Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Tracks license renewal dates, decides when a reminder or an escalation is due, and drafts the compliance checklist for whoever needs to act on it.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A DMCC-registered consultancy stopped tracking renewal dates in a spreadsheet; the agent now flags them automatically, weeks in advance.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DIFC CALLOUT -->
+<section class="section" aria-labelledby="difc-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="difc-heading" style="margin-bottom:1rem;">DIFC, Free Zone, or Mainland: What Actually Changes for an Agent</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">The agent's reasoning logic doesn't care which license you hold. What changes is the compliance context we build around it, and it's worth knowing the difference before you scope a project.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Mainland and free zone companies</strong> mostly affect what fields and checks an agent's workflow needs, for instance flagging which records require a distributor's details attached before an action goes out, not how the agent connects to your CRM or accounting system.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>DIFC-registered companies</strong> are worth calling out specifically: DIFC operates under its own common-law legal system, including its own data protection law, separate from the federal Personal Data Protection Law that applies onshore. If your company is DIFC-registered and the agent will read or store anything counting as personal data, that changes which data-handling rules govern the build, and we scope the project with that in mind from the start.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1546412414-e1885259563a?w=800&q=80&auto=format&fit=crop" alt="Dubai business district skyline" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">From Discovery to a Live Agent</h2>
+    </div>
+    <div style="border-radius:20px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 20px 48px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1568992687947-868a62a9f521?w=1200&q=80&auto=format&fit=crop" alt="Team mapping an AI agent workflow at a desk in Dubai" loading="lazy" width="1200" height="320" style="width:100%; height:clamp(180px, 26vw, 320px); object-fit:cover; display:block;" />
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:0 auto 2.5rem;">
+      A typical Dubai project runs on roughly this timeline. Week one is the discovery session in Business Bay or over video call, where we map the decision the agent needs to make and agree on scope. Week two is design: we lay out exactly what the agent reads, how it reasons, and what it's allowed to do, and get your sign-off before any build work touches your systems. Weeks three and four are build and test, run against real data from your business rather than sample data, so what goes live has already handled the messy cases your actual workflow throws at it. For simpler single-decision agents, that timeline compresses; for agents coordinating across several systems, it can run a little longer, and we tell you which one you're in before you commit to anything.
+    </p>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- CROSS-LINKS -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="more-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="more-heading">More AI Agent Resources</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">apps</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Agents, Full Overview</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">What an AI agent is, how it differs from a chatbot or plain automation, and the full range of agents we build across the UAE.</p>
+        <a href="/services/ai-agents" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">location_city</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Agents in Abu Dhabi</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Agent development for Abu Dhabi's government, semi-government, and ADGM-adjacent businesses, served from our Dubai base.</p>
+        <a href="/services/ai-agents/abu-dhabi" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">build</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Tools We Build With</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Gumloop, Lindy, Pipedream, n8n, and Salesforce Agentforce: see what each platform is best at and which one fits your stack.</p>
+        <a href="/services/ai-agents/tools" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Based in Business Bay and ready to map your first agent this week.</p>
+    <button onclick="openModal(this)" data-source="ai_agents_dubai_mid" class="btn-primary">Book a Dubai Discovery Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Deploy Your First Agent in Dubai?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Book a free discovery call with our Business Bay team. We'll identify the decision worth automating first and estimate the time and cost to get it live.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_agents_dubai_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>
