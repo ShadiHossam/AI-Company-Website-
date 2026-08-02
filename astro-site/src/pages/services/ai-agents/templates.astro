@@ -1,0 +1,215 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+
+const blueprints = [
+  { title: 'Lead-Qualification Agent', trigger: 'New inbound lead (form, WhatsApp, or portal)', tools: 'CRM read/write, criteria lookup', logic: 'Checks the lead against defined buyer criteria and scores fit', output: 'Routes hot leads to a rep, logs weaker ones to a nurture sequence' },
+  { title: 'Invoice-Processing Agent', trigger: 'New invoice received', tools: 'Accounting system, purchase order records', logic: 'Matches invoice line items against the PO and contract terms', output: 'Approves clean matches, flags mismatches with a written explanation' },
+  { title: 'Support-Ticket-Triage Agent', trigger: 'New support ticket', tools: 'Helpdesk platform, knowledge base', logic: 'Categorizes urgency and checks against known issues', output: 'Drafts a response for routine cases, escalates the rest with context' },
+  { title: 'Meeting-Follow-Up Agent', trigger: 'Meeting ends (calendar or call-recording integration)', tools: 'Notes/transcript source, CRM or task tool', logic: 'Extracts action items and next steps from the conversation', output: 'Logs a summary and creates follow-up tasks against owners' },
+  { title: 'Compliance-Monitoring Agent', trigger: 'Scheduled review or new document/transaction', tools: 'Document store, defined policy rules', logic: 'Checks content against policy and flags likely violations', output: 'Alerts the right person with the specific clause it conflicts with' },
+];
+
+const fallbackFaqs = [
+  { question: "Are these templates free to use?", answer: "The blueprints above are illustrative, showing the shape of a real agent, not a downloadable file you install and run. We don't sell a template product; every agent we build is designed against your actual data, tools, and edge cases from the start." },
+  { question: "Why not just use a template instead of a custom build?", answer: "A template assumes clean, generic inputs. Real businesses have inconsistent naming conventions, edge cases nobody documented, and tool quirks a generic template never anticipated. An agent built against your actual data handles those from day one; a template usually needs significant rework before it survives contact with your real workflow, at which point you've mostly rebuilt it anyway." },
+  { question: "How long does a custom build take compared to adapting a template?", answer: "There isn't really a meaningful difference in practice, since adapting a generic template to handle your specific edge cases ends up being most of the same work as a custom build from scratch. A single-decision agent typically goes from discovery to launch in two to three weeks either way; what changes is whether that time goes into fighting a template's assumptions or building around your actual requirements from the start." },
+  { question: "Can you build something close to one of these blueprints for us?", answer: "Yes, that's exactly what these are meant to illustrate: the shape of a common agent, not the finished thing. Tell us during discovery which blueprint is closest to what you need, and we'll scope the real version against your specific criteria, tools, and edge cases." },
+  { question: "What if our workflow needs more than one of these blueprints combined?", answer: "That's common, and it's usually a sign the project needs either one agent with a broader scope or, more often, a small team of coordinated agents rather than a single blueprint stretched to cover everything. A lead-qualification agent that also needs to draft outreach and update the CRM, for instance, might be one agent with three responsibilities or two agents handing off to each other, depending on how independently each piece needs to be tested and trusted. We work out which structure fits during discovery rather than assuming the biggest possible scope is the right one." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_agents_templates')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Agent Templates',
+    url: 'https://lenooai.com/services/ai-agents/templates',
+    description: 'Example AI agent blueprints by use case: trigger, tools, decision logic, and output, and why a custom build beats a generic template.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Agents', item: 'https://lenooai.com/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'Templates', item: 'https://lenooai.com/services/ai-agents/templates' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI Agent Templates & Blueprints | Lenoo AI"
+  description="Example AI agent blueprints by use case: trigger, tools, decision logic, and output, and why a custom build beats a generic template."
+  canonicalPath="/services/ai-agents/templates"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">AI Agents</a><span style="opacity:0.4;padding:0 4px;"> / </span>Templates</div>
+    <h1>AI Agent <span class="gradient-text">Templates &amp; Blueprints</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      Five common agent blueprints, showing exactly what a real agent's structure looks like: trigger, tools, decision logic, and output, so you know what you're actually asking for before we scope one for your business.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_agents_templates_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#blueprints" class="btn-outline">See the Blueprints ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- BLUEPRINTS -->
+<section id="blueprints" class="section" aria-labelledby="blueprints-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="blueprints-heading">Five Example Blueprints</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Illustrative starting points, not something to copy-paste and expect to work against your real data. We picked these five because they show up across almost every industry we work in, sales, finance, support, operations, and compliance, in some form, even though the specific fields and rules underneath look different at every business.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {blueprints.map((b) => (
+        <div class="value-card">
+          <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">schema</span></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem;">{b.title}</h3>
+          <p style="color:#42474e; font-size:0.8125rem; line-height:1.7; margin:0 0 0.5rem;"><strong>Trigger:</strong> {b.trigger}</p>
+          <p style="color:#42474e; font-size:0.8125rem; line-height:1.7; margin:0 0 0.5rem;"><strong>Tools:</strong> {b.tools}</p>
+          <p style="color:#42474e; font-size:0.8125rem; line-height:1.7; margin:0 0 0.5rem;"><strong>Decision logic:</strong> {b.logic}</p>
+          <p style="color:#42474e; font-size:0.8125rem; line-height:1.7; margin:0;"><strong>Output:</strong> {b.output}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- PIVOT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="pivot-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="pivot-heading" style="margin-bottom:1.5rem;">Why a Generic Template Breaks on Real Business Data</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Every blueprint above works cleanly in the abstract. The lead-qualification agent scores a lead against criteria; the invoice agent matches line items to a PO. In the real world, your lead form has three different field names depending on which campaign it came from, your invoices arrive as scanned PDFs half the time, and your "urgent" ticket category means something different to three different team members. A generic template has no way to know any of that in advance.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        A custom-built agent handles your actual data from day one, because it was designed against it, not against a hypothetical clean case. That's not a sales pitch, it's just where the real work in an agent build actually lives: not in the high-level structure, which is genuinely similar across businesses, but in the edge cases, naming inconsistencies, and tool quirks that only show up once you look at your real data. We do that looking before we build, not after something breaks in production.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW WE USE BLUEPRINTS -->
+<section class="section" aria-labelledby="discovery-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="discovery-heading" style="margin-bottom:1.5rem;">How We Actually Use These Blueprints on a Discovery Call</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        The five blueprints above are a starting vocabulary, not a final answer. On a discovery call, we usually start by asking which one sounds closest to what you're picturing, then spend most of the conversation finding where your actual workflow diverges from it. That divergence is where the real scoping happens: what does your lead form actually look like, what format do your invoices actually arrive in, what does "urgent" actually mean to your team when they say it out loud rather than when it's written down as a policy.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Once we have that picture, the blueprint's trigger, tools, decision logic, and output columns get rewritten against your specifics. The trigger might turn out to be three different sources instead of one. The tools might include a system with no modern API, which changes the build approach entirely. The decision logic almost always needs more nuance than "check against criteria," since real qualification rules have exceptions your team applies instinctively but has never written down. Naming that instinct out loud, so it can become a rule the agent follows consistently, is often the most valuable part of the discovery conversation, independent of which platform or blueprint we end up building on.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        If none of the five blueprints above match what you're picturing at all, that's fine too, and more common than you'd think. Plenty of the agents we build don't map cleanly onto any of the common categories, because they're solving a problem specific enough to your business that no general blueprint would have anticipated it. Bring us the actual task, described in plain language, and we'll figure out the shape of the agent together rather than trying to force it into one of the five boxes above.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- COMMON MISTAKES -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="mistakes-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="mistakes-heading" style="margin-bottom:1.5rem;">If You're Adapting a Downloaded Template Yourself</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Some businesses come to us after trying a downloaded agent template from a no-code platform's community library first, which is a reasonable thing to try before committing budget to a custom build. A few patterns show up often enough in those conversations that they're worth naming here. The most common one: the template's decision logic assumes a single, clean data format, and breaks silently, not with an error, just a wrong answer, the moment a real record doesn't match that shape exactly.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        The second common pattern is missing guardrails. A downloaded template built as a demonstration usually has no action allowlist and no approval checkpoint, because the person who published it was showing what's possible, not building something meant to run unsupervised against your live data. If you're adapting one yourself, adding an explicit boundary on what the agent can do without a person confirming first is worth doing before it ever touches anything real, not after.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        The third is no logging. When a template-based agent produces a wrong result, there's often no record of what it read or why it decided what it did, which makes the mistake nearly impossible to diagnose or prevent from happening again. If you're building on a template yourself and want a second opinion on whether the guardrails and logging are solid before it goes live against real data, that's a conversation we're happy to have even if you don't end up hiring us to build the whole thing.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        None of this means a downloaded template is a waste of time. It's often a genuinely useful way to see the shape of what's possible before committing budget, and some simple, low-stakes workflows run fine on one indefinitely without ever needing a custom rebuild. The distinction that actually matters is stakes and complexity: a template that drafts an internal summary nobody relies on for a decision carries little risk if it's occasionally wrong. A template making decisions about customer communication, financial data, or anything with real consequences deserves the same guardrail and logging discipline a custom build gets, whether you build that discipline in yourself or bring us in to add it.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">One of these blueprints close to what you need? Tell us your actual data and edge cases, and we'll scope the real version.</p>
+    <button onclick="openModal(this)" data-source="ai_agents_templates_mid" class="btn-primary">Book a Free Discovery Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready for the Custom Version?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Tell us which blueprint is closest to your need, and the specifics that make your business different. We'll scope the real thing.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_agents_templates_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>
