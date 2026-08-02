@@ -1,0 +1,209 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../components/ProcessSteps.astro";
+
+const fallbackFaqs = [
+  { question: "What's a realistic timeline for a first agent?", answer: "A single-decision agent reading one input source and taking one or two actions typically goes from discovery to launch in two to three weeks. An agent coordinating across three or more systems, or one requiring a multi-agent architecture, usually runs four to eight weeks. We give you a specific number after discovery, once we know exactly what the agent needs to do, not a generic range." },
+  { question: "What's your actual tech stack?", answer: "It depends on the project. We build on purpose-built agent platforms (Gumloop, Lindy), code-first platforms (Pipedream, n8n), and CRM-embedded layers (Salesforce Agentforce) depending on what the workflow needs, plus fully custom code when none of those fit. For the underlying reasoning, we work with the current generation of frontier LLMs, choosing per project based on cost, latency, and reasoning quality needed, not one default model for everything." },
+  { question: "How does testing actually work before something goes live?", answer: "We test each branch of the agent's logic separately against real data pulled from your business, not synthetic examples, before testing the full pipeline end to end. For agents with real consequences, a payment, a customer-facing message, we run a shadow period where the agent makes its decision but a person confirms before it executes, so we can compare its judgment against a human's on real cases before removing that checkpoint." },
+  { question: "Who owns the resulting code and configuration after delivery?", answer: "You do. On code-first platforms, you get readable, portable code with no proprietary lock-in. On no-code platforms, the workflow lives in an account you control. Either way, nothing about your agent's logic is something only we can access or explain." },
+  { question: "Do you build multi-agent systems, or only single agents?", answer: "Both, depending on what the problem actually needs. We generally build narrowly scoped single agents that do one job well by default, since that produces more reliable results than one generalist agent handling everything. Multi-agent systems, specialized agents coordinated by an orchestrator, come in when a workflow genuinely spans multiple distinct domains that don't belong in one agent's judgment." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_agents_development')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+const processSteps = [
+  { icon: "search", step: "Step 1", title: "Scoping", description: "We take an inventory of every tool the agent needs to touch, and define exactly what it's allowed to decide versus what needs a human checkpoint." },
+  { icon: "architecture", step: "Step 2", title: "Architecture Decisions", description: "Single agent or multi-agent, which model, how state and memory are handled: we decide and document this before writing a step." },
+  { icon: "build", step: "Step 3", title: "Build", description: "Tool integration, instruction design, and a testing harness built alongside the agent itself, not bolted on afterward." },
+  { icon: "rocket_launch", step: "Step 4", title: "Deployment", description: "Monitoring, structured logging, and a rollback path are live from day one, not added after something goes wrong." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Agent Development Process',
+    url: 'https://lenooai.com/services/ai-agents/development',
+    description: 'How Lenoo AI actually builds AI agents: scoping, architecture decisions, build and testing, and deployment, explained for a technical buyer.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'AI agent development: pricing based on decision complexity, integrations, and testing scope. Book a free discovery call for a quote.' },
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Agents', item: 'https://lenooai.com/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'Development', item: 'https://lenooai.com/services/ai-agents/development' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI Agent Development: How We Build | Lenoo AI"
+  description="How Lenoo AI actually builds AI agents: scoping, architecture decisions, build and testing, and deployment, explained for a technical buyer."
+  canonicalPath="/services/ai-agents/development"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">AI Agents</a><span style="opacity:0.4;padding:0 4px;"> / </span>Development</div>
+    <h1>AI Agent Development: <span class="gradient-text">How We Actually Build</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      This page is for the technical evaluator: the ops lead or CTO who wants to know exactly what happens between a discovery call and a live agent, not marketing language about what agents can do.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_agents_development_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#process" class="btn-outline">See the Process ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- SCOPING -->
+<section class="section" aria-labelledby="scoping-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="scoping-heading" style="margin-bottom:1.5rem;">Scoping: Tool Inventory and Guardrail Definition</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Every project starts with a precise inventory: which systems does the agent need to read from, which does it need to write to, and does each one expose a usable API or does it need a workaround. We map this against your actual workflow, not a generic checklist, because the same category of agent, a support triage agent, say, needs a completely different integration plan depending on whether you run Zendesk or a homegrown ticketing system.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        In parallel, we define the guardrails: a specific allowlist of actions the agent is permitted to take, not a general instruction to use good judgment. For any action with real consequences, sending a customer-facing message, processing a payment, deleting a record, we define an approval checkpoint before the agent can execute it unsupervised. This isn't a formality; it's the difference between an agent you can trust with production data and one that's a liability waiting to happen.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE DECISIONS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="architecture-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="architecture-heading" style="margin-bottom:1.5rem;">Architecture Decisions</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        <strong>Single agent vs. multi-agent:</strong> we default to narrowly scoped single agents that do one job well, since that produces more reliable results than one generalist agent trying to do everything. We move to a multi-agent architecture, specialized agents coordinated by an orchestrator, only when a workflow genuinely spans multiple distinct domains: one agent researches, one drafts, one reviews, one publishes, each with its own clear responsibility.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        <strong>LLM selection:</strong> we choose a model per project based on the reasoning complexity the task actually needs, the latency your workflow can tolerate, and cost at the volume you expect to run, not one default model applied to everything regardless of fit. A high-volume, low-complexity classification task and a low-volume, high-stakes research task have different requirements, and we scope accordingly.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        <strong>Memory and state handling:</strong> we define explicitly what the agent needs to remember across a single task versus across sessions, and where that state actually lives. An agent that forgets context it needs produces inconsistent results; an agent that retains more than it needs creates a data-handling liability. We design the minimum state the task genuinely requires, not the maximum a platform makes convenient.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- BUILD PHASE -->
+<section class="section" aria-labelledby="build-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="build-heading" style="margin-bottom:1.5rem;">Build: Integration, Instruction Design, and Testing</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Tool integration comes first, connecting the agent to the systems it needs to read and act on, with authentication and error handling built for production from the start, not patched in once something breaks. Instruction design, what a lot of people mean when they say "prompting," is where we define how the agent reasons through the task: what context it's given, how it should weigh conflicting signals, and what it should do when it's uncertain rather than guess.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        The testing harness is built alongside the agent, not bolted on at the end. We test each branch of the agent's logic in isolation against real data from your business, then test the full pipeline end to end. For higher-stakes decisions, we run a shadow period where the agent makes its call but a person confirms before it executes, so we can compare the agent's judgment against a human's on real cases before removing that checkpoint, rather than trusting it on day one.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- DEPLOYMENT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="deployment-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="deployment-heading" style="margin-bottom:1.5rem;">Deployment: Monitoring, Logging, and Rollback</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Every agent ships with structured logging of what it read, what it decided, and what it did, so a result that looks wrong can be traced back to the exact input that produced it rather than treated as an unexplainable black box. We monitor closely for the first weeks after launch specifically, since real production data surfaces edge cases that even thorough testing data doesn't.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        A rollback path is part of the deployment, not an afterthought: if a change introduces a regression in the agent's behavior, we can revert to the previous working version rather than debugging live against production traffic. 90 days of post-launch monitoring is included on every project; after that, ongoing maintenance moves to a retainer if you want us continuing to tune and extend the agent.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process" class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">The Four Stages, Summarized</h2>
+    </div>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Have a technical question about how we'd approach your specific workflow? Ask us directly.</p>
+    <button onclick="openModal(this)" data-source="ai_agents_development_mid" class="btn-primary">Book a Free Discovery Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Scope Your Agent's Architecture?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Bring us the workflow. We'll walk through the architecture decisions with you on the call, not after you've signed anything.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_agents_development_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
