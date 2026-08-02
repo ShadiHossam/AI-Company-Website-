@@ -1,0 +1,270 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "Which AI coding tool is actually free?", answer: "Most of the tools below have a genuine free tier, not just a trial. Claude Code, GitHub Copilot, and Cursor all offer free usage with daily or monthly limits; Replit and Bolt let you build and run small projects at no cost. The free tier is usually enough to learn on or test an idea. It runs out fast once you're working on something with real traffic or a large codebase." },
+  { question: "Can I build something real with just these tools?", answer: "You can build a working prototype, and sometimes a small production app, entirely with these tools. What they don't replace is the judgment call of an experienced engineer: choosing the right architecture for scale, catching a security gap before it ships, or knowing when a shortcut will cause problems six months from now. For a personal project or a test, that's rarely an issue. For something your business depends on, it usually becomes one." },
+  { question: "What's the catch with free tiers?", answer: "Rate limits, context window caps, and slower models are the usual trade-offs. Some tools cap how many requests you get per day; others quietly switch you to a weaker model once you hit a usage ceiling. None of this is hidden or unfair, it's just worth knowing before you plan a real project around a free account." },
+  { question: "Should I use one tool or switch between several?", answer: "Switching is normal, and often the better approach. Many people use an app-builder to get a visual first draft, then move to an IDE-integrated or chat-based tool to add real logic and connect a database. Each category specializes in a different part of the job, so leaning on one for everything usually means fighting the tool instead of the problem." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'vibe_coding_tools')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+---
+
+<BaseLayout
+  title="Best AI Coding Tools for Vibe Coding (2026) | Lenoo AI"
+  description="A categorized breakdown of the best free and paid AI coding tools for vibe coding in 2026, what each one is good for, and how to pick the right one."
+  canonicalPath="/services/vibe-coding/tools"
+  ogImage="/assets/og-services.jpg"
+  ldJson={[faqLdJson]}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services" style="color:inherit;text-decoration:none;opacity:0.65;">Services</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/vibe-coding" style="color:inherit;text-decoration:none;opacity:0.65;">Vibe Coding</a><span style="opacity:0.4;padding:0 4px;"> / </span>Tools</div>
+    <h1>The Best AI Tools <span class="gradient-text">for Vibe Coding.</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      Dozens of AI coding tools now claim to write your app for you. Some are built for chat-based direction, some live inside your IDE, and some skip setup entirely. Here's what each category is actually good for.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="vibe_tools_hero" class="btn-primary">Discuss Your Project</button>
+      <a href="#tool-roundup" class="btn-outline">See the Tools ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?w=1400&q=80&auto=format&fit=crop" alt="Developer comparing AI coding tools on a laptop screen" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- INTRO -->
+<section class="section" aria-labelledby="intro-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="intro-heading" style="text-align:left; margin-bottom:1.5rem;">Three Kinds of AI Coding Tool</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      "AI coding tool" covers three genuinely different products, and mixing them up is the most common reason people pick the wrong one. Chat-based tools work through conversation: you describe what you want, and the tool reads, writes, and runs code across your whole project on its own. IDE-integrated tools sit inside an editor you already use, suggesting and completing code as you type or as you direct it in a side panel. App-builder tools skip the editor entirely, generating a working, deployed application from a written description with no local setup at all.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      None of these is objectively "the best." The right one depends on whether you already code, how much control you want over the result, and whether you're building something to learn from, test an idea, or run a real product on. A developer who wants full visibility into every file will get more value from a chat-based or IDE-integrated tool, since both hand over readable source code you can move, inspect, and version yourself. Someone who wants to see a working result in the next ten minutes, without opening a terminal, will get further faster with an app-builder.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      It's also worth knowing that these categories overlap more each year. Chat-based tools are gaining IDE-style file browsers, IDE tools are gaining more autonomous multi-step agents, and app-builders are exposing more of the underlying code for people who want to take it elsewhere. Don't treat the category as a permanent label. Treat it as a description of where a tool started and what it's still best at today.
+    </p>
+  </div>
+</section>
+
+<!-- TOOL ROUNDUP -->
+<section id="tool-roundup" class="section" style="background:#f0f3ff;" aria-labelledby="roundup-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="roundup-heading">The AI Coding Tool Roundup</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Browse each category below, or jump straight to the one that fits how you want to work.</p>
+    </div>
+    <div class="vibe-tabs" role="tablist" aria-label="Tool categories">
+      <button type="button" id="vibe-tab-chat" class="vibe-tab-btn active" data-vibe-tab="chat" role="tab" aria-selected="true" aria-controls="vibe-panel-chat">Chat-Based</button>
+      <button type="button" id="vibe-tab-ide" class="vibe-tab-btn" data-vibe-tab="ide" role="tab" aria-selected="false" aria-controls="vibe-panel-ide">IDE-Integrated</button>
+      <button type="button" id="vibe-tab-appbuilder" class="vibe-tab-btn" data-vibe-tab="appbuilder" role="tab" aria-selected="false" aria-controls="vibe-panel-appbuilder">App-Builder</button>
+    </div>
+
+    <div id="vibe-panel-chat" data-vibe-tab-panel="chat" role="tabpanel" aria-labelledby="vibe-tab-chat">
+      <p style="color:#42474e; font-size:1.0625rem; margin-bottom:1.5rem;">You describe the task in plain language; the tool reads your codebase, makes the change, and can run and test it.</p>
+      <img src="https://images.unsplash.com/photo-1763568258239-d3b5c95019af?w=700&q=80&auto=format&fit=crop" alt="Developer typing on a laptop with an AI chat-based coding assistant" loading="lazy" width="700" height="467" style="width:100%; max-width:700px; height:auto; border-radius:16px; margin-bottom:1.5rem; display:block;" />
+      <div class="bento-grid bento-grid-2">
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem;">Claude Code</h3>
+          <p style="color:#42474e; font-size:0.9rem; line-height:1.75; margin-bottom:0.75rem;">A command-line agent that reads your whole project, edits files directly, runs your test suite, and commits changes when you approve them. Strongest for developers who want an agent that behaves like a careful junior engineer rather than an autocomplete box. It plans multi-step changes across dozens of files, explains what it's about to do before doing it, and can be interrupted or corrected mid-task rather than only reviewed after the fact.</p>
+          <p style="color:#72787e; font-size:0.8125rem;"><strong>Free tier:</strong> limited daily usage on a free account, higher limits on paid plans. <strong>Best for:</strong> people comfortable with a terminal who want deep, multi-file changes.</p>
+        </div>
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem;">ChatGPT / Codex-style agents</h3>
+          <p style="color:#42474e; font-size:0.9rem; line-height:1.75; margin-bottom:0.75rem;">Conversational coding assistants that can generate full files, explain unfamiliar code, and increasingly run and edit code in a connected environment. Familiar chat interface, useful even for one-off scripts. Because the interface doubles as a general-purpose assistant, it's an easy way to move between "explain this concept" and "now write it" without switching tools.</p>
+          <p style="color:#72787e; font-size:0.8125rem;"><strong>Free tier:</strong> basic chat access free, coding-agent features usually gated to paid tiers. <strong>Best for:</strong> quick scripts, learning, and explaining code you didn't write.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="vibe-panel-ide" data-vibe-tab-panel="ide" role="tabpanel" aria-labelledby="vibe-tab-ide" hidden>
+      <p style="color:#42474e; font-size:1.0625rem; margin-bottom:1.5rem;">These live inside an editor, suggesting code as you type or working from a side panel you direct.</p>
+      <img src="https://images.unsplash.com/photo-1579397256979-cc326aefe273?w=700&q=80&auto=format&fit=crop" alt="Close-up of a code editor screen with syntax-highlighted code" loading="lazy" width="700" height="467" style="width:100%; max-width:700px; height:auto; border-radius:16px; margin-bottom:1.5rem; display:block;" />
+      <div class="bento-grid bento-grid-2">
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem;">Cursor</h3>
+          <p style="color:#42474e; font-size:0.9rem; line-height:1.75; margin-bottom:0.75rem;">A code editor built around AI from the ground up, with inline edit suggestions and a chat panel that can see your entire codebase at once. Popular with developers who want AI assistance without leaving a familiar editor layout. The tab-to-accept completion flow keeps a developer's hands close to normal typing, which is part of why it's become a default choice for people transitioning from a traditional editor rather than starting from a chat window.</p>
+          <p style="color:#72787e; font-size:0.8125rem;"><strong>Free tier:</strong> limited free requests per month, then a paid subscription. <strong>Best for:</strong> developers who already think in terms of files and folders.</p>
+        </div>
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem;">GitHub Copilot &amp; Windsurf</h3>
+          <p style="color:#42474e; font-size:0.9rem; line-height:1.75; margin-bottom:0.75rem;">Copilot plugs into editors like VS Code with inline completions and chat. Windsurf is a full editor with a similar agentic mode. Both aim at developers who want AI woven into an existing workflow rather than a separate tool to context-switch to. Copilot's advantage is reach, it's already installed across a large share of professional teams, so it's often the path of least resistance where a company already has policies and licensing in place.</p>
+          <p style="color:#72787e; font-size:0.8125rem;"><strong>Free tier:</strong> Copilot offers a limited free plan (notably for students and open-source maintainers); Windsurf has a capped free tier. <strong>Best for:</strong> teams standardizing on one editor.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="vibe-panel-appbuilder" data-vibe-tab-panel="appbuilder" role="tabpanel" aria-labelledby="vibe-tab-appbuilder" hidden>
+      <p style="color:#42474e; font-size:1.0625rem; margin-bottom:1.5rem;">No local setup. Describe an app in a text box and get a working, often already-deployed, result.</p>
+      <img src="https://images.unsplash.com/photo-1746286720984-72f386e1872e?w=700&q=80&auto=format&fit=crop" alt="Hand holding a phone displaying AI application icons on the screen" loading="lazy" width="700" height="467" style="width:100%; max-width:700px; height:auto; border-radius:16px; margin-bottom:1.5rem; display:block;" />
+      <div class="bento-grid bento-grid-2">
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem;">Replit &amp; Bolt</h3>
+          <p style="color:#42474e; font-size:0.9rem; line-height:1.75; margin-bottom:0.75rem;">Browser-based environments where you describe an app and watch it get built, run, and hosted, all in the same tab. Good starting point for someone with no development environment set up at all. Both also let you keep working after the first generation, refining the app through further description rather than treating the first output as final.</p>
+          <p style="color:#72787e; font-size:0.8125rem;"><strong>Free tier:</strong> both offer free usage with compute and storage limits. <strong>Best for:</strong> first projects, hackathon-style prototypes, non-developers testing an idea.</p>
+        </div>
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem;">v0 &amp; Lovable</h3>
+          <p style="color:#42474e; font-size:0.9rem; line-height:1.75; margin-bottom:0.75rem;">Focused on generating polished web interfaces and full front ends from a description, with v0 leaning toward component-level output and Lovable toward complete, connected apps. Faster path to something that looks finished, with less control over the underlying code structure. Both are a strong choice specifically when the goal is "make this look real" rather than "make this technically sound under the hood."</p>
+          <p style="color:#72787e; font-size:0.8125rem;"><strong>Free tier:</strong> limited free generations, then usage-based or subscription pricing. <strong>Best for:</strong> founders who need a visual prototype to show investors or early users.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REALISTIC WORKFLOW -->
+<section class="section" aria-labelledby="workflow-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="workflow-heading" style="text-align:left; margin-bottom:1.5rem;">A Realistic Workflow With These Tools</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      Most people who get good results don't lock themselves into a single tool. A common pattern: sketch the idea and get a visual first draft in an app-builder like v0 or Lovable, since seeing something concrete quickly makes the next decisions easier than describing an app in the abstract. Once the shape is right, move the project into an IDE-integrated tool like Cursor or a chat-based agent like Claude Code to add real logic, connect a database, and handle the parts that need actual engineering judgment rather than visual polish.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      This switch matters because the tools genuinely specialize. An app-builder optimized for "look finished fast" isn't optimized for "handle edge cases correctly," and vice versa. Expecting one tool to be great at both is where a lot of frustration with these products comes from. Treating them as stages of the same project, rather than competing options, usually gets a better result than picking one and forcing every task through it.
+    </p>
+  </div>
+</section>
+
+<!-- HOW TO CHOOSE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="choose-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="choose-heading" style="text-align:left; margin-bottom:1.5rem;">How to Choose</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      Start with three questions. First, do you already know how to code? If not, an app-builder tool gets you further with less friction than a chat agent that expects you to review its own output. Second, how much control do you need over the result? Chat-based and IDE tools give you the actual source code to inspect, change, and move elsewhere; some app-builders keep more of that under the hood. Third, what happens after the first version works? If the answer is "nothing, this was just a test," any of these tools is enough. If the answer is "real users, real data, ongoing maintenance," that's a different project with different requirements.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      Budget matters too, but not in the way people expect. The free tier of almost any tool here is enough to answer "does this idea even work." Where cost becomes a real factor is once a project is big enough to hit rate limits regularly, at which point the question stops being "which tool is cheapest" and becomes "is this still the cheapest way to get this built at all," since a subscription that keeps hitting its ceiling is often a sign the project has outgrown a DIY tool entirely.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      A reasonable default: use a chat-based or app-builder tool to test the idea cheaply and quickly. Once the idea is validated and needs to become something dependable, that's the point where the free tools have done their job and a professional build takes over.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      One more thing worth deciding upfront: whether you plan to keep working on this yourself long-term, or whether it's likely to get handed to someone else eventually, a co-founder, a hired developer, a team. If there's any chance of that, favor a tool that gives you readable, exportable source code over one that keeps the implementation mostly hidden. Untangling a project from a tool that never intended for anyone else to read its output is a much harder problem to solve later than picking a slightly less flashy tool now.
+    </p>
+    <div style="text-align:center; margin-top:2.5rem;">
+      <button onclick="openModal(this)" data-source="vibe_tools_mid" class="btn-primary">Discuss Your Project</button>
+      <p style="font-size:0.875rem; margin-top:0.75rem; color:#94a3b8;">Outgrown the free tier, or need it production-ready? We build it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Build the Real Version?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Tell us what you've prototyped, or what you want to build. We'll give you a timeline and cost estimate, free, with no commitment.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="vibe_tools_final" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Discuss Your Project</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "name": "AI Coding Tools Guide",
+      "url": "https://lenooai.com/services/vibe-coding/tools",
+      "description": "A categorized breakdown of the best free and paid AI coding tools for vibe coding, what each is good for, and how to pick the right one.",
+      "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+      "areaServed": "United Arab Emirates",
+      "serviceType": "Software Development"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://lenooai.com/services" },
+        { "@type": "ListItem", "position": 3, "name": "Vibe Coding", "item": "https://lenooai.com/services/vibe-coding" },
+        { "@type": "ListItem", "position": 4, "name": "Tools", "item": "https://lenooai.com/services/vibe-coding/tools" }
+      ]
+    }
+  ]
+}
+</script>
+
+</BaseLayout>
+
+<style>
+.vibe-tabs { display:flex; gap:0.5rem; justify-content:center; margin-bottom:2rem; flex-wrap:wrap; }
+.vibe-tab-btn { padding:0.625rem 1.25rem; border-radius:100px; border:1px solid rgba(0,37,59,0.15); background:#fff; color:#42474e; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.vibe-tab-btn:hover { background:#e7eeff; }
+.vibe-tab-btn.active { background:#006875; border-color:#006875; color:#fff; }
+.vibe-tab-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const tabWrap = document.querySelector('.vibe-tabs');
+  if (tabWrap) {
+    const btns = tabWrap.querySelectorAll('.vibe-tab-btn');
+    const panels = document.querySelectorAll('[data-vibe-tab-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-vibe-tab');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-vibe-tab-panel') !== key; });
+      });
+    });
+  }
+</script>
+
