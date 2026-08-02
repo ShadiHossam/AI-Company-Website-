@@ -1,0 +1,180 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "Is 'agentic AI' just a buzzword?", answer: "Partly, yes. Like a lot of AI terminology, it's been stretched by marketing to cover everything from a genuinely autonomous multi-agent system down to a chatbot with a slightly longer instruction prompt. That doesn't mean the underlying idea, systems that plan and act rather than just respond, isn't real. It means the label alone doesn't tell you much; what matters is what the system actually does." },
+  { question: "Do I need 'agentic AI,' or would a simpler single agent do?", answer: "Most businesses need a single well-scoped agent, not a full agentic AI system in the ambitious sense the term sometimes implies. Start from the decision you want automated, not from the label. If that decision genuinely requires multiple coordinated agents, you'll end up with something that could fairly be called agentic AI; if it doesn't, a single agent gets you the outcome with less complexity to build and maintain." },
+  { question: "How do you decide which one a project actually needs?", answer: "We scope from the task backward, not the terminology forward. During discovery, we ask what decision needs to be made, what information it depends on, and whether that naturally splits into distinct sub-tasks that benefit from separate, coordinated agents. If it does, we design a multi-agent system. If it doesn't, we build one focused agent, because added coordination is added complexity that only pays off when the task genuinely needs it." },
+  { question: "Is a chatbot an AI agent?", answer: "Generally no, though the line has blurred as chatbots gain tool access. A traditional chatbot answers questions one at a time and waits to be asked again. An agent is given a task and figures out the steps itself: what to look up, which tool to call, in what order. Some modern chatbots have picked up agent-like capabilities, which is exactly the kind of blurring that makes 'agentic AI' a marketing-friendly but imprecise term." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_agents_vs_agentic_ai')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Agents vs. Agentic AI',
+    url: 'https://lenooai.com/services/ai-agents/vs-agentic-ai',
+    description: 'AI agents vs. agentic AI, explained honestly: what each term actually means, where they overlap, and how to tell which one your project needs.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Agents', item: 'https://lenooai.com/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'vs. Agentic AI', item: 'https://lenooai.com/services/ai-agents/vs-agentic-ai' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI Agents vs. Agentic AI: What's the Difference | Lenoo AI"
+  description="AI agents vs. agentic AI, explained honestly: what each term actually means, where they overlap, and how to tell which one your project needs."
+  canonicalPath="/services/ai-agents/vs-agentic-ai"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">AI Agents</a><span style="opacity:0.4;padding:0 4px;"> / </span>vs. Agentic AI</div>
+    <h1>AI Agents vs. Agentic AI: <span class="gradient-text">What's the Difference</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      Two terms, a lot of overlap, and no shortage of marketing muddying the line between them. Here's what each one actually means, and why the distinction matters less than picking the right thing to build.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_agents_vs-agentic-ai_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#definitions" class="btn-outline">See the Breakdown ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- DEFINITIONAL CLARITY -->
+<section id="definitions" class="section" aria-labelledby="definitions-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="definitions-heading" style="margin-bottom:1.5rem;">What Each Term Actually Means</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        <strong>"AI agent"</strong> is usually a noun: a specific, deployed system built to handle a task. It reads input, reasons about what to do, and takes action, whether that's checking a record, drafting a message, or updating a database. When someone says "we built an AI agent for lead qualification," they mean one working system doing one job.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        <strong>"Agentic AI"</strong> is usually a broader description of an approach or property: AI systems that plan, decide, and act with a degree of autonomy, as opposed to systems that just respond to a single prompt. It's less a specific product category and more a way of describing a class of behavior, closer to how "cloud computing" describes an approach than how "Salesforce" names a specific product.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        In practice, these overlap heavily, and honestly, inconsistently. A single well-built AI agent is agentic AI, technically. A system marketed as "agentic AI" is usually one or more AI agents working together. We're not going to pretend there's a clean, universally agreed line here, because there isn't one in how the industry actually uses these terms day to day. What we can tell you is what a specific system does, which matters far more than which label it gets marketed under.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- VS CHATBOT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="chatbot-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="chatbot-heading" style="margin-bottom:1.5rem;">How Both Differ From a Chatbot</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        A chatbot answers questions one at a time and waits to be asked again. Give it a task like "find our top 20 leads and draft outreach," and a chatbot gives you instructions for how to do it yourself. An agent, whether you call it an AI agent or part of an agentic AI system, does the task: it finds the leads, drafts the outreach, and hands you the result. The line has blurred as chatbots pick up tool access and some limited autonomy, which is part of why the terminology gets messy, but the practical test still holds: does the system tell you what to do, or does it do it?
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- VS PLAIN AUTOMATION -->
+<section class="section" aria-labelledby="automation-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="automation-heading" style="margin-bottom:1.5rem;">How Both Differ From Plain Automation</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Plain automation follows a fixed rule: if X happens, do Y, every time, with no judgment involved. An agent, agentic or otherwise, reasons through the specific situation in front of it and decides what should happen, which means it can handle variation and ambiguity a fixed rule can't. Automation is faster to build and cheaper to run for predictable, repetitive tasks. An agent earns its cost when the right next step genuinely depends on judgment, not a rule you could have written down in advance. See our <a href="/services/ai-automation">AI automation page</a> for the fixed-rule side of this comparison.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- UMBRELLA TERM -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="umbrella-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="umbrella-heading" style="margin-bottom:1.5rem;">"Agentic AI" as an Umbrella for Multi-Agent Systems</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        In a lot of marketing and analyst writing, "agentic AI" specifically gets used to describe multi-agent systems: several specialized agents, each with a defined role, coordinated by an orchestrator that routes work and combines results. That usage is more precise than the term's loosest applications, but it's still describing an architecture pattern, not a fixed product you buy off a shelf. See our <a href="/services/ai-agents/use-cases">agent examples page</a> for what a multi-agent "team" actually looks like in practice, with concrete examples rather than the abstract description.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Not sure which one your project actually needs? Tell us the task, and we'll scope it honestly, not by which term sounds more impressive.</p>
+    <button onclick="openModal(this)" data-source="ai_agents_vs-agentic-ai_mid" class="btn-primary">Book a Free Discovery Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Scope What You Actually Need?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Tell us the task, not the label. We'll tell you honestly whether it needs one agent, several, or something simpler entirely.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_agents_vs-agentic-ai_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
