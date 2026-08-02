@@ -1,0 +1,214 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "How do we actually vet an AI agent development company?", answer: "Ask to see agents they've shipped, not demos. A demo is built to impress in five minutes; a shipped agent has survived real data, edge cases, and a few months of production use. Ask what happens when the agent gets something wrong, and listen for whether they have a real answer, logging, rollback, an approval checkpoint, or whether they haven't thought about it yet." },
+  { question: "What red flags should make us walk away?", answer: "An agency that can't describe a specific project that failed or needed rework, one that won't explain what guardrails an agent operates under, or one that pushes a single platform regardless of your workflow are all signals worth taking seriously. So is a proposal that promises full autonomy with no human checkpoint anywhere, on anything, that's not confidence, that's a company that hasn't built enough real agents to know where things go wrong." },
+  { question: "Do you work fixed-scope or on retainer?", answer: "Both, depending on the project. A well-defined single agent usually gets a fixed scope and price after discovery. Ongoing agent development, or a business that wants us building and refining multiple agents over time, usually moves to a retainer. We'll recommend which fits during the discovery call rather than defaulting to whichever is easier for us to sell." },
+  { question: "Who owns the agent's code and logic after the project?", answer: "You do. What you own varies slightly by platform, code-first builds on Pipedream or n8n hand over readable, portable code; builds on a platform like Gumloop or Lindy hand over the workflow itself, which you can access and edit inside that platform's account. Either way, nothing about the logic is locked behind something only we can open." },
+  { question: "Should we hire an agency or bring an AI agent architect in-house?", answer: "It depends on how much ongoing agent development you expect to need. A single agent, or a handful, usually doesn't justify a full-time hire; an agency gets you there faster and cheaper. A business planning to build and maintain a growing portfolio of agents over years sometimes reaches a point where an in-house architect makes sense, often after working with an agency long enough to know what the role actually needs to cover." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_agents_agencies')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Agent Development Company',
+    url: 'https://lenooai.com/services/ai-agents/agencies',
+    description: 'What to look for in an AI agent development company, what an AI agent architect actually does, and how Lenoo AI approaches both.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Agents', item: 'https://lenooai.com/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'Agencies', item: 'https://lenooai.com/services/ai-agents/agencies' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="Choosing an AI Agent Development Company | Lenoo AI"
+  description="What to look for in an AI agent development company, what an AI agent architect actually does, and how Lenoo AI approaches both."
+  canonicalPath="/services/ai-agents/agencies"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">AI Agents</a><span style="opacity:0.4;padding:0 4px;"> / </span>Agencies</div>
+    <h1>Choosing an AI Agent <span class="gradient-text">Development Company</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      In-house, freelancer, or agency: the right path depends on how much you're building and how long you'll need to maintain it. Here's how to actually evaluate an AI agent development company, and what the "AI agent architect" role covers even if you never hire one directly.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_agents_agencies_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#checklist" class="btn-outline">See the Checklist ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- IN-HOUSE VS FREELANCER VS AGENCY -->
+<section class="section" aria-labelledby="paths-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="paths-heading" style="margin-bottom:1.5rem;">In-House, Freelancer, or Agency: The Honest Trade-Offs</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        <strong>Hiring in-house</strong> makes sense when you're building and maintaining agents continuously, at a scale where a dedicated person is busy full-time. It's the slowest path to a first agent, since you're hiring before you're building, and it puts all your eggs in one person's skill set. It's also the most expensive option per agent shipped, unless volume is genuinely high.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        <strong>A freelancer</strong> is often the cheapest way to get one specific agent built, and can work well for a well-defined, contained project. The risk shows up after launch: a single freelancer with no team around them means no coverage if they're unavailable, no second reviewer catching a mistake before it ships, and no continuity if your next agent needs someone who understands the first one's guardrails.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        <strong>An agency</strong> sits between the two: faster to start than hiring, more continuity and review than a solo freelancer, and no long-term headcount commitment. The trade-off is cost per hour is usually higher than a freelancer's, and you're dependent on the agency's actual discipline, not every agency is equally rigorous, which is exactly why the checklist below matters more than the label "agency" itself.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT TO LOOK FOR -->
+<section id="checklist" class="section" style="background:#f0f3ff;" aria-labelledby="checklist-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="checklist-heading">What to Look For in an AI Agent Development Company</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Four things separate an agency that ships reliable agents from one that ships impressive demos.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">work_history</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">A Portfolio of Shipped Agents, Not Demos</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Ask what's actually running in production today, for how long, and what broke along the way. A demo built to impress in a sales call and an agent that's survived three months of real customer data are very different things.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">verified_user</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Guardrail and Testing Discipline</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">A serious agency can describe, specifically, how they test an agent against edge cases before launch and what stops it from taking an action outside a defined boundary. "We use good prompts" is not an answer to that question.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">monitoring</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Post-Launch Monitoring and Support</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Real inputs surface edge cases test data never does. An agency worth hiring monitors what the agent does after launch, not just before, and has a plan for what happens when a connected system changes and something breaks.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">visibility</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Transparent, Documented Process</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">You should understand what your agent does and why, not just trust that it works. An agency that can't or won't document the agent's logic in a way your team can read is building you a black box, whatever the platform.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI AGENT ARCHITECT -->
+<section class="section" aria-labelledby="architect-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="architect-heading" style="margin-bottom:1.5rem;">What Is an AI Agent Architect?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        An AI agent architect is the person, or the function, responsible for the system-design decisions behind an agent: which platform or framework fits the workflow, whether the problem needs one agent or several coordinated ones, where the reasoning step sits in the pipeline, what tools and permissions the agent gets, and how its decisions get evaluated over time. It's a distinct skill from writing prompts or wiring integrations; it's the layer above both, deciding what should be built before anyone builds it.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        You don't need to hire that title to get that skill. What matters is that whoever scopes your project, an in-house hire, a freelancer, or an agency, is actually doing that architectural thinking rather than jumping straight to a platform and a prompt. When you're vetting an agency, ask them directly how they'd approach your specific workflow before they've sold you anything. A team with real architect-level thinking will ask you clarifying questions about the decision itself, not just which tools you already use.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- LENOO'S APPROACH -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="approach-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="approach-heading" style="margin-bottom:1.5rem;">How Lenoo AI Measures Up Against This</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Against the portfolio question: our agent-types page and industry pages show the categories of agents we build across sales, support, operations, compliance, and scheduling, each with a real example, not a hypothetical. We'll walk you through a specific build during discovery, including what didn't work on the first pass, because every real project has one of those.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Against guardrails and testing: every agent we build gets a defined action allowlist, not a general instruction to use good judgment, and an approval checkpoint for anything irreversible, a payment, a customer-facing message, a record deletion. We test against real data pulled from your business before anything touches production, not sample data that happens to look clean.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Against post-launch support: every project includes 90 days of monitoring, with logging that tracks what the agent read, what it decided, and what it did, so a result that looks wrong can be traced back to the exact input that produced it. We'll tell you honestly when a project doesn't need us long-term, and when it does, that's a retainer conversation, not an assumption baked into the price from day one.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Comparing agencies? Ask us the same questions on a free call, and we'll answer them directly.</p>
+    <button onclick="openModal(this)" data-source="ai_agents_agencies_mid" class="btn-primary">Book a Free Discovery Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Talk to an Actual Agent Development Team?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Bring us your hardest question about how we work. We'll answer it directly on a free discovery call, no sales script.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_agents_agencies_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>
