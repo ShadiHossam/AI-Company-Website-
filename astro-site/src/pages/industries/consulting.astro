@@ -1,0 +1,367 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "How do you keep client data separate when the AI searches across engagements?", answer: "Access controls follow your existing engagement permissions. The knowledge assistant only surfaces documents a given user is already authorized to see, and nothing from one client's data trains a model that another client's team can query." },
+  { question: "Will an internal knowledge assistant actually save time, or just add another tool?", answer: "It only earns its place if it's faster than asking a colleague or searching manually, which is the bar we hold it to during the pilot. If consultants aren't using it within the first few weeks, we treat that as a signal to fix the setup, not a reason to declare success anyway." },
+  { question: "Can AI draft client-ready reports, or does it produce something too generic?", answer: "It drafts from your firm's actual templates, tone, and past deliverables, not a generic format. A consultant still reviews and refines before anything goes to a client, but the first draft starts much further along." },
+  { question: "How long does it take to get an internal knowledge assistant running?", answer: "A working pilot scoped to one practice area or document set typically launches in 4 to 6 weeks. Firm-wide rollout across multiple practice areas takes longer, depending on how fragmented your existing document systems are." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'consulting')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI for Professional Services & Consulting Firms in the UAE",
+    "url": "https://lenooai.com/industries/consulting",
+    "description": "Custom AI systems for UAE consulting and professional services firms: internal knowledge assistants, proposal automation, client reporting, and meeting intelligence.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Professional Services"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Professional Services AI", "item": "https://lenooai.com/industries/consulting" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI for Consulting & Professional Services in the UAE: Knowledge & Reporting Automation | Lenoo AI"
+  description="Lenoo AI, a Dubai AI agency, builds custom AI systems for UAE consulting and professional services firms: internal knowledge assistants, proposal drafting, and reporting automation."
+  canonicalPath="/industries/consulting"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Professional Services</div>
+    <h1>AI for UAE<br><span class="gradient-text">Consulting &amp; Professional Services</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds custom AI systems for UAE consulting and professional services firms: internal knowledge assistants, proposal drafting, client reporting automation, and meeting intelligence. Built around how your consultants actually work.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <button onclick="openModal(this)" data-source="consulting_hero" class="btn-primary">Book Free Consulting AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+    <StatStrip stats={[
+      { value: "9.3hrs", caption: "spent weekly by knowledge workers searching and gathering information (McKinsey Global Institute)" },
+      { value: "24/7", caption: "internal knowledge assistant availability across time zones and offices" },
+      { value: "0", caption: "client data shared across engagement boundaries" },
+    ]} />
+  </div>
+</header>
+
+<!-- WHY CONSULTING & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why professional services is one of AI's highest-impact sectors</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Knowledge is scattered across your firm.</strong> McKinsey Global Institute research found knowledge workers spend roughly 9.3 hours a week searching for and gathering information that often already exists somewhere in the organization. An internal knowledge assistant puts that time back into billable work.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Proposals and reports follow patterns, but rarely reuse them efficiently.</strong> Most firms rewrite similar sections from scratch for every new proposal or client report. AI drafting tools trained on your own templates and past work produce a strong first draft in minutes.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Meeting output gets lost.</strong> Action items and decisions discussed in client meetings often live only in one person's notes. Meeting intelligence tools capture and distribute that automatically, so nothing depends on memory.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1757405944970-dfca42373629?w=800&q=80&auto=format&fit=crop" alt="Consultant presenting to colleagues during a business meeting in an office" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE Consulting and Professional Services Firms</h2>
+      <p>Six systems our Dubai AI agency builds for consulting and professional services firms, integrated with your document and practice management systems.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">search</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Internal Knowledge Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Searches across your firm's documents, past engagements, and internal wikis to answer questions instantly, respecting the same access permissions your team already has.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Only surfaces what a user is already authorized to see</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Proposal &amp; SOW Drafting Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Drafts proposals and statements of work from your firm's templates and past winning proposals, giving your team a strong starting point instead of a blank page.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Trained on your firm's own tone and structure, not generic templates</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">summarize</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Client Reporting Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Compiles project data and findings into client-ready report drafts on a recurring schedule, cutting the time analysts spend formatting instead of analyzing.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Consultants review and finalize before anything reaches a client</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">groups</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Meeting Notes &amp; Action Item Extraction</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Captures decisions and action items from client meetings automatically and distributes them to the right people, so nothing depends on one person's notes.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Keeps every engagement accountable without manual follow-up</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">insights</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Research &amp; Market Analysis Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Synthesizes market data, competitor information, and internal research into a structured brief, cutting analyst research time on early-stage engagement work.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Frees analyst time for interpretation, not just gathering</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">schedule</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Time &amp; Billing Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Drafts time entries from calendar and document activity, reducing unbilled time lost to inconsistent manual entry habits.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Improves realization rates without adding admin burden</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems respect existing engagement permissions and confidentiality boundaries, and integrate with your existing tools.</p>
+      <button onclick="openModal(this)" data-source="consulting_mid" class="btn-primary">Book Free Consulting AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<div style="position:relative; overflow:hidden; height:280px; margin:0 0 -1px;">
+  <img src="https://images.unsplash.com/photo-1758873269035-aae0e1fd3422?w=1400&q=80&auto=format&fit=crop" alt="Consulting team reviewing a client engagement plan together around a whiteboard" loading="lazy" width="1400" height="280" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.35) 0%,transparent 55%);"></div>
+</div>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact in professional services</h2>
+    </div>
+    <div class="consulting-tabs" role="tablist" aria-label="Application categories">
+      <button type="button" class="consulting-tab-btn active" data-consulting-tab="client" role="tab" aria-selected="true">Client-Facing</button>
+      <button type="button" class="consulting-tab-btn" data-consulting-tab="internal" role="tab" aria-selected="false">Internal Operations</button>
+    </div>
+    <div class="bento-grid bento-grid-3" data-consulting-tab-panel="client">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Proposal Generation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI drafting tools trained on a firm's past proposals produce strong first drafts, letting business development teams focus effort on customization and win strategy.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces proposal turnaround time significantly</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">groups</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Meeting Intelligence</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Tools that transcribe, summarize, and extract action items from meetings are one of the fastest-adopted categories of workplace AI across professional services.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Widely adopted across consulting, legal, and advisory firms</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">psychology</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Research Synthesis</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI research assistants compile and structure information from multiple sources into usable briefs, compressing the early research phase of most engagements.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Speeds up early-stage engagement scoping and analysis</p>
+      </div>
+    </div>
+    <div class="bento-grid bento-grid-3" data-consulting-tab-panel="internal" hidden>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">search</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Internal Knowledge Management AI</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Search assistants that surface past work, expertise, and institutional knowledge address a well-documented productivity drain: employees searching for information that already exists somewhere in the firm.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Knowledge workers spend an estimated 9.3 hours weekly searching for information (McKinsey Global Institute)</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">summarize</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Automated Reporting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI-generated report drafts from project data reduce the formatting and compilation time that competes with actual analysis for a consultant's attention.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Frees senior time for interpretation over formatting</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">groups_3</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Resource &amp; Staffing Optimization</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Models that match consultant skills and availability to upcoming engagements improve utilization rates across firms with complex staffing needs.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Improves utilization without overloading specific team members</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes professional services AI actually work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Knowledge base quality</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A knowledge assistant is only as useful as what it can search. Disorganized, outdated, or duplicated documents produce disorganized, outdated answers.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Confidentiality across engagements</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Client work has to stay separated by engagement permissions, exactly as it would in any other system your firm uses. AI access controls need to mirror that reality.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Tool integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A knowledge assistant that doesn't connect to SharePoint, your CRM, or wherever your documents actually live creates yet another silo, not a solution.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Adoption and change management</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Consultants are busy and skeptical of new tools by default. A pilot with a visible champion and a fast, obvious win drives adoption far better than a firm-wide mandate.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows about AI in professional services</h2>
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">9.3hrs</p>
+        <p style="color:#42474e; font-size:0.875rem;">spent weekly by knowledge workers searching for and gathering information (McKinsey Global Institute)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">1.8hrs</p>
+        <p style="color:#42474e; font-size:0.875rem;">of that time spent daily just searching, before any actual analysis begins (McKinsey Global Institute)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">0</p>
+        <p style="color:#42474e; font-size:0.875rem;">shared model access across separate client engagements in any system we build</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Information Search Cost</p>
+          <p style="color:#42474e; line-height:1.7;">McKinsey Global Institute's widely cited research found knowledge workers spend close to a quarter of their working week searching for and gathering information, a cost that compounds across large firms with fragmented document systems.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Reporting Efficiency</p>
+          <p style="color:#42474e; line-height:1.7;">Firms using AI-assisted report drafting report meaningful reductions in formatting and first-draft time, letting senior staff spend proportionally more time on the analysis clients actually pay for.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Adoption Patterns</p>
+          <p style="color:#42474e; line-height:1.7;">Across professional services firms, meeting intelligence and internal search tools consistently show the fastest and broadest adoption of any AI category, largely because the value is immediate and requires no change to how client work is delivered.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI in professional services</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Consulting AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your firm's knowledge, reporting, and proposal workflows, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="consulting_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Consulting AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    .consulting-tabs { display:flex; gap:0.5rem; justify-content:center; margin-bottom:2rem; flex-wrap:wrap; }
+    .consulting-tab-btn { padding:0.625rem 1.25rem; border-radius:100px; border:1px solid rgba(0,37,59,0.15); background:#fff; color:#42474e; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+    .consulting-tab-btn:hover { background:#e7eeff; }
+    .consulting-tab-btn.active { background:#006875; border-color:#006875; color:#fff; }
+    .consulting-tab-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
+</style>
+
+<script>
+  const tabWrap = document.querySelector('.consulting-tabs');
+  if (tabWrap) {
+    const btns = tabWrap.querySelectorAll('.consulting-tab-btn');
+    const panels = document.querySelectorAll('[data-consulting-tab-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-consulting-tab');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { p.hidden = p.getAttribute('data-consulting-tab-panel') !== key; });
+      });
+    });
+  }
+</script>
+
+<script>
+  function animateStats(container: Element) {
+    const nums = container.querySelectorAll('.stat-num');
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target as HTMLElement;
+        const match = el.textContent?.match(/^([\d.]+)(.*)$/);
+        if (!match) return;
+        const [, numStr, suffix] = match;
+        const target = parseFloat(numStr);
+        const isDecimal = numStr.includes('.');
+        let start = 0;
+        const duration = 900;
+        const startTime = performance.now();
+        function tick(now: number) {
+          const progress = Math.min((now - startTime) / duration, 1);
+          const value = start + (target - start) * progress;
+          el.textContent = (isDecimal ? value.toFixed(1) : Math.round(value).toString()) + suffix;
+          if (progress < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+        obs.unobserve(el);
+      });
+    }, { threshold: 0.5 });
+    nums.forEach((n) => obs.observe(n));
+  }
+  const strip = document.querySelector('.stat-strip');
+  if (strip) animateStats(strip);
+</script>
