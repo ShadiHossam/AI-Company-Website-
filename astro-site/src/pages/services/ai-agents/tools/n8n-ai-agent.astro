@@ -1,0 +1,263 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+
+const h1 = 'n8n AI Agent Workflows';
+const metaTitle = 'n8n AI Agent Workflows for UAE Businesses | Lenoo AI';
+const metaDescription = 'Lenoo AI builds n8n AI agent workflows for UAE businesses: pipelines where a language model reads context, decides, and acts mid-workflow, not just moves data between apps.';
+const heroSubtext = "n8n can run two different kinds of build on the same engine. One moves data from A to B on a fixed trigger. The other is an AI agent: a workflow where a language model reads what's in front of it, decides what should happen, and only then triggers the next step. This page covers the second kind.";
+
+const useCases = [
+  { title: 'Inbound Lead-Qualification Agent', description: "Reads a new lead's form submission and any linked company data, decides how well it matches your ideal customer profile, and routes hot leads straight to a rep while weaker ones go into a nurture sequence, without a human sorting the inbox first." },
+  { title: 'Invoice-Exception-Handling Agent', description: "Checks incoming invoices against purchase orders and contract terms, approves the ones that match cleanly, and flags mismatches with a written explanation of exactly what doesn't line up, so your finance team reviews an exception with the reasoning attached instead of starting from zero." },
+  { title: 'Support-Ticket-Triage Agent', description: 'Reads an incoming ticket, decides its urgency and category, drafts a first response where the answer is straightforward, and escalates to a human with a summary when the question needs judgment the agent should not make alone.' },
+  { title: 'Compliance-Monitoring Agent', description: 'Reviews documents, transactions, or records against a defined policy on a schedule, flags anything that looks like a violation with the specific clause it conflicts with, and alerts the right person instead of burying the finding in a log file nobody reads.' },
+  { title: 'Internal Ops-Request Triage Agent', description: 'Reads incoming requests from an internal form or Slack channel (access requests, purchase approvals, IT tickets), decides which policy applies, and either actions the request directly or routes it to the right approver with context already attached.' },
+];
+
+const faqFallback = [
+  { question: 'Is this the same as the n8n automation page?', answer: "No. Our n8n automation page covers workflows that move data on a fixed trigger: something happens, a set sequence of steps runs, nothing in the middle makes a judgment call. This page covers workflows where a language model node sits inside the pipeline and decides what happens next based on what it reads. Same underlying platform, different kind of build. See the automation-only side of this same platform on our n8n automation page." },
+  { question: 'Do we have to self-host n8n to get an AI agent workflow?', answer: "No. Self-hosting is a genuine requirement for some clients, usually because of data residency or compliance rules on what leaves your infrastructure, but plenty of agent workflows run fine on a managed cloud instance. We work out which one actually applies to your situation during discovery rather than assuming self-hosting by default." },
+  { question: 'What actually drives the cost of an n8n agent build?', answer: 'Three things: how many decision points the agent needs to reason through, how many tools or systems it needs access to in order to act, and how much error handling and testing each branch requires before we trust it against real data. A single-decision agent reading one input source costs far less than a multi-step agent coordinating across five systems.' },
+  { question: 'Does this replace the use cases on the n8n automation page?', answer: "No, they solve different problems. If your workflow is a straightforward if-this-then-that rule, plain automation is faster to build, cheaper to run, and easier to maintain, and we will tell you that honestly. An agent workflow earns its cost when the logic genuinely can't be written as a fixed rule, because the right action depends on reading and judging the input each time." },
+  { question: 'Can the agent call our own custom code or internal APIs?', answer: "Yes. That's one of the reasons we build agent workflows on n8n specifically: a code node sits right next to the AI Agent node, so the agent's decision can trigger a call to your internal API, a custom script, or a database query without leaving the platform or bolting on a separate system." },
+  { question: 'What stops the agent from taking an action it should not?', answer: "A defined action allowlist. During the build phase, we specify exactly which tools and actions the agent is permitted to call, not a general instruction to use good judgment. Anything outside that list simply is not available to it, and for higher-stakes actions we add an approval checkpoint so a person confirms before it executes." },
+];
+
+let faqItems = faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_agents_tools_n8n-ai-agent')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: h1,
+    url: 'https://lenooai.com/services/ai-agents/tools/n8n-ai-agent',
+    description: metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'n8n AI agent projects: pricing based on the number of decision points and integrations. Book a free discovery call for a quote.' },
+    serviceType: 'n8n AI Agent Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Agents', item: 'https://lenooai.com/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'Tools', item: 'https://lenooai.com/services/ai-agents/tools' },
+      { '@type': 'ListItem', position: 4, name: 'n8n AI Agent', item: 'https://lenooai.com/services/ai-agents/tools/n8n-ai-agent' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonicalPath="/services/ai-agents/tools/n8n-ai-agent"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">AI Agents</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents/tools" style="color:inherit;text-decoration:none;opacity:0.65;">Tools</a><span style="opacity:0.4;padding:0 4px;"> / </span>n8n AI Agent</div>
+    <div class="tool-logo-hero"><img src="https://cdn.simpleicons.org/n8n/EA4B71" alt="n8n logo" width="56" height="56" loading="eager" /></div>
+    <h1>{h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ai_agents_tools_n8n-ai-agent_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#use-cases" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- WHAT IS N8N AI AGENT -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">What Is an n8n AI Agent Workflow?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        A plain n8n workflow follows fixed logic: a trigger fires, a set sequence of steps runs in order, and nothing in the middle makes a judgment call. An n8n AI agent workflow adds one thing on top of that: a language model node sitting inside the pipeline that reads whatever has landed in front of it, whether that's an email, a support ticket, an invoice, or a webhook payload, and decides what should happen next, rather than following a branch we hard-coded in advance. The trigger, the data fetch, and the final action can still run exactly like ordinary automation. The agent step is the part that reasons.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        When people search "n8n ai agent" or "ai agent n8n," this is the build they mean: an n8n workflow with one or more AI Agent nodes wired to a language model, commonly one of the same models people mean when they search "ai agent chatgpt," plus a defined set of tools the agent is allowed to call. The agent might check a record, look something up, draft a message, or update a database, but only within the actions we define during the build. It isn't free to do anything it can imagine; it's free to reason within a boundary we set.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW LENOO BUILDS N8N AGENT WORKFLOWS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="how-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="how-heading" style="margin-bottom:1.5rem;">Where the Reasoning Step Sits, and What It's Allowed to Do</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Placement matters more than most clients expect going in. Sometimes the agent belongs right at the start of a pipeline, reading and classifying whatever just arrived before anything else runs. Sometimes it belongs in the middle, as the step that decides which of several downstream branches a record should take. And sometimes it belongs near the end, as a final judgment call before an action goes out, checking that what the earlier steps assembled actually makes sense to send. We map this during discovery against your actual process, not against a generic template, because the same business problem can call for the agent in a different spot depending on where the ambiguity in your workflow actually lives.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.5rem;">
+        Guardrails come from a defined action allowlist, not a general instruction to use good judgment. During the build, we specify exactly which tools, records, and systems the agent can touch, and for any action with real consequences, meaning a payment, a customer-facing message, or a record deletion, we add an approval checkpoint so a person confirms before it executes. The agent reasons about what should happen; the boundary of what it's actually permitted to do is fixed in advance.
+      </p>
+      <div class="ai-agent-callout">
+        <p style="color:#00253b; font-size:1.0625rem; line-height:1.85; margin:0;">
+          This page is specifically about n8n agent builds. If what you need is a workflow that moves data between apps on a fixed trigger, with no reasoning step involved, that's the automation-only side of this same platform. See our <a href="/services/ai-automation/tools/n8n">n8n automation page →</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHO THIS FITS -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">Is an n8n Agent Build Right for You?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Two signals tend to point at n8n specifically, ahead of a lighter no-code agent builder. The first is a genuine data residency or compliance requirement: if the input the agent reads, or the records it touches, can't leave infrastructure you control, self-hosting rules out most managed platforms and points straight at n8n. The second is logic that a visual-only agent builder simply doesn't express. If the workflow needs a custom code step alongside the reasoning step, a call to an internal API with authentication a drag-and-drop canvas can't handle, or branching too specific for a generic node library, n8n's ability to mix visual workflow design with real code is what makes the build possible at all.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        If neither of those applies, meaning you have no infrastructure requirement and the logic is well within what a purpose-built agent platform already offers out of the box, a tool like Gumloop or Lindy often gets you live faster with less to maintain afterward. We'll say so directly on the discovery call rather than defaulting every project to the most flexible platform on paper.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">What a Typical n8n Agent Project With Us Looks Like</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Agent builds carry one extra layer of design work compared to plain automation: we're not just mapping steps, we're mapping decisions.
+      </p>
+      <ol style="color:#42474e; font-size:1.0625rem; line-height:1.85; padding-left:1.25rem; margin:0;">
+        <li style="margin-bottom:0.75rem;"><strong>Discovery.</strong> We identify exactly where in your process a human is currently making a judgment call from unstructured input, and confirm whether self-hosting is a real requirement or an assumption worth revisiting.</li>
+        <li style="margin-bottom:0.75rem;"><strong>Design.</strong> We decide between your own server, a cloud instance we manage, or n8n's hosted offering, then design the pipeline, marking exactly where the reasoning step sits and which actions it's allowed to trigger.</li>
+        <li style="margin-bottom:0.75rem;"><strong>Build and test.</strong> We build the workflow, wire the agent to its permitted tools, and test each branch separately against real data, with structured error handling per branch so one failure mode doesn't take down the whole pipeline.</li>
+        <li><strong>Launch and monitor.</strong> We deploy, hand over documentation covering exactly what the agent can and can't do, and monitor its decisions for the first weeks so a pattern that looks off gets caught and corrected quickly.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">n8n Agents vs. the Alternatives</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Gumloop, Lindy, and Pipedream all build AI agent workflows too, each covered on its own page, and each trades off differently against n8n. Gumloop and Lindy are purpose-built agent platforms with a visual canvas or a wide native-integration library respectively, and they get a standard agent live faster when the logic fits what they already offer. Pipedream is closest to n8n in spirit, since both let every step be real code, but it differs in hosting model and how much infrastructure you own. We recommend n8n specifically when self-hosting is a genuine requirement, or when the agent's logic needs a custom code step a purpose-built platform's node library doesn't cover. Outside of those two conditions, a lighter agent builder usually gets you the same result with less to maintain.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- RELIABILITY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="reliability-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="reliability-heading" style="margin-bottom:1.5rem;">Keeping an n8n Agent Reliable After Launch</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        An agent that reasons is only trustworthy if you can see why it decided what it decided. Every agent workflow we build logs the reasoning trail: what the agent read, what it concluded, which tool it called, and what action resulted. If a decision looks wrong three weeks after launch, we trace it back to the exact input that produced it instead of treating the agent as a black box nobody can explain. Each branch also gets its own error handling at the node level, so a failure on one input doesn't halt the whole pipeline, and if we're hosting the instance ourselves, that maintenance covers the server, not just the workflow logic running on top of it. For agent builds specifically, we also review a sample of decisions periodically after launch, since the value of an agent workflow is only real if the judgment calls it's making continue to match what you'd want a person in that seat to decide.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="use-cases" class="section" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">What We Build With n8n Agent Workflows</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Common n8n agent projects for UAE clients, from lead qualification to compliance monitoring. Every build starts from your actual decision points, not a generic template.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {useCases.map((uc) => (
+        <div class="value-card">
+          <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Have a workflow that needs to reason, not just trigger? Tell us what it should decide, and we'll build it on n8n.</p>
+    <button onclick="openModal(this)" data-source="ai_agents_tools_n8n-ai-agent_mid" class="btn-primary">Book a Free n8n Agent Consultation</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Build an Agent on n8n?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Tell us what decision you want automated. We'll design and build the agent on n8n, then show you exactly how it reasons before it touches production.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_agents_tools_n8n-ai-agent_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.tool-logo-hero { width:64px; height:64px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; }
+.value-card { display:flex; flex-direction:column; }
+.ai-agent-callout { background:#fff; border:1px solid rgba(0,104,117,0.18); border-radius:14px; padding:1.5rem 1.75rem; }
+.ai-agent-callout a { color:#006875; font-weight:700; text-decoration:none; }
+.ai-agent-callout a:hover { text-decoration:underline; }
+</style>
