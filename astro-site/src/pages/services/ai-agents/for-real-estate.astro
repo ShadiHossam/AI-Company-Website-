@@ -1,0 +1,188 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "Can an agent integrate with Property Finder and Bayut?", answer: "Yes, both through their listing feeds and, where available, their lead APIs. An agent can read inbound inquiries from either portal, check them against your buyer or renter criteria, and decide the next step, without a person manually checking three separate portal inboxes throughout the day." },
+  { question: "Does the agent handle WhatsApp inquiries too?", answer: "Yes. WhatsApp is one of the most common inbound channels for UAE real estate, and an agent reads and responds through it the same way it does portal leads: checking the inquiry against your criteria, deciding whether to book a viewing, request more information, or route it to a human." },
+  { question: "What happens with a high-value lead? Does the agent handle that alone?", answer: "No, by design. We define a threshold, deal size, buyer profile, or urgency, above which the agent flags the lead for a human instead of proceeding on its own. The agent handles volume and routine qualification; a person handles anything where the relationship or the decision genuinely benefits from human judgment." },
+  { question: "How is this different from the automation you build for real estate?", answer: "Automation moves data on a fixed trigger: post a new listing to three portals every morning at 9am, no judgment involved. An agent reasons: it reads an inbound inquiry, weighs it against your criteria, and decides what should happen next. If your need is the first kind, see our automation page instead; it's usually cheaper and simpler for pure data-movement tasks. If it's the second, an agent is the right tool." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_agents_for_real_estate')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Agents for Real Estate',
+    url: 'https://lenooai.com/services/ai-agents/for-real-estate',
+    description: 'AI agents for UAE real estate brokerages: lead qualification, property matching, viewing scheduling, and follow-up, built to reason and decide, not just move data.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'AI agent projects for real estate brokerages: pricing based on decision complexity and scope. Book a free discovery call for a quote.' },
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Agents', item: 'https://lenooai.com/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'Real Estate', item: 'https://lenooai.com/services/ai-agents/for-real-estate' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI Agents for Real Estate | Lenoo AI"
+  description="AI agents for UAE real estate brokerages: lead qualification, property matching, viewing scheduling, and follow-up, built to reason and decide, not just move data."
+  canonicalPath="/services/ai-agents/for-real-estate"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">AI Agents</a><span style="opacity:0.4;padding:0 4px;"> / </span>Real Estate</div>
+    <h1>AI Agents for <span class="gradient-text">Real Estate</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      A new inquiry lands on WhatsApp at 11pm on a Friday. An agent reads it, checks it against your listing criteria, and decides whether to book a viewing, request more detail, or flag it for a person, before your team is even at their desk on Sunday.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_agents_for-real-estate_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#use-cases" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- DIFFERENTIATION BOX -->
+<section class="section" aria-labelledby="diff-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto; background:#fff; border:1px solid rgba(0,104,117,0.18); border-radius:16px; padding:2rem;">
+      <h2 id="diff-heading" style="margin-bottom:1rem; font-size:1.375rem;">An Agent vs. Real Estate Automation: What's Actually Different</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1rem;">
+        <strong>Automation moves data on a fixed trigger.</strong> Post a new listing to three portals every morning at 9am. Sync availability across your CRM and your website. No judgment involved, the same steps run every time. See our <a href="/services/ai-automation/real-estate">AI automation for real estate page</a> if that's what you need; it's usually simpler and cheaper for pure data-movement tasks.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin:0;">
+        <strong>An agent reasons and decides.</strong> It reads an inbound WhatsApp inquiry, checks it against your buyer criteria, and decides whether to schedule a viewing, ask a follow-up question, or flag the lead for a person, weighing information that changes every time. If the right next step depends on judgment, not a fixed rule, that's an agent's job, and it's what this page covers.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="use-cases" class="section" style="background:#f0f3ff;" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">AI Agents We Build for Real Estate</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Common agent projects for UAE brokerages and property managers. Every build is scoped to your actual criteria and workflow, not a generic template.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">fact_check</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Lead-Qualification Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Reads an inbound inquiry from WhatsApp, Property Finder, or Bayut, checks it against your buyer or renter criteria, and decides whether to move it forward or ask a clarifying question first.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">home_work</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Property-Matching Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Compares a lead's stated requirements against your current listings, ranks the closest matches, and drafts a message presenting the top options with reasoning attached.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">event_available</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Viewing-Scheduling Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Checks agent and property availability, proposes times that actually work, and confirms the booking without the back-and-forth of manual scheduling.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">forum</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Post-Viewing Follow-Up Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Sends a follow-up at the right interval after a viewing, reads the response to gauge interest, and either advances the lead or flags it as cooling, so no one falls through the cracks.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">handshake</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Tenant &amp; Landlord Communication Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Handles routine maintenance requests and renewal reminders, deciding what needs immediate escalation versus what can be logged and scheduled normally.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">priority_high</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">High-Value Lead Escalation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Recognizes when a lead's deal size or urgency crosses a defined threshold and routes it straight to a senior agent instead of following the standard qualification path.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Losing leads over weekends and evenings? Tell us your criteria, and we'll build the agent that qualifies them the moment they arrive.</p>
+    <button onclick="openModal(this)" data-source="ai_agents_for-real-estate_mid" class="btn-primary">Book a Free Discovery Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Qualify Every Lead the Moment It Arrives?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Tell us your buyer criteria and current workflow. We'll design an agent that handles qualification and show you exactly how it decides before we build.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_agents_for-real-estate_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>
