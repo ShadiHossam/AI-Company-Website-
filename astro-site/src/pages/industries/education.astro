@@ -1,0 +1,368 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Will AI grading replace teachers marking work?", answer: "It handles the first pass on objective and semi-structured work, drafting scores and feedback for the teacher to review and adjust. Teachers stay the final authority on grades and on anything requiring judgment about a student's understanding." },
+  { question: "Is student data safe with an AI system, especially for minors?", answer: "Student data protection is treated as a hard requirement, not a feature. We scope every system against your institution's data policies and UAE data protection requirements before anything is built, and minimize what data the AI actually needs to see." },
+  { question: "Does the admissions chatbot work for Arabic-speaking parents?", answer: "Yes. Admissions and parent-query assistants are built and tested in both Arabic and English, since UAE schools and universities serve families who prefer either language, sometimes within the same household." },
+  { question: "How long does it take to launch an admissions or parent-query assistant?", answer: "Most admissions or parent-facing chatbots launch in 3 to 5 weeks. Tools that integrate with your student information system for grading or attendance tracking typically take 6 to 8 weeks." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'education')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI for Schools & Universities in the UAE",
+    "url": "https://lenooai.com/industries/education",
+    "description": "Custom AI systems for UAE schools and universities: admissions chatbots, automated grading support, personalized learning tools, and administrative document automation.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Education"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Education AI", "item": "https://lenooai.com/industries/education" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI for Schools & Universities in the UAE: Admissions & Learning Automation | Lenoo AI"
+  description="Lenoo AI, a Dubai AI agency, builds custom AI systems for UAE schools and universities: admissions chatbots, grading support, and personalized learning tools."
+  canonicalPath="/industries/education"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Education</div>
+    <h1>AI for UAE<br><span class="gradient-text">Schools &amp; Universities</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds custom AI systems for UAE schools and universities: admissions chatbots, automated grading support, personalized learning tools, and administrative document automation. Bilingual, and built around your student information system.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <button onclick="openModal(this)" data-source="education_hero" class="btn-primary">Book Free Education AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+    <StatStrip stats={[
+      { value: "8hrs+", caption: "of weekly administrative work commonly reported by teaching staff" },
+      { value: "24/7", caption: "admissions and parent query response with a bilingual chatbot" },
+      { value: "Arabic + English", caption: "full bilingual support built for UAE school and university communities" },
+    ]} />
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1758270705290-62b6294dd044?w=1400&h=280&q=80&auto=format&fit=crop" alt="Students using laptops together in a classroom" loading="lazy" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHY EDUCATION & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why education is one of AI's highest-impact sectors</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Administrative work eats into teaching time.</strong> Teachers regularly report spending significant hours a week on grading, scheduling, and paperwork that pulls focus away from actual instruction. Automating the repetitive parts gives that time back.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Admissions and parent inquiries arrive around the clock.</strong> Parents researching schools or universities ask questions at all hours, often in Arabic. A bilingual chatbot captures that interest immediately instead of losing it to a slow email reply.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Every student learns at a different pace.</strong> Adaptive learning tools that adjust difficulty and pacing to an individual student have shown measurable gains in engagement and outcomes compared to one-size-fits-all instruction.</p>
+      </div>
+      <div class="split-media" style="display:flex; align-items:stretch;">
+        <div class="card" style="display:flex; flex-direction:column; justify-content:center; text-align:center; width:100%; padding:2.5rem;">
+          <p class="stat-number" style="font-size:3rem; margin-bottom:0.75rem;">8hrs+</p>
+          <p style="color:#42474e; font-size:1rem; line-height:1.7;">of weekly administrative work commonly reported by teaching staff, much of it automatable without touching instructional quality.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE Schools and Universities</h2>
+      <p>Six systems our Dubai AI agency builds for schools and universities, integrated with your student information system.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">forum</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Admissions &amp; Enrollment Chatbot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Answers prospective family questions about programs, fees, and deadlines instantly, in Arabic and English, and routes serious inquiries to admissions staff.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Captures interest the moment it happens, day or night</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">family_restroom</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Parent &amp; Student Query Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Handles routine questions about schedules, fees, and school policies, freeing front-office staff for issues that actually need a person.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces front-office call and email volume significantly</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">grading</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Automated Grading &amp; Feedback Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Drafts scores and written feedback on objective and semi-structured assignments for teacher review, cutting grading time substantially.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Teachers review and finalize every grade before it's recorded</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">auto_stories</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Personalized Learning Path Recommendations</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Recommends practice material and pacing based on individual student performance data, supporting teachers rather than replacing lesson planning.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Adapts to each student's actual performance, not a fixed curriculum</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Administrative Document Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Processes registration forms, transcript requests, and enrollment paperwork automatically, reducing manual data entry for administrative staff.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Cuts turnaround time on routine document requests</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">warning</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Attendance &amp; Early Warning Flagging</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Flags attendance and performance patterns that suggest a student is at risk of falling behind, early enough for staff to intervene.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Surfaces at-risk students before problems compound</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems built with student data privacy as a hard requirement, bilingual, and integrated with your existing tools.</p>
+      <button onclick="openModal(this)" data-source="education_mid" class="btn-primary">Book Free Education AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- CLEARER PICTURE OF EVERY STUDENT -->
+<section class="section" aria-labelledby="picture-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="picture-heading" style="margin-bottom:1.5rem;">A clearer picture of every student, without extra paperwork</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Right now, that picture gets built by hand.</strong> Teachers and administrators pull attendance, grades, and engagement data from separate systems to work out how a student or class is actually doing, then rebuild that summary again for the next report or parent meeting.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">An AI system that already sits on top of your student information system consolidates that data into one view a teacher can check in a few minutes, on a tablet or laptop, with the students who need attention first surfaced automatically instead of buried in a spreadsheet.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1758685848174-e061c6486651?w=800&h=600&q=80&auto=format&fit=crop" alt="Teacher reviewing student coursework on a laptop in the classroom" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact in education</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">auto_stories</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Adaptive Learning Platforms</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Platforms that adjust content difficulty and pacing to individual student performance have shown measurable improvements in engagement and outcomes across pilot programs.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Widely piloted across K-12 and higher education institutions</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">grading</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Automated Grading</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI grading tools handle objective and semi-structured assessments at scale, letting teachers focus review time on essays and open-ended work that need deeper judgment.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Frees significant grading hours per teacher per week</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">school</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Intelligent Tutoring Systems</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI tutors provide on-demand, one-on-one style support outside class hours, a resource many students otherwise couldn't access at scale.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Growing rapidly in higher education and test preparation</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Administrative Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Enrollment processing, transcript generation, and scheduling automation reduce the administrative overhead that competes with teaching time for staff attention.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces manual data entry across registrar and admissions offices</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">forum</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Student Support Chatbots</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Chatbots handle routine student services questions around the clock, from registration deadlines to campus resources, reducing wait times at service desks.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Common first deployment for universities piloting AI</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">warning</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Early Intervention &amp; Retention Prediction</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Predictive models flag attendance and engagement patterns associated with dropout risk, giving academic advisors a chance to intervene early.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Used by universities to improve student retention rates</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes education AI actually work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Pedagogical soundness</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A learning tool needs to be built around how students actually learn, not just what's technically possible. We work with your academic team, not around it.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Data privacy for minors</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Student data, especially for minors, requires stricter handling than typical business data. This shapes system architecture from the start, not as an afterthought.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Bilingual curriculum support</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">UAE institutions serve both Arabic and English-medium communities. Tools need to work fluently in both, not just translate surface-level phrases.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Teacher buy-in</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A grading or admin tool teachers don't trust gets worked around, not adopted. We involve teaching staff in the review process from the pilot stage.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MANUAL VS AI ADMIN -->
+<section class="section" aria-labelledby="education-toggle-heading">
+  <div class="container" style="max-width:800px;">
+    <div class="section-header">
+      <h2 id="education-toggle-heading">Manual Admin vs. With AI</h2>
+      <p>What changes for grading, enrollment processing, and admin reporting once AI takes the repetitive first pass.</p>
+    </div>
+    <div class="education-toggle" role="tablist" aria-label="Admin workload comparison">
+      <button type="button" id="education-tier-manual" class="education-toggle-btn active" data-education-tier="manual" role="tab" aria-selected="true" aria-controls="education-panel-manual">Manual Admin</button>
+      <button type="button" id="education-tier-ai" class="education-toggle-btn" data-education-tier="ai" role="tab" aria-selected="false" aria-controls="education-panel-ai">With AI</button>
+    </div>
+    <div class="card" id="education-panel-manual" data-education-tier-panel="manual" role="tabpanel" aria-labelledby="education-tier-manual">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Grading a stack of assignments by hand typically takes a teacher several hours a week, on top of the time it takes to compile attendance, enrollment, and performance reports for administrators. Enrollment season adds registration forms, transcript requests, and eligibility checks that registrar staff process one file at a time. None of it touches teaching quality directly, but it consumes the hours that would otherwise go into it.</p>
+    </div>
+    <div class="card" id="education-panel-ai" data-education-tier-panel="ai" role="tabpanel" aria-labelledby="education-tier-ai" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">AI drafts scores and feedback on objective and semi-structured work in seconds, leaving teachers to review and finalize rather than start from a blank page. Enrollment forms and transcript requests get read, checked against requirements, and routed automatically, and admin reports pull straight from data already in your student information system instead of being rebuilt by hand each week. Staff time shifts from data entry to the judgment calls that actually need a person.</p>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows about AI in education</h2>
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">8hrs+</p>
+        <p style="color:#42474e; font-size:0.875rem;">weekly administrative workload commonly reported by teaching staff</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">24/7</p>
+        <p style="color:#42474e; font-size:0.875rem;">availability for admissions and parent-query chatbots, versus office-hours-only staff</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">2</p>
+        <p style="color:#42474e; font-size:0.875rem;">languages supported natively in every parent and student-facing tool we build</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Administrative Load</p>
+          <p style="color:#42474e; line-height:1.7;">Teacher workload surveys across multiple education systems consistently identify grading and administrative paperwork as leading contributors to burnout, well above time spent on lesson planning or direct instruction.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Personalization Impact</p>
+          <p style="color:#42474e; line-height:1.7;">Adaptive learning pilots that adjust pacing and difficulty to individual students have reported measurable gains in engagement metrics compared to fixed-pace instruction, particularly for students below grade-level benchmarks.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Admissions Response</p>
+          <p style="color:#42474e; line-height:1.7;">Institutions that respond to admissions inquiries within minutes rather than days consistently convert a higher share of interested families, a dynamic well documented across enrollment marketing research.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI in education</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Education AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your school or university's admissions and administrative workflows, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="education_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Education AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
+    .education-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+    .education-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+    .education-toggle-btn.active { background:#006875; color:#fff; }
+    .education-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const educationToggleWrap = document.querySelector('.education-toggle');
+  if (educationToggleWrap) {
+    const btns = educationToggleWrap.querySelectorAll('.education-toggle-btn');
+    const panels = document.querySelectorAll('[data-education-tier-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-education-tier');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-education-tier-panel') !== key; });
+      });
+    });
+  }
+</script>
