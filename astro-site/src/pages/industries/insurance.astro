@@ -1,0 +1,365 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Can AI underwriting decisions be explained to a regulator?", answer: "They need to be, so that's how we build them. Every underwriting model we deploy produces a documented reason for its output, not just a score, so your team can defend a decision under the UAE Insurance Authority's requirements." },
+  { question: "How does AI actually catch insurance fraud?", answer: "Models are trained on historical claims data to spot patterns associated with fraudulent claims: inconsistent details, unusual timing, or claim patterns that match known fraud typologies. Flagged claims go to a human investigator, the AI narrows the pool, it doesn't make the final call." },
+  { question: "Will claims automation slow down legitimate claims while checking for fraud?", answer: "No, it speeds them up. The majority of claims are legitimate and straightforward, so automation processes those faster while routing the smaller number of flagged or unusual claims to closer review. Most customers see faster payouts, not slower ones." },
+  { question: "Does the customer service chatbot handle policy questions in Arabic?", answer: "Yes. Policy inquiries, renewal reminders, and claims status updates are handled in both Arabic and English, matching how UAE insurers actually communicate with their customer base." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'insurance')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI for Insurance Companies in the UAE",
+    "url": "https://lenooai.com/industries/insurance",
+    "description": "Custom AI systems for UAE insurers: claims processing automation, AI underwriting, fraud detection, and bilingual customer service chatbots.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Insurance"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Insurance AI", "item": "https://lenooai.com/industries/insurance" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI for Insurance Companies in the UAE: Claims & Underwriting Automation | Lenoo AI"
+  description="Lenoo AI, a Dubai AI agency, builds custom AI systems for UAE insurers: claims processing automation, AI underwriting, fraud detection, and customer chatbots."
+  canonicalPath="/industries/insurance"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Insurance</div>
+    <h1>AI for UAE<br><span class="gradient-text">Insurance Companies</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds custom AI systems for UAE insurers: claims processing automation, AI underwriting, fraud detection, and bilingual customer service. Built to satisfy your compliance team and speed up honest claims at the same time.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <button onclick="openModal(this)" data-source="insurance_hero" class="btn-primary">Book Free Insurance AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+    <StatStrip stats={[
+      { value: "Weeks to days", caption: "typical improvement in claims processing time with AI automation" },
+      { value: "$300B+", caption: "estimated annual cost of insurance fraud across all lines, industry-wide (Coalition Against Insurance Fraud)" },
+      { value: "24/7", caption: "policy and claims status support with a bilingual chatbot" },
+    ]} />
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:280px; margin:0 0 -1px;">
+  <img src="https://images.unsplash.com/photo-1642522029686-5485ea7e6042?w=1600&h=320&q=80&auto=format&fit=crop" alt="Insurance claims adjuster reviewing a claim form at a desk" loading="lazy" width="1600" height="280" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.35) 0%,transparent 55%);"></div>
+</div>
+
+<!-- WHY INSURANCE & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why insurance is one of AI's highest-impact sectors</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Claims processing is document-heavy and slow by default.</strong> A single claim can involve forms, photos, police reports, and medical records. AI extraction and validation tools process the straightforward majority automatically, cutting turnaround from weeks to days.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Fraud is a massive, ongoing cost.</strong> Insurance fraud is estimated to cost the industry hundreds of billions of dollars annually across all lines. AI models trained on claims patterns catch fraud indicators that manual review at scale simply can't.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Underwriting speed is a competitive advantage.</strong> Customers increasingly expect a quote in minutes, not days. AI-assisted risk scoring speeds up underwriting while keeping every decision explainable to a regulator.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1773126378915-793b5c48fb38?w=800&q=80&auto=format&fit=crop" alt="Couple reviewing and signing an insurance policy document at a desk" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE Insurers</h2>
+      <p>Six systems our Dubai AI agency builds for insurance companies, integrated with your policy administration and claims systems.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">assignment</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Claims Intake &amp; Document Processing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Extracts and validates data from claim forms, photos, and supporting documents automatically, routing straightforward claims for fast approval.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Cuts manual data entry for the majority of routine claims</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">verified</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Automated Underwriting Risk Scoring</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Scores applicant risk using policy and, where available, alternative data, with every output documented for compliance review.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Explainable outputs your underwriting team can defend</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">gpp_maybe</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Fraud Detection for Claims</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Flags claims with characteristics associated with known fraud patterns, routing them to investigators while legitimate claims move through faster.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Trained on your own historical claims data</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">forum</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Customer Service Chatbot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Answers policy questions, provides claims status updates, and handles renewal reminders in Arabic and English, around the clock.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces call center volume for routine policy questions</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Policy Document Generation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Generates policy documents and endorsements from underwriting decisions automatically, reducing manual drafting and errors.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Consistent, accurate policy wording every time</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">trending_down</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Renewal &amp; Retention Prediction</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Flags policyholders showing signs of churn risk ahead of renewal, giving your retention team time to intervene before they leave.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Prioritizes retention outreach where it actually matters</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems UAE-compliant, bilingual, and integrated with your policy administration and claims systems.</p>
+      <button onclick="openModal(this)" data-source="insurance_mid" class="btn-primary">Book Free Insurance AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- HOW WE WORK WITH YOUR TEAM -->
+<section class="section" aria-labelledby="insurance-team-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="insurance-team-heading" style="margin-bottom:1.5rem;">Built alongside your claims and compliance team, not around them</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">Every engagement starts with the adjusters, underwriters, and compliance officers who own the workflow we're changing. They sit in on design sessions from week one, not just at sign-off, so the system reflects how claims decisions actually get made at your company.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">That includes documenting model logic in language your compliance team can defend to a regulator, not just code your engineers can read. It's a slower way to start, and a much faster way to get to a system your claims staff actually trusts and uses.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1775163024488-e88e4a71179f?w=800&h=600&q=80&auto=format&fit=crop" alt="Office team reviewing documents together at a table" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact in insurance</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">assignment</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Automated Claims Processing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI extraction and validation tools process the majority of routine claims automatically, reserving human adjuster time for complex or disputed cases.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">One of the most widely adopted AI use cases in insurance</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">verified</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">AI Underwriting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Risk scoring models process applications faster than manual underwriting while incorporating a broader range of relevant risk signals.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Cuts underwriting turnaround from days to minutes for standard policies</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">gpp_maybe</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Fraud Detection</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Pattern-matching models flag claims with fraud indicators for investigation, addressing a cost the industry estimates in the hundreds of billions annually.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Insurance fraud is estimated to cost over $300B annually across all lines (CAIF)</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">query_stats</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Risk Assessment Models</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Predictive models assess property, health, and liability risk with more granularity than traditional actuarial tables alone, improving pricing accuracy.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Improves pricing accuracy across most major insurance lines</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">forum</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Customer Self-Service Chatbots</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Chatbots handle policy questions, claims status, and renewal reminders, reducing call volume for routine, repetitive customer requests.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Standard first AI deployment for most insurers</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">directions_car</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Usage-Based Pricing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Telematics and connected-device data feed models that price policies based on actual behavior rather than broad demographic categories.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Growing fastest in auto and health insurance lines</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes insurance AI actually work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Regulatory compliance</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Underwriting and claims decisions need to satisfy UAE Insurance Authority requirements. Compliance is built into the model architecture, not bolted on afterward.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Decision explainability</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">An underwriting or fraud decision needs a documented reason, not just a score. Explainability protects both the insurer and the policyholder.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Policy admin integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Claims and underwriting AI only creates value when it's wired into your actual policy administration system, not running as a disconnected side tool.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Fraud model precision</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A fraud model tuned too aggressively delays honest customers' payouts. Getting the balance right between catching fraud and processing legitimate claims fast is the real engineering work.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MANUAL VS AI CLAIMS -->
+<section class="section" aria-labelledby="insurance-toggle-heading">
+  <div class="container" style="max-width:800px;">
+    <div class="section-header">
+      <h2 id="insurance-toggle-heading">Manual Claims Processing vs. With AI</h2>
+      <p>What changes for intake, document review, and fraud screening once AI takes the first pass on a claim.</p>
+    </div>
+    <div class="insurance-toggle" role="tablist" aria-label="Claims processing comparison">
+      <button type="button" id="insurance-tier-manual" class="insurance-toggle-btn active" data-insurance-tier="manual" role="tab" aria-selected="true" aria-controls="insurance-panel-manual">Manual Claims Processing</button>
+      <button type="button" id="insurance-tier-ai" class="insurance-toggle-btn" data-insurance-tier="ai" role="tab" aria-selected="false" aria-controls="insurance-panel-ai">With AI</button>
+    </div>
+    <div class="card" id="insurance-panel-manual" data-insurance-tier-panel="manual" role="tabpanel" aria-labelledby="insurance-tier-manual">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">A claim comes in as a stack of forms, photos, and supporting documents that an adjuster has to open, read, and key into the claims system by hand. Missing paperwork means a phone call or email back to the policyholder, then a wait for a reply before the file can move again. Fraud checks happen after the fact, usually triggered by an adjuster's own judgment rather than a systematic pass over every claim, so straightforward claims sit in the same queue as complicated ones.</p>
+    </div>
+    <div class="card" id="insurance-panel-ai" data-insurance-tier-panel="ai" role="tabpanel" aria-labelledby="insurance-tier-ai" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">AI reads incoming forms and documents at intake, extracting the relevant fields and flagging anything missing or inconsistent before an adjuster ever opens the file. Every claim gets screened against known fraud indicators automatically, so investigators spend their time on the small number of claims that actually warrant a closer look. Straightforward claims move through in a fraction of the time, and adjusters spend their day on judgment calls instead of data entry and chasing paperwork.</p>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows about AI in insurance</h2>
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">$300B+</p>
+        <p style="color:#42474e; font-size:0.875rem;">estimated annual cost of insurance fraud across all lines (Coalition Against Insurance Fraud)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">Weeks to days</p>
+        <p style="color:#42474e; font-size:0.875rem;">typical claims processing improvement with AI-assisted document automation</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">Minutes</p>
+        <p style="color:#42474e; font-size:0.875rem;">typical underwriting turnaround for standard policies with AI risk scoring, down from days</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Fraud Cost</p>
+          <p style="color:#42474e; line-height:1.7;">The Coalition Against Insurance Fraud regularly cites industry-wide fraud losses in the hundreds of billions of dollars annually across all lines, a figure that has pushed most large insurers to adopt AI-based claims screening as a standard control.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Claims Speed</p>
+          <p style="color:#42474e; line-height:1.7;">Insurers deploying AI document extraction on claims intake commonly report cutting processing time from weeks to days for the majority of straightforward claims, improving both customer satisfaction and operating cost.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Underwriting Speed</p>
+          <p style="color:#42474e; line-height:1.7;">AI-assisted underwriting for standard policy types has compressed turnaround from days to minutes at several major insurers, a shift that's rapidly becoming a customer expectation rather than a differentiator.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI in insurance</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Insurance AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your claims and underwriting workflows, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="insurance_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Insurance AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
+    .insurance-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+    .insurance-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+    .insurance-toggle-btn.active { background:#006875; color:#fff; }
+    .insurance-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const insuranceToggleWrap = document.querySelector('.insurance-toggle');
+  if (insuranceToggleWrap) {
+    const btns = insuranceToggleWrap.querySelectorAll('.insurance-toggle-btn');
+    const panels = document.querySelectorAll('[data-insurance-tier-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-insurance-tier');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-insurance-tier-panel') !== key; });
+      });
+    });
+  }
+</script>
