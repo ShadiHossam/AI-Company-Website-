@@ -1,0 +1,389 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Will AI contract review replace our associates or paralegals?", answer: "No. AI contract review flags clauses that deviate from your playbook and surfaces the sections that need a lawyer's judgment, but every flagged clause still goes to a person for the actual legal decision. It removes the first-pass reading time, not the legal work itself." },
+  { question: "Can AI legal research tools be trusted not to fabricate case citations?", answer: "This is the single biggest risk with legal AI, and it's the reason we build citation-checking into any research assistant we deploy: every case reference the system produces is verified against a real source before it's shown to you. A tool that can't guarantee this shouldn't be in a legal workflow at all." },
+  { question: "How do you handle client confidentiality and privilege?", answer: "Document processing runs in isolated environments scoped to your firm, and nothing is used to train shared models outside your engagement. We design the data flow around your existing confidentiality obligations before any document touches the system." },
+  { question: "Is this built for UAE civil law, or is it a generic Western legal AI tool?", answer: "We train document and research assistants on the jurisdiction you actually practice in. A tool trained purely on U.S. or U.K. case law produces confidently wrong answers in a UAE civil law context, so jurisdiction-specific training is a requirement, not an add-on." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'legal')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI for Law Firms in the UAE",
+    "url": "https://lenooai.com/industries/legal",
+    "description": "Custom AI systems for UAE law firms and legal departments: contract review, document automation, legal research assistants, and compliance monitoring.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Legal Services"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Legal AI", "item": "https://lenooai.com/industries/legal" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI for Law Firms in the UAE: Contract Review & Legal Document Automation | Lenoo AI"
+  description="Lenoo AI, a Dubai AI agency, builds custom AI systems for UAE law firms: contract review, document automation, legal research assistants, and compliance monitoring."
+  canonicalPath="/industries/legal"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Legal</div>
+    <h1>AI for UAE<br><span class="gradient-text">Law Firms</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds custom AI systems for UAE law firms and legal departments: contract review, legal document automation, research assistants, and compliance monitoring. Every output stays reviewable, citable, and under a lawyer's final sign-off.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <button onclick="openModal(this)" data-source="legal_hero" class="btn-primary">Book Free Legal AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+    <StatStrip stats={[
+      { value: "30%", caption: "of lawyer time commonly spent on document review, per legal operations surveys" },
+      { value: "50–90%", caption: "typical reduction in first-pass contract review time with AI assistance" },
+      { value: "100%", caption: "of AI-generated citations verified against real sources before delivery" },
+    ]} />
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:280px; margin:0 0 -1px;">
+  <img src="https://images.unsplash.com/photo-1758518731462-d091b0b4ed0d?w=1600&h=320&q=80&auto=format&fit=crop" alt="Lawyers reviewing and signing a contract at a law office desk" loading="lazy" width="1600" height="280" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.35) 0%,transparent 55%);"></div>
+</div>
+
+<!-- WHY LEGAL & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why legal is one of AI's highest-impact sectors</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Document review is repetitive by nature.</strong> Legal operations surveys consistently find lawyers spend close to a third of their time reading and comparing documents. AI contract review tools flag deviations from a standard playbook in seconds, leaving the judgment calls to the lawyer.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Accuracy matters more here than almost anywhere else.</strong> A legal AI tool that fabricates a case citation isn't just wrong, it's a professional liability. Any research assistant we build verifies every citation against a real source before it reaches a user.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Client intake and administrative work eat into billable hours.</strong> Automating client triage, document drafting, and time entry gives fee-earners back hours that would otherwise go to paperwork instead of casework.</p>
+      </div>
+      <div class="split-media" style="display:flex; align-items:stretch;">
+        <div class="card" style="display:flex; flex-direction:column; justify-content:center; text-align:center; width:100%; padding:2.5rem;">
+          <p class="stat-number" style="font-size:3rem; margin-bottom:0.75rem;">50&ndash;90%</p>
+          <p style="color:#42474e; font-size:1rem; line-height:1.7;">typical reduction in first-pass contract review time when AI handles the initial read against your playbook.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE Law Firms</h2>
+      <p>Six systems our Dubai AI agency builds for law firms and legal departments, with citation checking and human review built in.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">fact_check</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Contract Review &amp; Redlining Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Compares incoming contracts against your firm's playbook, flags non-standard clauses, and suggests redlines for lawyer review.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Every suggested redline requires lawyer sign-off before it goes out</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Legal Document Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Drafts routine agreements, letters, and filings from your firm's own templates, filling in matter-specific details automatically.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Built from your existing templates, not generic boilerplate</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">gavel</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Case Research &amp; Precedent Search Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Searches case law and firm precedent for relevant authority, with every citation verified against source before it's presented.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Trained on the jurisdiction you actually practice in</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">forum</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Client Intake &amp; Triage Chatbot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Collects matter details from new client inquiries in Arabic and English, and routes them to the right practice area before the first call.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Saves fee-earners from unqualified initial calls</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">policy</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Compliance Monitoring for Regulatory Changes</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Tracks relevant regulatory updates and flags which of your active matters or client advisories might be affected.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Keeps advisory work current without manual monitoring</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">receipt_long</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Billing &amp; Time-Entry Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Drafts time entries from calendar and document activity, so fee-earners spend less time reconstructing their day at month-end.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces unbilled time lost to inconsistent entry habits</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems keep a human lawyer as the final decision-maker, with confidentiality controls scoped to your firm.</p>
+      <button onclick="openModal(this)" data-source="legal_mid" class="btn-primary">Book Free Legal AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- HOW WE WORK WITH YOUR FIRM -->
+<section class="section" aria-labelledby="legal-team-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="legal-team-heading" style="margin-bottom:1.5rem;">Built alongside your lawyers, not around them</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">Every engagement starts with the associates, paralegals, and partners who actually do the document review and research we're aiming to speed up. They sit in on design sessions from week one, so the playbook the system checks against is the one your firm actually uses.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">That includes documenting how the system flags clauses and citations in terms your risk and compliance partners can defend, not just code your engineers can read. It takes longer to start this way, and it's the reason the systems we hand over get used instead of quietly abandoned.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1562564055-71e051d33c19?w=800&h=600&q=80&auto=format&fit=crop" alt="Lawyer reviewing documents with a client at a desk" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact in legal services</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card legal-card" data-legal-expand>
+        <button type="button" class="legal-card-toggle" aria-expanded="false" aria-controls="legal-panel-1" id="legal-toggle-1">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">fact_check</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">Contract Analysis &amp; Review</h3>
+          </div>
+          <span class="legal-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="legal-card-panel" id="legal-panel-1" role="region" aria-labelledby="legal-toggle-1" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI tools compare contracts against a firm's playbook or a market standard, surfacing deviations for review in a fraction of manual reading time.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875;">One of the fastest-adopted legal AI categories among corporate legal teams</p>
+        </div>
+      </div>
+      <div class="card legal-card" data-legal-expand>
+        <button type="button" class="legal-card-toggle" aria-expanded="false" aria-controls="legal-panel-2" id="legal-toggle-2">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">gavel</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">Legal Research AI</h3>
+          </div>
+          <span class="legal-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="legal-card-panel" id="legal-panel-2" role="region" aria-labelledby="legal-toggle-2" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Research assistants search case law and statutes far faster than manual review, though citation verification remains essential given well-documented cases of AI-fabricated case law.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Citation-checking is now standard practice in legal AI deployments</p>
+        </div>
+      </div>
+      <div class="card legal-card" data-legal-expand>
+        <button type="button" class="legal-card-toggle" aria-expanded="false" aria-controls="legal-panel-3" id="legal-toggle-3">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">Document Automation</h3>
+          </div>
+          <span class="legal-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="legal-card-panel" id="legal-panel-3" role="region" aria-labelledby="legal-toggle-3" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Template-driven drafting tools generate first drafts of routine agreements and filings, letting lawyers focus their time on negotiation and strategy.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Widely used for high-volume, low-complexity document types</p>
+        </div>
+      </div>
+      <div class="card legal-card" data-legal-expand>
+        <button type="button" class="legal-card-toggle" aria-expanded="false" aria-controls="legal-panel-4" id="legal-toggle-4">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">search</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">Due Diligence Automation</h3>
+          </div>
+          <span class="legal-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="legal-card-panel" id="legal-panel-4" role="region" aria-labelledby="legal-toggle-4" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI tools scan large document sets during M&amp;A or property transactions, flagging risk items and missing documents for the deal team.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Cuts review time on large document sets significantly</p>
+        </div>
+      </div>
+      <div class="card legal-card" data-legal-expand>
+        <button type="button" class="legal-card-toggle" aria-expanded="false" aria-controls="legal-panel-5" id="legal-toggle-5">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">folder_managed</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">E-Discovery</h3>
+          </div>
+          <span class="legal-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="legal-card-panel" id="legal-panel-5" role="region" aria-labelledby="legal-toggle-5" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Predictive coding and AI classification tools sort large volumes of discovery documents by relevance, a long-established use of AI in litigation.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875;">One of the earliest and most mature legal AI applications</p>
+        </div>
+      </div>
+      <div class="card legal-card" data-legal-expand>
+        <button type="button" class="legal-card-toggle" aria-expanded="false" aria-controls="legal-panel-6" id="legal-toggle-6">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">insights</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">Predictive Case Analysis</h3>
+          </div>
+          <span class="legal-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="legal-card-panel" id="legal-panel-6" role="region" aria-labelledby="legal-toggle-6" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Models trained on historical case outcomes help litigators assess likely outcomes and settlement value, informing strategy rather than dictating it.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Used as a decision-support input, not a substitute for legal judgment</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes legal AI actually work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Accuracy and hallucination risk</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A legal AI tool must cite verifiable sources. Fabricated citations have already caused real sanctions in court, this is not a hypothetical risk.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Confidentiality and privilege</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Client documents can't flow through systems that retain or train on that data outside your engagement. Confidentiality has to be architected in, not assumed.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Jurisdiction-specific training</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A tool trained on foreign case law produces confidently wrong answers in a UAE civil law context. Jurisdictional accuracy is not optional.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Human review as final check</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">AI drafts and flags, but a lawyer decides. Any workflow that removes the final human review step is a professional risk, not a productivity win.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows about AI in legal services</h2>
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">~30%</p>
+        <p style="color:#42474e; font-size:0.875rem;">of lawyer time typically spent on document review, per legal operations surveys</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">50&ndash;90%</p>
+        <p style="color:#42474e; font-size:0.875rem;">typical reduction in first-pass contract review time with AI assistance</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">0</p>
+        <p style="color:#42474e; font-size:0.875rem;">tolerance for unverified citations in any legal research output we build</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Time Allocation</p>
+          <p style="color:#42474e; line-height:1.7;">Legal operations research consistently shows document review and administrative work consuming a disproportionate share of billable time relative to the strategic and advisory work clients actually value.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Review Speed</p>
+          <p style="color:#42474e; line-height:1.7;">Firms using AI-assisted contract review report first-pass review time drops of 50 to 90%, depending on contract complexity and how well the playbook is defined, freeing lawyers for negotiation and judgment calls.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Citation Risk</p>
+          <p style="color:#42474e; line-height:1.7;">Multiple documented court cases involve lawyers sanctioned for submitting briefs with AI-fabricated citations. This is the clearest cautionary example in professional AI adoption, and the reason citation verification is non-negotiable in legal tooling.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI in legal services</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Legal AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your firm's document and research workflows, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="legal_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Legal AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
+    .legal-card-toggle { display:flex; justify-content:space-between; align-items:center; width:100%; background:none; border:none; cursor:pointer; text-align:left; padding:0; gap:1rem; }
+    .legal-card-toggle h3 { margin:0; }
+    .legal-card-icon { font-size:1.25rem; color:#006875; transition:transform 0.2s; flex-shrink:0; }
+    .legal-card-toggle[aria-expanded="true"] .legal-card-icon { transform:rotate(45deg); }
+    .legal-card-toggle:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+    .legal-card-panel { margin-top:0.75rem; }
+</style>
+
+<script>
+  document.querySelectorAll('[data-legal-expand]').forEach((card) => {
+    const btn = card.querySelector('.legal-card-toggle');
+    const panel = card.querySelector('.legal-card-panel');
+    btn?.addEventListener('click', () => {
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!expanded));
+      if (panel) (panel as HTMLElement).hidden = expanded;
+    });
+  });
+</script>
