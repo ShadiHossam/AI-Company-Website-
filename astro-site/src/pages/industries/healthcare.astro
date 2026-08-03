@@ -1,0 +1,368 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Can AI replace doctors or clinical judgment?", answer: "No, and we don't build it to. Every system we deploy for healthcare clients supports clinical staff rather than making diagnostic or treatment decisions. AI handles intake, scheduling, documentation drafts, and administrative processing; a clinician reviews and signs off on anything that touches patient care. The goal is to give your staff back hours, not to replace their judgment." },
+  { question: "How do you handle patient data privacy and compliance?", answer: "Patient data is handled under UAE data protection requirements (PDPL) and, where applicable, DHA and DOH data handling standards. We scope every project against your existing compliance posture before building anything, and we avoid storing sensitive health data in systems that aren't built for it. If your clinic operates under specific licensing requirements, we design around them from day one." },
+  { question: "Does the AI work in Arabic for patient-facing tools?", answer: "Yes. Patient intake assistants, appointment reminders, and FAQ chatbots are trained and tested in both Arabic and English, since UAE clinics serve patients across both languages daily. We specifically test medical terminology in Arabic, since generic Arabic language models often produce stilted or inaccurate phrasing for clinical terms." },
+  { question: "How long does it take to deploy an AI system in a clinic or hospital?", answer: "Most patient intake or scheduling assistants launch in 3 to 5 weeks. Systems that touch clinical documentation or insurance pre-authorization take longer, typically 6 to 10 weeks, because they require closer integration with your practice management system and more careful testing before going live." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'healthcare')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI for Healthcare Providers in the UAE",
+    "url": "https://lenooai.com/industries/healthcare",
+    "description": "Custom AI systems for UAE clinics and healthcare providers: patient intake assistants, insurance pre-authorization automation, clinical documentation support, and bilingual patient chatbots.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Healthcare"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Healthcare AI", "item": "https://lenooai.com/industries/healthcare" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI for Healthcare Providers in the UAE: Patient Intake & Clinical Support | Lenoo AI"
+  description="Lenoo AI, a Dubai AI agency, builds custom AI systems for UAE clinics and healthcare providers: patient intake assistants, insurance automation, and clinical documentation support."
+  canonicalPath="/industries/healthcare"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Healthcare</div>
+    <h1>AI for Dubai<br><span class="gradient-text">Healthcare Providers</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds custom AI systems for UAE clinics and healthcare providers: patient intake assistants, insurance pre-authorization automation, clinical documentation support, and bilingual patient chatbots. Built around your practice management system, not around a generic template.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <button onclick="openModal(this)" data-source="healthcare_hero" class="btn-primary">Book Free Healthcare AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+    <StatStrip stats={[
+      { value: "$150B", caption: "in annual savings AI applications could create for U.S. healthcare by 2026 (Accenture)" },
+      { value: "2:1", caption: "hours spent on EHR and desk work for every hour spent with patients (Annals of Internal Medicine)" },
+      { value: "30%", caption: "average no-show rate for outpatient visits without automated reminders" },
+    ]} />
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:280px; margin:0 0 -1px;">
+  <img src="https://images.unsplash.com/photo-1758691461957-13aff0c37c6f?w=1600&h=320&q=80&auto=format&fit=crop" alt="Doctor reviewing a scan on a tablet in a hospital office" loading="lazy" width="1600" height="280" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.35) 0%,transparent 55%);"></div>
+</div>
+
+<!-- WHY HEALTHCARE & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why healthcare is one of AI's highest-impact sectors</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Administrative load is crowding out patient care.</strong> Physicians spend nearly two hours on documentation and desk work for every hour spent with a patient. Front-desk staff spend their day on scheduling, reminders, and insurance paperwork instead of the patients standing in front of them.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>No-shows are expensive and preventable.</strong> Outpatient no-show rates commonly run 15 to 30% without active reminder systems. AI-driven scheduling assistants that confirm, remind, and reschedule automatically close most of that gap without adding headcount.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Insurance paperwork slows everything down.</strong> Pre-authorization requests, claims, and billing documentation involve repetitive data extraction and payer-specific rules. AI automation handles the repetitive part and flags exceptions for staff review, cutting turnaround from days to hours.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&h=600&q=80&auto=format&fit=crop" alt="Hospital reception desk where patients check in for appointments" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE Clinics and Healthcare Providers</h2>
+      <p>Six systems our Dubai AI agency builds for clinics and healthcare providers, integrated with your practice management system.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">calendar_month</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Patient Intake &amp; Scheduling Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Books, confirms, and reschedules appointments over WhatsApp and your website, in Arabic and English. Sends reminders automatically so fewer slots go empty.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Directly cuts the no-show rate that costs clinics the most revenue</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Clinical Documentation Support</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Drafts structured visit summaries from consultation notes for the clinician to review and finalize. Reduces time spent typing into the EHR after hours.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Every draft is reviewed and signed off by the treating clinician</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">fact_check</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Insurance Pre-Authorization Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Extracts patient and procedure data, checks it against payer requirements, and drafts pre-authorization submissions. Staff review and send, not retype.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Built around UAE payer formats and DHA/DOH submission rules</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">forum</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Patient FAQ &amp; Pre-Visit Chatbot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Answers common questions about hours, preparation, and insurance coverage, and collects pre-visit information. Escalates anything urgent straight to staff.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Clear handoff rules so nothing urgent waits on a bot</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">receipt_long</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Claims &amp; Billing Document Processing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Extracts data from invoices and claim forms, checks it against payer rules, and flags errors before submission, reducing rejected claims and rework.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Fewer rejected claims means faster reimbursement cycles</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">schedule_send</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Recall &amp; Follow-Up Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends automatic reminders for follow-up visits, chronic care check-ins, and vaccination schedules, so patients don't fall through the cracks between visits.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Keeps chronic care patients on schedule without manual tracking</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems built with human review on anything clinical, UAE-compliant, bilingual, and integrated with your existing tools.</p>
+      <button onclick="openModal(this)" data-source="healthcare_mid" class="btn-primary">Book Free Healthcare AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact in healthcare</h2>
+    </div>
+    <div class="healthcare-tabs" role="tablist" aria-label="Application categories">
+      <button type="button" id="healthcare-tab-clinical" class="healthcare-tab-btn active" data-healthcare-tab="clinical" role="tab" aria-selected="true" aria-controls="healthcare-panel-clinical">Clinical</button>
+      <button type="button" id="healthcare-tab-administrative" class="healthcare-tab-btn" data-healthcare-tab="administrative" role="tab" aria-selected="false" aria-controls="healthcare-panel-administrative">Administrative</button>
+    </div>
+    <div class="bento-grid bento-grid-3" id="healthcare-panel-clinical" data-healthcare-tab-panel="clinical" role="tabpanel" aria-labelledby="healthcare-tab-clinical">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">monitor_heart</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Medical Imaging &amp; Diagnostics</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">The FDA has cleared hundreds of AI and machine learning-enabled medical devices, most concentrated in radiology, where models assist in detecting and prioritizing findings for review.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">A growing share of FDA-cleared AI devices support diagnostic imaging (FDA)</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">warning</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Predictive Risk Scoring</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Hospital systems use predictive models for readmission risk and early deterioration warning, flagging at-risk patients for closer monitoring before a crisis develops.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Early-warning models are now standard in many hospital ICUs</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">monitoring</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Remote Patient Monitoring</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Wearables and connected devices feed continuous data into models that flag abnormal trends for chronic disease patients between in-person visits.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Supports proactive chronic care management outside the clinic</p>
+      </div>
+    </div>
+    <div class="bento-grid bento-grid-3" id="healthcare-panel-administrative" data-healthcare-tab-panel="administrative" role="tabpanel" aria-labelledby="healthcare-tab-administrative" hidden>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Ambient Clinical Documentation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI scribes that draft visit notes during or after a consultation are among the fastest-growing categories in clinical software, aimed directly at reducing physician burnout from EHR work.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Documentation burden is a leading driver of physician burnout (AMA)</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">smart_toy</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Patient-Facing Chatbots &amp; Triage</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Symptom-intake and appointment-routing chatbots handle the first point of contact, collecting relevant information before a patient ever speaks with staff.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces call volume for routine scheduling and FAQ questions</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">fact_check</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Claims &amp; Prior Authorization Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI extraction and rules-checking tools cut the time spent preparing prior authorization requests and claims, a task widely cited as one of the most time-consuming in healthcare administration.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Prior authorization is consistently ranked among physicians' top administrative burdens (AMA)</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes healthcare AI actually work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Clinical safety and human oversight</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Any tool that touches diagnosis or treatment needs a clear human review step. Systems that skip this to move faster create liability, not efficiency.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Data privacy and compliance</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Patient data handling has to meet PDPL and, where applicable, DHA and DOH requirements. This isn't a checkbox added after the build, it shapes how the system is architected.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Practice management integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A scheduling or documentation tool that doesn't connect to your existing practice management system creates a second workflow staff won't keep up. The integration is where the value lives.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Bilingual clinical accuracy</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Casual Arabic conversation is not the same as accurate Arabic medical terminology. Patient-facing tools need to be tested specifically for clinical vocabulary, not just general fluency.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows about AI in healthcare</h2>
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">$150B</p>
+        <p style="color:#42474e; font-size:0.875rem;">in potential annual savings for U.S. healthcare from AI applications by 2026 (Accenture)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">2:1</p>
+        <p style="color:#42474e; font-size:0.875rem;">ratio of desk work to patient time reported by physicians (Annals of Internal Medicine)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">10&ndash;20%</p>
+        <p style="color:#42474e; font-size:0.875rem;">reduction in 30-day readmissions reported by health systems piloting predictive risk models</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Administrative Burden</p>
+          <p style="color:#42474e; line-height:1.7;">Physicians report spending close to two hours on documentation and administrative tasks for every hour spent directly with patients. Prior authorization requests are consistently ranked among the most time-consuming parts of that burden by the American Medical Association's annual physician surveys.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Diagnostic Support</p>
+          <p style="color:#42474e; line-height:1.7;">The FDA's list of authorized AI and machine learning-enabled medical devices has grown into the hundreds, concentrated heavily in radiology and imaging. These tools are cleared as diagnostic aids, meant to work alongside a radiologist, not in place of one.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Patient Access</p>
+          <p style="color:#42474e; line-height:1.7;">No-show rates for outpatient appointments commonly run between 15% and 30% in clinics without active reminder systems. Automated, multilingual scheduling assistants close most of that gap without requiring additional front-desk staff.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI in healthcare</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Healthcare AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your clinic's workflows, identify the highest-ROI AI opportunities, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="healthcare_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Healthcare AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    .healthcare-tabs { display:flex; gap:0.5rem; justify-content:center; margin-bottom:2rem; flex-wrap:wrap; }
+    .healthcare-tab-btn { padding:0.625rem 1.25rem; border-radius:100px; border:1px solid rgba(0,37,59,0.15); background:#fff; color:#42474e; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+    .healthcare-tab-btn:hover { background:#e7eeff; }
+    .healthcare-tab-btn.active { background:#006875; border-color:#006875; color:#fff; }
+    .healthcare-tab-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
+</style>
+
+<script>
+  const tabWrap = document.querySelector('.healthcare-tabs');
+  if (tabWrap) {
+    const btns = tabWrap.querySelectorAll('.healthcare-tab-btn');
+    const panels = document.querySelectorAll('[data-healthcare-tab-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-healthcare-tab');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { p.hidden = p.getAttribute('data-healthcare-tab-panel') !== key; });
+      });
+    });
+  }
+</script>
+
+<script>
+  function animateStats(container: Element) {
+    const nums = container.querySelectorAll('.stat-num');
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target as HTMLElement;
+        const match = el.textContent?.match(/^([\d.]+)(.*)$/);
+        if (!match) return;
+        const [, numStr, suffix] = match;
+        if (!/^[a-zA-Z\s]*$/.test(suffix)) { obs.unobserve(el); return; }
+        const target = parseFloat(numStr);
+        const isDecimal = numStr.includes('.');
+        let start = 0;
+        const duration = 900;
+        const startTime = performance.now();
+        function tick(now: number) {
+          const progress = Math.min((now - startTime) / duration, 1);
+          const value = start + (target - start) * progress;
+          el.textContent = (isDecimal ? value.toFixed(1) : Math.round(value).toString()) + suffix;
+          if (progress < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+        obs.unobserve(el);
+      });
+    }, { threshold: 0.5 });
+    nums.forEach((n) => obs.observe(n));
+  }
+  const strip = document.querySelector('.stat-strip');
+  if (strip) animateStats(strip);
+</script>
