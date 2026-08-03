@@ -1,0 +1,355 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "How much sensor or IoT data do we need before predictive maintenance works?", answer: "Less than most manufacturers assume. A useful starting model can often run on 6 to 12 months of historical maintenance logs plus whatever sensor data your existing equipment already produces. We start with an audit of what data you have before recommending any new hardware." },
+  { question: "Can computer vision quality inspection replace our QA team?", answer: "It replaces the repetitive first pass, not the team. The camera system flags likely defects at line speed and routes borderline cases to a human inspector for final judgment. Your QA staff spend their time on the cases that actually need a trained eye." },
+  { question: "Does this work on our existing production line, or do we need new equipment?", answer: "In most cases, existing cameras and sensors are sufficient for a pilot. We assess your current setup first and only recommend hardware upgrades where the data quality genuinely requires it." },
+  { question: "What's the typical timeline to see results from predictive maintenance?", answer: "A working pilot on one production line typically takes 6 to 10 weeks, including the data collection period needed to train an accurate model. Full-facility rollout timelines depend on how many lines and machine types are involved." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'manufacturing')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI for Manufacturing in the UAE",
+    "url": "https://lenooai.com/industries/manufacturing",
+    "description": "Custom AI systems for UAE manufacturers: predictive maintenance, computer vision quality inspection, production scheduling, and demand forecasting.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Manufacturing"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Manufacturing AI", "item": "https://lenooai.com/industries/manufacturing" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI for Manufacturing in the UAE: Predictive Maintenance & Quality Control | Lenoo AI"
+  description="Lenoo AI, a Dubai AI agency, builds custom AI systems for UAE manufacturers: predictive maintenance, computer vision quality inspection, and production scheduling."
+  canonicalPath="/industries/manufacturing"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Manufacturing</div>
+    <h1>AI for UAE<br><span class="gradient-text">Manufacturing</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds custom AI systems for UAE manufacturers: predictive maintenance monitoring, computer vision quality inspection, production scheduling, and demand forecasting. Built around your machines and your production data.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <button onclick="openModal(this)" data-source="manufacturing_hero" class="btn-primary">Book Free Manufacturing AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+    <StatStrip stats={[
+      { value: "$50B", caption: "estimated annual cost of unplanned downtime to manufacturers (Deloitte)" },
+      { value: "30–50%", caption: "typical downtime reduction reported with predictive maintenance programs" },
+      { value: "90%+", caption: "defect detection accuracy achievable with trained computer vision inspection" },
+    ]} />
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:280px; margin:0 0 -1px;">
+  <img src="https://images.unsplash.com/photo-1717386255773-1e3037c81788?w=1400&h=280&q=80&auto=format&fit=crop" alt="Automated production line on a manufacturing factory floor" loading="lazy" width="1400" height="280" style="width:100%; height:100%; object-fit:cover; object-position:center 45%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.35) 0%,transparent 55%);"></div>
+</div>
+
+<!-- WHY MANUFACTURING & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why manufacturing is one of AI's highest-impact sectors</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Unplanned downtime is the single biggest hidden cost on most factory floors.</strong> Deloitte estimates it costs manufacturers roughly $50 billion a year. Predictive maintenance models trained on vibration, temperature, and usage data catch failing equipment before it stops the line.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Manual quality inspection doesn't scale with line speed.</strong> Human inspectors get fatigued and miss defects at high throughput. Computer vision systems inspect every unit at full line speed without a drop in attention.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Demand and scheduling decisions are still made on gut feel at many plants.</strong> Forecasting models that ingest historical orders, seasonality, and supplier lead times produce production schedules that reduce both stockouts and excess inventory.</p>
+      </div>
+      <div class="split-media" style="display:flex; align-items:stretch;">
+        <div class="card" style="display:flex; flex-direction:column; justify-content:center; text-align:center; width:100%; padding:2.5rem;">
+          <p class="stat-number" style="font-size:3rem; margin-bottom:0.75rem;">$50B</p>
+          <p style="color:#42474e; font-size:1rem; line-height:1.7;">is the estimated annual cost of unplanned downtime to manufacturers (Deloitte), and most of it is preventable with earlier warning signals.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE Manufacturers</h2>
+      <p>Six systems our Dubai AI agency builds for manufacturers, integrated with your existing MES, ERP, and shop-floor equipment.</p>
+    </div>
+    <div class="manufacturing-tabs" role="tablist" aria-label="Application categories">
+      <button type="button" id="manufacturing-tab-production" class="manufacturing-tab-btn active" data-manufacturing-tab="production" role="tab" aria-selected="true" aria-controls="manufacturing-panel-production">Production</button>
+      <button type="button" id="manufacturing-tab-supplychain" class="manufacturing-tab-btn" data-manufacturing-tab="supplychain" role="tab" aria-selected="false" aria-controls="manufacturing-panel-supplychain">Supply Chain</button>
+    </div>
+    <div class="apps-grid" id="manufacturing-panel-production" data-manufacturing-tab-panel="production" role="tabpanel" aria-labelledby="manufacturing-tab-production">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">build</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Predictive Maintenance Monitoring</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Analyzes sensor data from your equipment to flag likely failures before they cause a line stoppage, so maintenance happens on your schedule, not an emergency one.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Trained on your equipment's own historical failure patterns</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">visibility</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Visual Quality Inspection</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Camera-based defect detection inspects every unit at line speed, flagging likely defects and routing borderline cases to a human inspector for final judgment.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Runs on your existing cameras in most deployments</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">calendar_month</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Production Scheduling Optimization</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Builds production schedules that account for order priority, equipment availability, and changeover time, reducing idle capacity and late orders.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Integrates with your existing MES or ERP scheduling module</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">report</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Downtime &amp; Incident Reporting Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Captures downtime events and incident reports from shop-floor staff via simple voice or messaging input, structuring the data for root-cause analysis automatically.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Turns scattered paper logs into searchable structured data</p>
+      </div>
+    </div>
+    <div class="apps-grid" id="manufacturing-panel-supplychain" data-manufacturing-tab-panel="supplychain" role="tabpanel" aria-labelledby="manufacturing-tab-supplychain" hidden>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">inventory_2</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Demand Forecasting &amp; Inventory Planning</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Forecasts demand from historical order data and seasonality, helping you plan raw material purchasing without overstocking or running short.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces both excess inventory and stockout-driven delays</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Supplier &amp; Procurement Document Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Extracts and validates data from purchase orders, invoices, and supplier certificates, flagging discrepancies before they become a production delay.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Cuts manual data entry across procurement workflows</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems designed with shop-floor usability in mind, and integrated with your existing MES, ERP, and equipment.</p>
+      <button onclick="openModal(this)" data-source="manufacturing_mid" class="btn-primary">Book Free Manufacturing AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact in manufacturing</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">build</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Predictive Maintenance</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sensor-driven models predict equipment failure before it happens, letting maintenance teams intervene on a planned schedule instead of reacting to a breakdown.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reported to cut downtime by 30 to 50% in mature deployments</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">visibility</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Computer Vision Quality Control</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Camera systems trained on defect examples catch inconsistencies at line speed that human inspectors would miss during long shifts.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Widely adopted across electronics and automotive assembly lines</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">calendar_month</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Production Scheduling &amp; Optimization</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Optimization models balance order priority, machine availability, and changeover cost far faster than manual scheduling, especially across multiple product lines.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces idle capacity and improves on-time delivery rates</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">inventory_2</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Demand Forecasting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Forecasting models incorporate seasonality, order history, and macro signals to plan production and raw material purchasing with fewer surprises.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces both stockouts and excess inventory holding costs</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">view_in_ar</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Digital Twins &amp; Simulation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Virtual models of production lines let engineers test process changes and layout adjustments before committing capital to a physical change.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces the risk and cost of process changes</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">precision_manufacturing</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Robotics &amp; Process Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI-guided robotics handle repetitive, physically demanding tasks with increasing flexibility, adapting to minor variation in parts without reprogramming.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Increasingly deployed alongside human workers, not in isolation</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUALITY CONTROL IN ACTION -->
+<section class="section" aria-labelledby="manufacturing-qc-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="manufacturing-qc-heading" style="margin-bottom:1.5rem;">Inspection that keeps pace with the line, not the other way around</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">Quality inspectors still make the final call on every flagged unit. What changes is what reaches them: instead of scanning every part that comes off the line, they review the smaller set of units a computer vision system has already flagged as a likely defect.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">That shift matters because manual inspection doesn't scale with line speed. A trained inspector fatigues over a shift; a camera system checking against a defect model doesn't. The result is more consistent detection without adding headcount to the inspection stage.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1700727448575-6f1680cd7d75?w=700&h=467&q=80&auto=format&fit=crop" alt="Quality control inspector reviewing production output with a clipboard on the factory floor" loading="lazy" width="700" height="467" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes manufacturing AI actually work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Sensor and data readiness</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Predictive maintenance and quality inspection models need consistent sensor or camera data to train against. We assess what you already collect before recommending new hardware.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">MES and ERP integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Scheduling and forecasting tools only work if they're connected to the systems that actually run your plant. A standalone dashboard nobody checks doesn't move the needle.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Shop-floor usability</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Tools built for engineers don't always work for line operators. Interfaces need to fit into how your shop-floor staff already work, or adoption stalls.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Safety and fail-safe design</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Systems that influence physical equipment need fail-safe defaults. An AI recommendation should never be able to force an unsafe action without human confirmation.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows about AI in manufacturing</h2>
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">$50B</p>
+        <p style="color:#42474e; font-size:0.875rem;">estimated annual cost of unplanned downtime to manufacturers (Deloitte)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">30&ndash;50%</p>
+        <p style="color:#42474e; font-size:0.875rem;">typical downtime reduction reported with predictive maintenance programs</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">25%</p>
+        <p style="color:#42474e; font-size:0.875rem;">typical reduction in maintenance costs from predictive over reactive scheduling</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Downtime Cost</p>
+          <p style="color:#42474e; line-height:1.7;">Deloitte's manufacturing research repeatedly cites unplanned downtime as one of the largest, most preventable cost centers on a production floor, with industry-wide estimates running into the tens of billions of dollars annually.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Maintenance Efficiency</p>
+          <p style="color:#42474e; line-height:1.7;">Manufacturers running mature predictive maintenance programs commonly report downtime reductions of 30 to 50%, alongside a roughly 25% drop in overall maintenance spend, by shifting from reactive to condition-based servicing.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Quality Detection</p>
+          <p style="color:#42474e; line-height:1.7;">Computer vision inspection systems trained on sufficient defect examples routinely exceed 90% detection accuracy, catching subtle inconsistencies that fatigue makes harder for human inspectors to spot consistently over a full shift.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI in manufacturing</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Manufacturing AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your production line, identify the highest-ROI AI opportunities, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="manufacturing_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Manufacturing AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    .manufacturing-tabs { display:flex; gap:0.5rem; justify-content:center; margin-bottom:2rem; flex-wrap:wrap; }
+    .manufacturing-tab-btn { padding:0.625rem 1.25rem; border-radius:100px; border:1px solid rgba(0,37,59,0.15); background:#fff; color:#42474e; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+    .manufacturing-tab-btn:hover { background:#e7eeff; }
+    .manufacturing-tab-btn.active { background:#006875; border-color:#006875; color:#fff; }
+    .manufacturing-tab-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
+</style>
+
+<script>
+  const manufacturingTabWrap = document.querySelector('.manufacturing-tabs');
+  if (manufacturingTabWrap) {
+    const btns = manufacturingTabWrap.querySelectorAll('.manufacturing-tab-btn');
+    const panels = document.querySelectorAll('[data-manufacturing-tab-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-manufacturing-tab');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { p.hidden = p.getAttribute('data-manufacturing-tab-panel') !== key; });
+      });
+    });
+  }
+</script>
