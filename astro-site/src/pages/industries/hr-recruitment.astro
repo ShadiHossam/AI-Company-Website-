@@ -1,0 +1,336 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Does AI resume screening introduce bias into hiring?", answer: "It can, if it's built carelessly. We test screening models against demographic parity before deployment and exclude proxies for protected characteristics from the scoring criteria. Bias risk is a reason to build carefully, not a reason to avoid automation altogether." },
+  { question: "Will candidates feel like they're talking to a robot instead of a real recruiter?", answer: "The chatbot handles scheduling, FAQs, and status updates, the things candidates want answered quickly. Anything involving actual judgment, like interview feedback or an offer conversation, goes to your recruiting team. Most candidates prefer a fast automated answer over a three-day wait for a human one." },
+  { question: "Does the onboarding assistant handle UAE visa and Emirates ID paperwork?", answer: "Yes. Onboarding document automation is built around the actual paperwork UAE employers process: offer letters, labor contracts, Emirates ID and visa documentation, and company policy acknowledgments." },
+  { question: "How long does it take to launch AI screening or an onboarding assistant?", answer: "Resume screening typically launches in 3 to 5 weeks once we've defined your scoring criteria. Onboarding automation that touches visa and contract paperwork takes 5 to 7 weeks due to the additional document types involved." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'hr_recruitment')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI for HR & Recruitment in the UAE",
+    "url": "https://lenooai.com/industries/hr-recruitment",
+    "description": "Custom AI systems for UAE HR and recruitment teams: candidate screening, interview scheduling automation, onboarding document processing, and employee query chatbots.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for HR & Recruitment"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "HR & Recruitment AI", "item": "https://lenooai.com/industries/hr-recruitment" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI for HR & Recruitment in the UAE: Candidate Screening & Onboarding Automation | Lenoo AI"
+  description="Lenoo AI, a Dubai AI agency, builds custom AI systems for UAE HR and recruitment teams: candidate screening, interview scheduling, and onboarding automation."
+  canonicalPath="/industries/hr-recruitment"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>HR &amp; Recruitment</div>
+    <h1>AI for UAE<br><span class="gradient-text">HR &amp; Recruitment Teams</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds custom AI systems for UAE HR and recruitment teams: candidate screening, interview scheduling automation, onboarding document processing, and employee query chatbots. Bilingual, and built around UAE labor law requirements.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <button onclick="openModal(this)" data-source="hr_hero" class="btn-primary">Book Free HR AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+    <StatStrip stats={[
+      { value: "$4,700", caption: "average cost per hire reported across industries (SHRM)" },
+      { value: "42 days", caption: "average time to fill a role, industry-wide (SHRM)" },
+      { value: "Arabic + English", caption: "full bilingual support for candidates and employees" },
+    ]} />
+  </div>
+</header>
+
+<!-- WHY HR & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why HR and recruitment is one of AI's highest-impact sectors</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Screening hundreds of resumes by hand doesn't scale.</strong> Recruiters spend hours reading resumes that don't match basic requirements. AI screening tools surface qualified candidates faster, letting recruiters spend their time on interviews, not inbox triage.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Scheduling back-and-forth wastes days.</strong> Coordinating interview times across candidates, hiring managers, and panel members by email routinely adds days to a hiring timeline. Scheduling automation removes the back-and-forth entirely.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Onboarding paperwork is heavy in the UAE.</strong> Offer letters, labor contracts, Emirates ID and visa documentation, and policy acknowledgments all need to be processed correctly and on time. Document automation reduces both the workload and the error rate.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1690378820474-b468b8ee64d3?w=800&h=600&fit=crop&auto=format&q=80" alt="HR team member walking a new hire through onboarding at their desk" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE HR and Recruitment Teams</h2>
+      <p>Six systems our Dubai AI agency builds for HR and recruitment teams, integrated with your ATS and HRIS.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">person_search</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Candidate Screening &amp; Resume Matching</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Scores and ranks incoming applications against your actual job requirements, tested against demographic parity before deployment to reduce bias risk.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Surfaces qualified candidates in minutes, not days</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">calendar_month</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Interview Scheduling Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Coordinates interview times across candidates, hiring managers, and panel members automatically, removing the email back-and-forth entirely.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Cuts days off the typical scheduling cycle</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">forum</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Candidate FAQ &amp; Onboarding Chatbot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Answers candidate questions about process, timelines, and next steps instantly in Arabic and English, keeping candidates engaged instead of guessing.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Improves candidate experience without adding recruiter workload</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">badge</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Onboarding Document Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Processes offer letters, labor contracts, and Emirates ID and visa paperwork automatically, flagging missing information before it delays a start date.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Built around actual UAE employment document requirements</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">support_agent</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Employee Query Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Answers employee questions about leave balance, policies, and benefits instantly, reducing routine tickets to your HR team.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Frees HR staff for cases that actually need a person</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">rate_review</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Performance Review Drafting Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Drafts structured performance review summaries from manager notes and goal-tracking data, for managers to review and personalize.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces review-cycle time without losing manager input</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems tested for bias, UAE labor law compliant, bilingual, and integrated with your ATS and HRIS.</p>
+      <button onclick="openModal(this)" data-source="hr_mid" class="btn-primary">Book Free HR AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<div style="position:relative; overflow:hidden; height:280px; margin:0 0 -1px;">
+  <img src="https://images.unsplash.com/photo-1573497620053-ea5300f94f21?w=1400&h=280&fit=crop&auto=format&q=80" alt="HR recruiter interviewing a job candidate in a bright office" loading="lazy" width="1400" height="280" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.35) 0%,transparent 55%);"></div>
+</div>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact in HR and recruitment</h2>
+    </div>
+    <div class="hrrecruitment-tabs" role="tablist" aria-label="Application categories">
+      <button type="button" id="hrrecruitment-tab-recruiting" class="hrrecruitment-tab-btn active" data-hrrecruitment-tab="recruiting" role="tab" aria-selected="true" aria-controls="hrrecruitment-panel-recruiting">Recruiting</button>
+      <button type="button" id="hrrecruitment-tab-support" class="hrrecruitment-tab-btn" data-hrrecruitment-tab="support" role="tab" aria-selected="false" aria-controls="hrrecruitment-panel-support">Employee Support</button>
+    </div>
+    <div class="bento-grid bento-grid-3" id="hrrecruitment-panel-recruiting" data-hrrecruitment-tab-panel="recruiting" role="tabpanel" aria-labelledby="hrrecruitment-tab-recruiting">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">person_search</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">AI Resume Screening</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Screening tools rank candidates against role requirements far faster than manual review, though bias testing is essential to avoid replicating past hiring patterns.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces initial screening time from hours to minutes per requisition</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">forum</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Chatbot-Led Candidate Engagement</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Chatbots keep candidates informed on process status, a leading driver of candidate satisfaction that recruiters often can't keep up with manually at volume.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Directly addresses one of the most common candidate complaints</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">calendar_month</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Interview Scheduling Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Automated scheduling removes one of the most consistent sources of delay in the hiring funnel: coordinating calendars across multiple stakeholders.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Common first AI deployment for recruiting teams</p>
+      </div>
+    </div>
+    <div class="bento-grid bento-grid-3" id="hrrecruitment-panel-support" data-hrrecruitment-tab-panel="support" role="tabpanel" aria-labelledby="hrrecruitment-tab-support" hidden>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">badge</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Onboarding Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Document processing and automated task assignment during onboarding reduce both administrative burden and the risk of missed compliance steps.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces new-hire paperwork errors and delays</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">support_agent</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Employee Self-Service Assistants</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Chatbots handling routine HR questions, leave requests, and policy lookups reduce ticket volume for HR teams supporting growing headcounts.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces routine HR ticket volume significantly</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">trending_down</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Attrition &amp; Retention Prediction</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Predictive models flag engagement and performance patterns associated with attrition risk, giving managers a chance to intervene before an employee resigns.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Used to prioritize retention conversations proactively</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes HR AI actually work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Bias and fairness testing</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Screening models trained on historical hiring data can inherit historical bias. Testing against demographic parity before launch is a requirement, not an option.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">UAE labor law compliance</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Onboarding automation needs to handle the specific contract, visa, and Emirates ID requirements UAE employers face, not a generic Western HR process.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Candidate experience impact</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Automation should make candidates feel more informed, not more ignored. A chatbot that answers instantly beats a form that disappears into a black hole.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">ATS and HRIS integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Screening and onboarding tools only add value connected to your actual applicant tracking and HR systems, not running as a disconnected side process.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows about AI in HR and recruitment</h2>
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">$4,700</p>
+        <p style="color:#42474e; font-size:0.875rem;">average cost per hire reported across industries (SHRM)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">42 days</p>
+        <p style="color:#42474e; font-size:0.875rem;">average time to fill a role, industry-wide (SHRM)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">2</p>
+        <p style="color:#42474e; font-size:0.875rem;">languages supported natively in every candidate and employee-facing tool we build</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Cost of Hiring</p>
+          <p style="color:#42474e; line-height:1.7;">SHRM's benchmarking research consistently places average cost per hire in the thousands of dollars, driven heavily by time spent screening, scheduling, and coordinating across a lengthy hiring process.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Time to Fill</p>
+          <p style="color:#42474e; line-height:1.7;">Industry benchmarks put average time to fill a role at roughly six weeks. Scheduling delays and manual screening are consistently cited as leading contributors, both areas where automation has a direct, measurable effect.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Candidate Experience</p>
+          <p style="color:#42474e; line-height:1.7;">Recruiting research consistently identifies lack of communication and status updates as one of the top candidate frustrations during the hiring process, a gap automated status chatbots close directly.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI in HR and recruitment</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free HR AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your screening, scheduling, and onboarding workflows, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="hr_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free HR AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    .hrrecruitment-tabs { display:flex; gap:0.5rem; justify-content:center; margin-bottom:2rem; flex-wrap:wrap; }
+    .hrrecruitment-tab-btn { padding:0.625rem 1.25rem; border-radius:100px; border:1px solid rgba(0,37,59,0.15); background:#fff; color:#42474e; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+    .hrrecruitment-tab-btn:hover { background:#e7eeff; }
+    .hrrecruitment-tab-btn.active { background:#006875; border-color:#006875; color:#fff; }
+    .hrrecruitment-tab-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
+</style>
+
+<script>
+  const hrrecruitmentTabWrap = document.querySelector('.hrrecruitment-tabs');
+  if (hrrecruitmentTabWrap) {
+    const btns = hrrecruitmentTabWrap.querySelectorAll('.hrrecruitment-tab-btn');
+    const panels = document.querySelectorAll('[data-hrrecruitment-tab-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-hrrecruitment-tab');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { p.hidden = p.getAttribute('data-hrrecruitment-tab-panel') !== key; });
+      });
+    });
+  }
+</script>
