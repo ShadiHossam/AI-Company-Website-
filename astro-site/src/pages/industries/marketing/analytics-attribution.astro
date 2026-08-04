@@ -1,0 +1,401 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "How accurate is AI marketing attribution compared to last-click?", answer: "Multi-touch attribution models are more accurate than last-click in almost every case, since they account for the full path a customer took rather than crediting only the final interaction. Accuracy still depends on how much of your customer journey the model can actually see, gaps in tracking limit any model." },
+  { question: "Does this replace our marketing analyst?", answer: "No. It replaces the manual work of pulling and reconciling data across platforms, so your analyst spends time interpreting what the data means and recommending action, not building the same report from scratch every week." },
+  { question: "How does AI marketing analytics handle privacy regulations and cookie restrictions?", answer: "We build attribution models around first-party data and consented tracking, adapting to the reality that third-party cookie tracking is increasingly restricted. Privacy compliance shapes the data architecture from the start, not as an afterthought." },
+  { question: "How long until we get useful attribution insights?", answer: "Dashboard setup and initial reporting can be live within 2 to 3 weeks. Predictive models, like lifetime value scoring, need historical data to train against and typically take 6 to 10 weeks before producing reliable output." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'marketing_analytics')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Marketing Analytics & Attribution in the UAE",
+    "url": "https://lenooai.com/industries/marketing/analytics-attribution",
+    "description": "Custom AI marketing analytics systems for UAE businesses: multi-touch attribution, predictive lifetime value, and budget allocation optimization.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Marketing Analytics"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Marketing", "item": "https://lenooai.com/industries/marketing" },
+      { "@type": "ListItem", "position": 4, "name": "Analytics & Attribution AI", "item": "https://lenooai.com/industries/marketing/analytics-attribution" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Marketing Analytics & Attribution in the UAE: Predictive LTV & Budget Optimization | Lenoo AI"
+  description="Lenoo AI, a Dubai AI agency, builds AI marketing analytics systems for UAE businesses: multi-touch attribution, predictive LTV, and budget allocation."
+  canonicalPath="/industries/marketing/analytics-attribution"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/industries/marketing" style="color:inherit;text-decoration:none;opacity:0.65;">Marketing</a><span style="opacity:0.4;padding:0 4px;"> / </span>Analytics &amp; Attribution</div>
+    <h1>AI Marketing Analytics<br><span class="gradient-text">&amp; Attribution for the UAE</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI marketing analytics systems for UAE businesses: multi-touch attribution, predictive lifetime value, and budget allocation optimization. Built on your actual data, not generic industry benchmarks.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <button onclick="openModal(this)" data-source="marketing_analytics_hero" class="btn-primary">Book Free Analytics AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+    <StatStrip stats={[
+      { value: "26–30%", caption: "of ad spend is commonly estimated to be misallocated under last-click attribution" },
+      { value: "Weekly → Real-time", caption: "typical improvement in reporting cadence with automated dashboards" },
+      { value: "Cross-channel", caption: "visibility into what's actually driving revenue, not just clicks" },
+    ]} />
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:280px; margin:0 0 -1px;">
+  <img src="https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?w=1600&h=280&q=80&auto=format&fit=crop" alt="Analytics dashboard with performance charts and graphs displayed on a monitor" loading="lazy" width="1600" height="280" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.35) 0%,transparent 55%);"></div>
+</div>
+
+<!-- WHY ANALYTICS & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why analytics is one of AI's highest-impact marketing functions</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Last-click attribution rewards the wrong channel.</strong> Customers touch multiple channels before converting, but last-click models credit only the final interaction, misallocating a meaningful share of ad spend as a result.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Manual reporting eats analyst time.</strong> Pulling data from five different ad platforms and reconciling it into one report takes hours every week. AI dashboards automate the compilation, leaving analysts time to interpret rather than assemble.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Not all customers are worth the same investment.</strong> Predictive lifetime value models identify which new customers are likely to be most valuable, letting budget shift toward acquiring more of them specifically.</p>
+      </div>
+      <div class="split-media" style="display:flex; align-items:stretch;">
+        <div class="card" style="display:flex; flex-direction:column; justify-content:center; text-align:center; width:100%; padding:2.5rem;">
+          <p class="stat-number" style="font-size:3rem; margin-bottom:0.75rem;">26&ndash;30%</p>
+          <p style="color:#42474e; font-size:1rem; line-height:1.7;">of ad spend is commonly estimated to be misallocated under last-click attribution models, budget that multi-touch attribution can redirect toward what actually works.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Analytics Systems Built for UAE Businesses</h2>
+      <p>Six systems our Dubai AI agency builds for marketing measurement, integrated with your ad platforms and CRM.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">query_stats</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Multi-Touch Attribution Modeling</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Credits every touchpoint in the customer journey proportionally, replacing last-click guesswork with a clearer view of what actually drives conversions.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reveals channels last-click models systematically undervalue</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">trending_up</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Predictive Customer Lifetime Value</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Scores new customers on predicted long-term value early, so acquisition budget can target more of your most valuable customer profiles.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Shifts spend toward customers worth acquiring, not just converting</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">dashboard</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Campaign Performance Dashboard</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Compiles data from every ad platform and channel into one live dashboard, replacing manual export-and-merge reporting.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Cuts reporting time from hours to minutes each week</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">pie_chart</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Budget Allocation Optimization</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Recommends how to redistribute spend across channels based on actual attributed performance, not historical habit.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Directs budget toward channels with proven incremental impact</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">insights</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Marketing Mix Modeling</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Analyzes the combined effect of all marketing activity on revenue, including channels that resist standard click-based tracking.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Captures impact from brand and offline channels too</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">summarize</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Cross-Channel Reporting Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Generates recurring performance summaries automatically, in plain language, so stakeholders get insight without reading a raw spreadsheet.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Keeps stakeholders informed without manual report writing</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems built on first-party, consented data and integrated with your ad platforms and CRM.</p>
+      <button onclick="openModal(this)" data-source="marketing_analytics_mid" class="btn-primary">Book Free Analytics AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- BUILT WITH YOUR ANALYSTS -->
+<section class="section" aria-labelledby="analyticsattribution-team-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="analyticsattribution-team-heading" style="margin-bottom:1.5rem;">Built with your marketing analysts, not around them</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">Every attribution model starts with a working session alongside the people who currently pull and interpret your reports. They know which numbers leadership actually trusts and which ones get questioned every month, and that context shapes how we build the model, not just how we present it.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">Once the dashboard is live, your analyst still owns the interpretation and the recommendation. The system removes the hours spent compiling data from five platforms, it doesn't remove the judgment call about what to do with it.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1542744173-05336fcc7ad4?w=800&h=600&q=80&auto=format&fit=crop" alt="Marketing analyst reviewing campaign performance reports on a laptop" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact in marketing analytics</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">query_stats</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">AI Attribution Modeling</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Multi-touch and data-driven attribution models have replaced last-click as the standard for serious marketing measurement across most mature marketing teams.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Standard baseline for teams managing multi-channel budgets</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">trending_up</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Predictive LTV Scoring</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Predictive lifetime value models help acquisition teams focus spend on customer segments likely to generate the most long-term revenue.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Increasingly standard in e-commerce and subscription businesses</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">insights</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Marketing Mix Modeling</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">As privacy restrictions limit click-level tracking, marketing mix modeling has regained relevance for measuring aggregate channel impact on revenue.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Regaining relevance amid cookie and tracking restrictions</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">dashboard</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Automated Reporting Dashboards</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Real-time, automated dashboards have largely replaced manual weekly report compilation for teams managing several ad platforms at once.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Frees analyst time for interpretation over data assembly</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">pie_chart</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Budget Optimization Algorithms</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Algorithmic budget allocation models continuously reallocate spend toward the best-performing channels rather than a fixed quarterly plan.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Adapts to performance shifts faster than manual reallocation</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">trending_down</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Churn Prediction for Retention</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Predictive churn models flag at-risk customers before they leave, feeding retention marketing campaigns with a prioritized target list.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Feeds directly into retention and win-back campaigns</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes marketing analytics AI actually work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Data quality and integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Attribution is only as good as the data feeding it. Gaps in tracking across channels limit accuracy no matter how sophisticated the model.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Model transparency</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A black-box attribution model that can't explain why it credited a channel isn't useful for defending budget decisions to leadership.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Privacy compliance</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Tracking and data collection need to respect consent and privacy regulations, especially as third-party cookie tracking becomes more restricted.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Actionability of insights</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A dashboard nobody acts on isn't worth building. Reporting needs to point directly to a decision, not just display numbers.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LAST-CLICK VS AI ATTRIBUTION -->
+<section class="section" aria-labelledby="analyticsattribution-toggle-heading">
+  <div class="container" style="max-width:800px;">
+    <div class="section-header">
+      <h2 id="analyticsattribution-toggle-heading">Last-Click Attribution vs. AI Attribution</h2>
+      <p>What changes in how credit gets assigned across the customer journey once a multi-touch model replaces last-click.</p>
+    </div>
+    <div class="analyticsattribution-toggle" role="tablist" aria-label="Attribution model comparison">
+      <button type="button" id="analyticsattribution-tier-lastclick" class="analyticsattribution-toggle-btn active" data-analyticsattribution-tier="lastclick" role="tab" aria-selected="true" aria-controls="analyticsattribution-panel-lastclick">Last-Click Attribution</button>
+      <button type="button" id="analyticsattribution-tier-ai" class="analyticsattribution-toggle-btn" data-analyticsattribution-tier="ai" role="tab" aria-selected="false" aria-controls="analyticsattribution-panel-ai">AI Attribution</button>
+    </div>
+    <div class="card" id="analyticsattribution-panel-lastclick" data-analyticsattribution-tier-panel="lastclick" role="tabpanel" aria-labelledby="analyticsattribution-tier-lastclick">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Last-click attribution hands 100% of the credit for a conversion to whichever channel the customer touched right before they bought, usually a branded search or a direct visit. Every channel that built awareness or consideration earlier in the journey, like social, display, or an early email, shows as contributing nothing. Budget follows that credit, so spend keeps flowing to the last touchpoint while the channels that actually generated the demand get quietly cut.</p>
+    </div>
+    <div class="card" id="analyticsattribution-panel-ai" data-analyticsattribution-tier-panel="ai" role="tabpanel" aria-labelledby="analyticsattribution-tier-ai" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">AI attribution models the full path a customer took, weighing every touchpoint by how much it actually influenced the outcome rather than crediting only the last one. Upper-funnel channels that build awareness get recognized for the role they played, even when they never show up as the final click. Budget decisions shift from what closed the sale to what actually moved the customer toward buying in the first place.</p>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows about AI in marketing analytics</h2>
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">26&ndash;30%</p>
+        <p style="color:#42474e; font-size:0.875rem;">of ad spend commonly estimated to be misallocated under last-click attribution</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">2&ndash;3 weeks</p>
+        <p style="color:#42474e; font-size:0.875rem;">typical setup time for automated cross-channel dashboards</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">6&ndash;10 weeks</p>
+        <p style="color:#42474e; font-size:0.875rem;">typical time to train a reliable predictive lifetime value model</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Attribution Gaps</p>
+          <p style="color:#42474e; line-height:1.7;">Marketing measurement studies consistently point to significant misallocation of ad spend under last-click models, since they systematically undercredit upper-funnel channels that influence a purchase without being the final touchpoint.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Reporting Efficiency</p>
+          <p style="color:#42474e; line-height:1.7;">Teams moving from manual to automated cross-channel dashboards report substantial reductions in weekly reporting time, redirecting analyst hours toward strategic interpretation instead of data compilation.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Privacy Shift</p>
+          <p style="color:#42474e; line-height:1.7;">The ongoing restriction of third-party tracking is pushing marketing measurement back toward first-party data and aggregate modeling approaches like marketing mix modeling, a meaningful shift in how attribution is built.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI in marketing analytics</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Analytics AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your current measurement and reporting setup, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="marketing_analytics_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Analytics AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
+    .analyticsattribution-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+    .analyticsattribution-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+    .analyticsattribution-toggle-btn.active { background:#006875; color:#fff; }
+    .analyticsattribution-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const analyticsattributionToggleWrap = document.querySelector('.analyticsattribution-toggle');
+  if (analyticsattributionToggleWrap) {
+    const btns = analyticsattributionToggleWrap.querySelectorAll('.analyticsattribution-toggle-btn');
+    const panels = document.querySelectorAll('[data-analyticsattribution-tier-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-analyticsattribution-tier');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-analyticsattribution-tier-panel') !== key; });
+      });
+    });
+  }
+</script>
+
+<script>
+  function animateStats(container: Element) {
+    const nums = container.querySelectorAll('.stat-num');
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target as HTMLElement;
+        const match = el.textContent?.match(/^([\d.]+)(.*)$/);
+        if (!match) return;
+        const [, numStr, suffix] = match;
+        if (!/^[a-zA-Z\s]*$/.test(suffix)) { obs.unobserve(el); return; }
+        const target = parseFloat(numStr);
+        const isDecimal = numStr.includes('.');
+        let start = 0;
+        const duration = 900;
+        const startTime = performance.now();
+        function tick(now: number) {
+          const progress = Math.min((now - startTime) / duration, 1);
+          const value = start + (target - start) * progress;
+          el.textContent = (isDecimal ? value.toFixed(1) : Math.round(value).toString()) + suffix;
+          if (progress < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+        obs.unobserve(el);
+      });
+    }, { threshold: 0.5 });
+    nums.forEach((n) => obs.observe(n));
+  }
+  const strip = document.querySelector('.stat-strip');
+  if (strip) animateStats(strip);
+</script>
