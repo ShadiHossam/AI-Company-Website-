@@ -1,0 +1,462 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../lib/supabase";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Will AI-generated content replace our creative and marketing team?", answer: "No. AI handles the first draft and the repetitive production work, copy variations, image and video generation, scheduling, so your team spends more time on strategy, brand judgment, and the campaigns that need a human perspective. Everything customer-facing goes through your team's review before it publishes." },
+  { question: "Can AI keep our brand voice consistent across channels?", answer: "Yes, if it's trained on your actual brand guidelines, past campaigns, and tone of voice, not a generic template. We build a brand voice profile into every content and creative system so output sounds like you, not like a default AI style." },
+  { question: "Does this work for Arabic marketing content, not just English?", answer: "Yes. Content writing, social copy, voiceover, and video localization are all tested specifically for Arabic quality, not just translated from English. UAE audiences notice the difference between natural Arabic copy and a stilted translation." },
+  { question: "Which of these should we start with if we're new to marketing AI?", answer: "Most teams get the fastest, most visible win from content writing or social media automation, since the output is immediate and easy to evaluate. SEO and analytics take longer to show results because they depend on data accumulating over weeks. We'll recommend a starting point based on where your team is losing the most time today." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'marketing')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI for Marketing Teams & Agencies in the UAE",
+    "url": "https://lenooai.com/industries/marketing",
+    "description": "Custom AI systems for UAE marketing teams and agencies: SEO, social media, image and video generation, voice generation, email marketing, content writing, analytics, influencer marketing, and paid ads.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Marketing"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Marketing AI", "item": "https://lenooai.com/industries/marketing" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI for Marketing Teams & Agencies in the UAE: Content, SEO & Creative Automation | Lenoo AI"
+  description="Lenoo AI, a Dubai AI agency, builds custom AI systems for UAE marketing teams: SEO, social media, image and video generation, content writing, analytics, and more."
+  canonicalPath="/industries/marketing"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Marketing</div>
+    <h1>AI for UAE<br><span class="gradient-text">Marketing Teams &amp; Agencies</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds custom AI systems across the full marketing stack: SEO, social media, image and video generation, voice generation, email, content writing, analytics, influencer marketing, and paid ads. Built around your brand voice, not a generic template.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <button onclick="openModal(this)" data-source="marketing_hero" class="btn-primary">Book Free Marketing AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+    <StatStrip stats={[
+      { value: "70%+", caption: "of marketers report using AI in their daily workflow (HubSpot)" },
+      { value: "12hrs+", caption: "saved weekly by marketers using AI for content production (HubSpot)" },
+      { value: "10", caption: "AI marketing systems covered below, each with a dedicated deep dive" },
+    ]} />
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px; margin:0 0 -1px;">
+  <img src="https://images.unsplash.com/photo-1758873268745-dd2cf0d677b5?w=1600&h=260&q=80&auto=format&fit=crop" alt="Marketing team reviewing a campaign dashboard together on a laptop" loading="lazy" width="1600" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHY MARKETING & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why marketing is one of AI's highest-impact functions</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Production volume has exploded, headcount hasn't.</strong> Every channel, SEO, social, email, paid ads, now expects a constant stream of fresh, tailored content. AI production tools let a small team put out the volume that used to require a much larger one.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Search itself is changing.</strong> AI-powered search results and answer engines are reshaping how people find businesses, which means SEO strategy has to account for AI visibility, not just traditional rankings.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Measurement is finally catching up to spend.</strong> AI-driven attribution and predictive models show which campaigns actually drive revenue, letting budget move toward what works instead of what's easiest to measure.</p>
+      </div>
+      <div class="split-media" style="display:flex; align-items:stretch;">
+        <div class="card" style="display:flex; flex-direction:column; justify-content:center; text-align:center; width:100%; padding:2.5rem;">
+          <p class="stat-number" style="font-size:3rem; margin-bottom:0.75rem;">12hrs+</p>
+          <p style="color:#42474e; font-size:1rem; line-height:1.7;">saved weekly by marketers using AI for content production (HubSpot), time that goes back into strategy and campaign quality.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE Marketing Teams</h2>
+      <p>Ten AI capabilities our Dubai AI agency builds for marketing teams and agencies. Each one has its own deep dive with specific use cases, evaluation criteria, and data.</p>
+    </div>
+    <div class="bento-grid bento-grid-4">
+      <div class="card" data-marketinghub-expand>
+        <button type="button" class="marketinghub-card-toggle" aria-expanded="false" aria-controls="marketinghub-panel-1" id="marketinghub-toggle-1">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">search</span></div>
+            <h3 style="font-weight:700; font-size:1rem; color:#00253b; margin-bottom:0.35rem;">AI SEO</h3>
+            <p class="marketinghub-teaser">Keyword research, content optimization, and AI answer engine visibility.</p>
+          </div>
+          <span class="marketinghub-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="marketinghub-card-panel" id="marketinghub-panel-1" role="region" aria-labelledby="marketinghub-toggle-1" hidden>
+          <p style="color:#42474e; font-size:0.8125rem; line-height:1.65; margin-bottom:0.5rem;">Keyword research, content optimization, technical audits, and answer engine optimization for AI-powered search.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875; margin-bottom:0.75rem;">Built around how people actually search today, not just traditional rankings.</p>
+          <a href="/industries/marketing/seo" class="learn-link">Learn more →</a>
+        </div>
+      </div>
+      <div class="card" data-marketinghub-expand>
+        <button type="button" class="marketinghub-card-toggle" aria-expanded="false" aria-controls="marketinghub-panel-2" id="marketinghub-toggle-2">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">share</span></div>
+            <h3 style="font-weight:700; font-size:1rem; color:#00253b; margin-bottom:0.35rem;">AI Social Media</h3>
+            <p class="marketinghub-teaser">Caption generation, scheduling, listening, and community management.</p>
+          </div>
+          <span class="marketinghub-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="marketinghub-card-panel" id="marketinghub-panel-2" role="region" aria-labelledby="marketinghub-toggle-2" hidden>
+          <p style="color:#42474e; font-size:0.8125rem; line-height:1.65; margin-bottom:0.5rem;">Caption and content generation, scheduling automation, social listening, and community management.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875; margin-bottom:0.75rem;">Trained on your brand voice, with a human review step before anything publishes.</p>
+          <a href="/industries/marketing/social-media" class="learn-link">Learn more →</a>
+        </div>
+      </div>
+      <div class="card" data-marketinghub-expand>
+        <button type="button" class="marketinghub-card-toggle" aria-expanded="false" aria-controls="marketinghub-panel-3" id="marketinghub-toggle-3">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">image</span></div>
+            <h3 style="font-weight:700; font-size:1rem; color:#00253b; margin-bottom:0.35rem;">AI Image Generation</h3>
+            <p class="marketinghub-teaser">Product visuals, ad creative, and social graphics at scale.</p>
+          </div>
+          <span class="marketinghub-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="marketinghub-card-panel" id="marketinghub-panel-3" role="region" aria-labelledby="marketinghub-toggle-3" hidden>
+          <p style="color:#42474e; font-size:0.8125rem; line-height:1.65; margin-bottom:0.5rem;">Product visuals, ad creative variations, social graphics, and brand-consistent assets.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875; margin-bottom:0.75rem;">Produced in days instead of weeks.</p>
+          <a href="/industries/marketing/image-generation" class="learn-link">Learn more →</a>
+        </div>
+      </div>
+      <div class="card" data-marketinghub-expand>
+        <button type="button" class="marketinghub-card-toggle" aria-expanded="false" aria-controls="marketinghub-panel-4" id="marketinghub-toggle-4">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">movie</span></div>
+            <h3 style="font-weight:700; font-size:1rem; color:#00253b; margin-bottom:0.35rem;">AI Video Generation</h3>
+            <p class="marketinghub-teaser">Short-form ads, product demos, and multi-language dubbing.</p>
+          </div>
+          <span class="marketinghub-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="marketinghub-card-panel" id="marketinghub-panel-4" role="region" aria-labelledby="marketinghub-toggle-4" hidden>
+          <p style="color:#42474e; font-size:0.8125rem; line-height:1.65; margin-bottom:0.5rem;">Short-form ads, product demos, AI avatars, and multi-language dubbing.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875; margin-bottom:0.75rem;">Produced faster than a traditional shoot and edit cycle.</p>
+          <a href="/industries/marketing/video-generation" class="learn-link">Learn more →</a>
+        </div>
+      </div>
+      <div class="card" data-marketinghub-expand>
+        <button type="button" class="marketinghub-card-toggle" aria-expanded="false" aria-controls="marketinghub-panel-5" id="marketinghub-toggle-5">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">graphic_eq</span></div>
+            <h3 style="font-weight:700; font-size:1rem; color:#00253b; margin-bottom:0.35rem;">AI Voice Generation</h3>
+            <p class="marketinghub-teaser">Ad voiceovers, branded voice assistants, and multilingual dubbing.</p>
+          </div>
+          <span class="marketinghub-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="marketinghub-card-panel" id="marketinghub-panel-5" role="region" aria-labelledby="marketinghub-toggle-5" hidden>
+          <p style="color:#42474e; font-size:0.8125rem; line-height:1.65; margin-bottom:0.5rem;">Ad voiceovers, multilingual dubbing, branded voice assistants, and audio ad production.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875; margin-bottom:0.75rem;">Tested specifically for natural Arabic pronunciation.</p>
+          <a href="/industries/marketing/voice-generation" class="learn-link">Learn more →</a>
+        </div>
+      </div>
+      <div class="card" data-marketinghub-expand>
+        <button type="button" class="marketinghub-card-toggle" aria-expanded="false" aria-controls="marketinghub-panel-6" id="marketinghub-toggle-6">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">mail</span></div>
+            <h3 style="font-weight:700; font-size:1rem; color:#00253b; margin-bottom:0.35rem;">AI Email Marketing</h3>
+            <p class="marketinghub-teaser">Personalized copy, send-time optimization, and drip campaigns.</p>
+          </div>
+          <span class="marketinghub-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="marketinghub-card-panel" id="marketinghub-panel-6" role="region" aria-labelledby="marketinghub-toggle-6" hidden>
+          <p style="color:#42474e; font-size:0.8125rem; line-height:1.65; margin-bottom:0.5rem;">Copy generation, send-time optimization, behavioral segmentation, and automated drip campaigns.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875; margin-bottom:0.75rem;">Trained on your brand voice and connected to your actual customer data.</p>
+          <a href="/industries/marketing/email-marketing" class="learn-link">Learn more →</a>
+        </div>
+      </div>
+      <div class="card" data-marketinghub-expand>
+        <button type="button" class="marketinghub-card-toggle" aria-expanded="false" aria-controls="marketinghub-panel-7" id="marketinghub-toggle-7">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">edit_note</span></div>
+            <h3 style="font-weight:700; font-size:1rem; color:#00253b; margin-bottom:0.35rem;">AI Content Writing</h3>
+            <p class="marketinghub-teaser">Blog posts, ad copy, and product descriptions in your brand voice.</p>
+          </div>
+          <span class="marketinghub-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="marketinghub-card-panel" id="marketinghub-panel-7" role="region" aria-labelledby="marketinghub-toggle-7" hidden>
+          <p style="color:#42474e; font-size:0.8125rem; line-height:1.65; margin-bottom:0.5rem;">Blog posts, ad copy, product descriptions, and website copy, drafted in your brand voice.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875; margin-bottom:0.75rem;">Reviewed by a human before it publishes.</p>
+          <a href="/industries/marketing/content-writing" class="learn-link">Learn more →</a>
+        </div>
+      </div>
+      <div class="card" data-marketinghub-expand>
+        <button type="button" class="marketinghub-card-toggle" aria-expanded="false" aria-controls="marketinghub-panel-8" id="marketinghub-toggle-8">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">query_stats</span></div>
+            <h3 style="font-weight:700; font-size:1rem; color:#00253b; margin-bottom:0.35rem;">AI Analytics &amp; Attribution</h3>
+            <p class="marketinghub-teaser">Multi-touch attribution, predictive LTV, and budget allocation.</p>
+          </div>
+          <span class="marketinghub-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="marketinghub-card-panel" id="marketinghub-panel-8" role="region" aria-labelledby="marketinghub-toggle-8" hidden>
+          <p style="color:#42474e; font-size:0.8125rem; line-height:1.65; margin-bottom:0.5rem;">Multi-touch attribution, predictive lifetime value, and budget allocation optimization.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875; margin-bottom:0.75rem;">Built on your actual data, not generic industry benchmarks.</p>
+          <a href="/industries/marketing/analytics-attribution" class="learn-link">Learn more →</a>
+        </div>
+      </div>
+      <div class="card" data-marketinghub-expand>
+        <button type="button" class="marketinghub-card-toggle" aria-expanded="false" aria-controls="marketinghub-panel-9" id="marketinghub-toggle-9">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">diversity_3</span></div>
+            <h3 style="font-weight:700; font-size:1rem; color:#00253b; margin-bottom:0.35rem;">AI Influencer Marketing</h3>
+            <p class="marketinghub-teaser">Creator discovery, fraud detection, and campaign tracking.</p>
+          </div>
+          <span class="marketinghub-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="marketinghub-card-panel" id="marketinghub-panel-9" role="region" aria-labelledby="marketinghub-toggle-9" hidden>
+          <p style="color:#42474e; font-size:0.8125rem; line-height:1.65; margin-bottom:0.5rem;">Creator discovery, audience fraud detection, campaign tracking, and ROI measurement.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875; margin-bottom:0.75rem;">Built to catch fake engagement before you pay for it.</p>
+          <a href="/industries/marketing/influencer-marketing" class="learn-link">Learn more →</a>
+        </div>
+      </div>
+      <div class="card" data-marketinghub-expand>
+        <button type="button" class="marketinghub-card-toggle" aria-expanded="false" aria-controls="marketinghub-panel-10" id="marketinghub-toggle-10">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">ads_click</span></div>
+            <h3 style="font-weight:700; font-size:1rem; color:#00253b; margin-bottom:0.35rem;">AI Paid Ad Optimization</h3>
+            <p class="marketinghub-teaser">Bid management, creative testing, and cross-platform budget allocation.</p>
+          </div>
+          <span class="marketinghub-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="marketinghub-card-panel" id="marketinghub-panel-10" role="region" aria-labelledby="marketinghub-toggle-10" hidden>
+          <p style="color:#42474e; font-size:0.8125rem; line-height:1.65; margin-bottom:0.5rem;">Bid management, creative testing, audience targeting, and cross-platform budget allocation.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875; margin-bottom:0.75rem;">You keep account ownership; automation runs within rules your team sets.</p>
+          <a href="/industries/marketing/paid-ads" class="learn-link">Learn more →</a>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems trained on your brand voice, bilingual where customer-facing, and integrated with your existing marketing stack.</p>
+      <button onclick="openModal(this)" data-source="marketing_mid" class="btn-primary">Book Free Marketing AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- REPORTING THAT MATTERS -->
+<section class="section" aria-labelledby="reporting-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="reporting-heading" style="margin-bottom:1.5rem;">Reporting that shows the metric that actually matters</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">Every AI marketing system we build connects to the tools your team already uses, your CMS, ad accounts, CRM, and social schedulers, so results show up in dashboards your team checks, not a separate tool that gets ignored after the first month.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">That means judging success on traffic, conversions, or revenue instead of output volume. More content or more posts published isn't the goal. A system is only working if the number that matters to your business is moving.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1686061592689-312bbfb5c055?w=800&h=600&q=80&auto=format&fit=crop" alt="Analytics dashboard with charts and metrics displayed on a computer screen" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact in marketing</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">edit_note</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Generative Content Creation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Text, image, video, and voice generation tools now cover most content formats a marketing team produces, cutting production time across the board.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Marketers report saving over 12 hours weekly using AI content tools (HubSpot)</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">search</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">AI-Powered Search &amp; SEO</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI-generated answer summaries are changing how search results appear, pushing SEO strategy toward answer engine optimization alongside traditional ranking factors.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">A growing share of searches now resolve without a traditional click-through</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">ads_click</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Programmatic Advertising</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI bid management and creative testing across Google, Meta, and TikTok now handle decisions that used to require manual daily adjustment.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Standard practice across most mid-size and large ad accounts</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">query_stats</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Predictive Analytics &amp; Attribution</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Multi-touch attribution and predictive lifetime value models give marketers a clearer view of what's actually driving revenue, beyond last-click reporting.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">A meaningful share of ad spend is estimated to be misallocated under last-click models</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">forum</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Conversational &amp; Personalized Marketing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Chatbots and dynamic personalization engines tailor the customer experience in real time, based on behavior rather than broad segments.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Personalized experiences consistently outperform generic ones on conversion</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">diversity_3</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Influencer &amp; Creator Analytics</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI fraud detection and audience analysis tools have become standard due diligence before brands commit influencer budget.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Influencer marketing reports an average return near $5 for every $1 spent (Influencer Marketing Hub)</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes marketing AI actually work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Brand voice consistency</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">AI trained on generic style produces generic output. Every system needs to be trained on your actual brand guidelines and past campaigns, not a default tone.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Human review before publish</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Anything customer-facing, content, ads, social posts, needs a human check before it goes live. Speed shouldn't come at the cost of a public mistake.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Platform and stack integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Marketing AI only creates value connected to where your team actually works, your CMS, ad accounts, CRM, and social schedulers, not as a disconnected side tool.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Measurement beyond output volume</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">More content isn't automatically better marketing. Every system should be judged on the metric that actually matters: traffic, conversions, or revenue, not just posts published.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows about AI in marketing</h2>
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">70%+</p>
+        <p style="color:#42474e; font-size:0.875rem;">of marketers report using AI in their daily workflow (HubSpot)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">12hrs+</p>
+        <p style="color:#42474e; font-size:0.875rem;">saved weekly by marketers using AI for content production (HubSpot)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">$5.20</p>
+        <p style="color:#42474e; font-size:0.875rem;">average return per $1 spent on influencer marketing (Influencer Marketing Hub)</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Adoption Speed</p>
+          <p style="color:#42474e; line-height:1.7;">Marketing has become one of the fastest-adopting functions for generative AI, with the majority of marketers surveyed reporting some form of AI use in content, research, or campaign work within the last two years.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Time Savings</p>
+          <p style="color:#42474e; line-height:1.7;">HubSpot's marketing research consistently finds double-digit weekly time savings among marketers using AI tools, concentrated most heavily in content drafting, image creation, and campaign reporting.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Search Shift</p>
+          <p style="color:#42474e; line-height:1.7;">The rise of AI-generated answer summaries in search results is prompting SEO teams to optimize for answer engine visibility alongside traditional ranking signals, a shift still actively reshaping best practice.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI in marketing</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Marketing AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your content, campaign, and reporting workflows, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="marketing_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Marketing AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    .learn-link { font-size:0.8125rem; font-weight:600; color:#006875; }
+    @media(max-width:900px) { .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:600px) { .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
+    .marketinghub-card-toggle { display:flex; justify-content:space-between; align-items:flex-start; width:100%; background:none; border:none; cursor:pointer; text-align:left; padding:0; gap:1rem; }
+    .marketinghub-card-toggle h3 { margin:0 0 0.35rem; }
+    .marketinghub-teaser { color:#42474e; font-size:0.8125rem; line-height:1.65; margin:0; }
+    .marketinghub-card-icon { font-size:1.25rem; color:#006875; transition:transform 0.2s; flex-shrink:0; }
+    .marketinghub-card-toggle[aria-expanded="true"] .marketinghub-card-icon { transform:rotate(45deg); }
+    .marketinghub-card-toggle:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+    .marketinghub-card-panel { margin-top:0.75rem; }
+</style>
+
+<script>
+  document.querySelectorAll('[data-marketinghub-expand]').forEach((card) => {
+    const btn = card.querySelector('.marketinghub-card-toggle');
+    const panel = card.querySelector('.marketinghub-card-panel');
+    btn?.addEventListener('click', () => {
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!expanded));
+      if (panel) (panel as HTMLElement).hidden = expanded;
+    });
+  });
+</script>
