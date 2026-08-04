@@ -1,0 +1,358 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Does AI-written content get flagged as plagiarism or low quality?", answer: "Generic, unedited AI output can read as thin, but that's a quality issue, not something unique to AI. We run every draft through plagiarism and originality checks, and a human editor reviews for accuracy and voice before anything publishes." },
+  { question: "Can AI actually write in our specific brand voice?", answer: "Yes, when it's trained on your existing content, style guide, and examples of what good looks like for your brand. We build a voice profile from your material first, rather than starting from a generic AI writing style." },
+  { question: "Is AI-generated Arabic copywriting as good as English?", answer: "It requires more careful handling. Arabic has more dialect and register variation than English, and generic AI tools sometimes produce overly formal or awkward phrasing. We test and tune Arabic content generation specifically, rather than treating it as a straight translation of the English process." },
+  { question: "How much editorial review does AI content still need?", answer: "Every piece gets a human review pass for factual accuracy, brand voice, and quality before publishing, no exceptions. AI handles the first draft and structure; a person still owns what goes out under your name." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'marketing_content_writing')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Content Writing & Copywriting in the UAE",
+    "url": "https://lenooai.com/industries/marketing/content-writing",
+    "description": "Custom AI content writing systems for UAE businesses: blog drafting, ad copy, product descriptions, and website copy in your brand voice.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Content Writing"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Marketing", "item": "https://lenooai.com/industries/marketing" },
+      { "@type": "ListItem", "position": 4, "name": "Content Writing AI", "item": "https://lenooai.com/industries/marketing/content-writing" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Content Writing & Copywriting in the UAE: Blog, Ad Copy & Product Content | Lenoo AI"
+  description="Lenoo AI, a Dubai AI agency, builds AI content writing systems for UAE businesses: blog drafting, ad copy, product descriptions, and website copy."
+  canonicalPath="/industries/marketing/content-writing"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/industries/marketing" style="color:inherit;text-decoration:none;opacity:0.65;">Marketing</a><span style="opacity:0.4;padding:0 4px;"> / </span>Content Writing</div>
+    <h1>AI Content Writing<br><span class="gradient-text">&amp; Copywriting for the UAE</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI content writing systems for UAE businesses: blog posts, ad copy, product descriptions, and website copy, drafted in your brand voice and reviewed by a human before it publishes.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <button onclick="openModal(this)" data-source="marketing_content_hero" class="btn-primary">Book Free Content AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+    <StatStrip stats={[
+      { value: "3–5x", caption: "faster first-draft production with AI-assisted writing" },
+      { value: "62%", caption: "of marketers have integrated AI into their content strategy (Content Marketing Institute)" },
+      { value: "Arabic + English", caption: "content generation tuned for both languages, not a direct translation" },
+    ]} />
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px; margin:0 0 -1px;">
+  <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1600&h=260&q=80&auto=format&fit=crop" alt="Writer's desk with a laptop, coffee, and a notepad" loading="lazy" width="1600" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHY CONTENT WRITING & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why content writing is one of AI's highest-impact marketing tools</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Every channel needs a constant stream of copy.</strong> Blog posts, ads, product pages, and website copy all compete for a marketing team's limited writing hours. AI drafting tools handle the first pass, letting your team edit rather than start from a blank page.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Product catalogs outgrow manual writing capacity.</strong> E-commerce businesses with hundreds or thousands of SKUs can't write unique descriptions for each one manually. AI generates consistent, on-brand descriptions at that scale.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Brand voice consistency is hard across a growing team.</strong> As more people write for a brand, voice drifts. AI trained on your style guide keeps output consistent regardless of who's requesting it.</p>
+      </div>
+      <div class="split-media" style="display:flex; align-items:stretch;">
+        <div class="card" style="display:flex; flex-direction:column; justify-content:center; text-align:center; width:100%; padding:2.5rem;">
+          <p class="stat-number" style="font-size:3rem; margin-bottom:0.75rem;">3&ndash;5x</p>
+          <p style="color:#42474e; font-size:1rem; line-height:1.7;">faster first-draft production with AI-assisted writing, giving your team more time for editing and strategy instead of a blank page.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Content Systems Built for UAE Businesses</h2>
+      <p>Six systems our Dubai AI agency builds for content production, with brand voice training and human review built in.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">article</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Blog &amp; Article Drafting Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Drafts long-form articles from a brief and outline, giving writers a strong starting point to edit and refine rather than a blank page.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Cuts first-draft time significantly per article</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">ads_click</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Ad Copy Generation &amp; Testing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Generates multiple ad copy variants for testing across platforms, in your brand voice, ready for quick review before launch.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Enables real creative testing at smaller ad budgets</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">inventory_2</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Product Description Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Generates consistent, on-brand product descriptions at scale from product data, covering catalogs too large to write manually.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Scales with catalog size without a proportional writing cost</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">web</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Website Copy Drafting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Drafts landing page and website copy aligned with your positioning and voice, speeding up launches for new pages and campaigns.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Speeds up new page and campaign launches</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">style</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Brand Voice Training &amp; Style Guide Enforcement</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Trains content generation on your specific style guide and past work, keeping tone consistent across every writer and channel.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Keeps voice consistent as your content team grows</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">translate</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Multilingual Content Adaptation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Adapts content for Arabic and English audiences with attention to tone and register, not a literal word-for-word translation.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Tested specifically for natural Arabic phrasing</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Every piece checked for originality and reviewed by a human editor before publishing.</p>
+      <button onclick="openModal(this)" data-source="marketing_content_mid" class="btn-primary">Book Free Content AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- CONTENT PLANNING -->
+<section class="section" aria-labelledby="planning-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="planning-heading" style="margin-bottom:1.5rem;">Planning keeps AI-assisted content on schedule</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">Faster drafting only helps if the calendar keeps up. AI cuts the time to produce a first draft, but a content team still needs a clear plan for what gets written, when, and for which channel. Without that structure, faster drafting just means a faster-growing backlog.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">We build the planning layer alongside the drafting tools, a shared calendar tied to your content pipeline, so briefs, drafts, and publish dates stay visible to the whole team instead of living in separate documents.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=800&h=600&q=80&auto=format&fit=crop" alt="Monthly content calendar with goals and a coffee cup on the desk" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact in content writing</h2>
+    </div>
+    <div class="contentwriting-tabs" role="tablist" aria-label="Content type categories">
+      <button type="button" id="contentwriting-tab-blogseo" class="contentwriting-tab-btn active" data-contentwriting-tab="blogseo" role="tab" aria-selected="true" aria-controls="contentwriting-panel-blogseo">Blog &amp; SEO Content</button>
+      <button type="button" id="contentwriting-tab-social" class="contentwriting-tab-btn" data-contentwriting-tab="social" role="tab" aria-selected="false" aria-controls="contentwriting-panel-social">Social &amp; Ad Copy</button>
+    </div>
+    <div class="bento-grid bento-grid-3" id="contentwriting-panel-blogseo" data-contentwriting-tab-panel="blogseo" role="tabpanel" aria-labelledby="contentwriting-tab-blogseo">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">article</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">AI Blog &amp; Long-Form Content</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Generative writing tools have become a standard part of content production workflows, drafting structure and first content for editors to refine.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">A majority of content marketers now use AI somewhere in production (CMI)</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">inventory_2</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Product Description at Scale</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">E-commerce catalogs of any meaningful size now rely on AI-assisted description generation rather than manual writing per SKU.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Standard for catalogs beyond a few hundred SKUs</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">web</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Website &amp; Landing Page Copy</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI-assisted drafting speeds up landing page production for campaigns, letting teams launch and test more page variants.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Speeds up campaign launch timelines</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">style</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Brand Voice Consistency Tools</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI style-checking tools flag content that drifts from brand guidelines, useful as teams and contributor pools grow.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Helps maintain consistency across distributed teams</p>
+      </div>
+    </div>
+    <div class="bento-grid bento-grid-3" id="contentwriting-panel-social" data-contentwriting-tab-panel="social" role="tabpanel" aria-labelledby="contentwriting-tab-social" hidden>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">ads_click</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Ad Copy Generation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Performance marketing teams use AI to generate copy variants for testing at a volume manual writing couldn't sustain.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Standard practice in most modern paid media workflows</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Content Repurposing Across Formats</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI tools adapt a single piece of content into multiple formats, social posts, email, video scripts, from one source article.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Multiplies the value of every piece of original content</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes content writing AI actually work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Factual accuracy</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">AI can state things confidently and incorrectly. Every fact, statistic, and claim needs verification before publishing under your brand.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Brand voice consistency</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Generic AI writing style is easy to spot. Output needs to be trained on your actual voice and past content, not a default tone.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">SEO and quality signals</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Content still needs to be genuinely useful and well-structured to perform in search, whether AI or a person drafted the first version.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Human editorial review</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Every piece needs a person to review before it goes out under your brand name, for accuracy, tone, and quality, not just a spell check.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows about AI in content writing</h2>
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">62%</p>
+        <p style="color:#42474e; font-size:0.875rem;">of marketers have integrated AI into their content strategy (Content Marketing Institute)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">3&ndash;5x</p>
+        <p style="color:#42474e; font-size:0.875rem;">faster first-draft production with AI-assisted writing</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">100%</p>
+        <p style="color:#42474e; font-size:0.875rem;">of content passes through human review before publishing in our workflow</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Adoption</p>
+          <p style="color:#42474e; line-height:1.7;">Content Marketing Institute's annual research consistently finds a majority of marketers now use AI somewhere in their content workflow, most heavily for ideation, first drafts, and repurposing existing material into new formats.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Production Speed</p>
+          <p style="color:#42474e; line-height:1.7;">Teams using AI-assisted drafting consistently report multiplying output volume without a proportional increase in headcount, concentrated in the ideation and first-draft stages of production.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Quality Standards</p>
+          <p style="color:#42474e; line-height:1.7;">Search engines have stated they evaluate content on quality and usefulness regardless of production method, reinforcing that human editorial review, not the writing tool, remains the deciding factor in content performance.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI in content writing</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Content AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your content production workflow, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="marketing_content_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Content AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    #contentwriting-panel-blogseo { grid-template-columns:repeat(2,1fr); }
+    #contentwriting-panel-social { grid-template-columns:repeat(2,1fr); max-width:700px; margin:0 auto; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    .contentwriting-tabs { display:flex; gap:0.5rem; justify-content:center; margin-bottom:2rem; flex-wrap:wrap; }
+    .contentwriting-tab-btn { padding:0.625rem 1.25rem; border-radius:100px; border:1px solid rgba(0,37,59,0.15); background:#fff; color:#42474e; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+    .contentwriting-tab-btn:hover { background:#e7eeff; }
+    .contentwriting-tab-btn.active { background:#006875; border-color:#006875; color:#fff; }
+    .contentwriting-tab-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } #contentwriting-panel-blogseo, #contentwriting-panel-social { grid-template-columns:1fr; max-width:none; margin:0; } .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
+</style>
+
+<script>
+  const contentwritingTabWrap = document.querySelector('.contentwriting-tabs');
+  if (contentwritingTabWrap) {
+    const btns = contentwritingTabWrap.querySelectorAll('.contentwriting-tab-btn');
+    const panels = document.querySelectorAll('[data-contentwriting-tab-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-contentwriting-tab');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-contentwriting-tab-panel') !== key; });
+      });
+    });
+  }
+</script>
