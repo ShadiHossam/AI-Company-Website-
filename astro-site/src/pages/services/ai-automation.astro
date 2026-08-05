@@ -14,6 +14,9 @@ const fallbackFaqs = [
   { question: "How is AI automation different from tools like Zapier or Make?", answer: "Zapier and Make are rule-based: they move data from A to B when a specific trigger fires. They break the moment the data is messy, the format changes, or the task requires any judgment. AI automation adds a reasoning layer: it reads and understands unstructured content, handles exceptions, makes decisions based on context, and adapts when inputs vary. You can automate tasks that no Zap could handle." },
   { question: "We're a small team. Is AI automation worth it at our scale?", answer: "Yes, often more so. Small teams feel the pain of repetitive manual work most acutely because there's no one to delegate it to. Automating 3-5 core workflows for a 10-person team can free up the equivalent of a full-time employee. We scope projects to match your budget and prioritize the automations with the fastest payback." },
   { question: "What information do you need to scope an automation project?", answer: "A description of the current workflow (how it's done today, who does it, how often), the tools involved, and what the desired output looks like. You don't need technical documentation or APIs mapped in advance. We gather all of that during the discovery session and translate it into a technical scope for your approval." },
+  { question: "Can you automate a workflow that involves a tool without a public API?", answer: "Often, yes. Most modern business tools expose an API even if it isn't advertised, and for the few that don't, there are still reliable ways to connect them, including browser-based automation and scheduled exports. We check this during the discovery session and tell you upfront if a specific tool is going to limit what's possible." },
+  { question: "Where does the data go once AI is processing it?", answer: "It moves between the systems you already use, the same as if a person were typing it manually. We don't route your data through consumer AI tools or store copies of it outside your existing infrastructure unless you specifically want an audit log kept, and we agree on that during the design phase before anything is built." },
+  { question: "Can we start with one workflow instead of a full automation program?", answer: "Yes, and that's usually how projects start. Most clients automate a single high-value workflow first, see the time savings, and expand from there. We don't require a large upfront commitment to prove the approach works." },
 ];
 
 let faqItems = fallbackFaqs;
@@ -34,16 +37,6 @@ try {
   // Fallback to hardcoded content on error
 }
 
-const faqLdJson = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
-    '@type': 'Question',
-    name: f.question,
-    acceptedAnswer: { '@type': 'Answer', text: f.answer },
-  })),
-};
-
 const processSteps = [
   { icon: "search", step: "Step 1", title: "Process Audit", description: "We map your current workflows, identify the highest-value automation targets, and prioritize them by ROI." },
   { icon: "edit", step: "Step 2", title: "Design & Plan", description: "We design the automation logic, define triggers and outputs, and get your approval before building." },
@@ -52,30 +45,61 @@ const processSteps = [
 ];
 
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Automation',
+    url: 'https://lenooai.com/services/ai-automation',
+    description: 'AI automation agency in the UAE: intelligent workflow and process automation that eliminates repetitive manual work across sales, operations, and admin.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'AI automation projects: pricing based on workflow complexity and scope. Book a free discovery call for a quote.' },
+    serviceType: 'AI Automation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Automation', item: 'https://lenooai.com/services/ai-automation' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
 ---
 
 <BaseLayout
-  title="AI Automation Services for UAE Businesses | Lenoo AI"
-  description="Stop doing it manually. As a Dubai AI agency, we build AI automation for UAE businesses that eliminates repetitive work across sales, operations, and admin."
+  title="AI Automation Agency in the UAE | Lenoo AI"
+  description="Lenoo AI is a UAE-based AI automation agency. We design and implement automation workflows that connect your tools, cut manual work, and integrate with your existing stack."
   canonicalPath="/services/ai-automation"
   arPath="/ar/services/ai-automation"
   ogImage="/assets/og-services.jpg"
-  ldJson={[faqLdJson]}
+  ldJson={ldJson}
 >
 
 <header class="hero-section">
   <div class="container" style="text-align:center;">
-    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services" style="color:inherit;text-decoration:none;opacity:0.65;">Services</a><span style="opacity:0.4;padding:0 4px;"> / </span>AI Automation</div>
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span>AI Automation</div>
     <h1>Stop Doing It Manually. <span class="gradient-text">Let AI Handle the Repetitive Work.</span></h1>
-    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:620px; margin:1.5rem auto 0; line-height:1.8;">
-      Every hour your team spends on data entry, email routing, or manual approvals is an hour they're not spending on work that actually moves the business. We automate those workflows so they don't.
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      Lenoo AI is a UAE-based AI automation agency. Every hour your team spends on data entry, email routing, or manual approvals is an hour they're not spending on work that actually moves the business. We design and build automation that eliminates it, integrated with the tools you already use.
     </p>
     <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
       <span class="tchip">Post-launch monitoring included with every project</span>
       <span class="tchip">Refund guarantee if you're not satisfied with what we deliver</span>
     </div>
     <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
-      <button onclick="openModal(this)" data-source="automation_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <button onclick="openModal(this)" data-source="ai_automation_hero" class="btn-primary">Book a Free Discovery Call</button>
       <a href="#what-we-automate" class="btn-outline">See What We Automate ↓</a>
     </div>
   </div>
@@ -107,24 +131,42 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
         Traditional automation connects systems and moves data between them on a fixed schedule or trigger. It works well when data is clean, formats never change, and nothing unexpected happens. The problem is that most real business workflows involve messy data, human decisions mid-process, and inputs that vary from one case to the next. Those are the workflows that traditional automation can't handle, and where AI changes everything.
       </p>
       <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
-        AI automation adds a reasoning layer on top of the connection layer. Instead of "if X, do Y," it's "read this email, understand what the customer is asking, figure out whether it's a return request or a complaint or a product question, and route it accordingly." It can read unstructured documents, interpret intent, make decisions based on context, and handle exceptions without breaking.
+        AI automation adds a reasoning layer on top of the connection layer. Instead of "if X, do Y," it's "read this email, understand what the customer is asking, figure out whether it's a return request or a complaint or a product question, and route it accordingly." As a UAE AI automation agency, we build that reasoning layer on top of the tools you already run: it can read unstructured documents, interpret intent, make decisions based on context, and handle exceptions without breaking.
       </p>
     </div>
 
     <div class="tools-strip">
       <p class="tools-strip-label">We work with the tools you already use</p>
       <div class="tools-strip-row">
-        <div class="tools-strip-logo"><img src="https://cdn.simpleicons.org/zapier/FF4A00" alt="Zapier" width="28" height="28" loading="lazy" /></div>
-        <div class="tools-strip-logo"><img src="https://cdn.simpleicons.org/make/6D00CC" alt="Make" width="28" height="28" loading="lazy" /></div>
-        <div class="tools-strip-logo"><img src="https://cdn.simpleicons.org/n8n/EA4B71" alt="n8n" width="28" height="28" loading="lazy" /></div>
-        <div class="tools-strip-logo"><img src="https://cdn.simpleicons.org/uipath/FA4616" alt="UiPath" width="28" height="28" loading="lazy" /></div>
-        <div class="tools-strip-logo"><img src="https://cdn.simpleicons.org/ifttt/000000" alt="IFTTT" width="28" height="28" loading="lazy" /></div>
-        <div class="tools-strip-logo"><img src="https://cdn.simpleicons.org/appian/2322F2" alt="Appian" width="28" height="28" loading="lazy" /></div>
+        <a href="/services/ai-automation/tools/zapier" class="tools-strip-logo"><img src="https://cdn.simpleicons.org/zapier/FF4A00" alt="Zapier" width="28" height="28" loading="lazy" /></a>
+        <a href="/services/ai-automation/tools/make" class="tools-strip-logo"><img src="https://cdn.simpleicons.org/make/6D00CC" alt="Make" width="28" height="28" loading="lazy" /></a>
+        <a href="/services/ai-automation/tools/n8n" class="tools-strip-logo"><img src="https://cdn.simpleicons.org/n8n/EA4B71" alt="n8n" width="28" height="28" loading="lazy" /></a>
+        <a href="/services/ai-automation/tools/uipath" class="tools-strip-logo"><img src="https://cdn.simpleicons.org/uipath/FA4616" alt="UiPath" width="28" height="28" loading="lazy" /></a>
+        <a href="/services/ai-automation/tools/power-automate" class="tools-strip-logo"><img src="https://cdn.simpleicons.org/microsoftpowerautomate/0066FF" alt="Power Automate" width="28" height="28" loading="lazy" /></a>
+        <a href="/services/ai-automation/tools" class="tools-strip-logo"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875;">more_horiz</span></a>
       </div>
     </div>
     <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:2rem auto 0;">
-      The business case is straightforward. McKinsey estimates that 60 to 70 percent of work tasks in most businesses are automatable with existing technology. Most companies have automated less than 20 percent of that potential. Every hour an employee spends on data entry, email routing, report generation, or copy-pasting between tools is an hour not spent on sales, service, strategy, or growth. AI automation doesn't replace people; it gives them back the hours that get wasted on work no one actually needs to do manually.
+      The business case is straightforward. McKinsey estimates that 60 to 70 percent of work tasks in most businesses are automatable with existing technology. Most companies have automated less than 20 percent of that potential. Every hour an employee spends on data entry, email routing, report generation, or copy-pasting between tools is an hour not spent on sales, service, strategy, or growth. AI automation doesn't replace people; it gives them back the hours that get wasted on work no one actually needs to do manually. See the full <a href="/services/ai-automation/tools">list of tools we implement →</a>
     </p>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="how-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="how-heading" style="margin-bottom:1.5rem;">How This Actually Works, in a Real Example</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Take a supplier invoice. Before automation, someone on the finance team opens the email, downloads the PDF, reads the invoice number, the amount, the line items, and the supplier name, then types all of it into the accounting system by hand. If the PDF is a scanned image instead of a clean document, or the supplier's layout is different from last month's, the process slows down further because someone has to look closely at the page and work out where each number belongs. A stack of twenty invoices can eat an entire afternoon.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        After automation, the invoice arrives in the same inbox. AI reads it, whatever the layout, pulls out the invoice number, amount, line items, and supplier details, and checks them against the matching purchase order before posting the transaction into the accounting system. If something doesn't match, that one invoice gets flagged for a person to review instead of getting posted blind. The finance team's job shifts from typing to checking exceptions, which is a fraction of the original workload.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        That's the shape of most of the automation work we do: find the repetitive step that eats hours every week, teach a system to read and reason about it the way a person would, and keep a human in the loop for the decisions that genuinely need one. None of it requires replacing the accounting system, the CRM, or the person doing the job. It removes the part of the job that was never worth a person's time in the first place.
+      </p>
+    </div>
   </div>
 </section>
 
@@ -176,60 +218,109 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
   </div>
 </section>
 
-<!-- INDUSTRY EXAMPLES -->
-<section class="section" style="background:#f0f3ff;" aria-labelledby="examples-heading">
+<!-- SIGNS YOU NEED AUTOMATION -->
+<section class="section" aria-labelledby="signs-heading">
   <div class="container">
     <div class="section-header">
-      <h2 id="examples-heading">What Businesses Are Automating Right Now</h2>
-      <p style="color:#42474e; font-size:1.0625rem;">These are real automation types we've built across different industries. The specifics vary by company, but the categories are consistent.</p>
+      <h2 id="signs-heading">Signs Your Business Needs AI Automation Now</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">None of these need to be true at once. If even one sounds like your team, it's worth a conversation.</p>
     </div>
-    <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
-      <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&q=80&auto=format&fit=crop" alt="Team working across laptops while automated workflows run in the background" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">schedule</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Someone spends hours a week on copy-paste</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">If a person on your team regularly moves data from one system to another by hand, that's a task built for automation, not a task that needs a more careful person doing it.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">trending_down</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Leads or requests sit for hours before anyone responds</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Response time is one of the strongest predictors of whether a lead converts. If your fastest response depends on who happens to check their inbox first, you're losing deals to speed, not to quality.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">person_off</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">One person's absence stalls a process</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">If a workflow only runs because one specific employee remembers to do it, that's a fragile system. Automating it means the process runs whether that person is at their desk or on leave.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">warning</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Mistakes keep slipping through manual review</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Manual data entry has an error rate no amount of care fully removes. If wrong numbers or missed fields keep showing up downstream, the fix is usually the process, not the person doing it.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">groups_2</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">You're about to hire for admin work</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">If the next hire on your list exists mostly to handle data entry, routing, or report compilation, it's worth checking whether automation covers most of that role for a fraction of the cost.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">history</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">The same question gets answered the same way, over and over</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Support or sales questions that follow a predictable pattern don't need a person typing the same answer each time. That's exactly the kind of repetition AI handles well.</p>
+      </div>
     </div>
-    <div class="bento-grid bento-grid-4">
+  </div>
+</section>
+
+<!-- WHO WE HELP -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="who-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="who-heading">AI Automation by City, Industry &amp; Use Case</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Where we operate and who we build for. Each page below goes deeper into the specifics for that city, agency type, or industry.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
       <div class="value-card">
-        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">trending_up</span></div>
-        <h3 style="font-size:1rem; font-weight:700; color:#00253b; margin-bottom:0.875rem;">Sales &amp; Revenue Teams</h3>
-        <ul style="color:#42474e; font-size:0.8125rem; line-height:1.75; padding-left:1.1rem; margin:0;">
-          <li>Inbound lead qualification and scoring</li>
-          <li>CRM data enrichment from LinkedIn and news sources</li>
-          <li>Automated follow-up sequences based on prospect behavior</li>
-          <li>Proposal generation from sales call notes</li>
-          <li>Pipeline status reports sent to leadership automatically</li>
-        </ul>
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">location_city</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Automation in Dubai</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Local implementation, on-site discovery calls, and a Dubai-based team for businesses across the emirate.</p>
+        <a href="/services/ai-automation/dubai" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
       </div>
       <div class="value-card">
-        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">description</span></div>
-        <h3 style="font-size:1rem; font-weight:700; color:#00253b; margin-bottom:0.875rem;">Finance &amp; Operations</h3>
-        <ul style="color:#42474e; font-size:0.8125rem; line-height:1.75; padding-left:1.1rem; margin:0;">
-          <li>Invoice processing and three-way matching</li>
-          <li>Expense report collection and approval routing</li>
-          <li>Monthly close checklists run and verified automatically</li>
-          <li>Vendor contract expiry monitoring and renewal alerts</li>
-          <li>Cash flow summaries delivered to the CFO on a schedule</li>
-        </ul>
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">location_city</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Automation in Abu Dhabi</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Process automation and system integration for Abu Dhabi companies, remote or on-site.</p>
+        <a href="/services/ai-automation/abu-dhabi" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
       </div>
       <div class="value-card">
-        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">support_agent</span></div>
-        <h3 style="font-size:1rem; font-weight:700; color:#00253b; margin-bottom:0.875rem;">Customer Service</h3>
-        <ul style="color:#42474e; font-size:0.8125rem; line-height:1.75; padding-left:1.1rem; margin:0;">
-          <li>Email triage: categorize, prioritize, and route to the right team</li>
-          <li>Auto-drafting responses for common inquiry types</li>
-          <li>Ticket creation and status updates triggered by customer messages</li>
-          <li>Review monitoring and templated response drafts</li>
-          <li>Escalation alerts when a customer's sentiment turns negative</li>
-        </ul>
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">groups</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Automation Agencies</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">What an AI automation agency actually delivers, and what to check before you hire one.</p>
+        <a href="/services/ai-automation/agencies" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
       </div>
       <div class="value-card">
-        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">group</span></div>
-        <h3 style="font-size:1rem; font-weight:700; color:#00253b; margin-bottom:0.875rem;">HR &amp; Internal Operations</h3>
-        <ul style="color:#42474e; font-size:0.8125rem; line-height:1.75; padding-left:1.1rem; margin:0;">
-          <li>CV screening and shortlisting against job criteria</li>
-          <li>New hire onboarding checklists initiated automatically</li>
-          <li>Timesheet collection and anomaly flagging</li>
-          <li>Policy update notifications sent to affected teams</li>
-          <li>Employee survey collection and sentiment analysis reports</li>
-        </ul>
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">calculate</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Automation for Accounting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Invoice processing, reconciliation, and reporting automation built for finance teams.</p>
+        <a href="/services/ai-automation/accounting" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">business_center</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Automation for Business</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Where AI automation delivers the fastest payback across sales, ops, and support.</p>
+        <a href="/services/ai-automation/business" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">home_work</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Automation in Real Estate</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Lead follow-up, listing sync, and document workflow automation for real estate agencies.</p>
+        <a href="/services/ai-automation/real-estate" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMMON MISTAKES -->
+<section class="section" aria-labelledby="mistakes-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 style="margin-bottom:1rem;">Mistakes We See When Businesses Try This Themselves</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">Plenty of teams start automating on their own with a tool like Zapier or Make, and a lot of that early work is worth keeping. The problems tend to show up in the same few places.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Automating the wrong step first.</strong> It's tempting to automate whatever is easiest to connect, not whatever costs the most time. That usually means the first automation someone builds saves ten minutes a week instead of ten hours.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>No plan for exceptions.</strong> A workflow built for the clean, typical case breaks the first time a customer submits a form with a missing field or a supplier sends an invoice in a new layout. Without a way to catch and handle exceptions, someone ends up manually fixing broken automations, which defeats the point of building one.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Nobody owns it after launch.</strong> An automation built by whoever had spare time that month tends to quietly break when a connected app changes its interface or a field gets renamed, and nobody notices until something downstream goes wrong.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&q=80&auto=format&fit=crop" alt="Team reviewing an automation workflow together" loading="lazy" width="800" height="600" />
       </div>
     </div>
   </div>
@@ -244,7 +335,18 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
     <div style="border-radius:20px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 20px 48px rgba(0,59,92,0.10);">
       <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&q=80&auto=format&fit=crop" alt="Analyst mapping an automation workflow at a desk in Dubai" loading="lazy" width="1200" height="320" style="width:100%; height:clamp(180px, 26vw, 320px); object-fit:cover; display:block;" />
     </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:0 auto 2.5rem;">
+      Most projects move from the first call to a live automation in two to four weeks, depending on how many systems are involved and how much of the workflow is already documented. The discovery session usually runs 30 to 45 minutes, and by the end of it we can tell you roughly what the build will involve and what it will cost. Nothing gets connected to your live systems until you've approved the plan, and the first version always gets tested against real data before it goes anywhere near production.
+    </p>
     <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Not sure where to start? Tell us your biggest time-waster and we'll scope the fastest win.</p>
+    <button onclick="openModal(this)" data-source="ai_automation_mid" class="btn-primary">Get a Free Automation Assessment</button>
   </div>
 </section>
 
@@ -271,50 +373,20 @@ Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate
           <span class="cta-trust-badge">✓ No commitment</span>
           <span class="cta-trust-badge">✓ Refund guarantee</span>
         </div>
-        <button onclick="openModal(this)" data-source="automation_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <button onclick="openModal(this)" data-source="ai_automation_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
         <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
       </div>
     </div>
   </div>
 </section>
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Service",
-      "name": "AI Automation",
-      "url": "https://lenooai.com/services/ai-automation",
-      "description": "Intelligent workflow and process automation that eliminates repetitive manual work across sales, operations, and admin.",
-      "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
-      "areaServed": "United Arab Emirates",
-      "offers": { "@type": "Offer", "description": "AI automation projects: pricing based on workflow complexity and scope. Book a free discovery call for a quote." },
-      "serviceType": "AI Automation"
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
-        { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://lenooai.com/services" },
-        { "@type": "ListItem", "position": 3, "name": "AI Automation", "item": "https://lenooai.com/services/ai-automation" }
-      ]
-    }
-  ]
-}
-</script>
-
 </BaseLayout>
 
 <style>
-.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
-.builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
-@media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } }
-@media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
-
 .tools-strip { max-width:900px; margin:2.5rem auto 0; background:#f7f8fc; border-radius:14px; padding:1.5rem 1.25rem; }
 .tools-strip-label { text-align:center; font-size:0.8rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#8a93a6; margin:0 0 1.1rem; }
 .tools-strip-row { display:flex; align-items:center; justify-content:center; gap:1rem; flex-wrap:wrap; }
-.tools-strip-logo { background:#fff; border:1px solid #e6e9f0; border-radius:12px; width:64px; height:64px; display:flex; align-items:center; justify-content:center; }
+.tools-strip-logo { background:#fff; border:1px solid #e6e9f0; border-radius:12px; width:64px; height:64px; display:flex; align-items:center; justify-content:center; text-decoration:none; }
 @media(max-width:600px) { .tools-strip-logo { width:52px; height:52px; } .tools-strip-logo img { width:22px; height:22px; } }
+.value-card { display:flex; flex-direction:column; }
 </style>

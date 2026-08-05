@@ -1,0 +1,309 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Does AI voiceover sound robotic?", answer: "Older text-to-speech did. Current AI voice models produce natural pacing, tone, and inflection that's difficult to distinguish from a human voice actor for most ad and explainer use cases. We test every voice option against the specific script before recommending it." },
+  { question: "Is voice cloning for our brand's spokesperson ethical and legal?", answer: "Only with explicit, documented consent from the person being cloned, and clear terms on how the cloned voice can be used. We won't clone a voice without that consent in place, and we build usage boundaries into the agreement from the start." },
+  { question: "How natural does Arabic AI voice sound compared to English?", answer: "Quality varies more by model for Arabic than English, since fewer models are trained deeply on Arabic phonetics and regional accents. We test specifically for Gulf Arabic pronunciation before using a voice in client-facing work, rather than assuming general Arabic support is good enough." },
+  { question: "How long does it take to produce AI voiceover for a campaign?", answer: "A single voiceover for an ad or video typically turns around within a day or two once the script is final. Larger projects, IVR systems or a full branded voice assistant, take longer to design and test properly." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'marketing_voice_generation')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Voice Generation for Marketing in the UAE",
+    "url": "https://lenooai.com/industries/marketing/voice-generation",
+    "description": "Custom AI voice generation systems for UAE marketing teams: ad voiceovers, multilingual dubbing, branded voice assistants, and audio ad production.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Voice Generation for Marketing"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Marketing", "item": "https://lenooai.com/industries/marketing" },
+      { "@type": "ListItem", "position": 4, "name": "Voice Generation AI", "item": "https://lenooai.com/industries/marketing/voice-generation" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Voice Generation for Marketing in the UAE: Voiceovers & Multilingual Dubbing | Lenoo AI"
+  description="Lenoo AI, a Dubai AI agency, builds AI voice generation systems for UAE marketing teams: ad voiceovers, multilingual dubbing, and branded voice assistants."
+  canonicalPath="/industries/marketing/voice-generation"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/industries/marketing" style="color:inherit;text-decoration:none;opacity:0.65;">Marketing</a><span style="opacity:0.4;padding:0 4px;"> / </span>Voice Generation</div>
+    <h1>AI Voice Generation<br><span class="gradient-text">for UAE Marketing Teams</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI voice generation systems for UAE marketing teams: ad voiceovers, multilingual dubbing, branded voice assistants, and audio ad production, tested specifically for natural Arabic pronunciation.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <button onclick="openModal(this)" data-source="marketing_voice_hero" class="btn-primary">Book Free Voice AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+    <StatStrip stats={[
+      { value: "1–2 days", caption: "typical turnaround for a finished ad voiceover" },
+      { value: "10+", caption: "languages and accents available from a single script" },
+      { value: "90%+", caption: "lower cost than booking a studio and voice actor for many use cases" },
+    ]} />
+  </div>
+</header>
+
+<!-- WHY VOICE GENERATION & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why voice generation is one of AI's highest-impact marketing tools</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Studio time and voice actor bookings slow everything down.</strong> A script revision used to mean rebooking a studio session. AI voice generation lets you iterate on a script and hear the result within minutes.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Multilingual campaigns used to mean multiple voice actors.</strong> A single script can now be voiced in Arabic, English, and other languages from the same underlying voice profile, keeping brand sound consistent across markets.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Consistency is hard to maintain with human talent.</strong> A voice actor's availability, mood, and pacing vary session to session. A trained AI voice delivers the same brand-consistent read every time.</p>
+      </div>
+      <div class="split-media" style="display:flex; align-items:stretch;">
+        <div class="card" style="display:flex; flex-direction:column; justify-content:center; text-align:center; width:100%; padding:2.5rem;">
+          <p class="stat-number" style="font-size:3rem; margin-bottom:0.75rem;">1&ndash;2 days</p>
+          <p style="color:#42474e; font-size:1rem; line-height:1.7;">typical turnaround for a finished ad voiceover, versus scheduling a studio session and voice actor availability.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Voice Systems Built for UAE Marketing Teams</h2>
+      <p>Six systems our Dubai AI agency builds for audio and voice production, tested for natural Arabic and English delivery.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">graphic_eq</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">AI Voiceover for Ads &amp; Videos</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Produces polished voiceover for ads, explainer videos, and product demos from a script, with fast turnaround on revisions.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Iterate on a script and hear results within minutes</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">translate</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Multilingual Voice Localization</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Voices the same script in Arabic, English, and other languages from a consistent brand voice profile, tested for natural pronunciation.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Gulf Arabic pronunciation tested before any client-facing use</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">support_agent</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Branded Voice Assistant Development</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Builds a consistent, brand-specific voice for customer-facing voice assistants and IVR systems, in Arabic and English.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Same voice identity across every customer touchpoint</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">podcasts</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Podcast &amp; Audio Ad Production</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Produces audio ads and podcast segments at scale, letting you run more variations across audio platforms without studio costs stacking up.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Makes audio ad testing affordable at smaller budgets</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">call</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">IVR &amp; Phone System Voice Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Replaces static phone menu recordings with a natural, brand-consistent voice that's easy to update as offerings change.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Updates in minutes instead of rebooking a recording session</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">verified_user</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Consent-Based Voice Cloning</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Creates a reusable brand voice from a real spokesperson's recordings, only with their explicit, documented consent and clear usage terms.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Never cloned without documented consent from the voice's owner</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All voices tested for natural Arabic and English delivery, with consent and usage terms handled properly for any cloned voice.</p>
+      <button onclick="openModal(this)" data-source="marketing_voice_mid" class="btn-primary">Book Free Voice AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact in voice marketing</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">graphic_eq</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">AI Voiceover Generation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Text-to-speech quality has improved enough that AI voiceover now covers most ad and explainer video use cases previously requiring a studio session.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Increasingly standard for fast-turnaround ad and social video</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">translate</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Multilingual Dubbing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Voice localization tools let a single production reach multiple language markets from one recording session, cutting multi-market production costs sharply.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Widely adopted by brands running multi-market video campaigns</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">support_agent</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Branded Conversational Voice Agents</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Custom voice identities for IVR and voice assistants give brands a consistent audio presence across customer service touchpoints.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Improves brand recall across voice-based customer interactions</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">podcasts</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Audio Ad Production at Scale</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI voice generation makes producing multiple audio ad variants for testing economically realistic for smaller marketing budgets.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Makes creative testing feasible on podcast and streaming audio platforms</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">verified_user</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Voice Cloning &amp; Brand Consistency</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Consent-based voice cloning preserves a specific spokesperson's voice across content at a volume that would exceed their real availability.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Consent and usage terms are a strict prerequisite, not optional</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">accessibility_new</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Text-to-Speech for Accessibility</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI voice tools make content accessible to visually impaired or reading-constrained audiences, an increasingly expected feature for digital content.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Extends content reach to audiences other formats miss</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes voice generation AI actually work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Voice naturalness and quality</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Not every AI voice sounds equally natural. We test candidate voices against your actual script before recommending one, rather than defaulting to whatever sounds fine in a demo.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Consent and ethical use</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Voice cloning requires documented consent from the person being cloned, with clear boundaries on how the voice can and can't be used.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Arabic pronunciation accuracy</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Generic Arabic voice support often mishandles dialect and phonetics. We test specifically for Gulf Arabic before client-facing use.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Brand voice consistency</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">The same voice profile should sound identical across every piece of content, ads, IVR, assistants, so customers recognize your brand by ear.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows about AI voice generation</h2>
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">1&ndash;2 days</p>
+        <p style="color:#42474e; font-size:0.875rem;">typical turnaround for a finished ad voiceover from a final script</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">90%+</p>
+        <p style="color:#42474e; font-size:0.875rem;">lower cost than booking a studio and voice actor for many standard use cases</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">10+</p>
+        <p style="color:#42474e; font-size:0.875rem;">languages and accents available from a single script and voice profile</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Production Speed</p>
+          <p style="color:#42474e; line-height:1.7;">Teams using AI voice generation report cutting the time between a finished script and a usable voiceover from days of studio scheduling down to hours, particularly valuable for time-sensitive campaigns and frequent script revisions.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Multilingual Reach</p>
+          <p style="color:#42474e; line-height:1.7;">Brands using AI voice localization report reaching significantly more language markets from a single production budget than traditional voice actor booking across each market would allow.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Consistency</p>
+          <p style="color:#42474e; line-height:1.7;">A consistent AI-generated brand voice across ads, IVR, and assistants improves brand recognition compared to varying human talent across different production sessions, a factor increasingly cited in brand audio strategy research.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI voice generation</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Voice AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your voice and audio content needs, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="marketing_voice_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Voice AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
+</style>

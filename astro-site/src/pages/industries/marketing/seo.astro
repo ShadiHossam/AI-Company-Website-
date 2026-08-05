@@ -1,0 +1,309 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Does Google penalize AI-generated SEO content?", answer: "Google has stated it evaluates content on quality and usefulness, not on whether AI was involved in producing it. Thin, unedited AI output written purely to game rankings performs poorly and can be penalized, the same as thin human-written content always has been. Content that's accurate, well-structured, and genuinely useful tends to perform well regardless of how the first draft was produced." },
+  { question: "What is answer engine optimization, and is it different from SEO?", answer: "Answer engine optimization is about making your content easy for AI-generated search summaries to find, understand, and cite, alongside traditional ranking factors. It overlaps heavily with good SEO, clear structure, direct answers, credible sourcing, but adds specific attention to how content gets extracted and summarized by AI systems." },
+  { question: "Can AI SEO tools work for Arabic-language content?", answer: "Yes, though Arabic SEO has its own considerations: search volume data is often thinner, and keyword variation across dialects matters more than in English. We build keyword research and content optimization around Arabic search behavior specifically, not a direct translation of an English strategy." },
+  { question: "How long until we see results from AI-assisted SEO work?", answer: "Technical fixes and content optimization can show measurable movement within 4 to 8 weeks for lower-competition terms. Competitive keywords typically take 3 to 6 months regardless of what tools are used, since SEO results depend heavily on domain authority and how much content already exists to build on." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'marketing_seo')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI for SEO in the UAE",
+    "url": "https://lenooai.com/industries/marketing/seo",
+    "description": "Custom AI SEO systems for UAE businesses: keyword research, content optimization, technical audits, and answer engine optimization.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for SEO"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Marketing", "item": "https://lenooai.com/industries/marketing" },
+      { "@type": "ListItem", "position": 4, "name": "SEO AI", "item": "https://lenooai.com/industries/marketing/seo" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI for SEO in the UAE: Keyword Research & Answer Engine Optimization | Lenoo AI"
+  description="Lenoo AI, a Dubai AI agency, builds AI SEO systems for UAE businesses: keyword research, content optimization, technical audits, and answer engine optimization."
+  canonicalPath="/industries/marketing/seo"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/industries/marketing" style="color:inherit;text-decoration:none;opacity:0.65;">Marketing</a><span style="opacity:0.4;padding:0 4px;"> / </span>SEO</div>
+    <h1>AI for<br><span class="gradient-text">SEO in the UAE</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI-assisted SEO systems for UAE businesses: keyword research, content optimization, technical audits, and answer engine optimization for AI-powered search. Built around how people actually search today, not just traditional rankings.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <button onclick="openModal(this)" data-source="marketing_seo_hero" class="btn-primary">Book Free SEO AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+    <StatStrip stats={[
+      { value: "60%+", caption: "of searches now estimated to end without a click, as AI answer summaries grow" },
+      { value: "2–5x", caption: "faster content brief production with AI-assisted keyword research" },
+      { value: "Arabic + English", caption: "keyword and content strategy built for both languages" },
+    ]} />
+  </div>
+</header>
+
+<!-- WHY SEO & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why SEO is being reshaped by AI right now</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Search results themselves are changing.</strong> AI-generated answer summaries now appear above traditional results for a growing share of queries, meaning visibility depends on being cited in an AI answer, not just ranking in the classic ten blue links.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Content production used to be the bottleneck.</strong> Keyword research and content briefs that took days now take hours, letting a lean team cover far more topics without sacrificing quality.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Technical SEO issues hide in plain sight.</strong> AI-assisted crawling and auditing tools surface indexing, speed, and structured data problems that manual audits routinely miss on larger sites.</p>
+      </div>
+      <div class="split-media" style="display:flex; align-items:stretch;">
+        <div class="card" style="display:flex; flex-direction:column; justify-content:center; text-align:center; width:100%; padding:2.5rem;">
+          <p class="stat-number" style="font-size:3rem; margin-bottom:0.75rem;">60%+</p>
+          <p style="color:#42474e; font-size:1rem; line-height:1.7;">of searches are estimated to end without a click as AI answer summaries take a larger share of the results page.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI SEO Systems Built for UAE Businesses</h2>
+      <p>Six systems our Dubai AI agency builds to grow organic visibility, integrated with your CMS and existing SEO tools.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">key</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Content Brief &amp; Keyword Research</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Identifies keyword opportunities and builds structured content briefs based on search intent and competitor gaps, in Arabic and English.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Cuts research time from days to hours per topic cluster</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">fact_check</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Technical SEO Audit Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Crawls your site to flag indexing issues, broken links, speed problems, and missing structured data before they cost you rankings.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Catches issues manual audits routinely miss on larger sites</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">travel_explore</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Answer Engine Optimization</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Structures content so AI-powered search summaries can find, understand, and cite it, alongside classic ranking optimization.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Positions your content for the growing share of AI-summarized search</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">location_on</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Local SEO &amp; Google Business Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Keeps your Google Business Profile, local listings, and location pages current automatically, a major factor for UAE businesses serving specific emirates.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Improves visibility for "near me" and location-specific searches</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">restart_alt</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Content Refresh &amp; Decay Detection</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Flags older content losing rankings or traffic and recommends specific updates, instead of letting your best pages quietly decline.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Protects existing rankings, not just new content</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">monitoring</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Rank &amp; Visibility Monitoring Dashboard</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Tracks rankings, AI answer citations, and organic traffic in one dashboard, so you see what's actually moving the needle.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Connects SEO activity directly to traffic and conversion outcomes</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems bilingual, and integrated with your CMS and existing SEO tools.</p>
+      <button onclick="openModal(this)" data-source="marketing_seo_mid" class="btn-primary">Book Free SEO AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact in SEO</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">key</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">AI Keyword Research</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI tools cluster keywords by intent and surface question-based queries far faster than manual research, especially across large topic areas.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Widely adopted across in-house and agency SEO teams</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">grading</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Content Optimization Scoring</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Tools score drafts against top-ranking competitors for topic coverage and structure, catching gaps before publication rather than after.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Common step in most modern content production workflows</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">travel_explore</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Answer Engine Optimization</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">A newer discipline focused on structuring content so it gets cited by AI-generated search summaries, still being defined as best practices emerge.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">One of the fastest-evolving areas of SEO practice today</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">bug_report</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Technical SEO Crawling</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI-assisted crawlers prioritize which technical issues actually affect rankings, rather than producing an overwhelming flat list of every minor flaw.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces time spent triaging low-impact technical issues</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">data_object</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Structured Data Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI tools generate and validate schema markup at scale, improving eligibility for rich results and AI answer citations.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Increasingly relevant as AI search relies more on structured data</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">link</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Backlink &amp; Competitor Analysis</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI models identify realistic link opportunities and analyze competitor strategy shifts faster than manual link prospecting.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Speeds up competitive gap analysis significantly</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes SEO AI actually work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Search intent accuracy</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Ranking for the wrong intent doesn't convert. Keyword targeting needs to match what searchers actually want, not just search volume.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">E-E-A-T signal strength</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Content needs real experience and expertise behind it. AI drafts a starting point, but credible sourcing and author expertise still have to come from a human.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Technical implementation depth</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">An audit that just lists problems isn't useful. Fixes need to actually ship to your site, not sit in a report nobody actions.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Measurement beyond rankings</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A rank in position 3 that doesn't drive traffic or conversions isn't a win. SEO reporting should track business outcomes, not just position numbers.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows about AI in SEO</h2>
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">60%+</p>
+        <p style="color:#42474e; font-size:0.875rem;">of searches estimated to end without a click as AI answer summaries grow</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">2&ndash;5x</p>
+        <p style="color:#42474e; font-size:0.875rem;">faster content brief production with AI-assisted keyword research</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">4&ndash;8 weeks</p>
+        <p style="color:#42474e; font-size:0.875rem;">typical time to see measurable movement on lower-competition keywords</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">The Zero-Click Shift</p>
+          <p style="color:#42474e; line-height:1.7;">Industry research on search behavior increasingly points to a growing share of queries resolving directly in AI-generated summaries, without a click to any website, a trend reshaping how SEO value gets measured and pursued.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Content Velocity</p>
+          <p style="color:#42474e; line-height:1.7;">Teams using AI-assisted research and briefing report producing several times more well-researched content in the same timeframe, though quality still depends heavily on human editing and fact-checking before publication.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Answer Engine Visibility</p>
+          <p style="color:#42474e; line-height:1.7;">Early analysis of AI search citations shows a strong preference for clearly structured, directly-answering content with credible sourcing, closely mirroring the same fundamentals that have always defined strong SEO content.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI in SEO</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free SEO AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your current organic visibility and content workflow, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="marketing_seo_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free SEO AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
+</style>

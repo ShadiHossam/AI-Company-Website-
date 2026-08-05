@@ -1,0 +1,260 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "Can a complete beginner really build something with vibe coding?", answer: "Yes, for a first project: a simple website, a small tool, a game prototype. The tools handle the syntax so you can focus on describing what you want. What takes longer to learn is judgment: knowing whether the AI's answer actually solved your problem, or just looks like it did. That comes with practice, not with a better tool." },
+  { question: "Is vibe coding safe for kids to learn?", answer: "With supervision and the right project, yes. It's a good way to introduce programming concepts, cause and effect, breaking a problem into steps, without the early frustration of memorizing syntax. A parent or teacher should still be involved: reviewing what gets built, keeping projects age-appropriate, and treating AI output as a starting point to question, not an answer to trust blindly." },
+  { question: "How long does it take to learn?", answer: "You can build your first small project in an afternoon. Getting comfortable enough to build something more ambitious on your own, without getting stuck when the AI's answer is wrong, usually takes a few weeks of regular practice. That's much faster than learning to write code from scratch, but it isn't instant." },
+  { question: "Do I need to learn to code eventually anyway?", answer: "Not necessarily, it depends on your goal. If you want to keep building small personal projects, you can go a long way without ever learning to write code by hand. If you want to build something you'll depend on long-term, or you're considering a career in software, understanding what the AI is actually doing becomes valuable sooner rather than later, since it's what lets you judge its output instead of just trusting it." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'vibe_coding_beginners')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+---
+
+<BaseLayout
+  title="Vibe Coding 101: A Beginner's Guide | Lenoo AI"
+  description="A plain-language beginner's guide to vibe coding: what it is, who it's for, how to build your first project, and common mistakes to avoid."
+  canonicalPath="/services/vibe-coding/beginners"
+  ogImage="/assets/og-services.jpg"
+  ldJson={[faqLdJson]}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services" style="color:inherit;text-decoration:none;opacity:0.65;">Services</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/vibe-coding" style="color:inherit;text-decoration:none;opacity:0.65;">Vibe Coding</a><span style="opacity:0.4;padding:0 4px;"> / </span>Beginners</div>
+    <h1>Vibe Coding for <span class="gradient-text">Complete Beginners.</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      You don't need to know how to code to build your first project with AI. Here's what vibe coding actually is, who it's realistically good for, and how to build something in the next hour.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="vibe_beginners_hero" class="btn-primary">Discuss Your Project</button>
+      <a href="#getting-started" class="btn-outline">Start Building ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1400&q=80&auto=format&fit=crop" alt="Beginner learning to code with an AI assistant on screen" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHAT IS IT, BEGINNER FRAMING -->
+<section class="section" aria-labelledby="explain-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="explain-heading" style="text-align:left; margin-bottom:1.5rem;">What Vibe Coding Actually Means, Simply</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      Normally, building a website or an app means typing out instructions in a programming language, line by line, and knowing exactly what each line does. Vibe coding flips that around. You describe what you want in plain English, "make a page that lists my favorite books and lets me mark them as read", and an AI tool writes the actual code for you. You look at the result, tell it what to fix or add, and it keeps adjusting until it matches what you had in mind.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      The term comes from how it feels to work this way: you're steering by the overall "vibe" of what you want, not by memorized syntax rules. That doesn't mean it's magic or that you can skip thinking entirely. You still need to know what you're trying to build, check whether the result actually works, and notice when something is off. What you don't need anymore is years of practice before you can build anything at all.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      A useful comparison: learning to cook by following a recipe someone else wrote versus learning to cook by describing a dish to a chef and tasting the result until it's right. The second approach gets you a good meal much faster. It doesn't teach you knife skills. Vibe coding works the same way for software: it gets you a working result quickly, and the deeper technical understanding, if you want it, comes later and separately, not as a prerequisite.
+    </p>
+  </div>
+</section>
+
+<!-- WHO IT'S FOR -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="who-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="who-heading">Who This Is Realistically For</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Vibe coding lowers the barrier to entry. It doesn't remove every barrier for every audience equally.</p>
+    </div>
+    <div class="builds-grid">
+      <div class="card">
+        <h3>Non-Coders With an Idea</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">If you've never written a line of code, this is the fastest realistic path to seeing your idea run as a real, clickable thing instead of a sketch on paper. You still make every decision, the AI just handles the typing.</p>
+      </div>
+      <div class="card">
+        <h3>Students &amp; Kids</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">A good introduction to computational thinking, breaking a goal into steps, without the early wall of syntax errors that turns a lot of beginners away from coding entirely. It builds confidence before the harder fundamentals.</p>
+      </div>
+      <div class="card">
+        <h3>Career Changers</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">A way to build a real portfolio project before committing to a full bootcamp or degree, and a way to see whether the day-to-day work of building software actually suits you before investing months in it.</p>
+      </div>
+      <div class="card">
+        <h3>Hobbyists</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">People who want to automate a personal task, build a small tool for themselves, or make something just to see if they can, without treating it as a career step or a business at all.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GETTING STARTED -->
+<section id="getting-started" class="section" aria-labelledby="start-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="start-heading" style="text-align:left; margin-bottom:1.5rem;">Your First Project, Step by Step</h2>
+    <div style="display:flex; flex-direction:column; gap:1.25rem;">
+      <div style="display:flex; gap:1rem; align-items:flex-start;">
+        <span style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:#006875; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9375rem;">1</span>
+        <p style="color:#42474e; font-size:1rem; line-height:1.8;"><strong>Pick something small and personal.</strong> A to-do list, a page about a hobby, a simple calculator. Not a business idea yet, just something you'll actually recognize as working or not, and something you'll actually use so you notice what's missing.</p>
+      </div>
+      <div style="display:flex; gap:1rem; align-items:flex-start;">
+        <span style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:#006875; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9375rem;">2</span>
+        <p style="color:#42474e; font-size:1rem; line-height:1.8;"><strong>Pick a beginner-friendly tool.</strong> An app-builder tool that runs in the browser (see our <a href="/services/vibe-coding/tools" style="color:#006875;">tools guide</a>) is easier to start with than a code editor, since there's nothing to install and no account setup beyond signing in.</p>
+      </div>
+      <div style="display:flex; gap:1rem; align-items:flex-start;">
+        <span style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:#006875; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9375rem;">3</span>
+        <p style="color:#42474e; font-size:1rem; line-height:1.8;"><strong>Describe it in plain language, then react to what you get.</strong> Say what you want in a sentence or two. Look at the result. Say what's wrong or missing, in plain language again. Repeat. Most first projects take somewhere between five and fifteen of these back-and-forth rounds before they feel done.</p>
+      </div>
+      <div style="display:flex; gap:1rem; align-items:flex-start;">
+        <span style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:#006875; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9375rem;">4</span>
+        <p style="color:#42474e; font-size:1rem; line-height:1.8;"><strong>Break it on purpose.</strong> Click things you're not supposed to, type unexpected input, try to make it fail. This is how you learn what the tool actually understood versus what it guessed at. It's also the single most useful habit a beginner can build early, because it's the same instinct professional testing is built on.</p>
+      </div>
+      <div style="display:flex; gap:1rem; align-items:flex-start;">
+        <span style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:#006875; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9375rem;">5</span>
+        <p style="color:#42474e; font-size:1rem; line-height:1.8;"><strong>Ask it to explain what it built.</strong> Before moving on, have the tool walk you through what it just did and why. You don't need to memorize the answer, but hearing it once builds the vocabulary you'll need for the next project.</p>
+      </div>
+      <div style="display:flex; gap:1rem; align-items:flex-start;">
+        <span style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:#006875; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9375rem;">6</span>
+        <p style="color:#42474e; font-size:1rem; line-height:1.8;"><strong>Share it, or leave it, and start the next one.</strong> The second project always goes faster than the first, because you'll already know how to describe what you want and what questions to ask along the way.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REALISTIC EXPECTATIONS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="expectations-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="expectations-heading" style="text-align:left; margin-bottom:1.5rem;">What to Expect in the First Week</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      The first hour is usually the most encouraging part: something visibly works almost immediately, which is exactly the point. The first real friction tends to show up on day two or three, once you try to add a second feature and the tool changes something you didn't ask it to touch. That's normal, not a sign you're doing it wrong. Describing what should stay the same, not just what should change, is a skill that develops with a few projects of practice.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      By the end of a week of casual use, most beginners can describe what they want clearly enough that the first attempt is usually close, catch the difference between "looks right" and "actually works" without being told to check, and have a rough sense of which tool category (see our <a href="/services/vibe-coding/tools" style="color:#006875;">tools guide</a>) fits the kind of thing they like building. That's a realistic, achievable bar, not an idealized one.
+    </p>
+  </div>
+</section>
+
+<!-- COMMON MISTAKES -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="mistakes-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="mistakes-heading" style="text-align:left; margin-bottom:1.5rem;">Mistakes Most Beginners Make</h2>
+    <ul style="color:#42474e; font-size:1rem; line-height:2; padding-left:1.25rem;">
+      <li><strong>Trusting the first answer.</strong> AI tools produce confident-sounding output whether or not it's correct. Test it before you believe it, every time, not just when something looks obviously wrong.</li>
+      <li><strong>Starting with something too big.</strong> A full business idea as a first project means you hit every hard problem at once, before you've learned to work with the tool at all. Save the ambitious idea for project three or four.</li>
+      <li><strong>Giving vague instructions and blaming the tool.</strong> "Make it better" gives the AI nothing to work with. "Make the button bigger and change the color to blue" gets a result you can actually judge.</li>
+      <li><strong>Never reading the code it writes.</strong> You don't need to understand every line, but glancing at what changed teaches you faster than only looking at the result on screen, and helps you notice when something changed that you didn't ask for.</li>
+      <li><strong>Assuming a working demo means it's ready for real use.</strong> A prototype that works when you test it is not the same as a product ready for other people's data, traffic, or trust. See our <a href="/services/vibe-coding/risks-and-limitations" style="color:#006875;">risks and limitations guide</a> before putting anything you build in front of real users.</li>
+      <li><strong>Giving up after the first confusing error.</strong> Copy the exact error message back to the tool and ask what it means before assuming the project is broken beyond repair. Most first-time blockers resolve in one or two more exchanges.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- FOR PARENTS AND TEACHERS -->
+<section class="section" aria-labelledby="parents-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="parents-heading" style="text-align:left; margin-bottom:1.5rem;">A Note for Parents and Teachers</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      If a child is learning this way, treat AI-generated code the same way you'd treat an AI-written essay: a useful starting point to question, not a finished answer to accept. Ask the child to explain what a piece of the project does in their own words before moving to the next step. If they can't, that's a sign to slow down rather than a sign the tool failed.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      Keep early projects personal and low-stakes: a game, a quiz, a page about a favorite topic. Avoid connecting a child's first projects to real payment systems, public hosting with their name attached, or anything that collects other people's information, since the safety and review practices covered in our <a href="/services/vibe-coding/risks-and-limitations" style="color:#006875;">risks and limitations guide</a> matter even more when the builder is still learning to spot what could go wrong.
+    </p>
+  </div>
+</section>
+
+<!-- BRIDGE / MID CTA -->
+<section class="section" aria-labelledby="next-step-heading">
+  <div class="container" style="max-width:820px; text-align:center;">
+    <h2 id="next-step-heading" style="margin-bottom:1rem;">When a Prototype Needs to Become a Real Product</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      Building your own first project is genuinely useful, it teaches you what you want and proves the idea can work. What it doesn't do is prepare that project for real users, real data, or a business depending on it. That's a different job: security, scale, maintainability, and support, done by people who do it professionally.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:2rem;">
+      There's no shame in that handoff, and no rush to reach it either. Plenty of good beginner projects stay exactly what they were meant to be: something you built to learn, for yourself, that never needed to become anything more. The point where it's worth a conversation with a professional team is simple, when other people are relying on it, or when the cost of it breaking is higher than the cost of getting it built properly. If your prototype has outgrown "just for me," that's where we come in.
+    </p>
+    <button onclick="openModal(this)" data-source="vibe_beginners_mid" class="btn-primary">Discuss Your Project</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Outgrown Your First Project?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Tell us what you built and what it needs to become next. We'll give you a timeline and cost estimate, free, with no commitment.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="vibe_beginners_final" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Discuss Your Project</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "name": "Vibe Coding for Beginners",
+      "url": "https://lenooai.com/services/vibe-coding/beginners",
+      "description": "A plain-language beginner's guide to vibe coding: what it is, who it's for, how to build your first project, and common mistakes to avoid.",
+      "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+      "areaServed": "United Arab Emirates",
+      "serviceType": "Software Development"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://lenooai.com/services" },
+        { "@type": "ListItem", "position": 3, "name": "Vibe Coding", "item": "https://lenooai.com/services/vibe-coding" },
+        { "@type": "ListItem", "position": 4, "name": "Beginners", "item": "https://lenooai.com/services/vibe-coding/beginners" }
+      ]
+    }
+  ]
+}
+</script>
+
+</BaseLayout>

@@ -1,0 +1,274 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import { getAutomationTool } from "../../../../data/automationTools";
+
+const tool = getAutomationTool('make');
+
+let faqItems = tool.faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_automation_tools_make')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: tool.h1,
+    url: 'https://lenooai.com/services/ai-automation/tools/make',
+    description: tool.metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'Make automation projects: pricing based on scenario complexity and scope. Book a free discovery call for a quote.' },
+    serviceType: 'Make Automation Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Automation', item: 'https://lenooai.com/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'Tools', item: 'https://lenooai.com/services/ai-automation/tools' },
+      { '@type': 'ListItem', position: 4, name: 'Make', item: 'https://lenooai.com/services/ai-automation/tools/make' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title={tool.metaTitle}
+  description={tool.metaDescription}
+  canonicalPath="/services/ai-automation/tools/make"
+  arPath="/ar/services/ai-automation/tools/make"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">AI Automation</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-automation/tools" style="color:inherit;text-decoration:none;opacity:0.65;">Tools</a><span style="opacity:0.4;padding:0 4px;"> / </span>Make</div>
+    <div class="tool-logo-hero"><img src={`https://cdn.simpleicons.org/${tool.logoSlug}/${tool.logoColor}`} alt="Make logo" width="56" height="56" loading="eager" /></div>
+    <h1>{tool.h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {tool.heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ai_automation_tools_make_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#use-cases" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- WHAT IS MAKE -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">What Is Make?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        {tool.whatIs}
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.whatIsExtra}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW LENOO USES MAKE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="how-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="how-heading" style="margin-bottom:1.5rem;">How Lenoo AI Uses Make for UAE Automation Builds</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        {tool.integrationAngle}
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.integrationAngleExtra}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO THIS FITS -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">Is Make Right for You?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        {tool.whoItsFor}
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        A few concrete signals we watch for: your workflow needs to check three or four conditions before deciding what happens next, someone on your team is reformatting data by hand between two systems that don't share a structure, or a Zapier automation you already built keeps breaking on a branch it wasn't originally designed to handle. Any of those points toward Make's scenario builder being the more natural fit for what you're trying to do.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">What a Typical Make Project With Us Looks Like</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Because Make scenarios can branch in several directions at once, we spend more time on the diagram before we spend time in the builder.
+      </p>
+      <ol style="color:#42474e; font-size:1.0625rem; line-height:1.85; padding-left:1.25rem; margin:0;">
+        <li style="margin-bottom:0.75rem;"><strong>Discovery.</strong> We walk through every branch your process can take, not just the common path, since scenarios that skip an edge case at this stage tend to break on it in production. This is also where we confirm which systems have the data transformation needs a Zap couldn't handle cleanly.</li>
+        <li style="margin-bottom:0.75rem;"><strong>Design.</strong> We sketch the scenario as a flowchart first, module by module, marking where a router splits the path and where a decision genuinely needs an AI module rather than a filter, before opening the Make builder at all.</li>
+        <li style="margin-bottom:0.75rem;"><strong>Build and test.</strong> We build the scenario branch by branch inside Make, running real records through each path, including the less common ones, before anything goes live, and we check the data transformation output against your source formats field by field.</li>
+        <li style="margin-bottom:0.75rem;"><strong>Launch and monitor.</strong> We turn on scheduling or triggers, watch execution history for the first stretch after go-live, and fix any branch that behaves differently against live data than it did in testing.</li>
+        <li><strong>Document and hand off.</strong> We walk your team through the finished scenario module by module, so someone internally can read what each branch does, and leave a maintenance path open for anything more involved than a small tweak.</li>
+      </ol>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        A scenario with two or three branches can usually go live within a week. Larger, multi-branch scenarios connecting several systems are typically scoped over two to three weeks, sequenced so the highest-value branch launches first while the rest continues in parallel.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">Make vs. the Alternatives</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Make and <a href="/services/ai-automation/tools/zapier">Zapier</a> solve overlapping problems, and for a simple linear workflow, either one works fine; we pick based on which platform your team already has a login for. Where Make pulls ahead is a scenario with several branches and heavier data transformation, since the flowchart view stays readable in a way a long list of Zapier steps doesn't. If your workflow needs self-hosting for compliance reasons, custom code beyond what Make's built-in transformers handle, or an AI agent making a chain of decisions rather than one classification step, <a href="/services/ai-automation/tools/n8n">n8n</a> is the better fit. We'll say so directly if that's what your process needs, rather than force it into a Make scenario because that's what we started building. And if the scenario is genuinely simple once we map it out, sometimes a business that came to us assuming they needed Make's branching power ends up better served by two or three straightforward Zaps instead, which we'll recommend even though it's the smaller build.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- RELIABILITY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="reliability-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="reliability-heading" style="margin-bottom:1.5rem;">Keeping a Make Scenario Reliable After Launch</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Make scenarios that branch heavily are more prone to a specific kind of failure: a case nobody thought to test slips through an untested path and either errors out or, worse, runs quietly with the wrong data going somewhere it shouldn't. We build every scenario with error handlers on each module that can realistically fail, so a bad record gets routed to a review queue instead of breaking the run or silently corrupting data downstream.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        We also set operation limits and monitor consumption against your plan, since a scenario that scales up in volume without anyone checking can quietly burn through your monthly operations and stop running mid-month. Every Make project we deliver includes documentation of the full scenario logic, branch by branch, so your team can see exactly what happens to a record at each decision point without opening the builder and tracing it manually themselves.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="use-cases" class="section" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">What We Build With Make</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Common Make projects for UAE clients, from multi-branch routing to scheduled batch processing. Every build is scoped to your actual workflow, not a generic template.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {tool.useCases.map((uc) => (
+        <div class="value-card">
+          <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- WHAT A MAKE PROJECT COSTS -->
+<section class="section" aria-labelledby="pricing-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="pricing-heading" style="margin-bottom:1.5rem;">What a Make Project Costs</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        We scope Make projects based on how many scenarios you need, how many modules each one touches, and whether a step requires an AI module to read and judge unstructured content rather than just transform data. A single scenario connecting two or three apps with clear branching logic is a smaller, fixed-scope engagement. A set of interlinked scenarios handling multi-branch routing, heavier data transformation, and AI-assisted decisions across several systems is a larger project we scope after seeing your actual workflow on a discovery call.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Your Make subscription itself is billed separately based on operations used per month, and we help you size that correctly rather than defaulting to a bigger plan than your volume needs. We don't mark up your Make bill. The build is a one-time cost, and we include a 90-day monitoring window with every project; ongoing maintenance beyond that is an optional retainer for teams who'd rather we keep watching the scenario than handle it in-house.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Not sure if Make is the right fit for your workflow? We'll tell you honestly.</p>
+    <button onclick="openModal(this)" data-source="ai_automation_tools_make_mid" class="btn-primary">Book a Free Make Consultation</button>
+  </div>
+</section>
+
+<!-- GETTING STARTED -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="getting-started-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="getting-started-heading" style="margin-bottom:1.5rem;">Getting Started With a Make Scenario</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        If you're new to Make entirely, we set up the account, structure the workspace around your team (folders by department or function tend to work better than one flat list of scenarios as you add more automation over time), and build the first scenario as a template your team can reference when requesting the next one. If you already have scenarios running, we start with a short audit: what's live, what's fragile, what's duplicated across two tools that should really be one.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Either way, the first deliverable is always a working scenario your team can see running against real data before we call the project done, not a design document or a demo on sample records. We'd rather you judge the automation on what it actually does with your invoices, your leads, or your reports than on a mockup.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Build Your Scenario?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Book a free discovery call with our Dubai team. We'll map your workflow branch by branch and tell you exactly what a Make scenario would look like, including where an AI step would actually help.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_automation_tools_make_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.tool-logo-hero { width:64px; height:64px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; }
+.value-card { display:flex; flex-direction:column; }
+</style>

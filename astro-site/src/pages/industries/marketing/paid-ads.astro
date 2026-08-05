@@ -1,0 +1,309 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Can AI bidding overspend without anyone noticing?", answer: "Not with proper guardrails. We set budget caps and performance thresholds on every automated bidding system, and alerts trigger if spend or performance moves outside expected ranges. Automation runs within limits your team sets, not unlimited discretion." },
+  { question: "Does AI ad optimization work across both Google and Meta?", answer: "Yes, we build campaign automation to work across Google, Meta, and TikTok ad accounts, since most UAE businesses run budget across more than one platform and need a coordinated view rather than separate silos." },
+  { question: "How long until we see results from AI bid optimization?", answer: "Bid algorithms typically need 2 to 4 weeks of live data to optimize effectively, since they're learning from actual conversion patterns. Creative testing can show early signal within the first 1 to 2 weeks of a campaign." },
+  { question: "Do we lose control over our ad accounts with automated optimization?", answer: "No. You keep full account ownership and visibility. Automation handles bid and budget adjustments within rules your team approves, and we review performance together on a regular cadence, not a black box you can't see into." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'marketing_paid_ads')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI for Paid Ad Campaign Optimization in the UAE",
+    "url": "https://lenooai.com/industries/marketing/paid-ads",
+    "description": "Custom AI paid advertising systems for UAE businesses: bid management, creative testing, audience targeting, and cross-platform budget optimization.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Paid Advertising"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Marketing", "item": "https://lenooai.com/industries/marketing" },
+      { "@type": "ListItem", "position": 4, "name": "Paid Ads AI", "item": "https://lenooai.com/industries/marketing/paid-ads" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI for Paid Ad Campaign Optimization in the UAE: Bid Management & Creative Testing | Lenoo AI"
+  description="Lenoo AI, a Dubai AI agency, builds AI paid advertising systems for UAE businesses: bid management, creative testing, and cross-platform budget optimization."
+  canonicalPath="/industries/marketing/paid-ads"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/industries/marketing" style="color:inherit;text-decoration:none;opacity:0.65;">Marketing</a><span style="opacity:0.4;padding:0 4px;"> / </span>Paid Ads</div>
+    <h1>AI for Paid Ad<br><span class="gradient-text">Campaign Optimization in the UAE</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI paid advertising systems for UAE businesses: bid management, creative testing, audience targeting, and cross-platform budget allocation. You keep account ownership; automation runs within rules your team sets.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <button onclick="openModal(this)" data-source="marketing_paidads_hero" class="btn-primary">Book Free Paid Ads AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+    <StatStrip stats={[
+      { value: "2–4 weeks", caption: "typical learning period for AI bid algorithms to optimize effectively" },
+      { value: "Cross-platform", caption: "coordinated budget allocation across Google, Meta, and TikTok" },
+      { value: "10x+", caption: "more creative variants testable per campaign with AI-generated creative" },
+    ]} />
+  </div>
+</header>
+
+<!-- WHY PAID ADS & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why paid ads is one of AI's highest-impact marketing functions</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Manual bid adjustment can't keep pace with auction dynamics.</strong> Ad auctions shift by the minute based on competition and demand. AI bid management adjusts continuously, something no person checking dashboards a few times a day can match.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Budget gets locked into habit, not performance.</strong> Without active reallocation, spend tends to stay wherever it's always been. AI budget optimization shifts spend toward what's actually converting, in near real time.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Creative fatigue kills performance quietly.</strong> The same ad shown too long loses effectiveness. AI-generated creative variants keep campaigns fresh without a constant manual production cycle.</p>
+      </div>
+      <div class="split-media" style="display:flex; align-items:stretch;">
+        <div class="card" style="display:flex; flex-direction:column; justify-content:center; text-align:center; width:100%; padding:2.5rem;">
+          <p class="stat-number" style="font-size:3rem; margin-bottom:0.75rem;">10x+</p>
+          <p style="color:#42474e; font-size:1rem; line-height:1.7;">more creative variants testable per campaign with AI-generated creative, directly countering the creative fatigue that quietly erodes ad performance.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Paid Ads Systems Built for UAE Businesses</h2>
+      <p>Six systems our Dubai AI agency builds for paid campaign management, with budget guardrails and full account visibility for your team.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">payments</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">AI Bid Management &amp; Budget Allocation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Adjusts bids continuously based on auction dynamics and performance, within budget caps and thresholds your team sets.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Runs within guardrails, never unlimited discretion</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">ads_click</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Ad Creative Generation &amp; Testing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Generates and tests multiple creative variants simultaneously, surfacing top performers faster than manual A/B testing.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Fights creative fatigue with continuous fresh variants</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">groups</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Audience Targeting &amp; Lookalike Modeling</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Builds lookalike and predictive audiences from your best customers, improving targeting precision beyond platform defaults.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Targets audiences most similar to your actual best customers</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">sync_alt</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Cross-Platform Campaign Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Coordinates budget and messaging across Google, Meta, and TikTok from one view, instead of managing each platform in isolation.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">One coordinated strategy instead of platform silos</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">warning</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Performance Anomaly Detection</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Flags sudden performance drops, spend spikes, or suspicious click patterns immediately, instead of surfacing in a weekly report.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Catches problems within hours, not at the next reporting cycle</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">web</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Landing Page Optimization</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Tests landing page variants against incoming ad traffic, closing the loop between ad spend and actual conversion rate.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Optimizes the full funnel, not just the ad itself</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">You keep full account ownership and visibility; automation runs within rules your team approves.</p>
+      <button onclick="openModal(this)" data-source="marketing_paidads_mid" class="btn-primary">Book Free Paid Ads AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact in paid advertising</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">payments</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Automated Bid Management</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Algorithmic bidding is now the default approach on most major ad platforms, adjusting continuously to auction conditions no manual process could match.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Standard default across Google, Meta, and TikTok ad platforms</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">ads_click</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Generative Ad Creative Testing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI-generated creative variants let performance teams test far more combinations than manual production would allow within the same timeframe.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Directly combats ad fatigue and declining click-through over time</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">groups</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Predictive Audience Targeting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Lookalike modeling based on high-value customer data consistently outperforms broad demographic targeting on conversion efficiency.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Standard feature across major ad platform targeting tools</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">sync_alt</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Cross-Channel Budget Optimization</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI models that reallocate budget across platforms in near real time based on attributed performance are becoming standard for larger ad accounts.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces budget stuck in underperforming channels out of habit</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">gpp_maybe</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Fraud &amp; Invalid Traffic Detection</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI tools flag click fraud and bot traffic that would otherwise drain ad budget without producing real customer interest.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Protects budget from a well-documented category of ad fraud</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">tune</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Dynamic Creative Optimization</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI systems automatically assemble the best-performing combination of headlines, images, and calls to action for each audience segment.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Personalizes creative combinations without manual variant building</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes paid ads AI actually work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Platform API integration depth</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Automation needs direct, reliable integration with Google, Meta, and TikTok ad APIs, not a workaround that breaks with every platform update.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Creative testing rigor</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Testing needs statistically meaningful sample sizes before declaring a winner. Calling results too early wastes the value of testing entirely.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Cross-channel attribution accuracy</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Budget reallocation is only as good as the attribution data behind it. Weak attribution leads to confidently wrong reallocation decisions.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Human oversight on budget</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Automation runs within guardrails your team sets and reviews, never unlimited discretion over live ad spend.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows about AI in paid advertising</h2>
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">2&ndash;4 weeks</p>
+        <p style="color:#42474e; font-size:0.875rem;">typical learning period for AI bid algorithms to optimize effectively</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">10x+</p>
+        <p style="color:#42474e; font-size:0.875rem;">more creative variants testable per campaign with AI-generated creative</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">26&ndash;30%</p>
+        <p style="color:#42474e; font-size:0.875rem;">of ad spend commonly estimated as misallocated without cross-channel attribution</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Algorithmic Bidding Adoption</p>
+          <p style="color:#42474e; line-height:1.7;">Major ad platforms have shifted their default bidding strategies toward algorithmic, machine-learning-driven optimization, reflecting a broad industry consensus that automated bidding outperforms manual adjustment at scale.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Creative Fatigue</p>
+          <p style="color:#42474e; line-height:1.7;">Performance marketing research consistently documents declining click-through rates as the same ad creative runs repeatedly to the same audience, a decline AI-generated creative variety helps offset through continuous refresh.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Budget Allocation</p>
+          <p style="color:#42474e; line-height:1.7;">Cross-channel attribution studies consistently find a meaningful share of ad budget misallocated when measurement relies on siloed, platform-reported metrics instead of a unified, cross-platform attribution view.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI in paid advertising</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Paid Ads AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your current ad accounts and campaign structure, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="marketing_paidads_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Paid Ads AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
+</style>
