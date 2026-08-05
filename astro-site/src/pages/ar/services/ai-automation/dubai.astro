@@ -1,0 +1,260 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../../components/ProcessSteps.astro";
+import StatStrip from "../../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "هل تعملون في دبي حضورياً أم عن بُعد فقط؟", answer: "كلاهما. مقرنا في الخليج التجاري، فيمكننا الالتقاء شخصياً لجلسة الاكتشاف الأولى، ومراجعة سير عملك على أرض الواقع، والمتابعة في المحطات المهمة من المشروع. بعد إطلاق الأتمتة، يتم معظم الدعم عن بُعد لأنه أسرع للجميع، لكن الزيارة الحضورية متاحة دائماً إذا فضّلت اللقاء المباشر." },
+  { question: "ما هي قطاعات دبي التي تتعاملون معها أكثر؟", answer: "العقارات وإدارة الممتلكات، التجارة واللوجستيات، الخدمات المهنية (المحاماة، المحاسبة، الاستشارات)، الضيافة، والتجزئة. مزيج دبي من الشركات الناشئة في المناطق الحرة والشركات الأكبر على البر الرئيسي يعني أننا نرى نطاقاً واسعاً من سير العمل، لكن النمط عادة واحد: إدخال بيانات متكرر، ومعالجة بريد إلكتروني، وموافقات تستهلك ساعات كل أسبوع." },
+  { question: "هل تعملون مع الشركات المسجلة في مناطق حرة؟", answer: "نعم. سواء كانت شركتك مسجلة في DMCC أو JAFZA أو DIFC أو على البر الرئيسي، فعمل الأتمتة نفسه: يرتبط بالأدوات التي تستخدمها بالفعل، وليس بنوع الرخصة. بنينا حلول أتمتة لفرق صغيرة في مناطق حرة وعمليات أكبر على البر الرئيسي على حد سواء." },
+  { question: "أين يقع فريقكم فعلياً؟", answer: "الخليج التجاري، دبي. لسنا وكالة عن بُعد تضع عنوان دبي للمظهر فقط. إذا أردت الجلوس معنا قبل الالتزام بأي شيء، يمكننا ترتيب ذلك." },
+  { question: "كم يستغرق البدء بعد مكالمة الاكتشاف؟", answer: "عادة خلال أسبوع. مكالمة الاكتشاف تعطينا ما يكفي لتحديد نطاق أول أتمتة وإعطائك جدولاً زمنياً محدداً. من هناك، يعتمد وقت البناء على عدد الأنظمة المعنية، لكن معظم أول سير عمل يُطلق خلال 2 إلى 4 أسابيع." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_automation_dubai')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+const processSteps = [
+  { icon: "search", step: "الخطوة 1", title: "الاكتشاف، حضورياً أو عن بُعد", description: "نلتقي في الخليج التجاري أو عبر مكالمة فيديو لرسم سير عملك الحالي وتحديد الأتمتة الأسرع عائداً." },
+  { icon: "edit", step: "الخطوة 2", title: "التصميم والتخطيط", description: "نصمم منطق الأتمتة، ونحدد المحفزات والمخرجات، ونحصل على موافقتك قبل كتابة أي كود." },
+  { icon: "build", step: "الخطوة 3", title: "البناء والاختبار", description: "نبني الأتمتة ونختبرها على بياناتك الحقيقية قبل أن تلمس أي سير عمل فعلي." },
+  { icon: "rocket_launch", step: "الخطوة 4", title: "الإطلاق والمراقبة", description: "يتم إطلاق الأتمتة. نراقبها لمدة 90 يوماً، ونصلح أي شيء يحتاج إصلاحاً، ونحدد سير العمل التالي." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Automation in Dubai',
+    url: 'https://lenooai.com/services/ai-automation/dubai',
+    description: 'AI automation implementation for Dubai businesses: workflow design, tool integration, and ongoing support from a Dubai-based team.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'Dubai, United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'AI automation projects for Dubai businesses: pricing based on workflow complexity and scope. Book a free discovery call for a quote.' },
+    serviceType: 'AI Automation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'أتمتة الذكاء الاصطناعي', item: 'https://lenooai.com/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'دبي', item: 'https://lenooai.com/ar/services/ai-automation/dubai' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="وكالة أتمتة الذكاء الاصطناعي في دبي | لينو إيه آي"
+  description="تنفيذ أتمتة الذكاء الاصطناعي لشركات دبي: تصميم سير العمل، ربط الأدوات، ودعم مستمر من فريق مقيم في دبي."
+  canonicalPath="/ar/services/ai-automation/dubai"
+  enPath="/services/ai-automation/dubai"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">أتمتة الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>دبي</div>
+    <h1>وكالة أتمتة الذكاء الاصطناعي في <span class="gradient-text">دبي</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      لينو إيه آي فريق مقيم في الخليج التجاري، دبي. سواء كانت شركتك مؤسسة على البر الرئيسي أو في منطقة حرة مثل DMCC أو JAFZA أو DIFC، يمكننا الجلوس مع فريقك شخصياً لرسم سير العمل الذي يستحق الأتمتة، ثم بناءه على الأدوات التي تستخدمها بالفعل. بلا مدير حساب خارجي ينقل الرسائل ذهاباً وإياباً.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">مكالمات اكتشاف حضورية متاحة في دبي</span>
+      <span class="tchip">ضمان استرداد الأموال إذا لم تكن راضياً عمّا نقدمه</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_automation_dubai_hero" class="btn-primary">احجز مكالمة اكتشاف مجانية</button>
+      <a href="#what-we-automate" class="btn-outline">شاهد ما نقوم بأتمتته ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- صورة الغلاف -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1400&q=80&auto=format&fit=crop" alt="أتمتة سير العمل بالذكاء الاصطناعي لفريق أعمال في دبي" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 30%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- شريط الإحصاءات -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "40%", caption: "من المهام في معظم شركات الإمارات قابلة للأتمتة باستخدام الذكاء الاصطناعي المتاح حالياً. معظمها لم يبدأ بعد." },
+      { value: "90 يوم", caption: "مراقبة ما بعد الإطلاق مشمولة في كل مشروع في دبي" },
+      { value: "100%", caption: "ضمان استرداد الأموال إذا لم تكن راضياً عمّا نقدمه" },
+    ]} />
+  </div>
+</div>
+
+<!-- لماذا فريق محلي -->
+<section class="section" aria-labelledby="explain-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="explain-heading" style="margin-bottom:1.5rem;">لماذا تعمل مع وكالة أتمتة ذكاء اصطناعي مقيمة في دبي؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        الكثير من مزودي الأتمتة يبيعون في دبي من مكان آخر. هذا يعمل جيداً حتى يتعطل شيء ما في الساعة الرابعة عصراً يوم أربعاء وأنت تنتظر رداً من منطقة زمنية مختلفة. نحن في الخليج التجاري. إذا أردت مناقشة مشكلة وجهاً لوجه، أو استضافتنا لجلسة عمل مع فريقك، فالأمر لا يتطلب أكثر من قيادة قصيرة، لا رحلة طيران.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        كوننا محليين يعني أيضاً أننا نفهم كيف تسير الأعمال هنا فعلياً: أسبوع العمل من الأحد إلى الخميس، الفرق بين معاملات المناطق الحرة والبر الرئيسي، دورات تقديم ضريبة القيمة المضافة، وحقيقة أن كثيراً من شركات دبي تعمل بفرق صغيرة لا تقدر على توظيف شخص مخصص فقط لإبقاء الأنظمة متصلة ببعضها. للاطلاع على شرح كامل لما هي أتمتة الذكاء الاصطناعي وكيف تختلف عن أدوات مثل Zapier أو Make، راجع <a href="/services/ai-automation">الصفحة الرئيسية لأتمتة الذكاء الاصطناعي</a>. هذه الصفحة تركز على ما يعنيه ذلك لشركة تعمل في دبي تحديداً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ما نقوم بأتمتته -->
+<section id="what-we-automate" class="section" style="background:#f0f3ff;" aria-labelledby="automate-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="automate-heading">أتمتة الذكاء الاصطناعي التي نبنيها لشركات دبي</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">نفس فئات الأتمتة التي نبنيها لأي عميل، مُكيّفة مع ما يظهر فعلياً في شركات دبي يومياً.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">home_work</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">العقارات وإدارة الممتلكات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">متابعة العملاء المحتملين، ومزامنة الإعلانات عبر المنصات، ومعالجة مستندات المستأجرين، مؤتمتة بدلاً من ملاحقتها يدوياً.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> وسيط عقاري في دبي كان يفقد عملاء محتملين خلال عطلة نهاية الأسبوع، أصبح الآن كل استفسار وارد مؤهلاً ومتابَعاً خلال دقائق، أي يوم.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">local_shipping</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">التجارة واللوجستيات والمستندات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">بوليصات الشحن، أوراق الجمارك، وفواتير الموردين تُقرأ وتُتحقق منها وتُرحّل إلى نظامك دون إدخال يدوي.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> شركة تجارية اختصرت وقت مطابقة الفواتير بأوامر الشراء من يوم كامل أسبوعياً إلى أقل من ساعة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">business_center</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">الإدارة للمناطق الحرة والبر الرئيسي</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">تذكيرات تجديد الرخص، وتوليد العقود، وقوائم الامتثال التي تعمل بنفسها بدلاً من أن تبقى في صندوق بريد أحدهم.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> شركة استشارية مسجلة في DMCC توقفت عن تتبع مواعيد التجديد في جدول بيانات؛ النظام الآن ينبه لها تلقائياً قبل أسابيع.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">hotel</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">الضيافة والتواصل مع النزلاء</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">تأكيدات الحجز، أسئلة النزلاء، والردود على التقييمات تُدار تلقائياً، مع تصعيد إلى موظف بشري عندما يكون ذلك مهماً فعلاً.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> مشغل تأجير قصير الأمد أتمت 80% من رسائل النزلاء الروتينية، مما حرر الموظفين للتعامل مع ما يحتاج فعلاً إلى تقدير بشري.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">calculate</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">استقبال عملاء الخدمات المهنية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">مكاتب المحاماة والمحاسبة والاستشارات تستخدم الأتمتة لاستقبال عملاء جدد، ومتابعة المستندات الناقصة، وتوليد تقارير الحالة.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> مكتب محاسبة أتمت جمع مستندات العملاء، مما قلّص سلسلة رسائل البريد الإلكتروني المتبادلة بشكل كبير.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">عمليات التجزئة والتجارة الإلكترونية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">مزامنة الطلبات، وتحديث المخزون، وردود خدمة العملاء عبر متجرك والأسواق الإلكترونية، مُبقاة متزامنة تلقائياً.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> بائع تجزئة في دبي يبيع على ثلاث منصات توقف عن تحديث أرقام المخزون يدوياً في كل منها على حدة.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- المسار -->
+<section class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">من الاكتشاف إلى الأتمتة الفعلية</h2>
+    </div>
+    <div style="border-radius:20px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 20px 48px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&q=80&auto=format&fit=crop" alt="محلل يرسم سير عمل الأتمتة على مكتبه في دبي" loading="lazy" width="1200" height="320" style="width:100%; height:clamp(180px, 26vw, 320px); object-fit:cover; display:block;" />
+    </div>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- روابط ذات صلة -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="more-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="more-heading">المزيد من موارد أتمتة الذكاء الاصطناعي</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">apps</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">نظرة شاملة على أتمتة الذكاء الاصطناعي</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">ما هي أتمتة الذكاء الاصطناعي، وكيف تختلف عن Zapier وMake، والنطاق الكامل لسير العمل الذي نبنيه في الإمارات.</p>
+        <a href="/services/ai-automation" class="learn-link">اعرف المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">location_city</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">أتمتة الذكاء الاصطناعي في أبوظبي</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">أتمتة العمليات وربط الأنظمة لشركات أبوظبي، عن بُعد أو حضورياً من مقرنا في دبي.</p>
+        <a href="/ar/services/ai-automation/abu-dhabi" class="learn-link">اعرف المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">build</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">الأدوات التي نعمل بها</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Zapier وMake وn8n وUiPath وPower Automate وغيرها: تعرف على أفضل استخدام لكل أداة والأنسب لمنظومتك.</p>
+        <a href="/services/ai-automation/tools" class="learn-link">اعرف المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- الأسئلة الشائعة -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- دعوة أخيرة للعمل -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعد لأتمتة أكبر مضيعات الوقت لديك؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجز مكالمة اكتشاف مجانية مع فريقنا في الخليج التجاري. سنحدد أفضل 3 فرص أتمتة لديك ونقدر التوفير في الوقت والتكلفة.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجانية 100%</span>
+          <span class="cta-trust-badge">✓ بدون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد الأموال</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_automation_dubai_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجز مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة 30 دقيقة · بدون ضغط للبيع</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>
