@@ -332,6 +332,7 @@ const ldJson = [
 .ig-gallery-img:hover { transform:scale(1.02); }
 .ig-gallery-img:focus-visible { outline:2px solid #006875; outline-offset:3px; }
 .ig-lightbox { position:fixed; inset:0; background:rgba(0,19,32,0.9); display:flex; align-items:center; justify-content:center; z-index:1000; }
+.ig-lightbox[hidden] { display:none; }
 .ig-lightbox img { max-width:90vw; max-height:85vh; border-radius:8px; }
 .ig-lightbox-close { position:absolute; top:24px; right:32px; background:none; border:none; color:#fff; font-size:2rem; line-height:1; cursor:pointer; padding:4px 10px; border-radius:8px; }
 .ig-lightbox-close:focus-visible { outline:2px solid #fff; outline-offset:2px; }
@@ -381,8 +382,13 @@ const ldJson = [
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && igLightbox && !(igLightbox as HTMLElement).hidden) {
+    if (!igLightbox || (igLightbox as HTMLElement).hidden) return;
+    if (e.key === 'Escape') {
       igCloseLightbox();
+    } else if (e.key === 'Tab') {
+      // The close button is the only focusable element in the dialog; keep focus trapped on it.
+      e.preventDefault();
+      (igCloseBtn as HTMLElement)?.focus();
     }
   });
 </script>
