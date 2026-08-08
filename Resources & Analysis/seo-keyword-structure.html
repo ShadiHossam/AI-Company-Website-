@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lenoo AI Keyword Architecture</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --bg:#F6F5F2; --surface:#FFFFFF; --surface-2:#FAF9F6;
+    --ink:#171512; --muted:#5E5A52; --faint:#908B80; --border:#E7E3DB;
+    --accent:#B4531A; --accent-soft:#F8ECE2;
+    --inf:#8A93A3; --inf-bg:#EDEFF2;
+    --com:#C08A2E; --com-bg:#FBF0DC;
+    --trx:#1F8A4C; --trx-bg:#DFF3E7;
+    --nav:#7A44CF; --nav-bg:#EFE6FB;
+    --g1:#1F8A4C; --g1-bg:#DFF3E7;
+    --g2:#B23670; --g2-bg:#FAE3EE;
+    --g3:#8A93A3; --g3-bg:#EDEFF2;
+    --high:#C0392B; --high-bg:#FBE4E1;
+    --shadow:0 1px 2px rgba(23,21,18,.04),0 6px 22px rgba(23,21,18,.06);
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#12100E; --surface:#1B1815; --surface-2:#161311;
+      --ink:#EDE9E2; --muted:#A69F93; --faint:#736C60; --border:#2B2723;
+      --accent:#E08A4E; --accent-soft:#2A1D12;
+      --inf:#9AA2B0; --inf-bg:#20242C;
+      --com:#D6A64A; --com-bg:#2A2415;
+      --trx:#4FBF7C; --trx-bg:#122A1D;
+      --nav:#B287EE; --nav-bg:#231834;
+      --g1:#4FBF7C; --g1-bg:#122A1D;
+      --g2:#E886B3; --g2-bg:#301622;
+      --g3:#9AA2B0; --g3-bg:#20242C;
+      --high:#E8756A; --high-bg:#2E1613;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="light"]{ --bg:#F6F5F2;--surface:#FFFFFF;--surface-2:#FAF9F6;--ink:#171512;--muted:#5E5A52;--faint:#908B80;--border:#E7E3DB;--accent:#B4531A;--accent-soft:#F8ECE2;--inf:#8A93A3;--inf-bg:#EDEFF2;--com:#C08A2E;--com-bg:#FBF0DC;--trx:#1F8A4C;--trx-bg:#DFF3E7;--nav:#7A44CF;--nav-bg:#EFE6FB;--g1:#1F8A4C;--g1-bg:#DFF3E7;--g2:#B23670;--g2-bg:#FAE3EE;--g3:#8A93A3;--g3-bg:#EDEFF2;--high:#C0392B;--high-bg:#FBE4E1;--shadow:0 1px 2px rgba(23,21,18,.04),0 6px 22px rgba(23,21,18,.06); }
+  :root[data-theme="dark"]{ --bg:#12100E;--surface:#1B1815;--surface-2:#161311;--ink:#EDE9E2;--muted:#A69F93;--faint:#736C60;--border:#2B2723;--accent:#E08A4E;--accent-soft:#2A1D12;--inf:#9AA2B0;--inf-bg:#20242C;--com:#D6A64A;--com-bg:#2A2415;--trx:#4FBF7C;--trx-bg:#122A1D;--nav:#B287EE;--nav-bg:#231834;--g1:#4FBF7C;--g1-bg:#122A1D;--g2:#E886B3;--g2-bg:#301622;--g3:#9AA2B0;--g3-bg:#20242C;--high:#E8756A;--high-bg:#2E1613;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4); }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;font-size:15px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+  a{color:var(--accent)}
+  header.hero{padding:56px 0 26px;border-bottom:1px solid var(--border)}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);font-weight:600}
+  h1{font-family:var(--serif);font-size:clamp(30px,4.6vw,46px);line-height:1.06;letter-spacing:-.01em;margin:16px 0 14px;text-wrap:balance;font-weight:600}
+  .lede{font-size:clamp(15.5px,1.9vw,17.5px);color:var(--muted);max-width:66ch;margin:0}
+  .metaline{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:20px;font-family:var(--mono);font-size:12.5px;color:var(--faint)}
+  .metaline b{color:var(--ink);font-weight:600}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:28px 0}
+  .tile{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+  .tile .n{font-family:var(--serif);font-size:27px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+  .tile .l{font-size:12px;color:var(--muted);margin-top:4px}
+  .callout{background:var(--accent-soft);border:1px solid var(--border);border-radius:16px;padding:20px 22px;margin:20px 0}
+  .callout h2{margin:0 0 8px;font-family:var(--serif);font-size:19px;font-weight:600}
+  .callout p{margin:0 0 8px;font-size:13.8px;color:var(--muted)}
+  .callout p:last-child{margin-bottom:0}
+  .callout b{color:var(--ink)}
+  .callout code{font-family:var(--mono);font-size:12.5px;background:var(--surface);border:1px solid var(--border);padding:1px 6px;border-radius:5px}
+
+  nav.toc{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:12px 0;margin-top:8px}
+  nav.toc .row{display:flex;flex-wrap:wrap;gap:6px;font-family:var(--mono);font-size:11.5px}
+  nav.toc a{color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:20px;border:1px solid var(--border);background:var(--surface);white-space:nowrap}
+  nav.toc a:hover{color:var(--ink);border-color:var(--accent)}
+
+  section{margin:44px 0}
+  .sec-num{font-family:var(--mono);color:var(--accent)}
+  h2.sh{font-family:var(--serif);font-size:26px;font-weight:600;margin:0 0 6px;letter-spacing:-.005em;scroll-margin-top:64px}
+  h3.sub{font-family:var(--sans);font-size:15.5px;font-weight:700;margin:26px 0 10px;scroll-margin-top:64px}
+  p{color:var(--ink);font-size:14.5px}
+  p.dim{color:var(--muted)}
+  ol.steps, ul.plain{padding-left:20px;font-size:14px}
+  ol.steps li, ul.plain li{margin-bottom:7px}
+
+  .badges{display:flex;flex-wrap:wrap;gap:14px;margin:14px 0 22px}
+  .panel4{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:14px 0}
+  .p4{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:14px;padding:16px 17px;box-shadow:var(--shadow)}
+  .p4.inf{border-left-color:var(--inf)} .p4.com{border-left-color:var(--com)} .p4.trx{border-left-color:var(--trx)} .p4.nav{border-left-color:var(--nav)}
+  .p4 h4{margin:0 0 4px;font-size:14.5px;display:flex;align-items:center;gap:8px}
+  .p4 .sub{font-size:11.5px;color:var(--faint);margin:0 0 10px}
+  .p4 ul{margin:0;padding:0;list-style:none}
+  .p4 li{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;margin-bottom:6px}
+
+  .tag{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:5px;white-space:nowrap;text-transform:uppercase;letter-spacing:.04em;display:inline-block}
+  .tg-inf{color:var(--inf);background:var(--inf-bg)} .tg-com{color:var(--com);background:var(--com-bg)} .tg-trx{color:var(--trx);background:var(--trx-bg)} .tg-nav{color:var(--nav);background:var(--nav-bg)}
+  .tg-g1{color:var(--g1);background:var(--g1-bg)} .tg-g2{color:var(--g2);background:var(--g2-bg)} .tg-g3{color:var(--g3);background:var(--g3-bg)}
+  .tg-high{color:var(--high);background:var(--high-bg)}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:14px;background:var(--surface);box-shadow:var(--shadow);margin:14px 0}
+  table{width:100%;border-collapse:collapse;min-width:560px}
+  thead th{position:sticky;top:0;background:var(--surface-2);text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-weight:600;padding:10px 14px;border-bottom:1px solid var(--border)}
+  tbody td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top;font-size:13px}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:var(--surface-2)}
+  td.kw, td code{font-family:var(--mono);font-size:12px;color:var(--accent)}
+  td.num{font-family:var(--mono);text-align:center}
+
+  .examplebox{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);margin:14px 0}
+  .examplebox .kwline{font-family:var(--mono);font-size:13px;color:var(--accent);background:var(--accent-soft);padding:6px 10px;border-radius:7px;display:inline-block;margin-bottom:10px}
+  .examplebox p{margin:6px 0}
+
+  pre{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--ink);margin:14px 0}
+  pre b{color:var(--accent)}
+  code{font-family:var(--mono)}
+
+  .clusterlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin:14px 0}
+  .clc{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow)}
+  .clc .cn{font-size:13.5px;font-weight:650;margin-bottom:3px}
+  .clc .ct{font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+
+  .formula{font-family:var(--mono);font-size:14px;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;text-align:center;margin:14px 0;color:var(--ink)}
+
+  footer{margin:50px 0 60px}
+  .note{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:var(--shadow);font-size:13.5px;color:var(--muted)}
+  .note h2{margin:0 0 10px;font-family:var(--serif);font-size:20px;color:var(--ink);font-weight:600}
+  .note b{color:var(--ink)}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">AI Automation Agency · Keyword Strategy · UAE + GCC</div>
+    <h1>Lenoo AI Keyword Architecture</h1>
+    <p class="lede">A sorting system, not a keyword list. Every keyword that enters the pipeline gets five tags and one score, then routes to exactly one page — built on top of the existing 70-article content plan and the 126-competitor gap analysis.</p>
+    <div class="metaline">
+      <span><b>9</b> clusters</span>
+      <span><b>4</b> intent types</span>
+      <span><b>3</b> geo tiers</span>
+      <span><b>7</b>-question sourcing filter</span>
+      <span>Compiled <b>Aug 2026</b></span>
+    </div>
+  </header>
+
+  <div class="tiles" id="tiles">
+    <div class="tile"><div class="n">1</div><div class="l">keyword, 1 page — hard rule</div></div>
+    <div class="tile"><div class="n">0</div><div class="l">location pages live today</div></div>
+    <div class="tile"><div class="n">0</div><div class="l">comparison pages live today</div></div>
+    <div class="tile"><div class="n">21</div><div class="l">max priority score</div></div>
+    <div class="tile"><div class="n">126</div><div class="l">competitors behind the gap data</div></div>
+  </div>
+
+  <div class="callout">
+    <h2>Two gaps this structure is built to close</h2>
+    <p>The live site has 12 EN service pages, only 4 industry pages, and a blog — but <b>no location pages and no comparison pages</b>. That is where most commercial keyword work currently has nowhere to land.</p>
+    <p><code>/services/ai-training</code> is anchored to the exact seed term that produced a noisy alphabet-soup keyword export dominated by gig-work and exam-prep searches. That SERP needs re-anchoring — see §2.6.</p>
+  </div>
+
+  <nav class="toc">
+    <div class="row">
+      <a href="#s0">0 · Row schema</a>
+      <a href="#s1">1 · Intent</a>
+      <a href="#s2">2 · Page-type map</a>
+      <a href="#s3">3 · Geo tiers</a>
+      <a href="#s4">4 · Language tiers</a>
+      <a href="#s5">5 · Clusters</a>
+      <a href="#s6">6 · Priority score</a>
+      <a href="#s7">7 · Sourcing filter</a>
+      <a href="#s8">8 · Weekly routine</a>
+    </div>
+  </nav>
+
+  <section id="s0">
+    <h2 class="sh"><span class="sec-num">0 ·</span> The row schema</h2>
+    <p class="dim">Every keyword, new or existing, becomes one row with these fields. This is the whole system in one line.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th style="width:16%">Field</th><th>Values</th></tr></thead>
+        <tbody>
+          <tr><td><code>keyword</code></td><td>the term as searched</td></tr>
+          <tr><td><code>intent</code></td><td><span class="tag tg-inf">INF</span> <span class="tag tg-com">COM</span> <span class="tag tg-trx">TRX</span> <span class="tag tg-nav">NAV</span></td></tr>
+          <tr><td><code>geo</code></td><td><span class="tag tg-g1">G1 UAE-core</span> <span class="tag tg-g2">G2 GCC</span> <span class="tag tg-g3">G3 no-geo</span></td></tr>
+          <tr><td><code>lang</code></td><td>EN / AR-native</td></tr>
+          <tr><td><code>cluster</code></td><td>one of the 9, or <code>NEW-CANDIDATE</code></td></tr>
+          <tr><td><code>page_type</code></td><td>blog / pillar / service / location / comparison / industry / AR-native</td></tr>
+          <tr><td><code>comp</code></td><td>Low / Med / High — from the 126-competitor analysis, not tool difficulty</td></tr>
+          <tr><td><code>vol</code></td><td>band: &lt;50 / 50–200 / 200+ per month, UAE</td></tr>
+          <tr><td><code>score</code></td><td>0–21, see §6</td></tr>
+          <tr><td><code>status</code></td><td>live / queued / parked / rejected</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><b>Hard rule:</b> one keyword, one page. If a term already has an owner row, the new idea becomes a sub-keyword on that page or it dies. This is what stops <code>ai chatbot dubai</code> from being fought over by a blog post, a service page and a future location page at the same time.</p>
+  </section>
+
+  <section id="s1">
+    <h2 class="sh"><span class="sec-num">1 ·</span> Funnel / intent layer</h2>
+    <p class="dim">Four buckets. The test is not what the phrase looks like but what would satisfy this searcher: a lesson, a shortlist, a vendor, or a specific brand.</p>
+
+    <div class="panel4">
+      <div class="p4 inf">
+        <h4><span class="tag tg-inf">INF</span> Informational · TOFU</h4>
+        <p class="sub">Searcher is learning. Money is 3+ months away.</p>
+        <ul>
+          <li>what is agentops</li>
+          <li>prompt injection attacks on chatbots</li>
+          <li>why ai agents degrade over time</li>
+          <li>uae pdpl chatbot requirements</li>
+        </ul>
+      </div>
+      <div class="p4 com">
+        <h4><span class="tag tg-com">COM</span> Commercial investigation · MOFU</h4>
+        <p class="sub">Comparing options, prices, approaches. Highest-converting, most underbuilt layer.</p>
+        <ul>
+          <li>ai chatbot cost dubai</li>
+          <li>n8n vs make vs zapier</li>
+          <li>chatgpt enterprise vs custom ai agent</li>
+          <li>questions to ask ai automation agency</li>
+        </ul>
+      </div>
+      <div class="p4 trx">
+        <h4><span class="tag tg-trx">TRX</span> Transactional / local · BOFU</h4>
+        <p class="sub">Wants to hire someone, this month. Never gets a blog post.</p>
+        <ul>
+          <li>ai company in dubai</li>
+          <li>hire ai developer dubai</li>
+          <li>ai automation agency near me</li>
+          <li>ai company in difc</li>
+        </ul>
+      </div>
+      <div class="p4 nav">
+        <h4><span class="tag tg-nav">NAV</span> Navigational</h4>
+        <p class="sub">Wants a named entity — own brand or a competitor/tool brand.</p>
+        <ul>
+          <li>lenoo ai dubai</li>
+          <li>intercom fin pricing</li>
+          <li>zapier alternative uae</li>
+        </ul>
+      </div>
+    </div>
+
+    <p><b>Recognisers.</b> COM: <code>vs</code>, <code>cost</code>, <code>pricing</code>, <code>alternative</code>, <code>best X for Y</code>, <code>is X worth it</code>, <code>review</code>. TRX: a city or free zone in the phrase, or a hiring verb — <code>hire</code>, <code>company</code>, <code>agency</code>, <code>services</code>, <code>developer</code>, <code>near me</code>.</p>
+
+    <div class="callout" style="margin-top:18px">
+      <h2>The intent misfire that produced 90% noise</h2>
+      <p>The autocomplete dump was mostly a fifth, unusable category: <b>job-seeker and student intent</b> — <code>mercor ai training pay</code>, <code>outlier ai $20 an hour</code>, <code>ai-900 exam questions</code>. It looks commercial (money words, "training", "certification") but the searcher wants to be paid or certified, not to buy. Tag these <code>rejected</code> on sight.</p>
+    </div>
+  </section>
+
+  <section id="s2">
+    <h2 class="sh"><span class="sec-num">2 ·</span> Page-type mapping</h2>
+    <p class="dim">The rule that resolves most arguments: geography in the keyword means the page sells; a vertical or a problem in the keyword means the page teaches.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Intent</th><th>Geo present?</th><th>Page type</th><th>URL pattern</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag tg-trx">TRX</span></td><td>city / free zone</td><td><b>Location page</b></td><td><code>/ai-company-dubai</code></td><td>ai company in dubai</td></tr>
+          <tr><td><span class="tag tg-trx">TRX</span></td><td>none, service named</td><td>Service page</td><td><code>/services/ai-agents</code></td><td>ai agent development services</td></tr>
+          <tr><td><span class="tag tg-com">COM</span></td><td>any</td><td><b>Comparison page</b></td><td><code>/compare/&lt;a&gt;-vs-&lt;b&gt;</code></td><td>intercom fin vs custom ai agent</td></tr>
+          <tr><td><span class="tag tg-com">COM</span></td><td>none</td><td>Blog (buyer guide)</td><td><code>/blog/&lt;slug&gt;</code></td><td>how much does an ai agent cost</td></tr>
+          <tr><td><span class="tag tg-inf">INF</span></td><td>vertical named</td><td>Blog → industry page</td><td><code>/blog/&lt;slug&gt;</code></td><td>ai for real estate agents dubai</td></tr>
+          <tr><td><span class="tag tg-inf">INF</span></td><td>broad cluster topic</td><td>Pillar</td><td><code>/blog/&lt;slug&gt;</code></td><td>agentops</td></tr>
+          <tr><td><span class="tag tg-inf">INF</span></td><td>narrow topic</td><td>Supporting blog</td><td><code>/blog/&lt;slug&gt;</code></td><td>prompt drift</td></tr>
+          <tr><td>any</td><td>Arabic, per-country</td><td><b>AR-native page</b></td><td><code>/ar/blog/&lt;slug&gt;</code></td><td>الذكاء الاصطناعي والامتثال في السعودية</td></tr>
+          <tr><td>TRX/COM</td><td>vertical + buying verb</td><td>Industry page</td><td><code>/industries/real-estate</code></td><td>ai for real estate brokerages dubai</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub" id="s21">2.1 · The distinction the business already hit</h3>
+    <div class="examplebox">
+      <p><b>ai company in dubai</b> vs <b>ai for real estate agents dubai</b> — both contain "dubai", neither is the same keyword type.</p>
+      <p><code>ai company in dubai</code>: the searcher is shopping for a vendor. A blog post here converts badly and can't outrank a page with an address, a phone number and prices on it. <b>Location page. No exceptions.</b></p>
+      <p><code>ai for real estate agents dubai</code>: the searcher is a broker wondering whether this applies to them. They want proof and mechanics. <b>Blog post</b>, linking down to <code>/industries/real-estate</code> and up to the Lead & Sales Workflows pillar.</p>
+      <p class="dim">The tell: swap the geography out. If <code>ai company in london</code> is still a coherent vendor search, it's TRX. If <code>ai for real estate agents london</code> is still an education topic, it's INF.</p>
+    </div>
+
+    <h3 class="sub">2.2 · Location pages — the highest-value gap, currently zero built</h3>
+    <ol class="steps">
+      <li><code>/ai-company-dubai</code></li>
+      <li><code>/ai-automation-agency-abu-dhabi</code></li>
+      <li><code>/ai-company-sharjah</code></li>
+      <li>Free zone tier: <code>/ai-company-difc</code>, <code>/ai-automation-dmcc</code>, <code>/ai-company-adgm</code>, <code>/ai-automation-jafza</code></li>
+    </ol>
+    <p class="dim">Free-zone pages only earn their place if they say something a Dubai page can't — DIFC Data Protection Law No. 5 of 2020, ADGM's own regulations, DMCC/JAFZA licence-renewal specifics. If it would just be the Dubai page with a word changed, don't build it. Minimum bar: a real address or service area, two named local outcomes, AED pricing anchors, one local compliance detail.</p>
+
+    <h3 class="sub">2.3 · Comparison pages — also currently zero built</h3>
+    <p><b>Tool vs custom build:</b> <code>chatgpt enterprise vs custom ai agent</code>, <code>intercom fin ai vs custom chatbot</code>, <code>manychat vs custom whatsapp agent</code> — these pre-frame the sale.<br>
+    <b>Tool vs tool:</b> <code>n8n vs make vs zapier</code> (already article #21 — move it to <code>/compare/</code> once the directory exists).</p>
+    <p class="dim">Rule: never write a comparison where Lenoo AI isn't a legitimate third option on the page.</p>
+
+    <h3 class="sub">2.4 · Industry pages vs vertical blog posts</h3>
+    <p>Only 4 industry pages exist (hospitality, logistics, real estate, retail). Articles exist with no matching industry page for law firms, schools, construction, manufacturing, clinics, insurance, accounting — and <code>retail</code> has a page with no matching article.</p>
+    <p><b>Industry page</b> = the offer ("we do this for you, here's the price"). <b>Vertical blog post</b> = the education and workflow detail. Promote a vertical to a full industry page once it has two published articles or one closed client — never speculatively.</p>
+
+    <h3 class="sub">2.5 · Pillar vs supporting</h3>
+    <p class="dim">Unchanged from current practice: one cornerstone per cluster, 5–9 supporting posts, all link up to the pillar, the pillar links down to all of them. Existing pillars: #3 AgentOps, #14 Guardrails, #17 Cost, #39 Lead Qualification, #45 Ticket Triage, #50 PDPL, #51 Arabic Chatbots, #57 Free Zone, #59 Arabic Gulf Automation.</p>
+
+    <h3 class="sub">2.6 · The /services/ai-training problem</h3>
+    <p>That page targets a term whose search space is gig-workers (Mercor, Outlier, hourly-rate queries) and exam candidates (AI-900, Udemy). Ranking for the bare term brings zero buyers. Re-anchor to the buyer version:</p>
+    <ul class="plain">
+      <li><code>corporate ai training dubai</code></li>
+      <li><code>ai training for employees uae</code></li>
+      <li><code>chatgpt training for teams dubai</code></li>
+      <li><code>ai upskilling program uae</code></li>
+    </ul>
+    <p class="dim">Add <code>ai training</code> bare, <code>ai training jobs</code> and every certification term to the negative list (§7). Same audit applies to <code>/services/vibe-coding</code> and <code>/services/prompt-engineering</code> — keep for positioning, don't spend link equity trying to rank them.</p>
+  </section>
+
+  <section id="s3">
+    <h2 class="sh"><span class="sec-num">3 ·</span> Geographic tiering</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Tier</th><th>Scope</th><th>Weight</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag tg-g1">G1</span></td><td>Dubai, Abu Dhabi, Sharjah, UAE, free zones (DIFC, ADGM, DMCC, JAFZA)</td><td class="num">3</td><td>Primary — every money page lives here</td></tr>
+          <tr><td><span class="tag tg-g2">G2</span></td><td>Saudi, Qatar, Kuwait, Bahrain, Oman, "Gulf", "GCC"</td><td class="num">2</td><td>Secondary — reached mainly through Arabic content</td></tr>
+          <tr><td><span class="tag tg-g3">G3</span></td><td>No geography in the term</td><td class="num">1</td><td>Topical authority and links, not conversions</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="plain">
+      <li><b>G1 gets every location page, every service page,</b> and the geo-modified version of any commercial term.</li>
+      <li><b>G2 is Arabic-led.</b> <code>ai automation agency riyadh</code> in English is a page Lenoo AI can't yet support with local proof — the Arabic equivalent inside a GCC compliance or vertical article can. Only build an EN G2 page after a real client exists there.</li>
+      <li><b>G3 terms are never money pages.</b> <code>agentops</code>, <code>model drift in production ai</code> win links and authority which flow to G1 pages — judge them on links earned, not leads.</li>
+      <li><b>Don't build "GCC" as a location.</b> <code>ai company in gcc</code> isn't how anyone searches. Country-level or nothing.</li>
+    </ul>
+    <p class="dim">Wrong-geography reject: any term naming a country with no UAE/GCC connection is <code>rejected</code>, not <code>parked</code>.</p>
+  </section>
+
+  <section id="s4">
+    <h2 class="sh"><span class="sec-num">4 ·</span> Language / market tiering</h2>
+    <p class="dim">Two tiers, and translation is not one of them. EN is the default for UAE-core commercial and all technical content. AR-native is written in Arabic from a blank page, not a translation — brand voice and name stay English, the content is fully Arabic.</p>
+
+    <h3 class="sub">When a topic gets both</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Topic</th><th>EN</th><th>AR-native</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>WhatsApp business bots</td><td>yes (#41, #56)</td><td>yes (#61)</td><td>Both audiences search it; AR goes deeper on Gulf messaging norms</td></tr>
+          <tr><td>Arabic chatbot dialects</td><td>yes (#51)</td><td>yes (#60)</td><td>EN sells the capability, AR demonstrates it</td></tr>
+          <tr><td>AgentOps, model drift, observability</td><td>yes</td><td>no</td><td>Technical buyer reads English; AR version would be an empty translation</td></tr>
+          <tr><td>ai company in dubai</td><td>yes</td><td>no</td><td>English-language commercial SERP</td></tr>
+          <tr><td>Saudi PDPL / SDAIA</td><td>no</td><td>yes (#62)</td><td>Audience is Saudi, searching in Arabic</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">The per-country compliance split rule</h3>
+    <p><b>Compliance content is never merged across countries</b> — the laws, regulators and searcher intent are genuinely different.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Jurisdiction</th><th>Article</th><th>Format</th></tr></thead>
+        <tbody>
+          <tr><td>UAE PDPL (Federal Decree-Law 45 of 2021)</td><td>#50</td><td>EN pillar</td></tr>
+          <tr><td>Saudi PDPL + SDAIA</td><td>#62</td><td>AR-native</td></tr>
+          <tr><td>Qatar Law 13/2016</td><td>#63</td><td>AR-native</td></tr>
+          <tr><td>Kuwait, Bahrain, Oman</td><td>#69</td><td>Grouped for now — volume doesn't yet justify 3 pages, split later if any shows traffic</td></tr>
+          <tr><td>DIFC Data Protection Law No. 5 of 2020, ADGM regs</td><td>—</td><td>Separate again from federal UAE PDPL; belong on their free-zone pages</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="dim">The one permitted merge is an explicit comparison piece (#68, UAE/Saudi/Qatar side by side), which is an addition to the per-country set, never a replacement. When a new jurisdiction enters scope, it's a new article, not a new section in an existing one.</p>
+  </section>
+
+  <section id="s5">
+    <h2 class="sh"><span class="sec-num">5 ·</span> Topic taxonomy and cluster rules</h2>
+    <div class="clusterlist">
+      <div class="clc"><div class="cn">AI Security & Trust</div><div class="ct">Pillar #14 Guardrails</div></div>
+      <div class="clc"><div class="cn">AgentOps & Maintenance</div><div class="ct">Pillar #3 AgentOps</div></div>
+      <div class="clc"><div class="cn">Cost, ROI & Hiring</div><div class="ct">Pillar #17 Cost</div></div>
+      <div class="clc"><div class="cn">Arabic & Gulf AI</div><div class="ct">Pillar #51 Arabic Chatbots</div></div>
+      <div class="clc"><div class="cn">UAE Compliance & Data</div><div class="ct">Pillar #50 PDPL</div></div>
+      <div class="clc"><div class="cn">Industry Verticals</div><div class="ct">Pillar #57 Free Zone</div></div>
+      <div class="clc"><div class="cn">Lead & Sales Workflows</div><div class="ct">Pillar #39 Lead Qualification</div></div>
+      <div class="clc"><div class="cn">Support & Ops Workflows</div><div class="ct">Pillar #45 Ticket Triage</div></div>
+      <div class="clc"><div class="cn">GCC Arabic Content</div><div class="ct">Pillar #59 Arabic Gulf Automation</div></div>
+    </div>
+
+    <h3 class="sub">Fold in, or make a new cluster?</h3>
+    <p class="dim">Default is fold in. A 10th cluster only opens when all four are true:</p>
+    <ol class="steps">
+      <li>It supports a pillar plus at least 5 supporting articles — fewer than 6 total is a sub-topic, not a cluster.</li>
+      <li>It answers a distinct buyer question, not a distinct topic. ("AI Governance" is a distinct buyer question. "AI Voice Agents" is a distinct topic but the same buyer question as Lead & Sales — folds in.)</li>
+      <li>It maps to something Lenoo AI sells or wants to sell.</li>
+      <li>Its articles create more internal links inside the cluster than out to existing ones.</li>
+    </ol>
+    <ul class="plain">
+      <li><b>Missing verticals</b> (ecommerce, salons/gyms, car dealerships, travel agencies, recruitment agencies, events, pharmacies) — fold into Industry Verticals, which grows to ~17 articles.</li>
+      <li><b>Free zone / hyper-local terms</b> — not a cluster. TRX, so they become location pages linked from the #57 pillar.</li>
+      <li><b>Tool comparisons</b> — not a cluster. COM, so they become <code>/compare/</code> pages, with a shared hub once there are 4+.</li>
+      <li><b>AI Governance & Accountability</b> — a legitimate cluster #10 candidate. Clears all four tests (AI use policy, model risk register, human-in-the-loop sign-off, incident response, vendor due diligence). Currently split across AI Security & Trust and UAE Compliance & Data — split out once those two pass ~8 governance-flavoured pieces combined.</li>
+    </ul>
+  </section>
+
+  <section id="s6">
+    <h2 class="sh"><span class="sec-num">6 ·</span> Prioritisation score</h2>
+    <p class="dim">Four factors, weighted so an unclaimed gap beats a big number — the existing bias, made explicit.</p>
+    <div class="formula">SCORE&nbsp; =&nbsp; (3 × BUSINESS)&nbsp; +&nbsp; (2 × GAP)&nbsp; +&nbsp; (1 × VOLUME)&nbsp; +&nbsp; (1 × MARKET)&nbsp;&nbsp; &nbsp;<span style="color:var(--faint)">range 7–21</span></div>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th style="width:14%">Factor</th><th style="width:8%">Wt</th><th>3</th><th>2</th><th>1</th></tr></thead>
+        <tbody>
+          <tr><td><b>Business</b><br><span class="dim" style="font-size:11.5px">buyer-intent proximity</span></td><td class="num">×3</td><td>names service + buying signal — <code>hire ai developer dubai</code></td><td>names a problem Lenoo AI solves — <code>missed call text back</code></td><td>adjacent education — <code>what is agentops</code></td></tr>
+          <tr><td><b>Gap</b><br><span class="dim" style="font-size:11.5px">from the 126-competitor analysis</span></td><td class="num">×2</td><td>Low — almost nobody covers it</td><td>Medium</td><td>High — saturated</td></tr>
+          <tr><td><b>Volume</b><br><span class="dim" style="font-size:11.5px">UAE band</span></td><td class="num">×1</td><td>200+/mo</td><td>50–200/mo</td><td>&lt;50/mo</td></tr>
+          <tr><td><b>Market</b><br><span class="dim" style="font-size:11.5px">geo + language fit</span></td><td class="num">×1</td><td>G1, or AR-native for a named GCC country</td><td>G2, or G1 term in the wrong language</td><td>G3 no geography</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="dim">Use the competitor-gap rating, not a keyword tool's difficulty score — tool difficulty measures global backlinks; the gap rating measures whether UAE agencies have actually published on it, which is what determines whether you can rank in months instead of years. Volume is deliberately the lightest weight: a Low-competition 20/mo term outscores a High-competition 500/mo term, correctly, for a young domain.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Score</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td class="num">16–21</td><td>Phase 1 — build now</td></tr>
+          <tr><td class="num">12–15</td><td>Phase 2 — queue</td></tr>
+          <tr><td class="num">8–11</td><td>Phase 3 — build when the cluster needs depth</td></tr>
+          <tr><td class="num">7</td><td>Reject or park</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Overrides (beat the score)</h3>
+    <ol class="steps">
+      <li><b>High competition + no geography caps at Phase 3</b>, whatever it scores. <code>ai chatbot</code> is unwinnable — take <code>ai chatbot dubai</code> instead.</li>
+      <li><b>TRX terms jump one band.</b> A location/service page scoring 14 still builds in Phase 1 — revenue pages outrank content pages in the build order.</li>
+      <li><b>A pillar always ships before its supporting posts</b>, even when a supporting post scores higher.</li>
+      <li><b>Anything failing §7 is rejected regardless of score.</b></li>
+    </ol>
+
+    <h3 class="sub">Worked examples</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Keyword</th><th class="num">B</th><th class="num">G</th><th class="num">V</th><th class="num">M</th><th class="num">Score</th><th>Route</th></tr></thead>
+        <tbody>
+          <tr><td class="kw">ai company in dubai</td><td class="num">3</td><td class="num">1</td><td class="num">3</td><td class="num">3</td><td class="num">17</td><td>P1, location page</td></tr>
+          <tr><td class="kw">hire ai developer dubai</td><td class="num">3</td><td class="num">2</td><td class="num">2</td><td class="num">3</td><td class="num">18</td><td>P1, location/service page</td></tr>
+          <tr><td class="kw">ai company in difc</td><td class="num">3</td><td class="num">3</td><td class="num">1</td><td class="num">3</td><td class="num">19</td><td>P1, free-zone location page</td></tr>
+          <tr><td class="kw">agentops</td><td class="num">1</td><td class="num">3</td><td class="num">2</td><td class="num">1</td><td class="num">12</td><td>P2 → shipped P1 correctly (cluster hub)</td></tr>
+          <tr><td class="kw">ai for real estate agents dubai</td><td class="num">2</td><td class="num">3</td><td class="num">2</td><td class="num">3</td><td class="num">17</td><td>P1, vertical blog</td></tr>
+          <tr><td class="kw">chatgpt enterprise vs custom ai agent</td><td class="num">3</td><td class="num">3</td><td class="num">1</td><td class="num">1</td><td class="num">17</td><td>P1, comparison page</td></tr>
+          <tr><td class="kw">ai chatbot</td><td class="num">2</td><td class="num">1</td><td class="num">3</td><td class="num">1</td><td class="num">12</td><td><span class="tag tg-high">Rejected</span> — override 1</td></tr>
+          <tr><td class="kw">ai for pharmacies uae</td><td class="num">2</td><td class="num">3</td><td class="num">1</td><td class="num">3</td><td class="num">16</td><td>P1, vertical blog</td></tr>
+          <tr><td class="kw">ai training jobs</td><td class="num">1</td><td class="num">1</td><td class="num">3</td><td class="num">1</td><td class="num">9</td><td><span class="tag tg-high">Rejected</span> — §7, job-seeker intent</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="s7">
+    <h2 class="sh"><span class="sec-num">7 ·</span> Keyword sourcing filter</h2>
+    <p class="dim">Run every raw export through this before a single term enters the sheet. Seven questions — one "no" on Q1–Q4 is an immediate reject.</p>
+    <ol class="steps">
+      <li><b>Could this searcher become a paying client?</b> Not "is this related to AI" but "does this person have a budget and a business problem." Kills every job-seeker term and every student/certification term.</li>
+      <li><b>Is it in a market Lenoo AI serves?</b> UAE, GCC, or geo-neutral.</li>
+      <li><b>Is it a real query a human would type?</b> Autocomplete produces strings nobody searches — game titles, GPU model numbers, truncated fragments all fail this.</li>
+      <li><b>Does it map to something Lenoo AI sells or credibly writes about?</b> If nobody could write 1,500 honest words on it, it's out.</li>
+      <li><b>Does it already have an owner page?</b> If yes, it's a sub-keyword on that page, not a new row.</li>
+      <li><b>Does the live SERP have an opening?</b> Check page one for the UAE — thin content or forum threads mean an opening; four established agencies with strong pages mean back off.</li>
+      <li><b>Does the intent survive the swap test?</b> Replace the city with another city. Stays commercial → TRX, money page. Stays educational → INF, blog post. Stops making sense → the geography was autocomplete noise.</li>
+    </ol>
+
+    <h3 class="sub">Standing negative list</h3>
+    <p class="dim">Apply as an exclusion filter in Keyword Planner, Ahrefs, Semrush, or any autocomplete scrape.</p>
+    <pre><b>Job / gig intent:</b>
+  jobs, salary, hourly, "an hour", pay, hiring, remote work, freelance work,
+  mercor, outlier, scale ai, surge, remotasks, data annotation, rlhf, labeler,
+  work from home, side hustle, earn, income
+
+<b>Student / certification intent:</b>
+  course, courses, certification, certificate, exam, ai-900, az-900, dp-100,
+  udemy, coursera, edx, syllabus, tutorial, "learn ai", bootcamp, degree,
+  free download, pdf download, question bank, dumps, study guide
+
+<b>Consumer / entertainment:</b>
+  game, gaming, mod, anime, meme, wallpaper, apk, crack, rtx, gpu,
+  4090, benchmark fps
+
+<b>Out-of-market geography:</b>
+  any country or city outside UAE + Saudi + Qatar + Kuwait + Bahrain + Oman,
+  unless the term is explicitly comparative and useful (rare)
+
+<b>Wrong buyer:</b>
+  for students, for kids, for beginners, for teachers (unless the school
+  vertical is the target), homework, essay, cheat</pre>
+
+    <h3 class="sub">Better seeds</h3>
+    <p class="dim">The alphabet-soup method is fine — the seed was not. Re-run a–z / 0–9 suffix expansion on seeds that already carry a buyer, a product, or a place: <code>ai agent</code>, <code>ai automation dubai</code>, <code>whatsapp bot</code>, <code>ai chatbot for</code>, <code>ai voice agent</code>, <code>automate</code> + business function, and <code>ذكاء اصطناعي</code> / <code>بوت واتساب</code> for the Arabic side. <code>ai training</code> carried only a topic, so autocomplete filled the gap with whoever else uses that phrase — gig workers and exam candidates.</p>
+  </section>
+
+  <section id="s8">
+    <h2 class="sh"><span class="sec-num">8 ·</span> Weekly sorting routine</h2>
+    <ol class="steps">
+      <li>Dump new keywords into a staging tab.</li>
+      <li>Run §7 — delete rejects outright, no "maybe" pile.</li>
+      <li>Tag survivors: intent, geo, lang, cluster, page type.</li>
+      <li>Score with §6, apply the overrides.</li>
+      <li>Check §0 for an existing owner page — fold in or open a new row.</li>
+      <li>Anything at 16+ goes into the build queue, TRX first.</li>
+    </ol>
+    <div class="callout">
+      <h2>Next-week build order, given the current site state</h2>
+      <p><code>/ai-company-dubai</code> → <code>/ai-automation-agency-abu-dhabi</code> → first two <code>/compare/</code> pages → re-anchor <code>/services/ai-training</code> → continue the Phase 1 blog queue.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="note">
+      <h2>Source</h2>
+      <p>Built on top of <b>uae-ai-content-plan.html</b> (the 70-article plan and 9 clusters) and <b>uae-ai-content-ranking-playbook.html</b> (the 126-competitor gap analysis). This document is the sorting layer that sits above both — any new keyword idea should pass through §7 and §6 before it becomes article #71 or a new page.</p>
+    </div>
+  </footer>
+</div>
+</body>
+</html>

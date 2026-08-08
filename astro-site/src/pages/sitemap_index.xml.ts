@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async () => {
-  const now = new Date().toISOString().replace('Z', '+00:00');
+  const now = new Date().toISOString().replace(/\.\d{3}Z$/, '+00:00');
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="/main-sitemap.xsl"?>

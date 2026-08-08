@@ -21,7 +21,7 @@ export const GET: APIRoute = async () => {
       for (const post of data) {
         seenSlugs.add(post.slug);
         const lastmod = (post.updated_date ?? post.pub_date ?? new Date().toISOString())
-          .replace('Z', '+00:00');
+          .replace(/(\.\d+)?Z$/, '+00:00');
         const hreflang = post.ar_title
           ? `
     <xhtml:link rel="alternate" hreflang="en-ae" href="${BASE}/blog/${post.slug}"/>
@@ -57,7 +57,7 @@ export const GET: APIRoute = async () => {
       if (seenSlugs.has(post.id)) continue;
       const lastmod = (post.data.updatedDate ?? post.data.pubDate ?? new Date())
         .toISOString()
-        .replace('Z', '+00:00');
+        .replace(/\.\d{3}Z$/, '+00:00');
       urlBlocks.push(`  <url>
     <loc>${BASE}/blog/${post.id}</loc>
     <lastmod>${lastmod}</lastmod>

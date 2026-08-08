@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>UAE AI Content Ranking Playbook</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --bg:#F6F5F2; --surface:#FFFFFF; --surface-2:#FAF9F6;
+    --ink:#171512; --muted:#5E5A52; --faint:#908B80; --border:#E7E3DB;
+    --accent:#B4531A; --accent-soft:#F8ECE2;
+    --gap:#B4531A; --gap-bg:#F8E9DD;
+    --commercial:#2E63CF; --commercial-bg:#E4ECFB;
+    --vertical:#7A44CF; --vertical-bg:#EFE6FB;
+    --workflow:#0B8686; --workflow-bg:#DDF2F1;
+    --uae:#1F8A4C; --uae-bg:#DFF3E7;
+    --tofu:#8A93A3; --mofu:#C08A2E; --bofu:#1F8A4C;
+    --arabic:#B23670; --arabic-bg:#FAE3EE;
+    --shadow:0 1px 2px rgba(23,21,18,.04),0 6px 22px rgba(23,21,18,.06);
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#12100E; --surface:#1B1815; --surface-2:#161311;
+      --ink:#EDE9E2; --muted:#A69F93; --faint:#736C60; --border:#2B2723;
+      --accent:#E08A4E; --accent-soft:#2A1D12;
+      --gap:#E08A4E; --gap-bg:#2A1D12;
+      --commercial:#6C9CFF; --commercial-bg:#141E30;
+      --vertical:#B287EE; --vertical-bg:#231834;
+      --workflow:#3EC9C9; --workflow-bg:#0F2726;
+      --uae:#4FBF7C; --uae-bg:#122A1D;
+      --tofu:#7C8494; --mofu:#D6A64A; --bofu:#4FBF7C;
+      --arabic:#E886B3; --arabic-bg:#301622;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="light"]{ --bg:#F6F5F2;--surface:#FFFFFF;--surface-2:#FAF9F6;--ink:#171512;--muted:#5E5A52;--faint:#908B80;--border:#E7E3DB;--accent:#B4531A;--accent-soft:#F8ECE2;--gap:#B4531A;--gap-bg:#F8E9DD;--commercial:#2E63CF;--commercial-bg:#E4ECFB;--vertical:#7A44CF;--vertical-bg:#EFE6FB;--workflow:#0B8686;--workflow-bg:#DDF2F1;--uae:#1F8A4C;--uae-bg:#DFF3E7;--tofu:#8A93A3;--mofu:#C08A2E;--bofu:#1F8A4C;--arabic:#B23670;--arabic-bg:#FAE3EE;--shadow:0 1px 2px rgba(23,21,18,.04),0 6px 22px rgba(23,21,18,.06); }
+  :root[data-theme="dark"]{ --bg:#12100E;--surface:#1B1815;--surface-2:#161311;--ink:#EDE9E2;--muted:#A69F93;--faint:#736C60;--border:#2B2723;--accent:#E08A4E;--accent-soft:#2A1D12;--gap:#E08A4E;--gap-bg:#2A1D12;--commercial:#6C9CFF;--commercial-bg:#141E30;--vertical:#B287EE;--vertical-bg:#231834;--workflow:#3EC9C9;--workflow-bg:#0F2726;--uae:#4FBF7C;--uae-bg:#122A1D;--tofu:#7C8494;--mofu:#D6A64A;--bofu:#4FBF7C;--arabic:#E886B3;--arabic-bg:#301622;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4); }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;font-size:15px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 22px}
+  a{color:var(--accent)}
+  header.hero{padding:60px 0 26px;border-bottom:1px solid var(--border)}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);font-weight:600}
+  h1{font-family:var(--serif);font-size:clamp(32px,5vw,52px);line-height:1.04;letter-spacing:-.01em;margin:16px 0 14px;text-wrap:balance;font-weight:600}
+  .lede{font-size:clamp(16px,2vw,18.5px);color:var(--muted);max-width:64ch;margin:0}
+  .metaline{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:22px;font-family:var(--mono);font-size:12.5px;color:var(--faint)}
+  .metaline b{color:var(--ink);font-weight:600}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:30px 0}
+  .tile{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:17px;box-shadow:var(--shadow)}
+  .tile .n{font-family:var(--serif);font-size:30px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+  .tile .l{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .callout{background:var(--accent-soft);border:1px solid var(--border);border-radius:16px;padding:22px 24px;margin:6px 0 8px}
+  .callout h2{margin:0 0 8px;font-family:var(--serif);font-size:21px;font-weight:600}
+  .callout p{margin:0 0 8px;font-size:14px;color:var(--muted)}
+  .callout ol{margin:8px 0 0;padding-left:20px;font-size:14px;color:var(--ink)}
+  .callout li{margin-bottom:5px}
+  .callout b{color:var(--ink)}
+  .sec-title{font-family:var(--mono);font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:44px 0 16px;font-weight:600}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 22px;box-shadow:var(--shadow)}
+  .panel h3{margin:0 0 4px;font-size:16px;display:flex;align-items:center;gap:8px}
+  .panel .sub{font-size:12.5px;color:var(--faint);margin:0 0 14px}
+  .panel ul{margin:0;padding:0;list-style:none}
+  .panel li{padding:7px 0;border-bottom:1px solid var(--border);font-size:13.5px;color:var(--ink);display:flex;gap:9px;align-items:flex-start}
+  .panel li:last-child{border-bottom:0}
+  .panel li .mk{flex:0 0 auto;font-family:var(--mono);font-size:11px;margin-top:2px}
+  .saturated .mk{color:var(--faint)} .gaps .mk{color:var(--uae)}
+  .gaps{border-color:var(--uae)}
+  .controls{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:14px 0;margin-top:8px}
+  .controls .row{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+  .search{flex:1 1 240px;min-width:200px;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 12px}
+  .search input{border:0;background:transparent;color:var(--ink);font:inherit;width:100%;outline:none}
+  .search span{color:var(--faint);font-family:var(--mono)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font:inherit;font-size:12.5px;padding:6px 11px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+  .chip:hover{border-color:var(--accent);color:var(--ink)}
+  .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .chip .dot{width:8px;height:8px;border-radius:50%}
+  .btn{font:inherit;font-size:12.5px;padding:8px 13px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--ink);cursor:pointer;font-weight:600}
+  .btn:hover{border-color:var(--accent)}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .barmeta{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:16px 0 10px}
+  .count{font-family:var(--mono);font-size:12.5px;color:var(--muted)} .count b{color:var(--ink)}
+  .ideas{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:13px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 17px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:9px;position:relative;border-left:3px solid var(--border)}
+  .card.cat-A{border-left-color:var(--gap)} .card.cat-B{border-left-color:var(--commercial)} .card.cat-C{border-left-color:var(--vertical)} .card.cat-D{border-left-color:var(--workflow)} .card.cat-E{border-left-color:var(--uae)} .card.cat-F{border-left-color:var(--arabic)}
+  .card .top{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .card .num{font-family:var(--mono);font-size:11px;color:var(--faint)}
+  .card h4{margin:0;font-size:15.5px;line-height:1.3;letter-spacing:-.005em;font-weight:650}
+  .tag{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:5px;white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
+  .kwline{font-family:var(--mono);font-size:12px;color:var(--accent);background:var(--accent-soft);padding:5px 9px;border-radius:6px;word-break:break-word}
+  .kwline b{color:var(--faint);font-weight:600}
+  .ctaline{font-family:var(--sans);font-size:12.5px;color:var(--muted);font-style:italic;margin:0}
+  .ctaline b{color:var(--faint);font-weight:600;font-style:normal}
+  .angle{font-size:13px;color:var(--muted);margin:0}
+  .star{margin-left:auto;font-size:11px;font-weight:700;color:var(--uae);display:inline-flex;align-items:center;gap:4px}
+  .funnel{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:5px;color:#fff}
+  .fn-TOFU{background:var(--tofu)} .fn-MOFU{background:var(--mofu)} .fn-BOFU{background:var(--bofu)}
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:14px;background:var(--surface);box-shadow:var(--shadow)}
+  table{width:100%;border-collapse:collapse;min-width:720px}
+  thead th{position:sticky;top:0;background:var(--surface-2);text-align:left;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);font-weight:600;padding:11px 15px;border-bottom:1px solid var(--border)}
+  tbody td{padding:10px 15px;border-bottom:1px solid var(--border);vertical-align:top;font-size:13px}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:var(--surface-2)}
+  .co{font-weight:650}
+  a.co{color:var(--ink);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .12s,color .12s}
+  a.co:hover{color:var(--accent);border-bottom-color:var(--accent)}
+  .blogarrow{color:var(--accent);font-weight:700;font-size:12px}
+  .noblog{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-left:6px}
+  .loc{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+  .rflag{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap}
+  .r-UAE{background:var(--uae-bg);color:var(--uae)} .r-USA{background:var(--commercial-bg);color:var(--commercial)} .r-Europe{background:var(--vertical-bg);color:var(--vertical)} .r-GCC{background:var(--arabic-bg);color:var(--arabic)}
+  .topics{color:var(--muted);font-size:12.5px}
+  .empty{padding:40px;text-align:center;color:var(--muted)}
+  footer{margin:46px 0 60px}
+  .note{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:var(--shadow);font-size:13.5px;color:var(--muted)}
+  .note h2{margin:0 0 10px;font-family:var(--serif);font-size:20px;color:var(--ink);font-weight:600}
+  .note b{color:var(--ink)}
+  .note code{font-family:var(--mono);font-size:12px;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+  #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:50}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (max-width:720px){.split{grid-template-columns:1fr}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">AI Automation Agency · Content Strategy · UAE</div>
+    <h1>The UAE AI Content Ranking Playbook</h1>
+    <p class="lede">70 content ideas engineered to rank on Google in the UAE and the wider GCC for an AI automation / AI agent / chatbot service — built by reverse-engineering what 126 competitor agencies across the UAE, USA, Europe and the wider Arabic-speaking GCC actually publish, then targeting what they all miss.</p>
+    <div class="metaline">
+      <span><b>126</b> competitor agencies analysed</span>
+      <span><b>70</b> content ideas</span>
+      <span><b>UAE</b> · USA · Europe · GCC Arabic</span>
+      <span>Compiled <b>Jul 2026</b></span>
+    </div>
+  </header>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="callout">
+    <h2>How to actually rank with this in the UAE</h2>
+    <p>Every UAE competitor floods the same saturated topics ("what is agentic AI", generic chatbot pages). Fighting them head-on is slow. The fast path to page one is <b>low-competition, high-intent</b> content: the gap topics nobody writes, the UAE-specific angles no foreign site can credibly cover, and the exact long-tail workflows buyers search.</p>
+    <ol>
+      <li><b>Start with 🟢 UAE-priority ideas</b> (gap openings, regional angles, specific workflows) — least competition, fastest to rank.</li>
+      <li><b>Publish clusters, not one-offs</b> — pick one category, ship 4-6 linked articles so Google sees topical authority.</li>
+      <li><b>Match the exact keyword</b> in the H1, URL and first paragraph; answer the query in the first 2 sentences (for AI Overviews / featured snippets).</li>
+      <li><b>Add one thing competitors can't fake</b> — a real screenshot, a real AED number, a real client outcome (never invented) — that's your ranking + trust edge.</li>
+      <li><b>End every piece with a service CTA</b> — these are commercial keywords; the reader is a buyer.</li>
+    </ol>
+  </div>
+
+  <div class="sec-title">The competitive landscape — where the openings are</div>
+  <div class="split">
+    <div class="panel saturated">
+      <h3>🔴 What the agencies write (saturated)</h3>
+      <p class="sub">Entering these means fighting dozens of established pages. Do it selectively, with a sharper angle.</p>
+      <ul id="saturated"></ul>
+    </div>
+    <div class="panel gaps">
+      <h3>🟢 What they miss (your openings)</h3>
+      <p class="sub">Barely-covered topics. Rank here with far less effort — this is where most ideas below aim.</p>
+      <ul id="gaps"></ul>
+    </div>
+  </div>
+
+  <div class="sec-title" id="ideabank">The idea bank — 70 rankable pieces</div>
+  <div class="controls">
+    <div class="wrap" style="padding:0">
+      <div class="row">
+        <label class="search"><span>&#9906;</span><input id="q" type="search" placeholder="Search ideas &amp; keywords… (e.g. voice, whatsapp, arabic, cost)" aria-label="Search ideas"></label>
+        <button class="btn" id="uaeOnly" aria-pressed="false">🟢 UAE-priority only</button>
+        <select id="sort" class="btn" aria-label="Sort" style="font-weight:600">
+          <option value="uae">Sort: UAE priority first</option>
+          <option value="cat">Sort: by category</option>
+          <option value="funnel">Sort: by funnel stage</option>
+          <option value="num">Sort: original order</option>
+        </select>
+        <button class="btn" id="export">⭳ Export CSV</button>
+        <button class="btn" id="reset">Reset</button>
+      </div>
+      <div class="row" style="margin-top:9px"><div class="chips" id="catChips"></div></div>
+      <div class="row" style="margin-top:7px"><div class="chips" id="funnelChips"></div></div>
+    </div>
+  </div>
+  <div class="barmeta">
+    <div class="count"><b id="shown">0</b> ideas shown</div>
+    <div class="count" id="activeFilters"></div>
+  </div>
+  <div class="ideas" id="ideaGrid"></div>
+  <div class="empty" id="ideaEmpty" hidden>No ideas match those filters.</div>
+
+  <div class="sec-title">Competitor directory — 126 AI service agencies</div>
+  <div class="controls" style="position:static;background:none;backdrop-filter:none;border:0;padding:0 0 12px">
+    <div class="row">
+      <label class="search"><span>&#9906;</span><input id="cq" type="search" placeholder="Search companies, cities, services…" aria-label="Search companies"></label>
+      <div class="chips" id="regionChips"></div>
+    </div>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:20%">Company</th><th style="width:8%">Region</th><th style="width:16%">Location</th><th style="width:22%">Service</th><th style="width:34%">Blog topics they publish</th></tr></thead>
+      <tbody id="coBody"></tbody>
+    </table>
+    <div class="empty" id="coEmpty" hidden>No companies match.</div>
+  </div>
+
+  <footer>
+    <div class="note">
+      <h2>How this was built &amp; how to use it</h2>
+      <p><b>Method:</b> real web research identified 126 companies that <b>build AI for other businesses</b> (agencies, agent/chatbot/voice dev shops, gen-AI consultancies) across the UAE (46), USA (33), Europe (32) and the wider Arabic-speaking GCC (15) — big AI labs and national platforms were deliberately excluded. Blog topics were read from live pages. From the saturated themes and the content gaps, 58 ranking ideas were generated. A further 12 Arabic-language ideas targeting the UAE and the wider GCC (Saudi Arabia, Qatar, Kuwait, Bahrain and Oman) were added next, at the time from keyword and topic judgment rather than dedicated research. That gap has since been closed: 15 Arabic-serving GCC agencies were found and verified directly by visiting their sites, across Saudi Arabia, Qatar, Kuwait, Bahrain, Oman and two new UAE-based Arabic-first finds. Of those, 6 publish confirmed real Arabic-language content (not always AI-specific — some write about SEO or web design in Arabic, not AI), and 9 were either unverifiable beyond confirming the company itself is real, or confirmed to publish English-only content despite an Arabic-facing site or URL. The 12 Arabic ideas were checked against these findings and revised where the evidence pointed somewhere sharper, bringing the total to 70 ideas and 126 competitors analysed.</p>
+      <p><b>Before you publish:</b> validate each primary keyword's real UAE volume in <b>Google Keyword Planner</b> (set country = United Arab Emirates) and eyeball the live UAE results — if page one is thin or foreign-only, that's your opening. The 🟢 UAE-priority ideas are pre-selected for exactly that low-competition profile.</p>
+      <p><b>One rule:</b> never invent statistics, client names, or case-study numbers to fill these pieces. Use real first-party proof — that authenticity is both your ranking edge and your legal safety. Where you have none yet, write from genuine expertise and process instead.</p>
+    </div>
+  </footer>
+</div>
+<div id="toast">Copied</div>
+
+<script>
+const CATS={
+  A:{label:"Gap opening",color:"var(--gap)",bg:"var(--gap-bg)"},
+  B:{label:"Commercial / hire",color:"var(--commercial)",bg:"var(--commercial-bg)"},
+  C:{label:"Vertical",color:"var(--vertical)",bg:"var(--vertical-bg)"},
+  D:{label:"Workflow how-to",color:"var(--workflow)",bg:"var(--workflow-bg)"},
+  E:{label:"UAE / regional",color:"var(--uae)",bg:"var(--uae-bg)"},
+  F:{label:"GCC Arabic",color:"var(--arabic)",bg:"var(--arabic-bg)"},
+};
+// [num, cat, funnel, keyword, title, angle, uaePriority(high/med), cta]
+const IDEAS=[
+[1,"A","MOFU","prompt injection attacks on chatbots","Prompt Injection Is Coming for Your Chatbot: A Security Guide for Businesses Deploying AI Agents","Only ~3 of the 111 English-market competitors touch AI security, so a practical business explainer owns the topic almost uncontested.","high","Book a free security check of your chatbot before someone else tests it for you."],
+[2,"A","MOFU","ai agent red teaming","How We Red Team AI Agents Before They Ever Talk to Your Customers","Turns a near-empty gap into a trust asset and proof of engineering maturity buyers can't find elsewhere.","high","Book a free red team session on your AI agent before it ever talks to a real customer."],
+[3,"A","TOFU","agentops","AgentOps Explained: What Happens After Your AI Agent Goes Live","Post-deployment ops is the single least-covered theme across all three markets; become the definitive explainer.","high","Download our free AgentOps starter checklist and see what your team should be tracking after launch."],
+[4,"A","TOFU","model drift in production ai","Your AI Agent Will Get Worse Over Time: A Plain English Guide to Model Drift and How to Catch It","Reframes a technical topic for buyers, exploiting the monitoring gap and seeding a maintenance retainer.","high","Grab our free model drift checklist and run it against your agent this month."],
+[5,"A","BOFU","ai agent maintenance cost","The Real Cost of Owning an AI Agent: Year One Maintenance, Monitoring and Updates","Everyone writes build-cost; almost nobody writes ownership-cost, which is what serious buyers budget for.","high","Request a fixed ownership cost estimate for the agent you are planning to build."],
+[6,"A","MOFU","data readiness for ai","Is Your Data Ready for AI? The Readiness Audit to Run Before You Spend a Dirham on Automation","Data foundations are barely covered and the checklist converts into a paid readiness assessment.","high","Run our free data readiness audit before you spend a dirham on AI."],
+[7,"A","TOFU","why ai projects fail after deployment","Why Most AI Projects Die Six Months After Launch (and the Handover Checklist That Prevents It)","The post-launch abandonment angle is untouched and positions ongoing support as the fix.","high","Download the post launch handover checklist that catches these failure points before they kill your project."],
+[8,"A","MOFU","ai agent monitoring","The AI Observability Stack: How to Monitor Agents, Log Conversations and Prove ROI Month After Month","Merges two gaps (AgentOps + ROI proof) into one piece technical evaluators bookmark and share.","high","Ask for a demo of the monitoring dashboard we ship with every agent."],
+[9,"A","TOFU","ai automation case study template","How to Write an AI Case Study Your Clients Will Actually Sign Off On (Template Inside)","Teaching the measurement framework signals you run real measured projects.","med","Download the case study template and use it on your next project."],
+[10,"A","MOFU","ai governance policy for small business","AI Governance for Companies Under 200 Employees: The Lightweight Policy Kit","Governance content is enterprise listicles; an SME-sized kit fills the gap at your buyers' size.","high","Get a free scorecard on your current AI usage against a lightweight governance checklist."],
+[11,"A","MOFU","ai change management for employees","Training Your Staff to Work With AI Agents: A 30 Day Change Management Plan","The human side of adoption is almost absent and answers the objection that quietly kills deals.","high","Get a free readiness assessment of how your team is likely to take to an AI rollout."],
+[12,"A","MOFU","ai human handoff design","When the AI Should Hand Off to a Human: Designing Escalation Paths That Do Not Enrage Customers","A craft topic nobody covers that answers buyers' number-one fear about customer-facing bots.","high","Get a free review of your current escalation rules and where customers are likely to fall through."],
+[13,"A","BOFU","chatbot data security checklist","The Chatbot Data Security Checklist: What Your AI Vendor Should Answer Before You Sign","Combines the security gap with vendor-selection intent, arming buyers with questions competitors can't answer.","high","Score your vendor against this checklist, then book a call so we can walk through every gap."],
+[14,"A","TOFU","ai agent guardrails","Guardrails 101: How to Stop Your AI Agent From Making Promises Your Business Cannot Keep","Hallucinated discounts are the horror stories buyers read; almost no agency explains the fix.","high","Download our guardrails checklist and see which layers your agent is missing."],
+[15,"A","BOFU","ai maintenance retainer","What a Monthly AI Maintenance Retainer Actually Includes (and What It Should Cost)","Defines a service category competitors don't even name, letting you set the price anchor.","high","Book a call to pick the maintenance retainer tier that fits your agent."],
+[16,"A","TOFU","shadow ai in the workplace","Shadow AI: Your Employees Are Already Using ChatGPT With Company Data. Here Is What to Do About It","Sits across the security, governance and training gaps and names a pain leadership already feels.","high","Download the shadow AI starter survey and find out what tools your staff are already using."],
+[17,"B","BOFU","ai agent development cost","How Much Does It Cost to Build an AI Agent in 2026? Honest Numbers by Project Type","Wins the saturated cost theme by giving ranges per project archetype instead of vague 'it depends'.","med","Get a fixed scope quote for your agent within three working days."],
+[18,"B","BOFU","ai automation agency vs freelancer","AI Automation Agency vs Freelancer vs In House Team: The True Cost and Risk Comparison","Buyers compare delivery models, not just vendors; competitor comparisons stay at tool level.","med","Book a call to compare our agency model against the other quotes you are holding."],
+[19,"B","BOFU","questions to ask ai agency","12 Questions to Ask Before Hiring an AI Automation Agency (and the Answers That Should Worry You)","The 'red-flag answers' half makes it genuinely useful and maps to your real strengths.","med","Book a call, bring these 12 questions, and grade our answers yourself."],
+[20,"B","BOFU","custom ai agent vs off the shelf chatbot","Build vs Buy: When an Off the Shelf Chatbot Beats a Custom AI Agent (and When It Backfires)","Honesty about off-the-shelf builds the trust that converts the complex projects you want.","med","Tell us your use case on a call and we will say honestly if off the shelf is enough."],
+[21,"B","MOFU","n8n vs make vs zapier","n8n vs Make vs Zapier for Business Automation: Which One We Deploy for Clients and Why","High-volume comparison answered from real deployment experience with selection criteria competitors omit.","med","See a live demo comparing how each platform handles your actual workflow."],
+[22,"B","BOFU","ai project rfp template","The AI Project RFP Template: Copy This Brief to Get Comparable Quotes From AI Agencies","A downloadable asset that inserts you into every deal the buyer runs.","med","Send us your completed RFP, or ours, and book a call to get a scoped proposal back."],
+[23,"B","BOFU","ai chatbot pricing models","AI Chatbot Pricing Models Explained: Per Conversation, Per Seat, Flat Fee and What Each Hides","Goes deeper than 'how much', catching buyers who already have quotes in hand.","med","Book a call and get a pricing sheet mapped to your expected conversation volume."],
+[24,"B","BOFU","ai implementation timeline","How Long Does an AI Automation Project Take? Realistic Timelines From Kickoff to Live","Timeline anxiety is a top late-stage question competitors bury; a dedicated answer wins the snippet.","high","Book a call and get a dated project plan for your use case."],
+[25,"B","BOFU","ai voice agent cost","AI Voice Agent Cost: What You Pay for Telephony, Minutes, Models and Maintenance","Voice cost content is thin; itemising the stack shows depth listicle competitors lack.","high","Book a live demo call and get pricing for your exact call volume."],
+[26,"B","MOFU","what is an ai automation agency","What Is an AI Automation Agency and What Does One Actually Do All Day?","Category-defining query where a behind-the-scenes breakdown beats generic definitions.","med","See a live walkthrough of a real project, from audit to launch."],
+[27,"B","BOFU","how to measure ai roi","How to Measure AI Agent ROI: The Baseline, the Metrics and the Spreadsheet","Teaches the method with a template and pre-sells your reporting-included delivery.","med","Book a call to build your ROI baseline before your project starts."],
+[28,"B","BOFU","choosing an ai development company","Signs You Are About to Hire the Wrong AI Vendor: Lessons From Rescued Projects","Rescue-project framing differentiates in the saturated vendor-selection theme and targets buyers burned once.","med","Book a call and grade us against this list yourself."],
+[29,"C","MOFU","ai for law firms","AI for Law Firms: Automating Intake, Conflict Checks and Document Review Without Risking Privilege","Legal is underserved; leading with confidentiality speaks the buyer's language.","high","Get a free automation audit of your intake and document workflow, in full confidence."],
+[30,"C","MOFU","ai automation for education","AI for Schools and Training Institutes: Admissions Chatbots, Parent Communication and Admin Automation","Education is barely covered; the admissions-season pain gives a commercial hook.","med","See a live demo of an admissions agent trained on a sample course catalogue."],
+[31,"C","MOFU","ai for construction companies","AI in Construction: Automating RFIs, Submittal Tracking and Site Report Summaries","Underserved and huge in the UAE; naming real document workflows beats vague 'AI transforms construction'.","high","Get a free audit of your busiest admin process and see what is worth automating."],
+[32,"C","MOFU","ai automation for logistics","AI for Logistics and Freight: Shipment Status Bots, POD Chasing and Carrier Email Automation","A gap vertical anchored in Dubai's trade economy, focused on the messy email-and-status reality.","high","See a live demo of a shipment status agent answering real WhatsApp queries."],
+[33,"C","MOFU","ai for manufacturing companies","AI for Manufacturers: Quote Automation, Order Status Agents and Maintenance Ticket Triage","Underserved vertical via office/sales workflows, sidestepping the crowded industrial-IoT angle.","med","Get a free process audit of your order desk to see what to automate first."],
+[34,"C","MOFU","ai for clinics","AI for Medical and Dental Clinics: Appointment Agents, No Show Reduction and Patient FAQ Bots","Healthcare is saturated at hospital level but thin at clinic level, where your deal size lives.","high","See a live demo of the clinic booking agent and its no show reminder flow."],
+[35,"C","MOFU","ai for real estate agents","AI for Real Estate Brokerages: Lead Qualification Agents That Work While Your Agents Sleep","Differentiates a saturated vertical on speed-to-lead, the metric UAE brokers obsess over.","high","See a live demo of a lead qualification agent working a batch of sample leads."],
+[36,"C","MOFU","ai for hospitality industry","AI for Hotels and Restaurants: Booking Bots, Review Responses and Guest Messaging in Two Languages","Combines a saturated vertical with the bilingual gap, the deciding factor for Gulf hospitality.","high","See a live demo of the guest messaging agent tuned to your property or venue."],
+[37,"C","MOFU","ai for insurance brokers","AI for Insurance Brokers: Renewal Reminders, Quote Comparison Agents and Claims Status Bots","Insurance content skews to carriers; the broker-office angle is nearly empty and affordable.","med","Get a free audit of your renewal and follow up flow to see where leads slip."],
+[38,"C","MOFU","ai for accounting firms","AI for Accounting Firms: Client Document Chasing, Deadline Reminders and Bookkeeping Handoffs","Targets the document-chasing pain every practice owner recognises instantly.","med","Get a free audit of how many chasing hours your firm could hand to an agent."],
+[39,"D","BOFU","ai that qualifies leads and books calls","How to Build an AI Agent That Qualifies Leads and Books Sales Calls Automatically","Matches a verified long-tail phrase word for word and ends in a done-for-you offer.","high","Watch the qualification agent book a real slot on your own calendar in a live demo."],
+[40,"D","BOFU","missed call text back","Missed Call Text Back With AI: Stop Losing Customers Who Hang Up After Three Rings","A proven high-intent long-tail almost no AI agency has claimed with a dedicated page.","high","Call our demo line, hang up, then book a call to get this running on your own number."],
+[41,"D","BOFU","whatsapp auto reply for business","WhatsApp Auto Reply for Business: From Basic Greeting to Full AI Sales Agent","The maturity-ladder captures every stage and upsells from free features to your custom build.","high","Message our WhatsApp demo number, then book a call to build your own agent."],
+[42,"D","BOFU","sync leads to crm automatically","How to Sync Leads From Every Channel Into Your CRM Automatically (Forms, WhatsApp, Calls, DMs)","Targets the exact long-tail cluster and demonstrates multi-channel integration skill.","high","List your lead channels and book a call so we can map the sync."],
+[43,"D","BOFU","automate invoice follow up","Automating Invoice Follow Ups With AI: Get Paid Without the Awkward Reminder Emails","Cash-flow pain is universal and the workflow is a compelling quick-win case.","high","Book a call to connect the reminder sequence to your invoicing this week."],
+[44,"D","BOFU","automate sales follow up","How to Automate Quote Follow Up So No Proposal Ever Goes Cold Again","Attacks revenue leakage every service business recognises, with a sequenced workflow.","high","Send us one dead quote and book a call to see the follow up sequence we would run."],
+[45,"D","MOFU","ai email triage","AI Ticket Triage: Route Support Emails to the Right Person Before Anyone Reads Them","A concrete internal workflow with measurable savings; an easy first project to buy.","high","Get a free triage design based on a week of your real inbox."],
+[46,"D","BOFU","automated appointment reminders","Automating Appointment Reminders That Actually Cut No Shows (SMS, WhatsApp and Voice)","Channel comparison plus escalation logic beats single-tool tutorials and cross-sells voice.","high","Book a call to get reminders plugged into your calendar this week."],
+[47,"D","MOFU","ai google review responses","How to Use AI to Respond to Google Reviews at Scale Without Sounding Like a Robot","High-volume local pain with a quality-control angle generic AI-writing posts miss.","high","Send us your review page and get three sample AI responses free."],
+[48,"D","MOFU","ai resume screening automation","Screening Job Applicants With an AI Agent: From 400 CVs to a Shortlist in One Afternoon","Vivid before-and-after on a high-volume workflow, with a fairness section tying to governance.","med","Run a free pilot of the screening agent on your next job opening."],
+[49,"D","BOFU","ai phone agent that books appointments","How to Connect an AI Voice Agent to Your Calendar So Callers Book Themselves In","Combines voice agents + booking into one specific outcome page competitors split in two.","high","Call the demo agent now, book a real slot, then book a call to put this on your own line."],
+[50,"E","MOFU","uae pdpl ai compliance","The UAE AI and PDPL Compliance Guide for Companies Deploying Chatbots and AI Agents","A deployment-focused compliance guide from the builder's seat captures buyers with live projects.","high","Get a free compliance aware review of your planned AI architecture."],
+[51,"E","MOFU","arabic ai chatbot development","Building Arabic AI Chatbots That Actually Work: Dialects, Arabizi and Mixed Language Conversations","The Arabic-from-a-builder angle is a named gap; the dialect problem is the credibility test.","high","Test our Arabic demo agent in your own dialect and judge the difference yourself."],
+[52,"E","MOFU","jais vs falcon arabic llm","Jais vs Falcon vs GPT for Arabic Business AI: Which Model Should Power Your Agent?","Regional model comparison from a deployment view, merging LLM-comparison volume with the Arabic gap.","high","Get a free recommendation on which model fits your Arabic use case."],
+[53,"E","MOFU","arabic english ai voice agent","Bilingual AI Voice Agents for the Gulf: Handling Callers Who Switch Between Arabic and English Mid Sentence","Code-switching is the defining Gulf voice challenge and no competitor content addresses it.","high","Book a live bilingual demo call and switch languages mid conversation yourself."],
+[54,"E","BOFU","ai integration with erp uae","Connecting AI Agents to UAE Business Systems: Tally, Zoho, Odoo and Local ERPs","The regional-integration gap; naming ERPs UAE SMEs actually use ranks for stacked long-tails.","high","Book a call and tell us your ERP so we can map exactly what an agent could do with it."],
+[55,"E","MOFU","uae data residency ai","Where Should Your AI Data Live? UAE Data Residency, Sovereign Hosting and What PDPL Really Requires","Imports Europe's proven sovereign-AI angle into the UAE market where nobody localised it.","high","Request a free data flow map for your planned AI deployment."],
+[56,"E","TOFU","whatsapp ai agent uae","WhatsApp Is the Front Door of Gulf Business: Building AI Agents for the Region's Favorite Channel","Frames a saturated topic through regional channel behavior, setting up every workflow page as the next click.","high","Download our WhatsApp automation starter guide covering the first three flows to build."],
+[57,"E","MOFU","ai automation for free zone companies","AI Automation for UAE Free Zone Businesses: Handling Inquiries, Renewals and Client Onboarding at Scale","Targets a distinctly UAE structure with seasonal peaks no global competitor can credibly write about.","high","Get a free 90 day automation roadmap built around your actual free zone business."],
+[58,"E","TOFU","business automation ramadan hours","Preparing Your AI Agents for Ramadan: Adjusted Hours, Tone and Traffic Patterns","A culturally fluent piece that signals real regional presence, earns links, and has zero competition.","high","Download the pre Ramadan checklist and update your agent's hours and tone yourself."],
+[59,"F","TOFU","أتمتة الأعمال بالذكاء الاصطناعي (AI business automation)","أتمتة الأعمال بالذكاء الاصطناعي: دليل شامل للشركات في الخليج (AI Business Automation: A Complete Guide for Gulf Companies)","Verified GCC research found only 6 of 15 real Arabic-serving agencies publish substantive Arabic content, and none as a cross-Gulf pillar covering all five markets at once — this piece can own that combined space.","high","حمّل الدليل المجاني لأتمتة الأعمال بالذكاء الاصطناعي وابدأ بنفسك (Download the free AI business automation guide and take the first step yourself)."],
+[60,"F","MOFU","روبوت محادثة عربي لخدمة العملاء (Arabic customer service chatbot)","أفضل روبوت محادثة عربي لخدمة العملاء (The Best Arabic Chatbot for Customer Service)","Confirmed by direct verification: WisdomDigi (Bahrain), TechSphere Qatar and Kait Technologies (Kuwait) all show an Arabic toggle or Arabic-market pitch but publish no genuine Arabic content — a piece that engages with dialect head-on, not translation, wins trust immediately.","high","جرّب نسخة تجريبية مجانية من الروبوت العربي وقيّم فهمه للهجتك (Try a free demo of the Arabic chatbot and judge how well it understands your dialect)."],
+[61,"F","MOFU","بوت واتساب للأعمال (WhatsApp bot for business)","بوت واتساب للأعمال في الخليج: كيف يعمل ولماذا يهمك (WhatsApp Business Bot in the Gulf: How It Works and Why It Matters)","WhatsApp dominates Gulf business communication and almost no competitor content addresses it in Arabic at all.","high","اطلب عرضاً تجريبياً مباشراً على واتساب بلهجتك الخاصة (Request a live WhatsApp demo in your own dialect)."],
+[62,"F","MOFU","الذكاء الاصطناعي ونظام حماية البيانات السعودي (AI and Saudi data protection law)","الذكاء الاصطناعي والامتثال في السعودية: دليل PDPL وهيئة SDAIA (AI and Compliance in Saudi Arabia: The PDPL and SDAIA Guide)","Saudi Arabia is the largest Gulf market and has zero dedicated Arabic compliance content from any competitor surveyed.","med","احصل على مراجعة مجانية لمدى توافق مشروعك مع نظام حماية البيانات السعودي (Get a free review of how your AI project lines up with Saudi's data protection law)."],
+[63,"F","MOFU","حماية البيانات في قطر للذكاء الاصطناعي (Qatar data protection for AI)","الذكاء الاصطناعي وحماية البيانات في قطر: ما يجب أن تعرفه الشركات (AI and Data Protection in Qatar: What Companies Need to Know)","Verified against two real Doha agencies with active Arabic blogs (Gray Data, FiveNodes AI): Gray Data covers general Qatari ERP/payroll compliance in Arabic but neither touches data protection for AI specifically — Qatar's own data law is still never named or explained in that context.","med","اطلب خريطة تدفق بيانات مجانية لمشروعك في قطر (Request a free data flow map for your project in Qatar)."],
+[64,"F","MOFU","ذكاء اصطناعي للعقارات في الخليج (AI for Gulf real estate)","أتمتة العقارات بالذكاء الاصطناعي في الخليج (AI Automation for Real Estate Across the Gulf)","Real estate is a saturated English vertical but completely open in Arabic across Gulf markets.","high","شاهد عرضاً تجريبياً مباشراً لروبوت تأهيل العملاء العقاريين بالعربي (See a live demo of the Arabic real estate lead qualification agent)."],
+[65,"F","MOFU","ذكاء اصطناعي للفنادق والمطاعم (AI for hotels and restaurants)","مساعد ذكاء اصطناعي للمطاعم والفنادق في الخليج (AI Assistant for Restaurants and Hotels in the Gulf)","Hospitality content exists in English only, an Arabic piece captures GCC guests and hotel operators directly.","high","اطلب عرضاً تجريبياً مخصصاً لمطعمك أو فندقك (Request a demo tuned to your restaurant or hotel)."],
+[66,"F","BOFU","تكلفة روبوت الذكاء الاصطناعي (AI chatbot cost)","كم تكلفة روبوت الذكاء الاصطناعي لشركتك؟ أرقام واقعية (How Much Does an AI Chatbot Cost for Your Company? Realistic Numbers)","Cost queries in Arabic get zero dedicated answers, despite being some of the highest intent Gulf searches available.","high","اطلب عرض سعر ثابت لمشروعك خلال ثلاثة أيام عمل (Request a fixed price quote for your project within three working days)."],
+[67,"F","MOFU","ذكاء اصطناعي صوتي باللهجة الخليجية (Gulf dialect voice AI)","الذكاء الاصطناعي الصوتي باللهجات الخليجية: الإماراتية والسعودية والقطرية (Gulf Dialect Voice AI: Emirati, Saudi and Qatari)","Confirmed gap in practice, not just theory: FiveNodes AI (Qatar), Ridkk (UAE) and Teammates.ai (UAE) all sell bilingual or dialect-capable voice/agent products, but none of the three publishes any content explaining how dialect handling actually works.","high","احجز مكالمة تجريبية صوتية مباشرة واختبر فهم اللهجة بنفسك (Book a live voice demo call and test the dialect understanding yourself)."],
+[68,"F","TOFU","قوانين الذكاء الاصطناعي في الخليج (AI laws in the Gulf)","مقارنة قوانين الذكاء الاصطناعي وحماية البيانات: الإمارات والسعودية وقطر (Comparing AI and Data Protection Rules: UAE, Saudi Arabia and Qatar)","A single comparison table becomes the most linkable asset in the cluster and captures researchers evaluating multiple markets at once.","high","حمّل الجدول المقارن المجاني لثلاثة أنظمة حماية البيانات في الخليج (Download the free comparison table of the three Gulf data protection frameworks)."],
+[69,"F","MOFU","أتمتة خدمة العملاء في الكويت والبحرين وعُمان (customer service automation Kuwait Bahrain Oman)","أتمتة خدمة العملاء في الكويت والبحرين وعُمان (Customer Service Automation in Kuwait, Bahrain and Oman)","Directly verified market by market: three real AI companies in Kuwait (none with Arabic content), one in Bahrain (Arabic-market pitch, English-only blog), and one strong Arabic publisher in Oman (Muscat Tech Solutions) whose content is document/vision AI, not customer service — the customer-service angle specifically is still wide open across all three.","med","احصل على تدقيق مجاني لاستعداد بياناتك للأتمتة في سوقك تحديداً (Get a free readiness audit for your specific market)."],
+[70,"F","TOFU","الذكاء الاصطناعي التوليدي للشركات (generative AI for businesses)","الذكاء الاصطناعي التوليدي للشركات العربية: الفرص والمخاطر (Generative AI for Arabic Businesses: Opportunities and Risks)","GenAI explainer content exists in English by the dozen but is nearly absent in Arabic for a Gulf business audience.","high","اشترك في نشرتنا لتصلك أدلة عملية عن الذكاء الاصطناعي التوليدي بالعربية (Sign up for our newsletter for practical generative AI guides in Arabic)."]
+];
+
+const SATURATED=[
+["1","AI agents / agentic AI — 'what is agentic AI', agents vs RPA, use cases"],
+["2","Workflow automation / RPA — n8n, Make, Zapier, business-process automation"],
+["3","AI chatbots — development, WhatsApp bots, support, chatbot pricing"],
+["4","Cost / ROI of AI — AED implementation cost, ROI timelines, 'how much'"],
+["5","Choosing an AI agency / vendor — buyer guides, 'how to pick'"],
+["6","Industry AI — healthcare, finance, real estate, hospitality, retail, logistics"],
+["7","Generative AI / LLMs — GPT, Claude, Falcon/Jais, model comparisons"],
+["8","AI voice agents — voice for support/sales, voice vs text"],
+["9","AI marketing / SEO / AEO / GEO — getting cited by ChatGPT/Perplexity"],
+["10","AI regulation — UAE AI Act, PDPL, NESA, EU AI Act, GDPR"],
+["11","GCC Arabic: WhatsApp-bot explainers and generic \"what is AI automation\" posts, wherever Arabic content exists at all (Saudi Arabia has the most of it — Automation KSA alone runs several)"],
+];
+const GAPS=[
+["A","AI security / prompt injection / red-teaming (only ~3 firms)"],
+["B","Post-deployment: AgentOps, monitoring, model drift (almost nobody)"],
+["C","Data readiness / data-engineering foundations before AI"],
+["D","Real, named-client case studies with measurable results"],
+["E","Deep AI ethics / governance (beyond a compliance listicle)"],
+["F","Vertical deep-dives: legal, education, construction, logistics"],
+["G","Employee upskilling / AI change management (the human side)"],
+["H","Arabic / bilingual AI from a builder's angle"],
+["I","Integration with local systems (UAE ERPs, gov portals, Arabic CRMs)"],
+["J","Honest UAE-specific vendor / tool comparisons"],
+["K","GCC Arabic: genuinely native Arabic content, not an Arabic URL or toggle sitting in front of English text — confirmed at WisdomDigi (Bahrain) and TechSphere Qatar, suspected at several others"],
+["L","GCC Arabic: Bahrain and Oman specifically — after direct verification, only one strong Arabic-content example turned up across both markets (Muscat Tech Solutions), and it leans document/vision AI, not conversational"],
+["M","GCC Arabic: Kuwait — three real, verified AI companies found, none with confirmed Arabic blog content"],
+["N","GCC Arabic: Gulf dialect voice AI explained in Arabic — real bilingual voice/agent companies exist (FiveNodes, Ridkk, Teammates.ai) but none publish dedicated content about dialect handling itself"],
+];
+
+const COMPANIES=[
+// UAE
+["UAE","NomadX","Dubai","Enterprise AI-agent development","agent frameworks (LangGraph/CrewAI), UAE AI Act/PDPL/NESA, MCP vs A2A, sovereign LLMs, prompt-injection security, ROI"],
+["UAE","HYVE AI Labs","Dubai","Agentic AI development","sales/revenue agents, finance automation, Arabic support agents, supply-chain forecasting, HR agents"],
+["UAE","The Code Genesis","Dubai","AI/ML software development","agents vs automation, enterprise AI strategy, SMB scaling, process automation"],
+["UAE","JADA (The JADA Squad)","Dubai","Agentic-AI company","agents in support, agentic strategy, when agentic AI fails, agent lifecycle / AgentOps"],
+["UAE","Aetherix Systems","Dubai","Autonomous enterprise agents (RaaS)","agentic guide, financial-services agents, supply chain, agents vs RPA, UAE/Saudi regs, RaaS"],
+["UAE","ALTINKEY","Dubai","AI agency / AI sales agents","MCP, best LLMs 2026, chatbots vs sales agents, real-estate agents, Make vs n8n, healthcare"],
+["UAE","Anvenssa","Dubai (HQ: verify)","Conversational AI / sales automation","content agents, agents vs automation, voice agents, agent security, WhatsApp automation"],
+["UAE","n8nlab","Dubai","n8n automation agency","n8n AI agents, enterprise agent dev, cost optimization, secure pipelines, platform comparisons"],
+["UAE","n8nlogic","Dubai","n8n workflow / AI agents","agents with tools+memory, RAG+vector stores, MCP servers, n8n infra, integrations"],
+["UAE","n8nera","Dubai","n8n + AI voice-agent agency","self-hosting n8n, Shopify automation, voice-agent cost, CRM automation UAE, GPT agents"],
+["UAE","ShaboAI","Dubai","AI automation agency","WhatsApp automation UAE, n8n guides, chatbot pricing Dubai, Shopify, tool comparisons"],
+["UAE","Motionex AI","Dubai","AI automation & SaaS","AI automation UAE 2026, what is AI automation, SMB UAE, adoption challenges"],
+["UAE","Implemnt","UAE","AI automation agency","AED costs/ROI, why implementations fail, WhatsApp legality, case studies"],
+["UAE","Soluvide","Abu Dhabi","AI automation / chatbots / RAG","implementation timelines, WhatsApp bots UAE, AI vs hiring, choosing an agency, SME examples"],
+["UAE","Konvergense","Dubai","AI automation / agentic","agentic ROI Dubai, cost reduction, industry agents, voice assistants, pricing, marketing automation"],
+["UAE","Zainlee","Dubai","AI / voice agents","voice for CX, human handoff, vendor selection UAE, 90-day ROI, data privacy, GEO"],
+["UAE","Aleddo Technologies","Dubai","Custom AI (chatbots/vision/RPA/genAI)","AI for UAE growth, providers in Dubai, agentic AI, custom chatbot development"],
+["UAE","Asif Digital","Dubai","AI automation / WhatsApp chatbots","AI marketing Dubai 2026, reliable AI workflows, AI consulting (governance/ROI)"],
+["UAE","Gravity Base","Dubai","Custom AI / NLP / genAI / CV","genAI for UAE, custom AI Dubai, chatbot benefits, dev trends 2026, voice vs text"],
+["UAE","Teqnovos","Dubai","AI software / LLM / genAI","medical voice assistant, AI healthcare, AI fitness, insurance use cases, LangChain builds"],
+["UAE","Competenza Innovare","Dubai","Custom software & enterprise AI/ML","AI Gulf healthcare, AI/ML agencies, automation agencies Dubai, custom vs vendor lock-in"],
+["UAE","Euclidz Technology","Dubai","AI + RPA + analytics","RPA trends UAE, chatbots retail CX, AI trends UAE, big data governance, ERP+AI"],
+["UAE","Marketways Arabia","Dubai","AI/ML/NLP & econometrics consultancy","chain-of-thought, sentiment for PR/crisis, NLP insights, econometrics, AI governance"],
+["UAE","AI First Partners","Dubai","Enterprise AI consulting / transformation","OpenAI intro, AI infra for agents, AI in design (Figma), government AI policy"],
+["UAE","Quantixa","Dubai","Data analytics & AI consulting","NLP with Python, AI ethics/privacy, real-world AI, business intelligence"],
+["UAE","SquareOne Technologies","Dubai","Enterprise intelligent automation","agentic AI banking, NLP workflows, orchestrating agents, voice chatbots, process mining"],
+["UAE","10xDS","Abu Dhabi","Digital transformation / RPA / IA","agents in compliance, invoice/data processing, hospitality automation, construction safety, semantic AI"],
+["UAE","StackWise","Ajman","Enterprise AI / BPA","AI strategy, agents vs RPA, BI, industry apps, UAE AI-vision alignment, IoT/CV"],
+["UAE","ShichifukuTekx FZE","Ajman","AI consulting / software / IA","smart factory agentic AI, GCC automation turning point, industry consulting"],
+["UAE","SAMCO LLC FZ","Dubai","Enterprise AI / chatbots / RPA / analytics","BPA Dubai, chatbot solutions UAE, transformation ROI by sector"],
+["UAE","Skyline Advanced Technology","Abu Dhabi","AI solutions & IT/security","AI cost calculator UAE, deepfake/liveness defense, AIaaS, genAI use cases"],
+["UAE","Saal.ai","Abu Dhabi","Applied/cognitive AI (Arabic-first)","SovereignGPT, AI leadership, AI security, agentic/genAI stacks, public-sector AI · also runs a distinct Arabic insights section (saal.ai/ar/insights) with real Arabic posts, mostly partnership and news announcements"],
+["UAE","Eurisko","Dubai (HQ: Lebanon)","ML/AI development + analytics","AI UAE/KSA healthcare, banking/fintech, fraud detection, Middle East AI, insurtech"],
+["UAE","Azdan","Dubai","NetSuite/EPM w/ AI-in-finance","AI for accounting, upskilling with AI, RPA provider comparison, AI reporting"],
+["UAE","SISGAIN","Dubai","AI software / digital engineering","pharmacy systems, RIS/PACS, LIS, with AI/NLP framing (healthcare-IT heavy)"],
+["UAE","Hikmah AI","Dubai","AI-native marketing agency","AEO for GCC, getting cited by Perplexity/ChatGPT, AI search visibility, choosing AI marketing agency"],
+["UAE","AARK Marketing","Dubai","AI-powered marketing / PR","AI in marketing 2026, genAI in marketing, AI SEO, Google AI ad changes"],
+["UAE","Digital Gravity","Dubai","Digital agency w/ AI chatbots","AI marketing tools, conversational AI, agentic AI, LLMs, GEO"],
+["UAE","Digital Graphiks","Dubai","Digital agency w/ AI voice agents","genAI, agentic AI, chatbots, custom LLMs, AI voice agents"],
+["UAE","GCC Marketing","Dubai","Digital agency w/ AI agents","AI automation by department, LLM app architecture, agents/chatbots, no-code vs custom, governance"],
+["UAE","Digital Perfection","Dubai","AI-powered marketing agency","AI SEO, business-process automation, ChatGPT in paid search, AI social, selecting an AI agency Dubai"],
+["UAE","Matrix AI","Abu Dhabi","Enterprise AI / intelligent automation","topics unverified"],
+["UAE","Cezcon Solutions","Dubai","IT + conversational AI / chatbots","AI topics unverified (blog skews general IT/CRM/BI)"],
+["UAE","Hovi Digital Lab","Dubai","AI-powered marketing agency","topics unverified"],
+["UAE","Spire Data","Dubai","AI & data analytics","topics unverified"],
+["UAE","Finlytyx","Dubai","AI & data science / EPM","topics unverified"],
+// USA
+["USA","Markovate","San Francisco, CA","GenAI development / consulting","agentic AI for manufacturing, document intelligence, enterprise adoption, industry AI, ROI"],
+["USA","Azumo","San Francisco, CA","AI/software dev (nearshore)","LLM fine-tuning, multi-agent RAG, architecture, outsourcing, dev trends"],
+["USA","HatchWorks AI","Atlanta, GA","GenAI software development","AI for PE/M&A, building with Claude, AI automation, risk/due diligence, owned AI"],
+["USA","Softweb Solutions","Chicago, IL","AI/IoT/data transformation","AI manufacturing, data-driven decisions, GenAI enterprise, adoption frameworks"],
+["USA","RTS Labs","Richmond, VA","Applied/agentic AI + data","AI transportation/fleet, wealth management, data science, implementation case studies"],
+["USA","Rootstrap","Los Angeles, CA","AI product engineering studio","multi-agent apps (LangGraph), QA in the AI age, cloud/DevOps, product UX"],
+["USA","Vention","New York, NY","AI software development","enterprise AI, healthtech, fintech ML, chatbots, State of AI, responsible AI"],
+["USA","Simform","Orlando, FL","AI/cloud/product engineering","cloud infra, agentic AI in production, modernization, data engineering, why projects fail"],
+["USA","Biz4Group","Orlando, FL","AI dev (chatbots/agents/apps)","AI cost/how-to, agents & automation, industry AI, chatbots, app economics"],
+["USA","Bitcot","San Diego, CA","AI-native custom software / chatbots","AI-native delivery, agentic systems, healthcare AI, dev tools, implementation"],
+["USA","Neudesic (IBM)","Irvine, CA","Enterprise AI & data (Azure)","agentic AI / digital workforce, MS Fabric, governance, AI infra, industry AI"],
+["USA","Zams (Obviously AI)","San Francisco, CA","AI automation / 'AI workers'","sales-admin automation, CRM integration, prospecting, Salesforce automation"],
+["USA","Cprime","Foster City, CA","Enterprise AI transformation","AI-enabled operations, adoption/change mgmt, AI in product dev, AI-first workforce"],
+["USA","Width.ai","Austin, TX","Custom genAI / agent dev","agentic AI by industry, e-commerce AI, marketing automation (n8n), computer vision, GEO"],
+["USA","LeewayHertz","San Francisco, CA","GenAI / agent dev (ZBrain)","genAI use cases by industry, building agents (CrewAI/AutoGen), AI consulting PoC/MVP"],
+["USA","TekRevol","San Francisco, CA","AI app dev / automation","AI in mobile, healthcare AI, outsourcing strategy, AI web tools, education"],
+["USA","Axe Automation","USA","AI automation agency (DFY)","process optimization, Zapier alternatives / n8n, process mapping, industry automation"],
+["USA","SmartBots.ai","Dallas, TX","Enterprise conversational AI / chatbots","conversational AI, banking/insurance/pharma, prompt engineering, RAG, agent building"],
+["USA","Sapphire Software Solutions","Ashburn, VA","AI chatbot / custom software","AI in mobile, conversational AI, ML/data science, cloud, modernization"],
+["USA","Kore.ai","Orlando, FL","Enterprise conversational/agentic AI","agent governance/safety, production readiness, eval frameworks, compliance"],
+["USA","ThirdEye Data","California","AI/ML / data engineering","topics unverified"],
+["USA","Iterators","USA","AI / software dev","topics unverified"],
+["USA","Closeloop","Bay Area, CA","AI / software dev","topics unverified"],
+["USA","OneReach.ai","Denver, CO","Conversational AI platform","AI agents, orchestration"],
+["USA","Openstream.ai","Bridgewater, NJ","Voice / multimodal assistants","conversational / voice AI"],
+["USA","SoluLab","US office (HQ India)","AI / blockchain development","topics unverified"],
+["USA","Signity Solutions","New Jersey (HQ India)","AI / chatbot development","topics unverified"],
+["USA","Kommunicate","US (HQ India)","AI chatbot","customer support automation"],
+["USA","Botsify","US (HQ Pakistan)","Chatbot platform / agency","chatbots"],
+["USA","Intellectyx","Dallas (offshore delivery)","AI / data","topics unverified"],
+["USA","Kanerika","US (HQ India)","AI / data","topics unverified"],
+["USA","Master of Code Global","US clients (HQ Ukraine)","Conversational / genAI dev","conversational AI, generative AI"],
+["USA","Space-O","US (HQ India)","AI app development","AI app development"],
+// EUROPE
+["Europe","Context Studios","Berlin, DE","Custom AI apps/agents + consulting","multi-agent orchestration, model cost optimization, MCP/agentic engineering, EU AI Act"],
+["Europe","n8n Lab","London, UK","n8n workflow / agent dev","agent dev, workflow automation, API cost, comparisons, safe routing"],
+["Europe","Xmethod","Berlin, DE","Low-code + AI automation","AI strategy, agents that work, buyer guides, no-code MVP, process automation"],
+["Europe","Elevate AI","London, UK","AI automation for UK SMEs","agency selection/costs, workflow examples, finance/CRM automation, what to automate first"],
+["Europe","Softomate","London, UK","BPA / AI receptionists / chatbots / voice","AI receptionists, ASA/GDPR, cost breakdowns, tool alternatives, client re-booking"],
+["Europe","Valchy AI","Sofia, BG","Voice / chat / email agents","EU AI Act phone-bot transparency, voice vs IVR, inbound/outbound ROI, chatbot metrics"],
+["Europe","AI Superior","Darmstadt, DE","AI consulting / development","LLM business apps, genAI, sentiment analysis, explainable AI, sector apps"],
+["Europe","Think AI","Mayo, IE","AI automation / chatbots for SMEs","genAI for SMEs, industry playbooks, AI CX, grant-ready roadmaps, chatbot lead-gen"],
+["Europe","Go Expandia","EU (multi-city)","AI automation / agent dev","AI/sales/voice agents, BPA + doc processing, buyer guides, localized city guides"],
+["Europe","Lampo","Stockholm, SE","Custom AI automation for SMBs","SMB workflow automation, ROI, stack integration"],
+["Europe","Alice Labs","Stockholm, SE","AI implementation / agents / LLMO","implementation playbooks, agent dev, governance, LLMO/GEO"],
+["Europe","Lleverage","Amsterdam, NL","AI back-office automation","invoice/AP automation, order-to-ERP, RPA vs AI-native, ERP integration, ROI"],
+["Europe","Artekia","Madrid, ES","AI consultancy for law/tax firms","AI agents for pro-services, process automation, AI assistants, predictive analytics"],
+["Europe","b.telligent","Munich, DE","Data & AI consultancy / chatbots","agentic AI + RAG retrieval quality, autonomous chatbots, data/AI transformation, 2026 trends"],
+["Europe","iGenius (Domyn)","Milan, IT","Enterprise / explainable AI","supercomputing, model selection, RAG for regulated industries, knowledge graphs"],
+["Europe","Galileo Studio","Madrid, ES","GenAI / agents, private AI","sovereign/private AI + GDPR, on-prem for SMEs, AI for lawyers, governance"],
+["Europe","Nodevate","Netherlands","Workflow automation / agents / training","AI automation for Dutch MKB, support agents, invoice automation, n8n vs Make vs Zapier, EU AI Act"],
+["Europe","what.digital","Zurich, CH","AI agents & workflow automation","content generation at scale, campaign automation, behavior-based messaging"],
+["Europe","VOLIOM Automate","Madrid, ES","Agentic AI development","topics unverified"],
+["Europe","AI Heroes","Amsterdam, NL","AI deployment / enablement","topics unverified"],
+["Europe","Green Creatives","Amsterdam, NL","AI for legal/financial/accounting","topics unverified"],
+["Europe","Codelevate","Netherlands","AI automation","topics unverified"],
+["Europe","Tait Results","London, UK","Chatbots / AI workflows","topics unverified"],
+["Europe","Primewise","UK","AI integration","automation examples / ROI"],
+["Europe","ACID21","Berlin, DE","AI agency","topics unverified"],
+["Europe","Krazimo","Berlin, DE","AI dev / agents / consulting","topics unverified"],
+["Europe","Cloudify","Copenhagen, DK","BPA + AI/ML","topics unverified"],
+["Europe","The Automators","Stockholm, SE","AI agency","topics unverified"],
+["Europe","MQLFlow","UK","AI automation agency","topics unverified"],
+["Europe","Antek Automation","UK","AI automation agency","comparisons / workflow guides"],
+["Europe","Modulais","Nordics","AI agency","topics unverified"],
+["Europe","Gigabyte Consultancy","Netherlands","AI automation","SME roadmaps"],
+// GCC — Arabic-language agencies (Saudi Arabia, Qatar, Kuwait, Bahrain, Oman) + new UAE Arabic-first finds
+["GCC","Labiba AI","Saudi Arabia market (also Bahrain, Qatar, UAE offices)","Conversational AI / contact center platform","Arabic Knowledge Hub: CX transformation, contact center automation, IVR-to-conversational-AI shift, shipment tracking bots"],
+["GCC","Automation KSA","Riyadh / Jeddah / Dammam, Saudi Arabia","AI business automation & WhatsApp bots","Arabic blog: what AI automation is, WhatsApp bots for business, sales automation, cost reduction, connecting Google Sheets with WhatsApp"],
+["GCC","Almaster","Riyadh, Saudi Arabia (+ New Cairo, Egypt)","AI & workflow automation agency","Arabic blog exists but topics skew to marketing/SEO/web design, not AI-specific"],
+["GCC","halulAI","Saudi Arabia","AI chatbots & business automation","topics unverified — blog existence unconfirmed"],
+["GCC","FiveNodes AI","Doha, Qatar","Bilingual AI voice/WhatsApp agents & automation","Arabic blog: AI industry news framed for Qatar/GCC readers, AI security and misuse, SME business automation, healthcare AI agents"],
+["GCC","Gray Data","Doha, Qatar","Custom software/SaaS + AI integration & automation","Arabic blog: RTL Arabic UI/UX engineering, secure API backends, Qatar ERP/WPS payroll compliance, F&B sector modernization"],
+["GCC","TechSphere Qatar","Doha, Qatar","AI workflow automation, chatbots, caller assistants","no Arabic blog found — site is English-only"],
+["GCC","KGI (Kuwait Global Intelligence)","Kuwait","AI solutions company","topics unverified — site largely inaccessible, blog path returns 404"],
+["GCC","Al-Maraghi","Kuwait","AI apps/automation, CRM, trading bots","topics unverified"],
+["GCC","Kait Technologies","Kuwait City, Kuwait","Conversational AI platform (WhatsApp/multi-channel)","no Arabic blog found — Arabic toggle exists, no blog section found"],
+["GCC","WisdomDigi","Bahrain","AI chatbots for Bahraini businesses","no Arabic content found — blog published in English only, despite Arabic-market positioning"],
+["GCC","Muscat Tech Solutions (MTS)","Muscat, Oman","AI automation: document processing/OCR, computer vision, custom apps","Arabic blog: smart cheque/document extraction, AI bank statement analysis, property maintenance content"],
+["GCC","Teammates.ai","Dubai, UAE (DIFC)","Autonomous AI agents for customer service, sales, hiring — Arabic-dialect native","topics unverified — no dedicated blog found; real, funded company serving 1,000+ regional clients, covers 50+ languages including Arabic dialects"],
+["GCC","Ridkk","Dubai, UAE (serves the whole Gulf via country landing pages)","AI solutions: chatbots, workflow automation, computer vision, predictive analytics, RPA","genuinely Arabic-first default site language; topics unverified — blog page exists, no article titles found"],
+["GCC","Arabot","Gulf region (HQ unconfirmed; enterprise clients across UAE/Saudi)","AI chatbot/agent platform for enterprises","topics unverified — blog and Arabic toggle exist, no article titles confirmed"],
+];
+
+// verified blog URLs (read from live pages during research); missing = not verified, left unlinked
+const BLOGS={
+"NomadX":"https://nomadx.ae/blog","HYVE AI Labs":"https://hyve.ae/case-studies","The Code Genesis":"https://thecodegenesis.com/blog","JADA (The JADA Squad)":"https://www.jadasquad.com/blog","Aetherix Systems":"https://aetherixsystems.com/blog","ALTINKEY":"https://altinkey.com/blog","Anvenssa":"https://anvenssa.com/blog","n8nlab":"https://n8nlab.io/blog","n8nlogic":"https://n8nlogic.com/blog","n8nera":"https://n8nera.tech/blog","ShaboAI":"https://shaboai.com/blog","Motionex AI":"https://motionexai.com/blogs","Implemnt":"https://www.implemnt.com/blog","Soluvide":"https://soluvide.com/blog","Konvergense":"https://konvergense.com/blog","Zainlee":"https://zainlee.com/blog","Aleddo Technologies":"https://aleddotechnologies.ae/blogs","Asif Digital":"https://www.asifdigital.agency/blog","Gravity Base":"https://gravitybase.ai/blog","Teqnovos":"https://teqnovos.com/blog","Competenza Innovare":"https://competenza.ae/blogs","Euclidz Technology":"https://euclidz.com/blog","Marketways Arabia":"https://marketwaysarabia.com","AI First Partners":"https://aifirstpartners.com/blogs","Quantixa":"https://quantixa.ai","SquareOne Technologies":"https://www.squareonemea.com/blog","10xDS":"https://10xds.com/blog","StackWise":"https://www.stackwise.site/blog","ShichifukuTekx FZE":"https://shichifukutekx.ae/blog","SAMCO LLC FZ":"https://samco.ae/technology/blogs","Skyline Advanced Technology":"https://skylineat.ae/blog","Saal.ai":"https://saal.ai/insights","Eurisko":"https://eurisko.net/blog","Azdan":"https://www.azdan.com/blog","SISGAIN":"https://sisgain.ae/blogs","Hikmah AI":"https://hikmahaiagency.com/blog","AARK Marketing":"https://aarkmarketing.com/blog","Digital Gravity":"https://www.digitalgravity.ae/blog","Digital Graphiks":"https://digitalgraphiks.ae/blog","GCC Marketing":"https://www.gcc-marketing.com/en/blog","Digital Perfection":"https://digitalperfection.ae/blog","Matrix AI":"https://matrixs.ai/blog","Cezcon Solutions":"https://cezcon.com/blog",
+"Markovate":"https://markovate.com/blog/","Azumo":"https://azumo.com/insights","HatchWorks AI":"https://www.hatchworks.com/blog/","Softweb Solutions":"https://www.softwebsolutions.com/resources/","RTS Labs":"https://rtslabs.com/insights","Rootstrap":"https://www.rootstrap.com/blog","Vention":"https://ventionteams.com/blog","Simform":"https://www.simform.com/blog/","Biz4Group":"https://www.biz4group.com/blog/","Bitcot":"https://www.bitcot.com/blog/","Neudesic (IBM)":"https://www.neudesic.com/blog/","Zams (Obviously AI)":"https://zams.com/blog","Cprime":"https://www.cprime.com/resources/","Width.ai":"https://width.ai/blog","LeewayHertz":"https://leewayhertz.com/insights","TekRevol":"https://www.tekrevol.com/blogs/","Axe Automation":"https://www.axeautomation.co/blog","SmartBots.ai":"https://smartbots.ai/blog/","Sapphire Software Solutions":"https://sapphiresolutions.net/blog","Kore.ai":"https://kore.ai/blog","Kommunicate":"https://www.kommunicate.io/blog","Botsify":"https://botsify.com/blog","Master of Code Global":"https://masterofcode.com/blog","SoluLab":"https://www.solulab.com/blog",
+"Context Studios":"https://contextstudios.ai/blog","n8n Lab":"https://n8nlab.io/blog","Xmethod":"https://xmethod.de/en/blog","Elevate AI":"https://elevateai.co.uk/blog","Valchy AI":"https://valchy.ai/blog","AI Superior":"https://aisuperior.com/blog","Think AI":"https://thinkai.ie/blog","Go Expandia":"https://goexpandia.com/blog","Lampo":"https://lampo.se","Alice Labs":"https://alicelabs.ai/en/insights","Lleverage":"https://lleverage.ai/company/blog","Artekia":"https://artekia.com/en/blog","b.telligent":"https://www.btelligent.com/en","iGenius (Domyn)":"https://igenius.ai/blog","Galileo Studio":"https://galileostudio.ai/en/blog","Nodevate":"https://nodevate.com/blog",
+"Labiba AI":"https://labiba.ai/sa/ar/KnowledgeHub","Automation KSA":"https://automation-ksa.com/blog","Almaster":"https://almaster.tech/ar/blog","FiveNodes AI":"https://fivenodes.ai/ar/blog","Gray Data":"https://www.graydata.qa/ar/blog","Muscat Tech Solutions (MTS)":"https://mts-om.com/blog.html","Ridkk":"https://www.ridkk.com/blog","WisdomDigi":"https://digi.bh/blog/ai-chatbots-bahrain-businesses-guide/"
+};
+const el=(t,c,txt)=>{const e=document.createElement(t);if(c)e.className=c;if(txt!=null)e.textContent=txt;return e;};
+let ideaState={q:"",cats:new Set(),funnels:new Set(),uaeOnly:false,sort:"uae"};
+const funnelRank={BOFU:3,MOFU:2,TOFU:1};
+
+function renderTiles(){
+  const uaeCo=COMPANIES.filter(c=>c[0]==="UAE").length, usCo=COMPANIES.filter(c=>c[0]==="USA").length, euCo=COMPANIES.filter(c=>c[0]==="Europe").length, gccCo=COMPANIES.filter(c=>c[0]==="GCC").length;
+  const gapIdeas=IDEAS.filter(i=>i[1]==="A").length;
+  const uaeIdeas=IDEAS.filter(i=>i[1]==="E").length;
+  const priority=IDEAS.filter(i=>i[6]==="high").length;
+  const tiles=[[String(IDEAS.length),"content ideas ready to write"],[String(priority),"🟢 UAE-priority (rank fastest)"],[String(gapIdeas)+" + "+uaeIdeas,"gap-opening + regional pieces"],[String(uaeCo),"UAE competitor agencies mapped"],[usCo+" · "+euCo,"USA · Europe agencies mapped"],[String(gccCo),"GCC Arabic agencies mapped"]];
+  const w=document.getElementById("tiles");
+  tiles.forEach(([n,l])=>{const d=el("div","tile");d.append(el("div","n",n),el("div","l",l));w.append(d);});
+}
+function renderLandscape(){
+  const s=document.getElementById("saturated");
+  SATURATED.forEach(([m,t])=>{const li=el("li");li.append(el("span","mk",m),el("span",null,t));s.append(li);});
+  const g=document.getElementById("gaps");
+  GAPS.forEach(([m,t])=>{const li=el("li");li.append(el("span","mk","▸"),el("span",null,t));g.append(li);});
+}
+function renderCatChips(){
+  const cc=document.getElementById("catChips");
+  const all=el("button","chip","All categories");all.type="button";all.dataset.cat="";
+  all.addEventListener("click",()=>{ideaState.cats.clear();syncCat();renderIdeas();});cc.append(all);
+  Object.entries(CATS).forEach(([k,v])=>{
+    const c=el("button","chip");c.type="button";c.dataset.cat=k;
+    const dot=el("span","dot");dot.style.background=v.color;
+    c.append(dot,document.createTextNode(v.label));
+    c.addEventListener("click",()=>{ideaState.cats.has(k)?ideaState.cats.delete(k):ideaState.cats.add(k);syncCat();renderIdeas();});
+    cc.append(c);
+  });
+  const fc=document.getElementById("funnelChips");
+  ["TOFU","MOFU","BOFU"].forEach(f=>{
+    const c=el("button","chip",f);c.type="button";c.dataset.funnel=f;
+    c.title=f==="TOFU"?"Top of funnel — awareness":f==="MOFU"?"Middle — consideration":"Bottom — ready to buy";
+    c.addEventListener("click",()=>{ideaState.funnels.has(f)?ideaState.funnels.delete(f):ideaState.funnels.add(f);syncFunnel();renderIdeas();});
+    fc.append(c);
+  });
+}
+function syncCat(){document.querySelectorAll("#catChips .chip").forEach(c=>{const id=c.dataset.cat;c.setAttribute("aria-pressed",id===""?String(ideaState.cats.size===0):String(ideaState.cats.has(id)));});}
+function syncFunnel(){document.querySelectorAll("#funnelChips .chip").forEach(c=>c.setAttribute("aria-pressed",String(ideaState.funnels.has(c.dataset.funnel))));}
+
+function currentIdeas(){
+  let rows=IDEAS.filter(i=>{
+    if(ideaState.cats.size&&!ideaState.cats.has(i[1]))return false;
+    if(ideaState.funnels.size&&!ideaState.funnels.has(i[2]))return false;
+    if(ideaState.uaeOnly&&i[6]!=="high")return false;
+    if(ideaState.q){const hay=(i[4]+" "+i[3]+" "+i[5]).toLowerCase();if(!hay.includes(ideaState.q))return false;}
+    return true;
+  });
+  const s=ideaState.sort;
+  if(s==="uae")rows.sort((a,b)=>(b[6]==="high")-(a[6]==="high")||a[1].localeCompare(b[1])||a[0]-b[0]);
+  else if(s==="cat")rows.sort((a,b)=>a[1].localeCompare(b[1])||a[0]-b[0]);
+  else if(s==="funnel")rows.sort((a,b)=>funnelRank[b[2]]-funnelRank[a[2]]||a[0]-b[0]);
+  else rows.sort((a,b)=>a[0]-b[0]);
+  return rows;
+}
+function renderIdeas(){
+  const rows=currentIdeas();const grid=document.getElementById("ideaGrid");grid.textContent="";
+  const frag=document.createDocumentFragment();
+  rows.forEach(i=>{
+    const[num,cat,funnel,kw,title,angle,uae,cta]=i;
+    const card=el("div","card cat-"+cat);
+    const top=el("div","top");
+    top.append(el("span","num","#"+num));
+    const ct=el("span","tag",CATS[cat].label);ct.style.color=CATS[cat].color;ct.style.background=CATS[cat].bg;top.append(ct);
+    const ft=el("span","funnel fn-"+funnel,funnel);top.append(ft);
+    if(uae==="high"){const st=el("span","star");st.append(document.createTextNode("🟢 UAE priority"));top.append(st);}
+    card.append(top);
+    card.append(el("h4",null,title));
+    const kwl=el("div","kwline");kwl.append(el("b",null,"kw  "),document.createTextNode(kw));kwl.title="Click to copy keyword";
+    kwl.style.cursor="pointer";kwl.addEventListener("click",()=>copy(kw));card.append(kwl);
+    card.append(el("p","angle",angle));
+    if(cta){const ctaEl=el("div","ctaline");ctaEl.append(el("b",null,"cta  "),document.createTextNode(cta));card.append(ctaEl);}
+    frag.append(card);
+  });
+  grid.append(frag);
+  document.getElementById("shown").textContent=String(rows.length);
+  document.getElementById("ideaEmpty").hidden=rows.length>0;
+  const af=[];if(ideaState.cats.size)af.push([...ideaState.cats].map(c=>CATS[c].label).join(" / "));
+  if(ideaState.funnels.size)af.push([...ideaState.funnels].join(" / "));
+  if(ideaState.uaeOnly)af.push("UAE priority");if(ideaState.q)af.push('"'+ideaState.q+'"');
+  document.getElementById("activeFilters").textContent=af.length?("filtered by "+af.join(" · ")):"showing all 70";
+}
+
+// companies
+let coState={q:"",region:""};
+function renderRegionChips(){
+  const rc=document.getElementById("regionChips");
+  [["","All"],["UAE","🇦🇪 UAE"],["USA","🇺🇸 USA"],["Europe","🇪🇺 Europe"],["GCC","GCC Arabic"]].forEach(([v,l])=>{
+    const c=el("button","chip",l);c.type="button";c.dataset.region=v;
+    c.addEventListener("click",()=>{coState.region=v;syncRegion();renderCo();});rc.append(c);
+  });
+}
+function syncRegion(){document.querySelectorAll("#regionChips .chip").forEach(c=>c.setAttribute("aria-pressed",String(c.dataset.region===coState.region)));}
+function renderCo(){
+  let rows=COMPANIES.filter(c=>{
+    if(coState.region&&c[0]!==coState.region)return false;
+    if(coState.q){const hay=(c[1]+" "+c[2]+" "+c[3]+" "+c[4]).toLowerCase();if(!hay.includes(coState.q))return false;}
+    return true;
+  });
+  const tb=document.getElementById("coBody");tb.textContent="";
+  const frag=document.createDocumentFragment();
+  rows.forEach(c=>{
+    const tr=el("tr");
+    const t1=el("td");
+    const url=BLOGS[c[1]];
+    if(url){
+      const a=el("a","co");a.href=url;a.target="_blank";a.rel="noopener noreferrer";a.title="Open "+c[1]+" blog";
+      a.append(document.createTextNode(c[1]));
+      const arr=el("span","blogarrow"," ↗");a.append(arr);
+      t1.append(a);
+    } else {
+      t1.append(el("span","co",c[1]));
+      t1.append(el("span","noblog"," no blog link"));
+    }
+    tr.append(t1);
+    const t2=el("td");const rf=el("span","rflag r-"+c[0],c[0]);t2.append(rf);tr.append(t2);
+    const t3=el("td");t3.append(el("span","loc",c[2]));tr.append(t3);
+    tr.append(el("td",null,c[3]));
+    const t5=el("td","topics");t5.textContent=c[4];tr.append(t5);
+    frag.append(tr);
+  });
+  tb.append(frag);
+  document.getElementById("coEmpty").hidden=rows.length>0;
+}
+
+let toastT;
+function copy(t){navigator.clipboard?.writeText(t).then(()=>toast("Copied: "+t)).catch(()=>toast("Copy failed"));}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),1600);}
+
+function exportCSV(){
+  const rows=currentIdeas();
+  const head=["num","category","funnel","primary_keyword","title","angle","uae_priority","cta"];
+  const lines=[head.join(",")];
+  rows.forEach(i=>{const cells=[i[0],CATS[i[1]].label,i[2],i[3],i[4],i[5],i[6]==="high"?"UAE priority":"standard",i[7]||""];
+    lines.push(cells.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(","));});
+  const blob=new Blob([lines.join("\n")],{type:"text/csv"});const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download="uae-ai-content-ideas.csv";a.click();URL.revokeObjectURL(url);
+  toast("Exported "+rows.length+" ideas");
+}
+
+document.getElementById("q").addEventListener("input",e=>{ideaState.q=e.target.value.trim().toLowerCase();renderIdeas();});
+document.getElementById("sort").addEventListener("change",e=>{ideaState.sort=e.target.value;renderIdeas();});
+document.getElementById("uaeOnly").addEventListener("click",e=>{ideaState.uaeOnly=!ideaState.uaeOnly;e.currentTarget.setAttribute("aria-pressed",String(ideaState.uaeOnly));e.currentTarget.classList.toggle("primary",ideaState.uaeOnly);renderIdeas();});
+document.getElementById("export").addEventListener("click",exportCSV);
+document.getElementById("reset").addEventListener("click",()=>{ideaState={q:"",cats:new Set(),funnels:new Set(),uaeOnly:false,sort:"uae"};document.getElementById("q").value="";document.getElementById("sort").value="uae";document.getElementById("uaeOnly").setAttribute("aria-pressed","false");document.getElementById("uaeOnly").classList.remove("primary");syncCat();syncFunnel();renderIdeas();});
+document.getElementById("cq").addEventListener("input",e=>{coState.q=e.target.value.trim().toLowerCase();renderCo();});
+
+renderTiles();renderLandscape();renderCatChips();renderRegionChips();syncCat();syncFunnel();syncRegion();renderIdeas();renderCo();
+</script>
+</body>
+</html>
