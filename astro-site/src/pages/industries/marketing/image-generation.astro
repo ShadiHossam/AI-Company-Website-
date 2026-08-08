@@ -1,0 +1,388 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Does AI-generated imagery look obviously fake?", answer: "Quality varies a lot by how the system is set up. With the right models, reference images, and a review step, output is often indistinguishable from a photoshoot for many use cases: product shots, lifestyle imagery, social graphics. We're upfront when a specific shot still needs real photography instead." },
+  { question: "Who owns the rights to AI-generated images we use in campaigns?", answer: "This depends on the model and platform, and it's something we scope with you before generating anything for commercial use. We use tools with clear commercial licensing terms and avoid models trained in ways that create rights ambiguity for client-facing work." },
+  { question: "Can AI generate images that match our existing brand style?", answer: "Yes, when it's trained on your brand's color palette, past creative, and style references. Generic prompts produce generic-looking output, so we build a reference library from your existing assets before generating new ones." },
+  { question: "How fast can we get campaign visuals compared to a traditional shoot?", answer: "A batch of on-brand product or social visuals can often be generated and refined within days rather than the weeks a shoot requires with scheduling, location, and post-production. Complex custom scenes take longer to get right, but still typically faster than traditional production." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'marketing_image_generation')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Image Generation for Marketing in the UAE",
+    "url": "https://lenooai.com/industries/marketing/image-generation",
+    "description": "Custom AI image generation systems for UAE marketing teams: product visuals, ad creative, social graphics, and brand-consistent assets at scale.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Image Generation for Marketing"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Marketing", "item": "https://lenooai.com/industries/marketing" },
+      { "@type": "ListItem", "position": 4, "name": "Image Generation AI", "item": "https://lenooai.com/industries/marketing/image-generation" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Image Generation for Marketing in the UAE: Product & Ad Visuals at Scale | Lenoo AI"
+  description="Lenoo AI, a Dubai AI agency, builds AI image generation systems for UAE marketing teams: product visuals, ad creative, social graphics, and brand-consistent assets."
+  canonicalPath="/industries/marketing/image-generation"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/industries/marketing" style="color:inherit;text-decoration:none;opacity:0.65;">Marketing</a><span style="opacity:0.4;padding:0 4px;"> / </span>Image Generation</div>
+    <h1>AI Image Generation<br><span class="gradient-text">for UAE Marketing Teams</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI image generation systems for UAE marketing teams: product visuals, ad creative variations, social graphics, and brand-consistent assets, produced in days instead of weeks.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <button onclick="openModal(this)" data-source="marketing_image_hero" class="btn-primary">Book Free Image AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+    <StatStrip stats={[
+      { value: "Days, not weeks", caption: "typical turnaround for a batch of on-brand campaign visuals" },
+      { value: "90%+", caption: "lower cost than a comparable traditional photo shoot for many use cases" },
+      { value: "10x+", caption: "more creative variations testable per campaign at the same budget" },
+    ]} />
+  </div>
+</header>
+
+<!-- WHY IMAGE GENERATION & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why image generation is one of AI's highest-impact marketing tools</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Visual production has always been the slowest, most expensive part of a campaign.</strong> Shoots require scheduling, locations, models, and post-production. AI generation collapses that timeline to days for many use cases, at a fraction of the cost.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Ad platforms reward creative variety.</strong> Testing more creative variations against an audience improves performance, but producing dozens of variants traditionally wasn't affordable. AI generation makes that testing volume realistic for smaller budgets.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Localization used to mean reshooting.</strong> Adapting visuals for different markets or languages required new production. AI-generated variants adapt scenes, text overlays, and styling for each market without a second shoot.</p>
+      </div>
+      <div class="split-media" style="display:flex; align-items:stretch;">
+        <div class="card" style="display:flex; flex-direction:column; justify-content:center; text-align:center; width:100%; padding:2.5rem;">
+          <p class="stat-number" style="font-size:3rem; margin-bottom:0.75rem;">10x+</p>
+          <p style="color:#42474e; font-size:1rem; line-height:1.7;">more creative variations testable per campaign at the same budget, once photography is no longer the bottleneck.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Image Systems Built for UAE Marketing Teams</h2>
+      <p>Six systems our Dubai AI agency builds for visual content production, with commercial licensing and brand consistency built in.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">shopping_bag</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Product &amp; Lifestyle Image Generation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Generates product shots in varied settings and lifestyle contexts without a physical shoot, for e-commerce and campaign use.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Cuts photography costs and turnaround dramatically for many product types</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">ads_click</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Ad Creative Variation at Scale</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Produces dozens of creative variants for testing, colors, layouts, backgrounds, letting you find winning creative faster.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Makes real creative testing affordable at smaller ad budgets</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">share</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Social Media Graphic Generation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Generates on-brand social graphics and post visuals in the formats and sizes each platform requires, automatically.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Keeps visual output pace matched to posting frequency</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">palette</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Brand-Consistent Template Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Trained on your color palette, fonts, and past creative to keep every generated asset visually consistent with your brand.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Built from your actual brand assets, not a generic style</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">auto_fix_high</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Background Removal &amp; Scene Generation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Removes and replaces backgrounds automatically, placing products in new scenes without a reshoot.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Repurposes existing product photography into new contexts</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">translate</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Image Localization for Campaigns</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Adapts visuals, text overlays, and styling for different markets and languages from a single base creative.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Adapts for Arabic and English markets without a second shoot</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All output produced with clear commercial licensing, brand-consistent, and reviewed before delivery.</p>
+      <button onclick="openModal(this)" data-source="marketing_image_mid" class="btn-primary">Book Free Image AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- CREATIVE WORKSPACE GALLERY -->
+<section class="section" aria-labelledby="ig-gallery-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="ig-gallery-heading">Inside a Creative Workspace Built for AI Image Generation</h2>
+      <p>The desks, screens, and reference boards behind a brand-consistent AI image system, before a single asset ships to a campaign. Click any photo to view it larger.</p>
+    </div>
+    <div class="ig-gallery">
+      <img src="https://images.unsplash.com/photo-1716471330463-f475b00f0506?w=800&q=80&auto=format&fit=crop" alt="Designer's desk with a keyboard, pencils, and color swatch samples laid out for a brand project" loading="lazy" width="800" height="600" class="ig-gallery-img" tabindex="0" role="button" aria-label="View larger: Designer's desk with a keyboard, pencils, and color swatch samples laid out for a brand project" />
+      <img src="https://images.unsplash.com/photo-1502810190503-8303352d0dd1?w=800&q=80&auto=format&fit=crop" alt="Desktop computer on a wooden desk beneath a pinned mood board and inspiration wall in a creative studio" loading="lazy" width="800" height="600" class="ig-gallery-img" tabindex="0" role="button" aria-label="View larger: Desktop computer on a wooden desk beneath a pinned mood board and inspiration wall in a creative studio" />
+      <img src="https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&q=80&auto=format&fit=crop" alt="Color palette swatches next to a tablet showing a digital design sketch, used to keep AI-generated visuals on brand" loading="lazy" width="800" height="600" class="ig-gallery-img" tabindex="0" role="button" aria-label="View larger: Color palette swatches next to a tablet showing a digital design sketch, used to keep AI-generated visuals on brand" />
+    </div>
+  </div>
+</section>
+
+<div class="ig-lightbox" id="ig-lightbox" hidden role="dialog" aria-modal="true" aria-label="Enlarged image viewer">
+  <img src="" alt="" />
+  <button type="button" class="ig-lightbox-close" aria-label="Close enlarged image">&times;</button>
+</div>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact in image generation</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">shopping_bag</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Generative Product Photography</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">E-commerce brands increasingly use AI-generated product imagery for catalog and campaign visuals, especially for high-SKU-count inventories.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Growing rapidly across e-commerce and D2C brands</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">ads_click</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Ad Creative Testing at Scale</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Generating many creative variants for A/B testing has become standard practice for performance marketing teams optimizing paid campaigns.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Common among performance marketing and growth teams</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">person</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Personalized Visual Content</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI generates tailored visuals for different audience segments, a capability that would be cost-prohibitive with traditional production.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Improves relevance without a proportional cost increase</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">view_in_ar</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Virtual Staging &amp; Mockups</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Generative tools produce realistic mockups and staged visuals for products or spaces before a physical version exists.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Widely used for pre-launch marketing and pitch materials</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">palette</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Brand Asset Generation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI systems trained on brand guidelines generate consistent visual assets across teams, reducing dependency on a single designer for routine requests.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Frees designer time for higher-value creative work</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">public</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Localized Visual Campaigns</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Global brands use AI to adapt campaign visuals for regional markets faster than commissioning separate local shoots.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Speeds up multi-market campaign rollout</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes image generation AI actually work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Rights and licensing clarity</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Commercial use requires clear licensing terms from whatever model generated the image. We only use tools with unambiguous commercial rights for client work.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Output quality consistency</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">One great image and nine inconsistent ones isn't a usable system. Consistency across a batch matters as much as peak quality on a single output.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Editable, usable formats</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Output needs to arrive in formats your design team can actually work with, not a flattened image nobody can adjust for a last-minute change.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Human design review</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">AI-generated images occasionally produce subtle errors, odd hands, mismatched shadows, that need a trained eye to catch before publication.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows about AI image generation in marketing</h2>
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">90%+</p>
+        <p style="color:#42474e; font-size:0.875rem;">lower cost than a comparable traditional photo shoot for many product categories</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">Days</p>
+        <p style="color:#42474e; font-size:0.875rem;">typical turnaround for a batch of campaign visuals, versus weeks for a shoot</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">10x+</p>
+        <p style="color:#42474e; font-size:0.875rem;">more creative variations testable per campaign at the same budget</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Production Cost</p>
+          <p style="color:#42474e; line-height:1.7;">For many standard product and social visual needs, AI generation running costs a fraction of a traditional shoot once location, styling, models, and post-production are factored in, freeing budget for higher-value creative work.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Testing Volume</p>
+          <p style="color:#42474e; line-height:1.7;">Performance marketing teams that generate more creative variants for testing consistently find winning ads faster, since ad platform algorithms reward creative diversity in the testing phase.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Localization Speed</p>
+          <p style="color:#42474e; line-height:1.7;">Brands running multi-market campaigns report substantially faster localization cycles using AI-generated visual variants compared to commissioning separate regional photography for each market.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI image generation</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Image AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your visual production workflow, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="marketing_image_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Image AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
+
+.ig-gallery { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin:0; }
+.ig-gallery-img { width:100%; height:220px; object-fit:cover; border-radius:16px; cursor:zoom-in; transition:transform 0.2s; display:block; }
+.ig-gallery-img:hover { transform:scale(1.02); }
+.ig-gallery-img:focus-visible { outline:2px solid #006875; outline-offset:3px; }
+.ig-lightbox { position:fixed; inset:0; background:rgba(0,19,32,0.9); display:flex; align-items:center; justify-content:center; z-index:1000; }
+.ig-lightbox img { max-width:90vw; max-height:85vh; border-radius:8px; }
+.ig-lightbox-close { position:absolute; top:24px; right:32px; background:none; border:none; color:#fff; font-size:2rem; line-height:1; cursor:pointer; padding:4px 10px; border-radius:8px; }
+.ig-lightbox-close:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+@media(max-width:700px) { .ig-gallery { grid-template-columns:1fr; } }
+</style>
+
+<script>
+  const igGallery = document.querySelector('.ig-gallery');
+  const igLightbox = document.querySelector('#ig-lightbox');
+  const igLightboxImg = igLightbox?.querySelector('img');
+  const igCloseBtn = igLightbox?.querySelector('.ig-lightbox-close');
+  let igLastFocused: HTMLElement | null = null;
+
+  function igOpenLightbox(img: HTMLImageElement) {
+    if (igLightboxImg) {
+      (igLightboxImg as HTMLImageElement).src = img.src;
+      (igLightboxImg as HTMLImageElement).alt = img.alt;
+    }
+    if (igLightbox) {
+      igLastFocused = document.activeElement as HTMLElement;
+      (igLightbox as HTMLElement).hidden = false;
+      (igCloseBtn as HTMLElement)?.focus();
+    }
+  }
+
+  function igCloseLightbox() {
+    if (igLightbox) (igLightbox as HTMLElement).hidden = true;
+    igLastFocused?.focus();
+  }
+
+  igGallery?.querySelectorAll('.ig-gallery-img').forEach((el) => {
+    const img = el as HTMLImageElement;
+    img.addEventListener('click', () => igOpenLightbox(img));
+    img.addEventListener('keydown', (e) => {
+      const evt = e as KeyboardEvent;
+      if (evt.key === 'Enter' || evt.key === ' ') {
+        evt.preventDefault();
+        igOpenLightbox(img);
+      }
+    });
+  });
+
+  igCloseBtn?.addEventListener('click', igCloseLightbox);
+
+  igLightbox?.addEventListener('click', (e) => {
+    if (e.target === igLightbox) igCloseLightbox();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && igLightbox && !(igLightbox as HTMLElement).hidden) {
+      igCloseLightbox();
+    }
+  });
+</script>
