@@ -1,0 +1,441 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../components/ProcessSteps.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Is AI automation only for large businesses?", answer: "No. Smaller teams often see the payback faster, because there's no one to delegate the manual work to when it piles up. A 10-person company automating a handful of core workflows can free up the equivalent of a full-time hire without adding headcount. Scope and price scale with the size of the project, not with the size of your company." },
+  { question: "How do we know which processes to automate first?", answer: "Start with whatever eats the most hours or causes the most errors right now: inbox triage, invoice entry, lead follow-up, and report writing are the usual candidates. A short discovery call is enough to identify your top 2-3 opportunities and rank them by expected time saved versus effort to build." },
+  { question: "What's a realistic ROI timeline?", answer: "Simple workflows, like automated email routing or lead scoring, often show measurable time savings within the first few weeks of going live. Larger, multi-system projects take longer to build but usually pay back within a few months once they're running, since the savings compound every week the automation stays in place." },
+  { question: "Do we need technical staff in-house to maintain it?", answer: "No. We handle the build, the integration, and 90 days of post-launch monitoring. You don't need an in-house developer to keep it running. If you want to make small adjustments yourself later, we document the automation clearly enough that a non-technical team member can understand what it does." },
+  { question: "Will automation replace jobs on our team?", answer: "In most engagements, no. The goal is to remove the repetitive parts of a job, like data entry or manual routing, so the person doing it spends their time on judgment calls, relationships, and work that actually needs a human. Most businesses redeploy that freed-up time rather than cut the role." },
+  { question: "How much does AI automation typically cost for a business our size?", answer: "It scales with the number of workflows and systems involved, not a fixed company-size price tag. A single, well-defined workflow costs less than a project touching multiple systems with several decision points. The only way to get an honest number is a discovery call where the actual workflows get scoped, be skeptical of anyone who quotes a price before seeing them." },
+  { question: "Can we automate one workflow now and add more later?", answer: "Yes, and it's usually the better approach. Starting with one contained workflow lets you see the automation working on real data before committing budget to a larger rollout. Most engagements are structured this way: prove the first workflow, then expand to the next one once it's live and monitored." },
+  { question: "What's the biggest reason automation projects fail?", answer: "Usually unclear scope, not the technology. A project that starts without a written definition of which workflow, which systems, and what 'done' looks like tends to drift, miss the actual problem, or stall out. The technical part is rarely the hard part; agreeing on exactly what's being built is." },
+  { question: "Should we automate everything at once or work through it in stages?", answer: "Stages, almost always. Automating one workflow, watching it run on real data for a few weeks, and then moving to the next one gives you a working reference point and lets you catch issues while the stakes are still small. Businesses that try to automate everything in a single rollout tend to have the hardest time isolating what's actually working." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_automation_business')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+const processSteps = [
+  { icon: "search", step: "Step 1", title: "Process Audit", description: "We look at where your team's time actually goes and rank the automation opportunities by expected payback." },
+  { icon: "edit", step: "Step 2", title: "Design & Plan", description: "We design the automation logic and get your sign-off on scope and cost before any build work starts." },
+  { icon: "build", step: "Step 3", title: "Build & Test", description: "We build against your real data and test it in a staging environment until it holds up under normal use." },
+  { icon: "rocket_launch", step: "Step 4", title: "Go Live & Monitor", description: "The automation goes live. We monitor it for 90 days and expand to the next workflow once it's proven." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Automation for Business',
+    url: 'https://lenooai.com/services/ai-automation/business',
+    description: 'How UAE businesses use AI automation to cut manual work across sales, operations, finance, and support, with real workflow examples and ROI guidance.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'AI automation for business: scoped and priced after a free discovery call.' },
+    serviceType: 'AI Automation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Automation', item: 'https://lenooai.com/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'Business', item: 'https://lenooai.com/services/ai-automation/business' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI Automation for Business | Lenoo AI"
+  description="How UAE businesses use AI automation to cut manual work across sales, ops, and support, with real workflow examples."
+  canonicalPath="/services/ai-automation/business"
+  arPath="/ar/services/ai-automation/business"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">AI Automation</a><span style="opacity:0.4;padding:0 4px;"> / </span>Business</div>
+    <h1>AI Automation <span class="gradient-text">for Business</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      Manual work costs a business more than it looks like on paper: hours spent on data entry, delayed follow-ups, and errors that need fixing after the fact. Here's where AI automation actually pays off across sales, operations, finance, and support, and how to find your starting point.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">Scoped to your budget after a free discovery call</span>
+      <span class="tchip">Refund guarantee if you're not satisfied</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_automation_business_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#by-function" class="btn-outline">See Where to Start ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1400&q=80&auto=format&fit=crop" alt="Business team reviewing operations and workflow data" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 30%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "40%", caption: "of work tasks in most businesses are automatable with existing AI, according to McKinsey research." },
+      { value: "90 days", caption: "post-launch monitoring included with every project, so nothing breaks quietly" },
+      { value: "100%", caption: "refund guarantee if you're not satisfied with what we deliver" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY IT MATTERS -->
+<section class="section" aria-labelledby="why-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="why-heading" style="margin-bottom:1.5rem;">Why AI Automation Matters for Business</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        The case for AI automation comes down to three things: time, accuracy, and headcount. Every hour a team spends on data entry, manual follow-up, or copy-pasting between systems is an hour not spent on sales, service, or work that actually needs judgment. Manual processes also carry more errors than automated ones, since fatigue and inconsistency creep in over a long day.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        The headcount piece matters most as a business grows. Without automation, more orders, leads, or support tickets usually means hiring more people to process them. With the right automation in place, volume can grow without every function growing headcount at the same rate. That's the real financial case: not replacing people, but letting the business scale without the manual work scaling right along with it.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        A simple way to think about the cost of manual work is to multiply hours spent by what that time is actually worth to the business. An hour a salesperson spends on data entry is an hour they're not spending on calls that turn into revenue. An hour a finance team spends reconciling spreadsheets by hand is an hour that delays the numbers everyone else is waiting on. None of this shows up as a line item on a budget, which is exactly why it tends to get ignored until someone actually adds it up. Automation doesn't remove the need for judgment, oversight, or relationships. It removes the parts of a job that were never really using any of those things in the first place.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ROI BY BUSINESS SIZE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="roi-size-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="roi-size-heading">How Automation ROI Differs by Business Size</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">The payback period isn't the same for a five-person team and a two-hundred-person company. Here's how it tends to play out at different sizes.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">groups</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Small Team</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Small teams often see the fastest payback, because there's no one to hand the overflow work to. When the person handling leads, invoices, or support tickets is already stretched thin, automating even one workflow removes hours from someone covering multiple roles at once, often within the first month or two of going live.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">apartment</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Mid-Size Operation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Mid-size businesses usually have more workflows worth automating, but also more systems already in place: a CRM, a separate finance tool, a support desk. The payback here tends to come from connecting those systems, since data sync between a CRM and a finance tool removes reconciliation work that would otherwise need a dedicated coordinator as the business grows.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">domain</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Larger Operation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">At this size, the case shifts from "save time" to "avoid hiring." Volume, more leads, more transactions, more support tickets, grows whether or not headcount grows with it. The payback period is often longer, since the integrations tend to be more complex, but the total savings compound across a much bigger base of repeated work.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STRATEGY MEETING IMAGE BAND -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1758873268998-2f77c2d38862?w=1400&q=80&auto=format&fit=crop" alt="Team members discussing a plan on a flip chart during a strategy meeting" loading="lazy" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 25%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.35) 0%,transparent 55%);"></div>
+</div>
+
+<!-- BUILD VS BUY VS AGENCY -->
+<section class="section" aria-labelledby="build-buy-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-buy-heading">Build It Yourself, Buy Off-the-Shelf, or Hire an Agency</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">There are three real paths to automating a workflow. Each one has a real tradeoff. Here's how to think about which fits.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">engineering</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Build It Yourself</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Using existing staff, maybe someone comfortable with no-code tools, to build the automation in-house. This costs the least in cash but the most in time, and it depends on that person staying at the company and having the bandwidth to maintain what they build. Works well for a single, simple workflow with one trigger and one action, and tends to break down once several systems and edge cases are involved.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Buy an Off-the-Shelf Tool</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Paying for a pre-built tool that handles one specific job: an inbox triage app, an invoice-scanning tool, a lead-scoring plugin. Usually the fastest to get running and the cheapest per month, but it only fits if your workflow matches what the tool was built for, and you're stuck with the vendor's roadmap and pricing changes.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">handshake</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Hire an Automation Agency</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Paying a team to scope, build, and support automation tailored to how your business actually works, across whichever systems you already use. Costs more upfront than a subscription, but fits situations a generic tool can't: multi-system workflows, business-specific rules, or a process that doesn't match any packaged product.</p>
+      </div>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:2rem auto 0; text-align:center;">
+      Most businesses end up using a mix: an off-the-shelf tool for something standard, and a custom build for whatever's specific to how they operate. There's no wrong starting point. The main mistake is picking based on what's cheapest today rather than what will still be working in a year. It also helps to ask what happens as the business changes. A tool built in-house by one employee needs that person around to update it. A SaaS subscription needs the vendor to keep supporting the exact feature you rely on. An agency-built automation should come with documentation and a support period so the knowledge doesn't leave with any single person. Weigh the ongoing dependency, not just the sticker price, before deciding.
+    </p>
+  </div>
+</section>
+
+<!-- BY FUNCTION -->
+<section id="by-function" class="section" style="background:#f0f3ff;" aria-labelledby="function-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="function-heading">What Gets Automated, by Business Function</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Every business is different, but most automation opportunities fall into one of these four areas.</p>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">trending_up</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Sales</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Lead scoring, routing, and follow-up sequences that fire the moment a lead comes in, instead of waiting for someone to check a form submission.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Typical result:</strong> faster first response time and fewer leads that go cold before anyone reaches out.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">settings</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Operations</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Cross-system data sync, order processing, and approval workflows that move on their own instead of sitting in someone's inbox.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Typical result:</strong> fewer hours spent updating the same information in three different places.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">calculate</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Finance & Admin</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Invoice extraction, expense approvals, and reconciliation that reads documents and posts data without manual entry.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Typical result:</strong> fewer data entry errors and faster month-end close.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">support_agent</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Customer Support</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Ticket triage, drafted replies, and escalation routing so common questions get answered fast and only the harder ones reach a person.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Typical result:</strong> shorter response times without adding support headcount.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SALES & OPS VS SUPPORT APPLICATIONS -->
+<section id="business-applications" class="section" aria-labelledby="business-applications-heading">
+  <div class="container">
+    <div class="split-grid" style="margin-bottom:3rem;">
+      <div>
+        <h2 id="business-applications-heading" style="margin-bottom:1.5rem;">What Comes After the First Round of Automation</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+          The breakdown above covers the workflows most businesses automate first. Once those are running, a second wave of less obvious automation usually follows, on the sales and operations side and on the support side. Toggle between them to see what that second wave tends to look like.
+        </p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1573164574572-cb89e39749b4?w=800&q=80&auto=format&fit=crop" alt="Team members collaborating on laptops around a shared conference table" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+    <div class="business-tabs" role="tablist" aria-label="Automation application categories">
+      <button type="button" id="business-tab-salesops" class="business-tab-btn active" data-business-tab="salesops" role="tab" aria-selected="true" aria-controls="business-panel-salesops">Sales &amp; Ops</button>
+      <button type="button" id="business-tab-support" class="business-tab-btn" data-business-tab="support" role="tab" aria-selected="false" aria-controls="business-panel-support">Support</button>
+    </div>
+    <div class="bento-grid bento-grid-3" id="business-panel-salesops" data-business-tab-panel="salesops" role="tabpanel" aria-labelledby="business-tab-salesops">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">request_quote</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Quote &amp; Proposal Drafting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">A quote or proposal drafts itself from the CRM record once a deal reaches the right stage, pulling in line items and pricing instead of a rep building it from scratch each time.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">celebration</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Customer Onboarding Sequencing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Closing a deal triggers the right onboarding steps for that specific customer automatically, instead of someone remembering which welcome emails and setup tasks apply.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">local_shipping</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Vendor &amp; Supplier Follow-Up</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Purchase orders go out and delivery confirmations get chased automatically, so a late shipment surfaces on its own instead of after a customer asks where it is.</p>
+      </div>
+    </div>
+    <div class="bento-grid bento-grid-3" id="business-panel-support" data-business-tab-panel="support" role="tabpanel" aria-labelledby="business-tab-support" hidden>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">travel_explore</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Self-Service Answers</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">A customer's question gets answered from your existing help content before a ticket is even created, so the queue only fills up with things that actually need a person.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">favorite</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Churn Risk Flagging</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">A pattern of frustrated tickets or a sudden drop in product usage flags an account for a check-in call, before it shows up as a cancellation.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">rate_review</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Resolution Follow-Up</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Closing a ticket triggers a short satisfaction check-in, and a low score or a reopened issue routes back to a person automatically instead of quietly going unnoticed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHERE TO START -->
+<section class="section" aria-labelledby="start-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="start-heading">Where to Start: Quick Wins vs. Bigger Builds</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Not every automation needs to be a large project. Most businesses get the best return by starting small and expanding once the first workflow proves itself.</p>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Quick Wins</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Single-workflow automations with one clear trigger and one system to connect: inbox triage, lead routing, or a report that used to be built by hand. Usually live within a few weeks and a good place to prove the value of automation before committing to a larger build.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">apartment</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Bigger Builds</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Multi-system projects that touch your CRM, ERP, and support tools together, or automations with several decision points and exceptions to handle. These take longer to scope and build but tend to deliver the largest total time savings once they're running.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AUDIT WALKTHROUGH -->
+<section class="section" aria-labelledby="audit-heading">
+  <div class="container">
+    <div style="max-width:760px; margin:0 auto;">
+      <div class="section-header">
+        <h2 id="audit-heading">How to Audit Your Own Workflows for Automation Candidates</h2>
+        <p style="color:#42474e; font-size:1.0625rem;">You don't need outside help to start narrowing down where automation would pay off. A short internal audit gets you most of the way there before you ever talk to an agency.</p>
+      </div>
+      <div class="tools-strip" style="text-align:left;">
+        <ol style="list-style:none; counter-reset:audit-step; margin:0; padding:0; display:flex; flex-direction:column; gap:1.25rem;">
+          <li style="display:flex; gap:0.875rem; align-items:flex-start; counter-increment:audit-step;"><span style="flex-shrink:0; width:26px; height:26px; border-radius:50%; background:#006875; color:#fff; font-size:0.8125rem; font-weight:700; display:flex; align-items:center; justify-content:center; margin-top:2px;">1</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>List every task your team does more than once a week that follows the same steps each time.</strong> Anything repetitive is a candidate. Anything that requires a real judgment call each time usually isn't.</span></li>
+          <li style="display:flex; gap:0.875rem; align-items:flex-start; counter-increment:audit-step;"><span style="flex-shrink:0; width:26px; height:26px; border-radius:50%; background:#006875; color:#fff; font-size:0.8125rem; font-weight:700; display:flex; align-items:center; justify-content:center; margin-top:2px;">2</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>Time it, even roughly.</strong> Ask whoever does the task how long it takes per instance and how often it happens, then multiply the two together for a weekly hour figure. That number is what you're actually trying to get back.</span></li>
+          <li style="display:flex; gap:0.875rem; align-items:flex-start; counter-increment:audit-step;"><span style="flex-shrink:0; width:26px; height:26px; border-radius:50%; background:#006875; color:#fff; font-size:0.8125rem; font-weight:700; display:flex; align-items:center; justify-content:center; margin-top:2px;">3</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>Note where the errors happen.</strong> Tasks with a high error rate, like manual data entry or copying between systems, tend to carry a bigger hidden cost than the time alone suggests, since someone has to catch and fix the mistake later.</span></li>
+          <li style="display:flex; gap:0.875rem; align-items:flex-start; counter-increment:audit-step;"><span style="flex-shrink:0; width:26px; height:26px; border-radius:50%; background:#006875; color:#fff; font-size:0.8125rem; font-weight:700; display:flex; align-items:center; justify-content:center; margin-top:2px;">4</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>Check how many systems the task touches.</strong> A task that lives entirely inside one tool is usually a faster, cheaper build than one that requires pulling data from three different places.</span></li>
+          <li style="display:flex; gap:0.875rem; align-items:flex-start; counter-increment:audit-step;"><span style="flex-shrink:0; width:26px; height:26px; border-radius:50%; background:#006875; color:#fff; font-size:0.8125rem; font-weight:700; display:flex; align-items:center; justify-content:center; margin-top:2px;">5</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>Rank by hours saved versus how contained the workflow is.</strong> The best first project is usually the one with real hours on the line that touches the fewest systems, not necessarily the biggest problem on your list.</span></li>
+          <li style="display:flex; gap:0.875rem; align-items:flex-start; counter-increment:audit-step;"><span style="flex-shrink:0; width:26px; height:26px; border-radius:50%; background:#006875; color:#fff; font-size:0.8125rem; font-weight:700; display:flex; align-items:center; justify-content:center; margin-top:2px;">6</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>Bring your short list to a discovery call.</strong> You don't need it perfectly scoped. A rough list of candidates is enough for an agency to tell you which ones are quick wins and which are bigger builds.</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- APPLIES TO YOUR INDUSTRY -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="industry-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="industry-heading">See How This Applies to Your Industry</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">The functions above look a little different depending on what your business does. Two examples:</p>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">calculate</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Accounting Firms</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Invoice processing, reconciliation, and reporting automation built for finance teams and bookkeeping practices.</p>
+        <a href="/services/ai-automation/accounting" class="learn-link">See how this applies to accounting <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">home_work</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Real Estate Agencies</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Lead follow-up, listing sync, and document workflow automation built for agencies and brokerages.</p>
+        <a href="/services/ai-automation/real-estate" class="learn-link">See how this applies to real estate <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:2rem auto 0; text-align:center;">
+      Not sure where your business fits? Start on our <a href="/services/ai-automation">AI automation hub page</a> for the full picture of what we build, or book a discovery call and we'll map it out together.
+    </p>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">How We Get You From Audit to Live Automation</h2>
+    </div>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Not sure which workflow to automate first? We'll help you find it on a free call.</p>
+    <button onclick="openModal(this)" data-source="ai_automation_business_mid" class="btn-primary">Book a Free Discovery Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Find Your Business's Fastest Payback?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Book a free discovery call with our Dubai team. We'll identify your top 3 automation opportunities and estimate the time and cost savings.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_automation_business_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+.business-tabs { display:flex; gap:0.5rem; justify-content:center; margin-bottom:2rem; flex-wrap:wrap; }
+.business-tab-btn { padding:0.625rem 1.25rem; border-radius:100px; border:1px solid rgba(0,37,59,0.15); background:#fff; color:#42474e; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.business-tab-btn:hover { background:#f0f3ff; }
+.business-tab-btn.active { background:#006875; border-color:#006875; color:#fff; }
+.business-tab-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+[data-business-tab-panel][hidden] { display:none; }
+</style>
+
+<script>
+  const businessTabWrap = document.querySelector('.business-tabs');
+  if (businessTabWrap) {
+    const btns = businessTabWrap.querySelectorAll('.business-tab-btn');
+    const panels = document.querySelectorAll('[data-business-tab-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-business-tab');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-business-tab-panel') !== key; });
+      });
+    });
+  }
+</script>
