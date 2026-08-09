@@ -1,0 +1,405 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "How accurate is AI fake follower detection?", answer: "Modern fraud detection models analyze engagement patterns, follower growth curves, and audience quality signals that are difficult to fake convincingly, and catch the large majority of obviously inflated accounts. Sophisticated fraud still requires a human review of edge cases, which we build into the process." },
+  { question: "Do influencers in the UAE need to be registered or licensed?", answer: "Yes, UAE regulations require paid influencers to hold a license from the National Media Council to legally promote products or services. We check registration status as part of vetting before recommending a creator for a campaign." },
+  { question: "Does this replace our influencer marketing manager?", answer: "No. It replaces the manual work of searching, vetting, and tracking creators across platforms, so your manager spends time on relationship-building and campaign strategy instead of spreadsheet research." },
+  { question: "How long does AI-assisted influencer discovery take to set up?", answer: "Discovery and vetting tools can typically be running within 2 to 3 weeks. Performance tracking dashboards that pull data from live campaigns take a bit longer to fully configure, usually 3 to 5 weeks." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'marketing_influencer')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI for Influencer & Creator Marketing in the UAE",
+    "url": "https://lenooai.com/industries/marketing/influencer-marketing",
+    "description": "Custom AI influencer marketing systems for UAE businesses: creator discovery, audience fraud detection, campaign tracking, and ROI measurement.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Influencer Marketing"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Marketing", "item": "https://lenooai.com/industries/marketing" },
+      { "@type": "ListItem", "position": 4, "name": "Influencer Marketing AI", "item": "https://lenooai.com/industries/marketing/influencer-marketing" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI for Influencer & Creator Marketing in the UAE: Discovery & Fraud Detection | Lenoo AI"
+  description="Lenoo AI, a Dubai AI agency, builds AI influencer marketing systems for UAE businesses: creator discovery, fraud detection, and campaign performance tracking."
+  canonicalPath="/industries/marketing/influencer-marketing"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/industries/marketing" style="color:inherit;text-decoration:none;opacity:0.65;">Marketing</a><span style="opacity:0.4;padding:0 4px;"> / </span>Influencer Marketing</div>
+    <h1>AI for Influencer<br><span class="gradient-text">&amp; Creator Marketing in the UAE</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI influencer marketing systems for UAE businesses: creator discovery, audience fraud detection, campaign tracking, and ROI measurement. Built to catch fake engagement before you pay for it.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <button onclick="openModal(this)" data-source="marketing_influencer_hero" class="btn-primary">Book Free Influencer AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+    <StatStrip stats={[
+      { value: "$5.20", caption: "average return per $1 spent on influencer marketing (Influencer Marketing Hub)" },
+      { value: "15%+", caption: "of influencer engagement is estimated to be fraudulent industry-wide" },
+      { value: "NMC-licensed", caption: "creator registration checked as part of every vetting process" },
+    ]} />
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px; margin:0 0 -1px;">
+  <img src="https://images.unsplash.com/photo-1612130536441-95ece5dcbb86?w=1600&h=260&q=80&auto=format&fit=crop" alt="Content creator filming a video with a smartphone" loading="lazy" width="1600" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHY INFLUENCER MARKETING & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why influencer marketing is one of AI's highest-impact tools</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Fake engagement is a real, ongoing cost.</strong> A meaningful share of influencer engagement industry-wide is estimated to be fraudulent, bought followers, engagement pods, bot comments. AI fraud detection catches patterns manual review would miss.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Finding the right creator used to mean manual searching.</strong> AI discovery tools match creators to your brand based on actual audience overlap and content fit, not just follower count.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Campaign ROI is hard to prove without tracking.</strong> AI performance dashboards connect influencer activity to actual traffic and sales, moving measurement beyond vanity metrics like likes and views.</p>
+      </div>
+      <div class="split-media" style="display:flex; align-items:stretch;">
+        <div class="card" style="display:flex; flex-direction:column; justify-content:center; text-align:center; width:100%; padding:2.5rem;">
+          <p class="stat-number" style="font-size:3rem; margin-bottom:0.75rem;">$5.20</p>
+          <p style="color:#42474e; font-size:1rem; line-height:1.7;">average return per $1 spent on influencer marketing (Influencer Marketing Hub), a figure that depends heavily on catching fraud before it eats your budget.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Influencer Marketing Systems Built for UAE Businesses</h2>
+      <p>Six systems our Dubai AI agency builds for influencer and creator campaigns, with fraud screening and UAE licensing checks built in.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">person_search</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Influencer Discovery &amp; Matching</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Matches creators to your brand based on actual audience overlap and content fit, replacing manual platform searching.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Finds relevant creators faster than manual search</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">gpp_maybe</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Audience Authenticity &amp; Fraud Detection</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Screens for bought followers, engagement pods, and bot activity before you commit budget to a creator partnership.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Catches the majority of obviously inflated accounts</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">mail</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Campaign Brief &amp; Outreach Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Drafts personalized outreach and campaign briefs for shortlisted creators, speeding up the negotiation process.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Cuts time spent on repetitive outreach messaging</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">bar_chart</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Content Performance Tracking</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Tracks campaign performance against traffic and sales, not just likes and views, giving a real read on ROI.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Moves measurement beyond vanity metrics</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">receipt_long</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Contract &amp; Payment Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Generates campaign agreements and tracks deliverables and payment milestones, reducing administrative back-and-forth.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces manual contract and invoice tracking</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">query_stats</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Competitor Influencer Analysis</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Identifies which creators competitors are working with and how those campaigns are performing, informing your own strategy.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Surfaces gaps and opportunities competitors haven't covered</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Every creator checked for NMC licensing status and audience authenticity before recommendation.</p>
+      <button onclick="openModal(this)" data-source="marketing_influencer_mid" class="btn-primary">Book Free Influencer AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- CAMPAIGN COLLABORATION -->
+<section class="section" aria-labelledby="influencer-collab-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="influencer-collab-heading" style="margin-bottom:1.5rem;">Vetting is only half the process</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">Finding an authentic creator with the right audience fit is the first step. The campaign still needs a brief both sides agree on, deliverables that are clearly scoped, and a payment schedule tied to milestones, not just a handshake and a hope.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">We build the collaboration workflow alongside the discovery and fraud-screening tools, so briefs, approvals, and contract terms stay in one place instead of scattered across email threads and DMs.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1568992688065-536aad8a12f6?w=800&h=600&q=80&auto=format&fit=crop" alt="Brand team and creator meeting at a table to plan an influencer campaign" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact in influencer marketing</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">person_search</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">AI Influencer Discovery</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Discovery platforms use AI to match brands with relevant creators based on audience data, a major improvement over manual hashtag searching.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Standard tool across most influencer marketing platforms today</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">gpp_maybe</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Fake Follower &amp; Engagement Fraud Detection</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Fraud detection has become standard due diligence before brands commit budget, given persistent industry-wide bot and engagement pod activity.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">A significant share of engagement industry-wide is estimated to be fraudulent</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">diversity_3</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Audience-Brand Fit Scoring</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI models score how closely a creator's actual audience matches a brand's target demographic, beyond surface-level follower count.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Improves campaign relevance beyond reach alone</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">bar_chart</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Campaign ROI Tracking</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI attribution tools connect influencer content to actual site traffic and sales, moving measurement past likes and comments.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Growing expectation from brands scrutinizing influencer spend</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">copyright</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Content Rights Management</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI tools track content usage rights and licensing terms across campaigns, reducing legal risk from unauthorized repurposing.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces risk of unlicensed content reuse disputes</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">groups</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">UGC Content Sourcing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI tools identify and source authentic user-generated content for repurposing into ads, a format that consistently outperforms polished creative.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Sources authentic content faster than manual review</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MICRO VS MACRO STRATEGY -->
+<section class="section" aria-labelledby="influencer-strategy-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="influencer-strategy-heading">Micro vs. macro influencers: choosing the right strategy</h2>
+      <p>Both approaches use the same AI discovery and fraud-detection tooling underneath. The right mix depends on your budget, goals, and how much you weigh authenticity against reach.</p>
+    </div>
+    <div class="influencer-tabs" role="tablist" aria-label="Influencer strategy comparison">
+      <button type="button" id="influencer-tab-micro" class="influencer-tab-btn active" data-influencer-tab="micro" role="tab" aria-selected="true" aria-controls="influencer-panel-micro">Micro-Influencer Strategy</button>
+      <button type="button" id="influencer-tab-macro" class="influencer-tab-btn" data-influencer-tab="macro" role="tab" aria-selected="false" aria-controls="influencer-panel-macro">Macro-Influencer Strategy</button>
+    </div>
+    <div class="bento-grid bento-grid-3" id="influencer-panel-micro" data-influencer-tab-panel="micro" role="tabpanel" aria-labelledby="influencer-tab-micro">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">groups_3</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Smaller, more engaged audiences</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Micro-influencers typically carry smaller follower counts but higher engagement rates, since their audience tends to know them personally rather than following a celebrity from a distance.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Often the stronger choice for niche or local UAE audiences</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">payments</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Lower cost per partnership</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Working with several micro-influencers instead of one macro name usually costs less in total, while spreading the campaign across multiple distinct audiences.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Lets smaller budgets run multiple concurrent partnerships</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">verified</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Authenticity is the selling point</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Audiences generally read micro-influencer recommendations as closer to genuine opinion than a paid celebrity endorsement, which is why fraud screening matters even more here.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Fit-scoring matters more than raw reach in this tier</p>
+      </div>
+    </div>
+    <div class="bento-grid bento-grid-3" id="influencer-panel-macro" data-influencer-tab-panel="macro" role="tabpanel" aria-labelledby="influencer-tab-macro" hidden>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">public</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Broad reach in a single partnership</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Macro-influencers and celebrities put a campaign in front of a large audience quickly, useful for brand awareness pushes or a product launch that needs immediate visibility.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Best suited to awareness goals over niche targeting</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">gavel</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Higher stakes on vetting and contracts</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">A single macro deal represents a much larger share of the budget, so brand safety screening and NMC licensing checks carry more weight before the contract is signed.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">One bad partnership carries a proportionally bigger cost</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">bar_chart</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Harder to isolate attribution</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">A macro campaign often runs alongside other marketing activity, so AI attribution tracking needs to work harder to separate its actual contribution to traffic and sales.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Tracking needs to go beyond a single vanity metric</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes influencer marketing AI actually work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Data accuracy on engagement</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Fraud detection is only as good as the signals it's built on. Models need to be tuned against real fraud patterns, not just obvious bot accounts.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Brand safety screening</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A creator's past content and controversies matter as much as their audience quality. Screening needs to cover both before a partnership commits.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">UAE regulatory compliance</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Paid influencers legally need National Media Council registration in the UAE. Vetting needs to confirm this before a campaign launches, not after.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Measurement beyond vanity metrics</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Likes and views don't pay the bills. Tracking needs to connect influencer activity to actual traffic and sales to prove real ROI.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows about AI in influencer marketing</h2>
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">$5.20</p>
+        <p style="color:#42474e; font-size:0.875rem;">average return per $1 spent on influencer marketing (Influencer Marketing Hub)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">15%+</p>
+        <p style="color:#42474e; font-size:0.875rem;">of influencer engagement estimated to be fraudulent industry-wide</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">2&ndash;3 weeks</p>
+        <p style="color:#42474e; font-size:0.875rem;">typical setup time for AI discovery and vetting tools</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Channel ROI</p>
+          <p style="color:#42474e; line-height:1.7;">Influencer Marketing Hub's annual benchmarking survey consistently reports strong average returns for influencer campaigns, though results vary widely based on creator authenticity and audience-brand fit, exactly the variables AI vetting is built to check.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Fraud Prevalence</p>
+          <p style="color:#42474e; line-height:1.7;">Multiple industry fraud detection studies estimate a meaningful share of influencer engagement across platforms as inauthentic, underscoring why fraud screening has become standard due diligence rather than an optional add-on.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">UAE Regulation</p>
+          <p style="color:#42474e; line-height:1.7;">The UAE's National Media Council requires paid content creators to hold a license, a compliance step that AI-assisted vetting workflows check automatically before a campaign moves forward.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI in influencer marketing</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Influencer AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your creator discovery and vetting workflow, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="marketing_influencer_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Influencer AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    .influencer-tabs { display:flex; gap:0.5rem; justify-content:center; margin-bottom:2rem; flex-wrap:wrap; }
+    .influencer-tab-btn { padding:0.625rem 1.25rem; border-radius:100px; border:1px solid rgba(0,37,59,0.15); background:#fff; color:#42474e; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+    .influencer-tab-btn:hover { background:#e7eeff; }
+    .influencer-tab-btn.active { background:#006875; border-color:#006875; color:#fff; }
+    .influencer-tab-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+    [data-influencer-tab-panel][hidden] { display:none; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
+</style>
+
+<script>
+  const influencerTabWrap = document.querySelector('.influencer-tabs');
+  if (influencerTabWrap) {
+    const btns = influencerTabWrap.querySelectorAll('.influencer-tab-btn');
+    const panels = document.querySelectorAll('[data-influencer-tab-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-influencer-tab');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-influencer-tab-panel') !== key; });
+      });
+    });
+  }
+</script>
