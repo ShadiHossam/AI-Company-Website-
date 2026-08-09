@@ -1,0 +1,453 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Does AI video look obviously synthetic to viewers?", answer: "It depends heavily on the use case and how it's produced. Short-form ads, product demos, and avatar-based explainer videos can look polished and professional with the right setup. Longer, complex narrative video still benefits from traditional production. We'll tell you plainly which category your project falls into." },
+  { question: "Do we need to disclose that a video was AI-generated?", answer: "Depending on the platform and the content, yes, some platforms require labeling AI-generated or synthetic media, and being upfront protects your brand's credibility either way. We build disclosure into the workflow where it's required rather than treating it as an afterthought." },
+  { question: "Can AI dub our videos into Arabic without sounding robotic?", answer: "Modern AI dubbing has improved substantially and can sound natural for many use cases, but we test every voice specifically for Arabic pronunciation and pacing before using it in a client-facing video, since generic dubbing tools often mishandle Arabic phonetics." },
+  { question: "How long does an AI video project take compared to a traditional shoot?", answer: "A short-form ad or product demo can often go from script to final video in days rather than the weeks a traditional shoot, crew, and edit cycle requires. Complex avatar or multi-scene projects take longer to get right on the first pass." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'marketing_video_generation')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Video Generation for Marketing in the UAE",
+    "url": "https://lenooai.com/industries/marketing/video-generation",
+    "description": "Custom AI video generation systems for UAE marketing teams: short-form ads, product demos, AI avatars, and multi-language dubbing.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Video Generation for Marketing"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Marketing", "item": "https://lenooai.com/industries/marketing" },
+      { "@type": "ListItem", "position": 4, "name": "Video Generation AI", "item": "https://lenooai.com/industries/marketing/video-generation" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Video Generation for Marketing in the UAE: Ads, Demos & Dubbing | Lenoo AI"
+  description="Lenoo AI, a Dubai AI agency, builds AI video generation systems for UAE marketing teams: short-form ads, product demos, AI avatars, and multi-language dubbing."
+  canonicalPath="/industries/marketing/video-generation"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/industries/marketing" style="color:inherit;text-decoration:none;opacity:0.65;">Marketing</a><span style="opacity:0.4;padding:0 4px;"> / </span>Video Generation</div>
+    <h1>AI Video Generation<br><span class="gradient-text">for UAE Marketing Teams</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI video generation systems for UAE marketing teams: short-form ads, product demos, AI avatars, and multi-language dubbing, produced faster than a traditional shoot and edit cycle.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <button onclick="openModal(this)" data-source="marketing_video_hero" class="btn-primary">Book Free Video AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+    <StatStrip stats={[
+      { value: "Days, not weeks", caption: "typical turnaround for a short-form ad or product demo video" },
+      { value: "10+", caption: "languages a single video can be dubbed into without reshooting" },
+      { value: "82%", caption: "of all internet traffic is video, and rising (Cisco)" },
+    ]} />
+  </div>
+</header>
+
+<!-- WHY VIDEO GENERATION & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why video generation is one of AI's highest-impact marketing tools</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Video dominates attention, but production is expensive.</strong> Short-form video drives the highest engagement across nearly every platform, yet a traditional shoot, crew, edit still costs far more than most teams can sustain at the volume platforms now reward.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Localization used to mean reshooting with a different actor.</strong> AI dubbing and lip-sync tools adapt a single video into multiple languages, preserving the original performance while matching the new language naturally.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Long-form content goes to waste without repurposing.</strong> A single webinar or interview contains dozens of usable short clips. AI repurposing tools extract and format them automatically instead of a human scrubbing through hours of footage.</p>
+      </div>
+      <div class="split-media" style="display:flex; align-items:stretch;">
+        <div class="card" style="display:flex; flex-direction:column; justify-content:center; text-align:center; width:100%; padding:2.5rem;">
+          <p class="stat-number" style="font-size:3rem; margin-bottom:0.75rem;">10+</p>
+          <p style="color:#42474e; font-size:1rem; line-height:1.7;">languages a single video can be dubbed into without a reshoot, opening multi-market campaigns to teams that couldn't previously afford separate productions.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Video Systems Built for UAE Marketing Teams</h2>
+      <p>Six systems our Dubai AI agency builds for video production, with disclosure and brand-fit review built into the workflow.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">movie</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Short-Form Ad Video Generation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Produces short-form video ads for social and paid placements from a script and brand assets, without a full production crew.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Turnaround measured in days, not weeks</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">smart_display</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Product Demo Video Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Generates clear product demo and explainer videos from product data and screenshots, ideal for fast-moving product catalogs.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Scales with your catalog without a proportional production cost</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">record_voice_over</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">AI Avatar &amp; Spokesperson Videos</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Creates presenter-led videos using an AI avatar, useful for training content, announcements, and repeatable video formats.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Disclosure built in wherever platform or context requires it</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">translate</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Multi-Language Video Dubbing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Dubs existing video into Arabic and other languages with matched lip movement, tested specifically for natural Arabic phonetics.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Opens a single video to multiple markets without reshooting</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">groups</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">UGC-Style Content at Scale</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Produces authentic, user-generated-content-style videos for ads and social, a format that consistently outperforms polished commercials on conversion.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Matches the format audiences trust most in ad feeds</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">content_cut</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Video Repurposing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Extracts and formats short clips from long-form video, webinars, interviews, live streams, for social distribution automatically.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Turns one long-form asset into weeks of social content</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All output reviewed for brand fit before delivery, with disclosure handled wherever platforms require it.</p>
+      <button onclick="openModal(this)" data-source="marketing_video_mid" class="btn-primary">Book Free Video AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- VIDEO EDITING WORKSPACE GALLERY -->
+<section class="section" aria-labelledby="video-gallery-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="video-gallery-heading">Inside a Video Editing Workspace</h2>
+      <p>The multi-monitor timelines, grading stations, and review screens behind an AI-assisted video pipeline. Click any photo to view it larger.</p>
+    </div>
+    <div class="video-gallery">
+      <img src="https://images.unsplash.com/photo-1779896412277-c4fd15c7a89c?w=800&q=80&auto=format&fit=crop" alt="Video editor working across multiple monitors on a video editing timeline" loading="lazy" width="800" height="600" class="video-gallery-img" tabindex="0" role="button" aria-label="View larger: Video editor working across multiple monitors on a video editing timeline" />
+      <img src="https://images.unsplash.com/photo-1682506456488-bc2bc8cd7dbe?w=800&h=600&q=80&auto=format&fit=crop" alt="Color grading control surface with color wheels on screen, used for grading video footage" loading="lazy" width="800" height="600" class="video-gallery-img" tabindex="0" role="button" aria-label="View larger: Color grading control surface with color wheels on screen, used for grading video footage" />
+      <img src="https://images.unsplash.com/photo-1551302175-952301267d19?w=800&q=80&auto=format&fit=crop" alt="Close-up of a computer screen showing overlapping video editing software windows" loading="lazy" width="800" height="600" class="video-gallery-img" tabindex="0" role="button" aria-label="View larger: Close-up of a computer screen showing overlapping video editing software windows" />
+    </div>
+  </div>
+</section>
+
+<div class="video-lightbox" id="video-lightbox" hidden role="dialog" aria-modal="true" aria-label="Enlarged image viewer">
+  <img src="" alt="" />
+  <button type="button" class="video-lightbox-close" aria-label="Close enlarged image">&times;</button>
+</div>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact in video marketing</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card" data-video-expand>
+        <button type="button" class="video-card-toggle" aria-expanded="false" aria-controls="video-panel-1" id="video-toggle-1">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">movie</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">Generative Video Ads</h3>
+          </div>
+          <span class="video-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="video-card-panel" id="video-panel-1" role="region" aria-labelledby="video-toggle-1" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI-generated video ads are increasingly used for rapid campaign testing, letting teams iterate on messaging without a new production cycle each time.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Video consistently drives the highest engagement across most ad platforms</p>
+        </div>
+      </div>
+      <div class="card" data-video-expand>
+        <button type="button" class="video-card-toggle" aria-expanded="false" aria-controls="video-panel-2" id="video-toggle-2">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">record_voice_over</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">AI Avatars &amp; Virtual Presenters</h3>
+          </div>
+          <span class="video-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="video-card-panel" id="video-panel-2" role="region" aria-labelledby="video-toggle-2" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Avatar-based presenters are gaining adoption for training, explainer, and internal comms video, where consistency matters more than a unique on-screen personality.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Growing fastest in corporate training and product explainer content</p>
+        </div>
+      </div>
+      <div class="card" data-video-expand>
+        <button type="button" class="video-card-toggle" aria-expanded="false" aria-controls="video-panel-3" id="video-toggle-3">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">translate</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">Automated Video Localization</h3>
+          </div>
+          <span class="video-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="video-card-panel" id="video-panel-3" role="region" aria-labelledby="video-toggle-3" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI dubbing with lip-sync has moved from novelty to standard practice for brands expanding video content across language markets.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875;">A single video can now reach many more markets than a single production budget once allowed</p>
+        </div>
+      </div>
+      <div class="card" data-video-expand>
+        <button type="button" class="video-card-toggle" aria-expanded="false" aria-controls="video-panel-4" id="video-toggle-4">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">content_cut</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">Video-to-Clips Repurposing</h3>
+          </div>
+          <span class="video-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="video-card-panel" id="video-panel-4" role="region" aria-labelledby="video-toggle-4" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI tools that extract highlight clips from long-form content have become a standard part of podcast and webinar distribution strategy.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Widely adopted by podcast and content teams for social distribution</p>
+        </div>
+      </div>
+      <div class="card" data-video-expand>
+        <button type="button" class="video-card-toggle" aria-expanded="false" aria-controls="video-panel-5" id="video-toggle-5">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">person</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">Personalized Video at Scale</h3>
+          </div>
+          <span class="video-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="video-card-panel" id="video-panel-5" role="region" aria-labelledby="video-toggle-5" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI generation makes personalized video, tailored by audience segment or even individual recipient, realistic at a scale traditional production never allowed.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Used increasingly in high-value account-based marketing</p>
+        </div>
+      </div>
+      <div class="card" data-video-expand>
+        <button type="button" class="video-card-toggle" aria-expanded="false" aria-controls="video-panel-6" id="video-toggle-6">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">smart_display</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">Product Demo Automation</h3>
+          </div>
+          <span class="video-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="video-card-panel" id="video-panel-6" role="region" aria-labelledby="video-toggle-6" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">E-commerce and SaaS companies increasingly generate demo video directly from product data, keeping video content current as products change.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Keeps demo content current without a re-shoot every product update</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes video generation AI actually work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Output realism and brand fit</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Not every use case is ready for AI video yet. We're honest about which projects benefit from generation and which still need traditional production.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Disclosure compliance</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Several platforms now require labeling AI-generated or synthetic media. We build disclosure into the workflow rather than treating it as an afterthought.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Platform format compliance</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Aspect ratio, length, and caption requirements vary by platform. Output needs to match each destination, not a single generic export.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Human review before publish</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">AI video can produce subtle glitches, a review pass catches issues before a video reaches an audience, not after.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows about AI video generation</h2>
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">82%</p>
+        <p style="color:#42474e; font-size:0.875rem;">of all internet traffic is video, and rising (Cisco)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">10+</p>
+        <p style="color:#42474e; font-size:0.875rem;">languages a single video can be dubbed into without reshooting</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">Days</p>
+        <p style="color:#42474e; font-size:0.875rem;">typical turnaround for a short-form ad, versus weeks for a traditional shoot</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Video Demand</p>
+          <p style="color:#42474e; line-height:1.7;">Cisco's long-running internet traffic research consistently shows video as the dominant share of online content consumption, a trend that has only accelerated with short-form platforms driving engagement expectations higher across all channels.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Localization Reach</p>
+          <p style="color:#42474e; line-height:1.7;">AI dubbing has made it economically realistic for brands to localize video content across a dozen or more languages from a single production, a scale that would have required separate shoots or voice actors per market previously.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Production Speed</p>
+          <p style="color:#42474e; line-height:1.7;">Teams generating short-form video with AI report compressing production cycles from weeks to days for straightforward ad and demo formats, freeing budget and time for the campaigns that genuinely need traditional production quality.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI video generation</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Video AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your video content needs, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="marketing_video_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Video AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
+
+.video-gallery { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin:0; }
+.video-gallery-img { width:100%; height:220px; object-fit:cover; border-radius:16px; cursor:zoom-in; transition:transform 0.2s; display:block; }
+.video-gallery-img:hover { transform:scale(1.02); }
+.video-gallery-img:focus-visible { outline:2px solid #006875; outline-offset:3px; }
+.video-lightbox { position:fixed; inset:0; background:rgba(0,19,32,0.9); display:flex; align-items:center; justify-content:center; z-index:1000; }
+.video-lightbox[hidden] { display:none; }
+.video-lightbox img { max-width:90vw; max-height:85vh; border-radius:8px; }
+.video-lightbox-close { position:absolute; top:24px; right:32px; background:none; border:none; color:#fff; font-size:2rem; line-height:1; cursor:pointer; padding:4px 10px; border-radius:8px; }
+.video-lightbox-close:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+@media(max-width:700px) { .video-gallery { grid-template-columns:1fr; } }
+
+.video-card-toggle { display:flex; justify-content:space-between; align-items:center; width:100%; background:none; border:none; cursor:pointer; text-align:left; padding:0; gap:1rem; }
+.video-card-toggle h3 { margin:0; }
+.video-card-icon { font-size:1.25rem; color:#006875; transition:transform 0.2s; flex-shrink:0; }
+.video-card-toggle[aria-expanded="true"] .video-card-icon { transform:rotate(45deg); }
+.video-card-toggle:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+.video-card-panel { margin-top:0.75rem; }
+</style>
+
+<script>
+  const videoGallery = document.querySelector('.video-gallery');
+  const videoLightbox = document.querySelector('#video-lightbox');
+  const videoLightboxImg = videoLightbox?.querySelector('img');
+  const videoCloseBtn = videoLightbox?.querySelector('.video-lightbox-close');
+  let videoLastFocused: HTMLElement | null = null;
+
+  function videoOpenLightbox(img: HTMLImageElement) {
+    if (videoLightboxImg) {
+      (videoLightboxImg as HTMLImageElement).src = img.src;
+      (videoLightboxImg as HTMLImageElement).alt = img.alt;
+    }
+    if (videoLightbox) {
+      videoLastFocused = document.activeElement as HTMLElement;
+      (videoLightbox as HTMLElement).hidden = false;
+      (videoCloseBtn as HTMLElement)?.focus();
+    }
+  }
+
+  function videoCloseLightbox() {
+    if (videoLightbox) (videoLightbox as HTMLElement).hidden = true;
+    videoLastFocused?.focus();
+  }
+
+  videoGallery?.querySelectorAll('.video-gallery-img').forEach((el) => {
+    const img = el as HTMLImageElement;
+    img.addEventListener('click', () => videoOpenLightbox(img));
+    img.addEventListener('keydown', (e) => {
+      const evt = e as KeyboardEvent;
+      if (evt.key === 'Enter' || evt.key === ' ') {
+        evt.preventDefault();
+        videoOpenLightbox(img);
+      }
+    });
+  });
+
+  videoCloseBtn?.addEventListener('click', videoCloseLightbox);
+
+  videoLightbox?.addEventListener('click', (e) => {
+    if (e.target === videoLightbox) videoCloseLightbox();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!videoLightbox || (videoLightbox as HTMLElement).hidden) return;
+    if (e.key === 'Escape') {
+      videoCloseLightbox();
+    } else if (e.key === 'Tab') {
+      // The close button is the only focusable element in the dialog; keep focus trapped on it.
+      e.preventDefault();
+      (videoCloseBtn as HTMLElement)?.focus();
+    }
+  });
+
+  document.querySelectorAll('[data-video-expand]').forEach((card) => {
+    const btn = card.querySelector('.video-card-toggle');
+    const panel = card.querySelector('.video-card-panel');
+    btn?.addEventListener('click', () => {
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!expanded));
+      if (panel) (panel as HTMLElement).hidden = expanded;
+    });
+  });
+</script>
