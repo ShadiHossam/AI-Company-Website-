@@ -1,0 +1,470 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Will AI-generated posts sound generic or off-brand?", answer: "Only if the system isn't trained on your brand's actual voice. We build caption and content generation around your past posts, tone, and style guide, then keep a human review step before anything publishes, so drift gets caught immediately." },
+  { question: "Can AI handle comments and messages without sounding robotic?", answer: "Modern AI response tools handle routine questions and comments naturally, and are tuned to match your brand's tone rather than a generic customer service script. Anything sensitive, a complaint, a crisis moment, a legal question, routes straight to a person." },
+  { question: "Does social listening work for Arabic conversations and dialect variations?", answer: "Yes, though it requires specific attention: Gulf Arabic, Egyptian Arabic, and Modern Standard Arabic all appear across UAE social platforms, sometimes mixed with English in the same post. We tune listening models for this mix rather than relying on a single-dialect model." },
+  { question: "How long does it take to set up AI social media management?", answer: "Content generation and scheduling typically launches in 2 to 4 weeks. Social listening and sentiment analysis take a bit longer, usually 4 to 6 weeks, since the model needs to be tuned to your brand's specific mentions and competitive landscape." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'marketing_social_media')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI for Social Media Management in the UAE",
+    "url": "https://lenooai.com/industries/marketing/social-media",
+    "description": "Custom AI social media systems for UAE businesses: caption generation, scheduling automation, social listening, and community management.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Social Media Marketing"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Marketing", "item": "https://lenooai.com/industries/marketing" },
+      { "@type": "ListItem", "position": 4, "name": "Social Media AI", "item": "https://lenooai.com/industries/marketing/social-media" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI for Social Media Management in the UAE: Content, Listening & Automation | Lenoo AI"
+  description="Lenoo AI, a Dubai AI agency, builds AI social media systems for UAE businesses: caption generation, scheduling, social listening, and community management."
+  canonicalPath="/industries/marketing/social-media"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/industries/marketing" style="color:inherit;text-decoration:none;opacity:0.65;">Marketing</a><span style="opacity:0.4;padding:0 4px;"> / </span>Social Media</div>
+    <h1>AI for<br><span class="gradient-text">Social Media in the UAE</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI social media systems for UAE businesses: caption and content generation, scheduling automation, social listening, and community management. Trained on your brand voice, with a human review step before anything publishes.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <button onclick="openModal(this)" data-source="marketing_social_hero" class="btn-primary">Book Free Social Media AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+    <StatStrip stats={[
+      { value: "5x+", caption: "more content variations produced in the same time with AI drafting" },
+      { value: "24/7", caption: "social listening and comment monitoring coverage" },
+      { value: "Arabic + English", caption: "content and response generation tuned for UAE audiences" },
+    ]} />
+  </div>
+</header>
+
+<!-- WHY SOCIAL MEDIA & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why social media is one of AI's highest-impact channels</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Every platform expects constant output.</strong> Feeds, stories, reels, and posts all need fresh content on a near-daily basis. AI drafting tools let a small team sustain that volume without burning out on repetitive caption writing.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Conversations happen faster than teams can watch.</strong> Comments, mentions, and DMs arrive around the clock. AI listening and response tools catch what a team would otherwise miss overnight or over a weekend.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Brand sentiment shifts in real time.</strong> A single viral comment or complaint can shift how a brand is perceived within hours. AI sentiment monitoring flags shifts early enough for a team to actually respond, not just discover it after the fact.</p>
+      </div>
+      <div class="split-media" style="display:flex; align-items:stretch;">
+        <div class="card" style="display:flex; flex-direction:column; justify-content:center; text-align:center; width:100%; padding:2.5rem;">
+          <p class="stat-number" style="font-size:3rem; margin-bottom:0.75rem;">5x+</p>
+          <p style="color:#42474e; font-size:1rem; line-height:1.7;">more content variations produced in the same time with AI-assisted drafting, freeing your team to focus on strategy and creative direction.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Social Media Systems Built for UAE Businesses</h2>
+      <p>Six systems our Dubai AI agency builds for social media teams, integrated with your existing scheduling and analytics tools.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">edit_note</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Caption &amp; Post Generation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Drafts on-brand captions and post copy in your voice, in Arabic and English, giving your team a strong starting point instead of a blank page.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Trained on your past posts and actual brand tone</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">calendar_month</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Content Calendar Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Plans and schedules posts across platforms based on optimal timing and content mix, reducing manual calendar management.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Keeps posting consistent without daily manual scheduling</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">hearing</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Social Listening &amp; Sentiment Analysis</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Monitors mentions, comments, and brand sentiment across platforms around the clock, flagging shifts before they become a bigger problem.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Tuned for Arabic dialect and mixed-language conversation</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">forum</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Auto-Reply &amp; Comment Moderation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Responds to routine comments and messages instantly, and flags anything sensitive, complaints, crises, legal questions, for a human to handle.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Clear escalation rules for anything that needs a person</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">trending_up</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Trend &amp; Hashtag Discovery</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Surfaces relevant trending topics and hashtags in your industry before they peak, so content stays timely instead of reactive.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Catches UAE-specific and regional trends, not just global ones</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">bar_chart</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Performance Reporting Dashboard</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Compiles engagement, reach, and growth metrics across platforms into one clear dashboard, replacing manual export-and-merge reporting.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Cuts reporting time significantly each month</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems bilingual, on-brand, and integrated with your existing scheduling and analytics tools.</p>
+      <button onclick="openModal(this)" data-source="marketing_social_mid" class="btn-primary">Book Free Social Media AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL MEDIA CONTENT CREATION GALLERY -->
+<section class="section" aria-labelledby="social-gallery-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="social-gallery-heading">Inside a Social Media Content Creation Setup</h2>
+      <p>The phones, calendars, and editing stations behind a consistent posting schedule, before a single caption gets AI assistance. Click any photo to view it larger.</p>
+    </div>
+    <div class="social-gallery">
+      <img src="https://images.unsplash.com/photo-1758599879065-46fd59235166?w=800&q=80&auto=format&fit=crop" alt="Smartphone mounted on a tripod recording video, a common setup for filming social media content" loading="lazy" width="800" height="600" class="social-gallery-img" tabindex="0" role="button" aria-label="View larger: Smartphone mounted on a tripod recording video, a common setup for filming social media content" />
+      <img src="https://images.unsplash.com/photo-1676276375742-9e3d10e39d45?w=800&q=80&auto=format&fit=crop" alt="Whiteboard covered in sticky notes used to plan a social media content calendar" loading="lazy" width="800" height="600" class="social-gallery-img" tabindex="0" role="button" aria-label="View larger: Whiteboard covered in sticky notes used to plan a social media content calendar" />
+      <img src="https://images.unsplash.com/photo-1744686959591-eaaec00c999c?w=800&q=80&auto=format&fit=crop" alt="Content creator editing video footage at a computer workstation" loading="lazy" width="800" height="600" class="social-gallery-img" tabindex="0" role="button" aria-label="View larger: Content creator editing video footage at a computer workstation" />
+    </div>
+  </div>
+</section>
+
+<div class="social-lightbox" id="social-lightbox" hidden role="dialog" aria-modal="true" aria-label="Enlarged image viewer">
+  <img src="" alt="" />
+  <button type="button" class="social-lightbox-close" aria-label="Close enlarged image">&times;</button>
+</div>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact in social media</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">edit_note</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">AI Content Generation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Generative tools now cover caption writing, hashtag suggestions, and content variation testing, a standard part of most modern social workflows.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Among the fastest-adopted AI use cases in marketing overall</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">hearing</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Social Listening</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI sentiment analysis processes far more mentions and conversations than manual monitoring, catching brand risk and opportunity earlier.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Standard tool for brands managing reputation across multiple platforms</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">calendar_month</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Automated Scheduling &amp; Publishing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI-optimized posting schedules based on audience activity patterns improve reach compared to fixed, arbitrary posting times.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Common baseline feature across major scheduling platforms</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">diversity_3</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Influencer &amp; UGC Discovery</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI tools identify relevant user-generated content and micro-influencers aligned with a brand, a faster process than manual social search.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Speeds up sourcing authentic content for campaigns</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">ads_click</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Ad Creative Testing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI generates and tests multiple creative variations for paid social simultaneously, surfacing top performers faster than manual A/B testing.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces time to find winning ad creative</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">forum</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Community Management Chatbots</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Chatbots handle routine DM inquiries and FAQs on social platforms, keeping response times low even outside business hours.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces response time gaps outside working hours</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes social media AI actually work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Brand voice consistency</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">AI trained on generic templates sounds like every other brand. Output needs to be built from your actual past posts and tone, not a default style.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Platform policy compliance</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Automated posting and reply tools need to respect each platform's API rate limits and policies. Getting flagged for automation abuse costs far more than it saves.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Human review for public posts</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Anything going out publicly under your brand name needs a review step. A single bad automated post can do more damage than the time it saved.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Bilingual tone accuracy</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">UAE audiences switch between Arabic and English constantly, sometimes mid-sentence. Tools need to handle that mix naturally, not just translate.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI USE CASES BY PLATFORM -->
+<section class="section" aria-labelledby="social-platforms-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="social-platforms-heading">How AI use cases differ by platform</h2>
+      <p>Short-form and professional platforms call for different tools and a different tone. Here's how the AI layer typically splits.</p>
+    </div>
+    <div class="social-tabs" role="tablist" aria-label="Platform categories">
+      <button type="button" id="social-tab-instagramtiktok" class="social-tab-btn active" data-social-tab="instagramtiktok" role="tab" aria-selected="true" aria-controls="social-panel-instagramtiktok">Instagram &amp; TikTok</button>
+      <button type="button" id="social-tab-linkedinx" class="social-tab-btn" data-social-tab="linkedinx" role="tab" aria-selected="false" aria-controls="social-panel-linkedinx">LinkedIn &amp; X</button>
+    </div>
+    <div class="bento-grid bento-grid-3" id="social-panel-instagramtiktok" data-social-tab-panel="instagramtiktok" role="tabpanel" aria-labelledby="social-tab-instagramtiktok">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">movie</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Short-Form Scripting &amp; Hooks</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Drafts short-form video scripts and opening hook lines suited to fast-scroll feeds, where the first couple of seconds decide whether someone keeps watching.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Built for the pacing Reels and TikTok reward</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">trending_up</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Trend-Responsive Captions</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Drafts captions and on-screen text tied to trending audio and formats, so content stays timely without someone tracking every trend by hand.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Keeps pace with fast-moving platform trends</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">insights</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Format Performance Patterns</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Reviews which hooks, formats, and lengths perform best for your specific account, rather than relying on generic best-practice advice.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Based on your account's own posting history</p>
+      </div>
+    </div>
+    <div class="bento-grid bento-grid-3" id="social-panel-linkedinx" data-social-tab-panel="linkedinx" role="tabpanel" aria-labelledby="social-tab-linkedinx" hidden>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">article</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Thought-Leadership Drafting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Drafts longer-form professional posts and threads in an executive's voice, built from past writing and talking points rather than a generic template.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Trained on your own past posts and talking points</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">forum</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Real-Time Conversation Monitoring</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Tracks mentions and relevant conversation threads as they happen, surfacing the ones worth a timely, on-brand reply.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Flags conversations worth joining, not just mentions</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">tune</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Professional Tone Calibration</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Keeps AI-drafted replies and posts in a more formal register suited to professional audiences, distinct from the casual tone of short-form platforms.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Separate tone rules per platform, not one default voice</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows about AI in social media</h2>
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">5x+</p>
+        <p style="color:#42474e; font-size:0.875rem;">more content variations producible in the same time with AI drafting</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">24/7</p>
+        <p style="color:#42474e; font-size:0.875rem;">social listening coverage, versus business-hours-only manual monitoring</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">2&ndash;4 weeks</p>
+        <p style="color:#42474e; font-size:0.875rem;">typical launch time for AI content generation and scheduling</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Content Velocity</p>
+          <p style="color:#42474e; line-height:1.7;">Social teams using AI drafting tools consistently report multiplying their content output without a proportional increase in headcount, largely by automating the first-draft stage of caption and copy writing.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Response Coverage</p>
+          <p style="color:#42474e; line-height:1.7;">Brands using AI-assisted comment and message handling close the response gap that occurs outside business hours, a period during which a meaningful share of social engagement historically went unanswered.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Sentiment Detection</p>
+          <p style="color:#42474e; line-height:1.7;">AI sentiment analysis tools process conversation volume at a scale manual monitoring can't match, giving brands earlier warning of reputation shifts than periodic manual review would catch.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI in social media</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Social Media AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your content, listening, and community management workflows, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="marketing_social_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Social Media AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
+
+.social-gallery { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin:0; }
+.social-gallery-img { width:100%; height:220px; object-fit:cover; border-radius:16px; cursor:zoom-in; transition:transform 0.2s; display:block; }
+.social-gallery-img:hover { transform:scale(1.02); }
+.social-gallery-img:focus-visible { outline:2px solid #006875; outline-offset:3px; }
+.social-lightbox { position:fixed; inset:0; background:rgba(0,19,32,0.9); display:flex; align-items:center; justify-content:center; z-index:1000; }
+.social-lightbox[hidden] { display:none; }
+.social-lightbox img { max-width:90vw; max-height:85vh; border-radius:8px; }
+.social-lightbox-close { position:absolute; top:24px; right:32px; background:none; border:none; color:#fff; font-size:2rem; line-height:1; cursor:pointer; padding:4px 10px; border-radius:8px; }
+.social-lightbox-close:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+@media(max-width:700px) { .social-gallery { grid-template-columns:1fr; } }
+
+.social-tabs { display:flex; gap:0.5rem; justify-content:center; margin-bottom:2rem; flex-wrap:wrap; }
+.social-tab-btn { padding:0.625rem 1.25rem; border-radius:100px; border:1px solid rgba(0,37,59,0.15); background:#fff; color:#42474e; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.social-tab-btn:hover { background:#e7eeff; }
+.social-tab-btn.active { background:#006875; border-color:#006875; color:#fff; }
+.social-tab-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+[data-social-tab-panel][hidden] { display:none; }
+@media(max-width:900px) { #social-panel-instagramtiktok, #social-panel-linkedinx { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { #social-panel-instagramtiktok, #social-panel-linkedinx { grid-template-columns:1fr; } }
+</style>
+
+<script>
+  const socialGallery = document.querySelector('.social-gallery');
+  const socialLightbox = document.querySelector('#social-lightbox');
+  const socialLightboxImg = socialLightbox?.querySelector('img');
+  const socialCloseBtn = socialLightbox?.querySelector('.social-lightbox-close');
+  let socialLastFocused: HTMLElement | null = null;
+
+  function socialOpenLightbox(img: HTMLImageElement) {
+    if (socialLightboxImg) {
+      (socialLightboxImg as HTMLImageElement).src = img.src;
+      (socialLightboxImg as HTMLImageElement).alt = img.alt;
+    }
+    if (socialLightbox) {
+      socialLastFocused = document.activeElement as HTMLElement;
+      (socialLightbox as HTMLElement).hidden = false;
+      (socialCloseBtn as HTMLElement)?.focus();
+    }
+  }
+
+  function socialCloseLightbox() {
+    if (socialLightbox) (socialLightbox as HTMLElement).hidden = true;
+    socialLastFocused?.focus();
+  }
+
+  socialGallery?.querySelectorAll('.social-gallery-img').forEach((el) => {
+    const img = el as HTMLImageElement;
+    img.addEventListener('click', () => socialOpenLightbox(img));
+    img.addEventListener('keydown', (e) => {
+      const evt = e as KeyboardEvent;
+      if (evt.key === 'Enter' || evt.key === ' ') {
+        evt.preventDefault();
+        socialOpenLightbox(img);
+      }
+    });
+  });
+
+  socialCloseBtn?.addEventListener('click', socialCloseLightbox);
+
+  socialLightbox?.addEventListener('click', (e) => {
+    if (e.target === socialLightbox) socialCloseLightbox();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!socialLightbox || (socialLightbox as HTMLElement).hidden) return;
+    if (e.key === 'Escape') {
+      socialCloseLightbox();
+    } else if (e.key === 'Tab') {
+      // The close button is the only focusable element in the dialog; keep focus trapped on it.
+      e.preventDefault();
+      (socialCloseBtn as HTMLElement)?.focus();
+    }
+  });
+
+  const socialTabWrap = document.querySelector('.social-tabs');
+  if (socialTabWrap) {
+    const btns = socialTabWrap.querySelectorAll('.social-tab-btn');
+    const panels = document.querySelectorAll('[data-social-tab-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-social-tab');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-social-tab-panel') !== key; });
+      });
+    });
+  }
+</script>
