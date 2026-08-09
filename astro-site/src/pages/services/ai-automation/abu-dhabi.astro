@@ -1,0 +1,404 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../components/ProcessSteps.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Do you have an office in Abu Dhabi?", answer: "No, we're based in Business Bay, Dubai. We serve Abu Dhabi businesses remotely by default and come on-site for discovery sessions or key milestones when it's useful, which for most automation projects is rarely more than once or twice. Abu Dhabi is under two hours away, so an in-person visit is never off the table." },
+  { question: "Can you work with government-adjacent or regulated Abu Dhabi entities?", answer: "Yes, within reason. We've built automation for companies operating under sector-specific compliance requirements. We'll tell you upfront if a request falls outside what we can support, but most workflow automation, document processing, and system integration work doesn't require special clearance." },
+  { question: "How do you handle compliance and data protection for Abu Dhabi enterprises?", answer: "We design automation to work within the UAE's Personal Data Protection Law (PDPL). That means we map what data moves where before we build anything, keep sensitive data inside systems you already control where possible, and avoid routing personal data through tools that don't meet UAE data handling requirements." },
+  { question: "Is remote delivery actually as good as having a local team?", answer: "For most automation work, yes. The build itself happens the same way whether we're on-site or not: we design the workflow, get your sign-off, build it against your real systems, and test it before it goes live. What changes is how we run the discovery and check-in calls, and we're flexible on that based on what works for your team." },
+  { question: "Do you handle data residency requirements for regulated Abu Dhabi organizations?", answer: "Where a specific data residency requirement applies, data that must stay on infrastructure physically located in the UAE, for instance, we build the automation around infrastructure that meets it rather than treating it as an afterthought. This comes up most with government-adjacent and financial-sector clients, and we address it during the discovery session before any workflow design starts." },
+  { question: "Can you work within a formal procurement process?", answer: "Yes. We can operate with scoped statements of work, fixed milestones, and the documentation larger and government-adjacent organizations typically require before onboarding a vendor. Tell us your procurement requirements during the initial call and we'll structure the engagement around them rather than asking you to fit an informal process." },
+  { question: "What happens if our organization needs a security or vendor review before engaging you?", answer: "We complete security questionnaires and vendor due diligence documentation as part of onboarding when it's required. It adds time to the start of a project, not to the build itself, and we factor that into the timeline we give you upfront rather than treating it as a surprise delay." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_automation_abu_dhabi')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+const processSteps = [
+  { icon: "search", step: "Step 1", title: "Discovery Call", description: "We map your current workflows over video call, or on-site if you'd rather meet in person, and identify the automations worth building first." },
+  { icon: "edit", step: "Step 2", title: "Design & Plan", description: "We design the automation logic, map any compliance requirements, and get your sign-off before building." },
+  { icon: "build", step: "Step 3", title: "Build & Test", description: "We build the automation and test it against your real data before it touches a live workflow." },
+  { icon: "rocket_launch", step: "Step 4", title: "Go Live & Monitor", description: "The automation goes live. We monitor it for 90 days and fix anything that needs fixing." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Automation in Abu Dhabi',
+    url: 'https://lenooai.com/services/ai-automation/abu-dhabi',
+    description: 'AI automation services for Abu Dhabi companies: process automation, system integration, and PDPL-compliant deployments.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'Abu Dhabi, United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'AI automation projects for Abu Dhabi businesses: pricing based on workflow complexity and scope. Book a free discovery call for a quote.' },
+    serviceType: 'AI Automation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Automation', item: 'https://lenooai.com/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'Abu Dhabi', item: 'https://lenooai.com/services/ai-automation/abu-dhabi' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI Automation in Abu Dhabi | Lenoo AI"
+  description="AI automation services for Abu Dhabi companies: process automation, system integration, and PDPL-compliant deployments."
+  canonicalPath="/services/ai-automation/abu-dhabi"
+  arPath="/ar/services/ai-automation/abu-dhabi"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">AI Automation</a><span style="opacity:0.4;padding:0 4px;"> / </span>Abu Dhabi</div>
+    <h1>AI Automation in <span class="gradient-text">Abu Dhabi</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      Lenoo AI is a Dubai-based automation team serving Abu Dhabi businesses, remotely by default and on-site when it makes sense. We design and build automation that connects the tools you already run, handles PDPL data protection requirements from the start, and cuts the manual work out of the workflows your team repeats every day.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">PDPL-aware data handling built into every project</span>
+      <span class="tchip">Refund guarantee if you're not satisfied with what we deliver</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_automation_abu_dhabi_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#what-we-automate" class="btn-outline">See What We Automate ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1400&q=80&auto=format&fit=crop" alt="AI workflow automation for an Abu Dhabi business" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 30%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "40%", caption: "of work tasks in most UAE businesses are automatable with existing AI. Most haven't started." },
+      { value: "90 days", caption: "post-launch monitoring included on every project" },
+      { value: "100%", caption: "refund guarantee if you're not satisfied with what we deliver" },
+    ]} />
+  </div>
+</div>
+
+<!-- EXPLAINER -->
+<section class="section" aria-labelledby="explain-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="explain-heading" style="margin-bottom:1.5rem;">AI Automation for Abu Dhabi Companies, Delivered Remotely or On-Site</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        We don't have a building in Abu Dhabi, and we're not going to pretend otherwise. What we have is a Dubai-based team that builds automation the same way for Abu Dhabi clients as for anyone else: map the workflow, design it, build it against your real systems, test it, and support it after launch. Most of that happens over video call. If a project reaches a point where sitting in a room together is worth the drive, we make the drive.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Abu Dhabi has a heavier concentration of government-adjacent and regulated entities than most emirates, so data handling matters more here, not less. We build with the UAE's Personal Data Protection Law (PDPL) in mind from the start: mapping what data moves where, keeping sensitive information inside systems you already control where possible, and flagging anything that needs a closer look before we touch it. For a full explanation of what AI automation is and how it compares to rule-based tools like Zapier, see our <a href="/services/ai-automation">main AI automation page</a>.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        The clients we work with here are usually a mix of a few types: energy and industrial companies with layers of internal approval built into everything, semi-government and sovereign-linked entities with formal vendor and procurement requirements, and a growing number of professional services and consulting firms that serve that same ecosystem and inherit its expectations around documentation and data handling. Each of those brings a different starting point for automation, but the underlying work is the same: map the workflow, design around the constraints that actually apply to your organization, and build something that holds up to internal review rather than something that just looks good in a demo.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ABU DHABI SKYLINE BAND -->
+<div style="position:relative; overflow:hidden; height:260px; margin:0 0 -1px;">
+  <img src="https://images.unsplash.com/photo-1613835579153-9bfe32e50da6?w=1400&q=80&auto=format&fit=crop" alt="Abu Dhabi skyline at sunset, with Etihad Towers and the waterfront corniche" loading="lazy" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 30%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.35) 0%,transparent 55%);"></div>
+</div>
+
+<!-- WHAT WE AUTOMATE -->
+<section id="what-we-automate" class="section" style="background:#f0f3ff;" aria-labelledby="automate-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="automate-heading">AI Automation We Build for Abu Dhabi Businesses</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Common categories, not an exhaustive list. All built on your existing tools and supported after launch.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">description</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Document &amp; Invoice Processing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Contracts, invoices, and forms processed automatically. AI extracts the data, validates it, and posts it into your systems.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> An operations team stopped keying in supplier invoices by hand; AI now matches each one to a purchase order and posts it directly.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">task_alt</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Approval &amp; Compliance Workflows</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Multi-step approvals that move from submission to sign-off automatically, with reminders, escalations, and an audit trail built in.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> Expense approvals that used to sit in someone's inbox for a week now route, remind, and escalate on their own.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">sync_alt</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Cross-System Data Sync</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Keep your CRM, ERP, and communication tools in sync automatically, without anyone copying data between platforms by hand.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A team that once updated three separate systems by hand after every deal now updates one, and the rest sync themselves.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">mail</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Email &amp; Correspondence Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI reads, categorizes, and routes incoming correspondence, drafts replies, and escalates anything that needs a person's judgment before it reaches an inbox.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A shared compliance inbox that took a team most of a morning to triage each day now gets sorted and drafted automatically, with only genuine exceptions left for review.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">route</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Lead &amp; Inquiry Routing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Inbound inquiries are scored, assigned to the right person, and followed up with automatically, whether they arrive through a form, email, or referral.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> An enterprise sales team went from a next-day average response to under 15 minutes, without adding headcount.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bar_chart</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Automated Reporting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Status reports, compliance summaries, and performance dashboards that compile and send themselves on schedule, without anyone pulling numbers manually.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A management team gets a compiled operations summary every Monday morning instead of chasing three department heads for updates.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MANUAL VS AI AUTOMATION TOGGLE -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="abudhabi-toggle-heading">
+  <div class="container" style="max-width:800px;">
+    <div class="section-header">
+      <h2 id="abudhabi-toggle-heading">Manual Process vs. With AI Automation</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">What changes for the workflows above once AI takes the repetitive first pass.</p>
+    </div>
+    <div class="abudhabi-toggle" role="tablist" aria-label="Process comparison">
+      <button type="button" id="abudhabi-tier-manual" class="abudhabi-toggle-btn active" data-abudhabi-tier="manual" role="tab" aria-selected="true" aria-controls="abudhabi-panel-manual">Manual Process</button>
+      <button type="button" id="abudhabi-tier-ai" class="abudhabi-toggle-btn" data-abudhabi-tier="ai" role="tab" aria-selected="false" aria-controls="abudhabi-panel-ai">With AI Automation</button>
+    </div>
+    <div class="card" id="abudhabi-panel-manual" data-abudhabi-tier-panel="manual" role="tabpanel" aria-labelledby="abudhabi-tier-manual">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Invoices get keyed in by hand and matched to purchase orders one at a time. Approvals sit in someone's inbox until they're noticed, and reminders or escalations depend on someone remembering to follow up. Data gets copied between the CRM, ERP, and other systems manually, and correspondence has to be read, sorted, and answered by a person before reports get compiled by pulling numbers from each system separately.</p>
+    </div>
+    <div class="card" id="abudhabi-panel-ai" data-abudhabi-tier-panel="ai" role="tabpanel" aria-labelledby="abudhabi-tier-ai" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">AI extracts and matches invoice data automatically, routes approvals with reminders and escalations built in, and keeps your systems in sync without anyone copying data by hand. Incoming correspondence is read, categorized, and routed on its own, with only genuine exceptions left for a person, and reports compile and send themselves on schedule instead of being assembled manually. Staff time shifts from repetitive data entry to the decisions that actually need judgment.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WORKING WITH YOUR TEAM -->
+<section class="section" aria-labelledby="abudhabi-team-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="abudhabi-team-heading" style="margin-bottom:1.5rem;">Automation decisions still start with people</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">Before anything gets built, we sit down with whoever actually owns the workflow, not just whoever requested the project, to understand where the current process breaks down and what a fix has to hold up against internally. That conversation shapes the build far more than any template does.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1758518731706-be5d5230e5a5?w=800&q=80&auto=format&fit=crop" alt="Business team meeting around a table in a modern office" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ENTERPRISE & GOVERNMENT-ADJACENT CONSIDERATIONS -->
+<section class="section" aria-labelledby="enterprise-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="enterprise-heading">What Enterprise and Government-Adjacent Clients Ask Us For</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Abu Dhabi has a higher share of larger, regulated, and government-adjacent organizations than most cities we work in. These are the considerations that come up most often with that kind of client.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">fact_check</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Audit Trails</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Every automated decision and data change is logged, so you can show exactly what happened and when if a workflow is ever reviewed internally or externally.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">admin_panel_settings</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Role-Based Access</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Automation respects who's allowed to see or approve what, matching the access controls your organization already enforces internally.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">verified_user</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Vendor Security Review</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">We complete the security questionnaires and due diligence documentation that larger and government-adjacent organizations require before onboarding a vendor.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">dns</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Data Residency Options</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Where a workflow needs data to stay on infrastructure physically located in the UAE, we build around that requirement rather than around a default setup.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">rule</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Change Control</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Nothing changes in a live workflow without a documented approval step, in line with how regulated organizations expect vendor changes to be managed.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">description</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Procurement-Friendly Engagement</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">We can work within formal procurement processes, including scoped statements of work and fixed milestones, rather than only informal engagements.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PDPL & DATA RESIDENCY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="pdpl-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="pdpl-heading" style="margin-bottom:1rem;">PDPL and Data Residency, in Practical Terms</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">Abu Dhabi has a heavier concentration of government-adjacent, financial, and regulated entities than most emirates, which means data handling questions come up earlier in almost every project we scope here. The federal Personal Data Protection Law sets the baseline: it governs how personal data is collected, processed, and stored across the UAE, and any automation that touches customer or employee data needs to work inside those rules.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">In practice, that means we map exactly what data a workflow touches before we build it: what counts as personal data, where it currently lives, and where the automation would move it. Where possible, we keep that data inside systems you already control, your CRM or your accounting platform, rather than routing it through a third-party tool that adds another place for it to live.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">If your organization has a specific data residency requirement, data that must stay on servers physically located in the UAE, for example, we build the automation around infrastructure that meets that requirement rather than treating it as an afterthought. Government-adjacent entities in Abu Dhabi ask about this more than any other client type we work with, and it's a fair question to raise before a project starts, not after.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80&auto=format&fit=crop" alt="Compliance documentation and data handling review" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CROSS-LINKS -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="more-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="more-heading">More AI Automation Resources</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">apps</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Automation, Full Overview</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">What AI automation is, how it differs from Zapier and Make, and the full range of workflows we build across the UAE.</p>
+        <a href="/services/ai-automation" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">location_city</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Automation in Dubai</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Local implementation and on-site discovery calls from our Business Bay, Dubai team.</p>
+        <a href="/services/ai-automation/dubai" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">From Discovery to Live Automation</h2>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:0 auto 2.5rem;">
+      Most Abu Dhabi projects run on a similar timeline to our Dubai work: two to four weeks from first call to a live automation, sometimes longer if a compliance or security review adds a step at the start. The discovery call typically happens over video, though we'll make the drive for an in-person session when it's useful, particularly for larger or regulated engagements where stakeholders want to meet before committing to anything. Design and sign-off happen before anything touches your live systems, and the first version is always tested against real data, not sample data, before it goes anywhere near production.
+    </p>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- FIRST 90 DAYS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="ninety-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="ninety-heading" style="margin-bottom:1.5rem;">What to Expect in the First 90 Days After Launch</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        The first two weeks after an automation goes live are the ones that matter most. Real data behaves differently from test data, no matter how thorough the testing was, and the first edge case that wasn't in the sample set usually shows up during that window. We watch the workflow closely, not just for outright failures but for smaller mismatches, like a document format we hadn't seen before or an approval path that didn't match what the discovery session mapped out.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        By week four, most workflows have settled into a steady pattern and the exceptions slow down. That's usually when we check in again, over video or on-site if the project warrants it, and look at what the automation has actually processed: how much time it's saved, where it's still routing things to a person, and whether a documented audit trail is behaving the way your organization needs it to.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        By day 90, the workflow should be running with minimal oversight, and the post-launch monitoring period ends. If your organization wants ongoing maintenance beyond that, regular checks, updates as your systems change, or scoping the next workflow, we offer retainers built around that. For government-adjacent clients with formal review cycles, we can time those check-ins to match your internal reporting schedule instead of an arbitrary date.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Remote or on-site, we can start scoping your Abu Dhabi automation this week.</p>
+    <button onclick="openModal(this)" data-source="ai_automation_abu_dhabi_mid" class="btn-primary">Book an Abu Dhabi Discovery Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Automate Your Biggest Time Wasters?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Book a free discovery call. We'll identify your top 3 automation opportunities and estimate the time and cost savings, wherever in Abu Dhabi you're based.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_automation_abu_dhabi_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+.abudhabi-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+.abudhabi-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.abudhabi-toggle-btn.active { background:#006875; color:#fff; }
+.abudhabi-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const abudhabiToggleWrap = document.querySelector('.abudhabi-toggle');
+  if (abudhabiToggleWrap) {
+    const btns = abudhabiToggleWrap.querySelectorAll('.abudhabi-toggle-btn');
+    const panels = document.querySelectorAll('[data-abudhabi-tier-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-abudhabi-tier');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-abudhabi-tier-panel') !== key; });
+      });
+    });
+  }
+</script>
