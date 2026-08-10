@@ -1,0 +1,365 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../components/ProcessSteps.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Does this replace our CRM?", answer: "No. We build the automation on top of the CRM you already use. Your CRM stays the system of record; we add automation that keeps it in sync with your calendar, messaging tools, and the property portals, so your team stops updating the same information in three places." },
+  { question: "Can you sync listings across multiple property portals?", answer: "Yes. We connect your listing data to Property Finder, Bayut, Dubizzle, and your own website so a single update to a listing pushes out everywhere automatically, instead of your team re-entering the same details on each portal." },
+  { question: "How is this different from your AI for real estate agencies page?", answer: "This page covers the automation and workflow layer specifically: lead follow-up sequences, listing sync, document routing, and pipeline status syncs. Our industries page covers the full AI system we build for real estate agencies, including lead chatbots, CRM lead scoring, and market intelligence dashboards. Many agencies start with the automation layer here and add the fuller AI system later." },
+  { question: "What if our agents already follow up with leads manually?", answer: "Automation doesn't stop your agents from reaching out personally, it makes sure no lead goes untouched while they're busy with viewings or closing a deal. The automated follow-up runs in the background and hands off to your agent the moment a lead responds." },
+  { question: "Which real estate CRMs and tools do you build the automation around?", answer: "We've built automation around Salesforce, HubSpot, Zoho, and agency-specific real estate CRMs common in the UAE, along with Property Finder, Bayut, and Dubizzle for listing sync, and WhatsApp Business for lead messaging. If your agency uses a different combination of tools, we scope the integration during the discovery call and build around what's actually available through each platform's API." },
+  { question: "How long does it take to get an automation workflow live?", answer: "Most single-workflow projects, like lead follow-up or listing sync, go from workflow audit to live in two to four weeks, depending on how many systems need to connect and how much testing the volume of leads or listings requires. Multi-workflow projects that touch several systems at once take longer. We give a specific timeline after the discovery call, once we know your exact tool stack." },
+  { question: "Can the automation handle both sales and rental listings differently?", answer: "Yes. Sales and rental workflows usually need different follow-up cadences, different document sets (an SPA versus a tenancy contract, for example), and different portal formatting. We build separate rules for each listing type within the same automation, so a rental inquiry doesn't get a sales follow-up sequence and vice versa." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_automation_real_estate')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+const processSteps = [
+  { icon: "search", step: "Step 1", title: "Workflow Audit", description: "We map how leads, listings, and documents currently move through your agency and identify where manual steps are slowing things down." },
+  { icon: "edit", step: "Step 2", title: "Design & Plan", description: "We design the automation around your existing CRM, portal accounts, and messaging tools, and get your sign-off before building." },
+  { icon: "build", step: "Step 3", title: "Build & Test", description: "We build the automation and test it against real leads and listings until the workflow runs the way your team expects." },
+  { icon: "rocket_launch", step: "Step 4", title: "Go Live & Monitor", description: "Automation goes live across your tools. We monitor it for 90 days and adjust as your process evolves." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Automation Workflows for Real Estate',
+    url: 'https://lenooai.com/services/ai-automation/real-estate',
+    description: 'Automation workflows for UAE real estate agencies: lead follow-up sequences, listing sync across portals, document routing, and pipeline status syncs.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'Automation workflow projects for real estate agencies: pricing based on scope. Book a free discovery call for a quote.' },
+    serviceType: 'AI Automation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Automation', item: 'https://lenooai.com/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'Real Estate', item: 'https://lenooai.com/services/ai-automation/real-estate' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI Automation in Real Estate: Workflow Automation for Agencies | Lenoo AI"
+  description="Automation workflows for real estate agencies: lead follow-up, listing sync, and document processing automation. Built for Dubai agencies."
+  canonicalPath="/services/ai-automation/real-estate"
+  arPath="/ar/services/ai-automation/real-estate"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">AI Automation</a><span style="opacity:0.4;padding:0 4px;"> / </span>Real Estate</div>
+    <h1>AI Automation in Real Estate: <span class="gradient-text">Workflow Automation for Agencies</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      This page covers the automation workflows specifically: lead follow-up, listing sync across portals, document routing, and pipeline status syncs. For the full AI system we build for real estate agencies, including lead chatbots and CRM intelligence, see our <a href="/industries/real-estate" style="color:#a8f2ff;">real estate industry page</a>.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">Post-launch monitoring included with every project</span>
+      <span class="tchip">Refund guarantee if you're not satisfied with what we deliver</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_automation_real_estate_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#what-we-automate" class="btn-outline">See What We Automate ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1400&q=80&auto=format&fit=crop" alt="Real estate agent reviewing property listings and leads" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "9x", caption: "more likely a lead converts when contacted within 5 minutes instead of hours later (MIT)" },
+      { value: "90 days", caption: "post-launch monitoring included with every project" },
+      { value: "100%", caption: "refund guarantee if you're not satisfied with what we deliver" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHAT WE AUTOMATE -->
+<section id="what-we-automate" class="section" aria-labelledby="automate-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="automate-heading">Real Estate Automation Workflows We Build</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">The automation layer that keeps leads, listings, and documents moving without manual re-entry, connected to the tools your agency already uses.</p>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">forward_to_inbox</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Lead Follow-Up Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Automatic reply and follow-up sequences the moment an inquiry comes in, plus scheduled check-ins before and after viewings, so no lead sits untouched.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">The sequence itself runs across whichever channel the lead came in on, WhatsApp, email, or SMS, on a schedule your team sets: an instant acknowledgment, a follow-up if there's no reply within a set window, and a reminder ahead of a booked viewing. The moment a lead replies with an actual question, the automation hands off to your agent instead of continuing to send messages, so nobody gets an automated reply to a real conversation.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;"><strong>Real example:</strong> An agency that used to respond to inquiries the next morning now has every lead followed up with inside minutes, any time of day.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Second example:</strong> A weekend inquiry on a listing that used to wait until Monday now gets an instant reply and a viewing slot offered before the agent is even back at their desk.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">sync_alt</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Listing Sync Across Portals</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Update a listing once and it stays consistent across Property Finder, Bayut, Dubizzle, and your own site, no manual re-entry on each portal.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">This covers more than price changes. Status updates (available, under offer, sold or leased), new photos, and edited descriptions all sync out together, formatted to match what each portal expects, since Property Finder, Bayut, and Dubizzle each want fields laid out slightly differently. When a unit goes under offer, the automation pulls it down or updates its status everywhere at once, so you're never in the position of a portal still showing a unit as available after it's already gone.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;"><strong>Real example:</strong> A team that used to update pricing changes on four platforms by hand now updates one and the rest follow automatically.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Second example:</strong> A unit that went under offer on a Friday used to still show as available on two portals through the weekend. Now every portal reflects the status change within minutes.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">task_alt</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Document Processing Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">SPAs, NOCs, and tenancy contracts routed and collected through an approval workflow automatically, so paperwork moves between the right people without chasing.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Each document type follows its own routing path: an SPA goes to the buyer, the seller, and then to your compliance reviewer in sequence; an NOC request goes to the developer and tracks how long it's been sitting there so nobody forgets to follow up. The automation also tracks expiry dates on documents that need renewal, like NOCs or trade licenses tied to a listing, and flags them before they lapse instead of after someone notices a deal has stalled.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;"><strong>Real example:</strong> A deal that used to stall waiting on someone to forward the right document now moves through its steps on its own.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Second example:</strong> An NOC that used to sit unnoticed in a developer's inbox for two weeks now triggers an automatic follow-up after three days of no response.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">route</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Pipeline Status Syncs</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Keep your CRM, calendar, and messaging tools in sync automatically as a deal moves through its lifecycle, from first inquiry to closing.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">A viewing marked complete in the calendar updates the deal stage in the CRM without anyone touching it. A stage change in the CRM triggers the right notification to the assigned agent and, where relevant, an update to the client. If a deal sits in the same stage past a threshold your team sets, the automation flags it instead of letting it quietly stall, so a manager can see where things are stuck without chasing every agent for a status update.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;"><strong>Real example:</strong> An agency that once updated three systems by hand after every viewing now updates one, and status flows to the rest.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Second example:</strong> A sales manager who used to ask each agent for a weekly pipeline update now sees stalled deals flagged automatically, days before they'd have noticed on their own.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">event_available</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Viewing Scheduling &amp; Reminder Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Viewings get booked directly against your agents' actual calendar availability, with automatic reminders to both the lead and the agent, and a rebooking flow if a slot falls through.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Booking a viewing by phone tag or back-and-forth messages is one of the more time-consuming parts of a lead's early journey. Automation checks the assigned agent's calendar, offers open slots, and confirms the booking without anyone manually checking availability. Reminders go out to the lead ahead of time to cut down on no-shows, and if a lead cancels or doesn't confirm, the slot is automatically offered back for rebooking instead of just sitting empty on the calendar.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;"><strong>Real example:</strong> An agency that used to lose viewing slots to no-shows with no follow-up now automatically reaches out to reschedule instead of writing the lead off.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Second example:</strong> Booking a viewing used to mean three or four back-and-forth messages to find a time that worked. Now a lead picks a slot from live availability and the booking confirms itself.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- APPLICATIONS BY DEAL TYPE -->
+<section id="realestate-applications" class="section" aria-labelledby="realestate-apps-heading">
+  <div style="position:relative; overflow:hidden; height:220px; border-radius:20px; max-width:1280px; margin:0 auto 3.5rem;">
+    <img src="https://images.unsplash.com/photo-1714647212555-520e683791e9?w=1400&q=80&auto=format&fit=crop" alt="Real estate agent with a clipboard showing a furnished apartment to a young couple" loading="lazy" width="1400" height="220" style="width:100%; height:100%; object-fit:cover; object-position:center 25%;" />
+    <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.35));"></div>
+  </div>
+  <div class="container">
+    <div class="section-header">
+      <h2 id="realestate-apps-heading">Automation That Adapts to Sales or Leasing Deals</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">The workflows above run a little differently depending on whether an agent is closing a sale or signing a tenant, since the documents, portal statuses, and follow-up cadence aren't the same for both.</p>
+    </div>
+    <div class="realestate-tabs" role="tablist" aria-label="Deal type categories">
+      <button type="button" id="realestate-tab-sales" class="realestate-tab-btn active" data-realestate-tab="sales" role="tab" aria-selected="true" aria-controls="realestate-panel-sales">Sales Transactions</button>
+      <button type="button" id="realestate-tab-leasing" class="realestate-tab-btn" data-realestate-tab="leasing" role="tab" aria-selected="false" aria-controls="realestate-panel-leasing">Leasing &amp; Rentals</button>
+    </div>
+    <div class="bento-grid bento-grid-2" id="realestate-panel-sales" data-realestate-tab-panel="sales" role="tabpanel" aria-labelledby="realestate-tab-sales">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">description</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">SPA Routing to Compliance Sign-Off</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Once a lead becomes a signed deal, the Sale and Purchase Agreement moves from buyer to seller to your compliance reviewer in sequence, and the pipeline stage in your CRM updates the moment each signature step clears.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">sell</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Sold-Status Sync Across Portals</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">The moment a unit sells, its status updates to sold across Property Finder, Bayut, Dubizzle, and your own site at the same time, instead of sitting listed as available on a portal nobody got to update yet.</p>
+      </div>
+    </div>
+    <div class="bento-grid bento-grid-2" id="realestate-panel-leasing" data-realestate-tab-panel="leasing" role="tabpanel" aria-labelledby="realestate-tab-leasing" hidden>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">key</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Tenancy Contract &amp; NOC Routing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Tenancy contracts and NOC requests follow their own routing path with expiry tracking built in, so a renewal-bound document gets flagged before it lapses instead of after a landlord notices the deal has stalled.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">home_work</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Leased-Status Sync &amp; Viewing Reminders</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Rental listings sync as leased across every portal the moment a tenant signs, and viewing reminders go out to both lead and agent the same way they do for a sales viewing.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEAL CLOSING SYNC -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="realestate-close-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="realestate-close-heading" style="margin-bottom:1.5rem;">The Moment a Deal Closes, Every System Reflects It</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">A handshake and a set of keys are the visible part of closing a deal. Behind it, the listing needs to come down from three portals, the CRM stage needs to move to closed, and the next lead in the pipeline needs to know the unit is gone.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">The automation handles that second part the instant the first part happens, so a unit that's sold or leased stops showing as available anywhere your buyers and tenants are looking.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1781229771042-2a859f8f8022?w=800&h=600&q=80&auto=format&fit=crop" alt="Real estate agent and client shaking hands over a house model and keys on a desk" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VOLUME AND SCALE -->
+<section class="section" aria-labelledby="volume-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="volume-heading" style="margin-bottom:1.5rem;">Built for Launch Weeks, Not Just Quiet Months</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        A Dubai agency's lead and document volume isn't steady. An off-plan project launch can bring in hundreds of inquiries in a single day, and that same agency might see a fraction of that volume the following week. Manual follow-up processes tend to hold up fine on a quiet Tuesday and fall apart the moment a launch hits, which is usually the exact moment a fast response matters most, since early inquiries during a launch convert at a meaningfully higher rate than the same inquiry a week later.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Automated workflows don't have a capacity ceiling in the way a team answering inquiries manually does. Whether ten leads or four hundred come in on a launch day, each one gets the same instant acknowledgment and the same follow-up sequence, and each document, whether it's five NOCs a week or fifty during a busy transfer season, moves through the same routing path. The volume changes; the workflow logic doesn't.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        This also matters for listing sync during high-activity periods. When a developer releases a new phase of units, dozens of listings might need to go live across all three portals at once, with pricing and availability changing throughout the day as units sell. Manually updating four platforms in real time during that window isn't realistic for most teams. The automation applies the same update everywhere the moment your source data changes, so your portal listings stay accurate during the exact period when buyers are watching most closely.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SCOPE BOUNDARY -->
+<section class="section-sm" style="background:#f0f3ff;" aria-labelledby="boundary-heading">
+  <div class="container">
+    <div style="max-width:760px; margin:0 auto;">
+      <h2 id="boundary-heading" style="font-size:1.375rem; margin-bottom:1rem; text-align:center;">What Stays Manual, On Purpose</h2>
+      <p style="color:#42474e; font-size:1rem; line-height:1.8; margin-bottom:1rem;">
+        Every workflow on this page moves information or triggers a task, it doesn't make judgment calls about a buyer, a listing, or a negotiation. Deciding whether a lead is worth prioritizing, negotiating price, and evaluating a client's real intent still sit with your agents, and that's deliberate. Automation is reliable exactly because it's predictable: the same trigger produces the same action every time. The moment a workflow starts making a judgment call instead of following a rule, it stops being automation and needs a person, or a different kind of AI system, behind it.
+      </p>
+      <p style="color:#42474e; font-size:1rem; line-height:1.8; margin-bottom:1rem;">
+        If you're also looking for that judgment layer, lead scoring that ranks inquiries by how likely they are to convert, a chatbot that can answer property questions conversationally, or market intelligence that tracks pricing trends, that's a different kind of system than what's on this page, and it's what our <a href="/industries/real-estate#what-we-build">real estate industry page</a> covers.
+      </p>
+      <p style="color:#42474e; font-size:1rem; line-height:1.8;">
+        In practice, most agencies we work with start here, with the workflow layer, because it's the faster win: the rules are clear, the systems already exist, and the payoff shows up within weeks rather than months. Some stop there because the workflow layer covers what they actually needed. Others come back later once they've seen the automation working and want the judgment layer added on top. Either path is fine. We'd rather scope a project to what will actually get used than sell a bigger system upfront.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">From Workflow Audit to Live Automation</h2>
+    </div>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Tell us which stage of the deal is eating the most of your agents' time.</p>
+    <button onclick="openModal(this)" data-source="ai_automation_real_estate_mid" class="btn-primary">Book a Real Estate Automation Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- CALLOUT: FULL AI SYSTEM CROSS-LINK -->
+<section class="section-sm" aria-labelledby="callout-heading">
+  <div class="container">
+    <div style="max-width:760px; margin:0 auto; background:#f0f3ff; border:1px solid rgba(0,104,117,0.18); border-radius:20px; padding:2rem 2.25rem; text-align:center;">
+      <h2 id="callout-heading" style="font-size:1.25rem; margin-bottom:0.75rem;">Want the Full AI System, Not Just the Automation Layer?</h2>
+      <p style="color:#42474e; font-size:1rem; line-height:1.8; margin-bottom:1rem;">This page covers the automation workflows: follow-up, listing sync, document routing, and pipeline syncs. If you also want lead chatbots, CRM lead scoring, and market intelligence, that's the full system we cover on our industries page.</p>
+      <a href="/industries/real-estate#what-we-build" class="learn-link">AI Systems Built for Dubai Real Estate Agencies <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- CROSS-LINK: HUB -->
+<section class="section-sm" aria-labelledby="related-heading">
+  <div class="container">
+    <div style="max-width:720px; margin:0 auto; text-align:center;">
+      <h2 id="related-heading" style="font-size:1.25rem; margin-bottom:1rem;">Looking at Automation Across Your Whole Business?</h2>
+      <p style="color:#42474e; font-size:1rem; line-height:1.8;">
+        See our <a href="/services/ai-automation">AI automation hub</a> for the full range of workflows we automate across sales, operations, and admin, not just real estate.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Stop Chasing Leads, Listings &amp; Paperwork by Hand?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Book a free discovery call with our Dubai team. We'll identify the workflows costing your agency the most time and estimate the savings.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_automation_real_estate_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+.realestate-tabs { display:flex; gap:0.5rem; justify-content:center; margin-bottom:2rem; flex-wrap:wrap; }
+.realestate-tab-btn { padding:0.625rem 1.25rem; border-radius:100px; border:1px solid rgba(0,37,59,0.15); background:#fff; color:#42474e; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.realestate-tab-btn:hover { background:#e7eeff; }
+.realestate-tab-btn.active { background:#006875; border-color:#006875; color:#fff; }
+.realestate-tab-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+[data-realestate-tab-panel][hidden] { display:none; }
+</style>
+
+<script>
+  const realestateTabWrap = document.querySelector('.realestate-tabs');
+  if (realestateTabWrap) {
+    const btns = realestateTabWrap.querySelectorAll('.realestate-tab-btn');
+    const panels = document.querySelectorAll('[data-realestate-tab-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-realestate-tab');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-realestate-tab-panel') !== key; });
+      });
+    });
+  }
+</script>
