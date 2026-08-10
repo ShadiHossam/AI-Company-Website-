@@ -1,0 +1,415 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../components/ProcessSteps.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Do you work on-site in Dubai, or only remotely?", answer: "Both. We're based in Business Bay, so we can meet in person for the discovery session, walk through your workflows on-site, and check in at key milestones. Once a project is live, most support happens remotely because that's faster for everyone, but an on-site visit is always available if you'd rather talk face to face." },
+  { question: "Which Dubai industries do you automate for most?", answer: "Real estate and property management, trading and logistics, professional services (legal, accounting, consulting), hospitality, and retail. Dubai's mix of free zone startups and larger mainland companies means we see a wide range of workflows, but the pattern is usually the same: repetitive data entry, email handling, and approvals that eat up hours every week." },
+  { question: "Do you work with free zone companies?", answer: "Yes. Whether you're set up in DMCC, JAFZA, DIFC, or on the mainland, the automation work is the same: it connects to the tools you already use, not to your license type. We've built workflows for small free zone teams and larger mainland operations alike." },
+  { question: "Where is your team actually based?", answer: "Business Bay, Dubai. We're not a remote agency that lists a Dubai address for appearances. If you want to sit down with us before committing to anything, we can schedule that." },
+  { question: "How fast can we start after the discovery call?", answer: "Usually within a week. The discovery call gives us enough to scope the first automation and give you a fixed timeline. From there, build time depends on how many systems are involved, but most first workflows go live within 2 to 4 weeks." },
+  { question: "Do you automate WhatsApp Business communication?", answer: "Yes. WhatsApp Business API integration is one of the more common requests we get from Dubai clients, especially in real estate, hospitality, and retail, since so much day-to-day business messaging here happens on WhatsApp instead of email. We connect it the same way we connect email: read incoming messages, draft or send responses, and log the conversation into your CRM automatically." },
+  { question: "Can you automate processes that touch UAE government portals, like trade license renewals or Ejari?", answer: "Where a portal exposes something we can work with, a login flow, a document upload, an API, we can automate around it. Government and semi-government portals vary in how automatable they are; some support proper API access, others require a manual step we can't fully bypass. We'll tell you during discovery exactly how far automation can go for a specific portal rather than assume it's fully connectable." },
+  { question: "How do you handle VAT-related workflows in the automation you build?", answer: "We don't file VAT returns for you, that stays with your accountant or finance team. What we automate is the manual work that feeds into it: extracting invoice data, tagging transactions, and compiling the numbers your accountant needs each quarter, so the filing itself takes less digging through inboxes and spreadsheets." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_automation_dubai')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+const processSteps = [
+  { icon: "search", step: "Step 1", title: "Discovery, On-Site or Remote", description: "We meet in Business Bay or over video call to map your current workflows and identify the automations with the fastest payback." },
+  { icon: "edit", step: "Step 2", title: "Design & Plan", description: "We design the automation logic, define triggers and outputs, and get your sign-off before writing a line of code." },
+  { icon: "build", step: "Step 3", title: "Build & Test", description: "We build the automation and test it against your real data before it ever touches a live workflow." },
+  { icon: "rocket_launch", step: "Step 4", title: "Go Live & Monitor", description: "The automation goes live. We monitor it for 90 days, fix anything that needs fixing, and scope the next workflow." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Automation in Dubai',
+    url: 'https://lenooai.com/services/ai-automation/dubai',
+    description: 'AI automation implementation for Dubai businesses: workflow design, tool integration, and ongoing support from a Dubai-based team.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'Dubai, United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'AI automation projects for Dubai businesses: pricing based on workflow complexity and scope. Book a free discovery call for a quote.' },
+    serviceType: 'AI Automation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Automation', item: 'https://lenooai.com/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'Dubai', item: 'https://lenooai.com/services/ai-automation/dubai' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI Automation Agency in Dubai | Lenoo AI"
+  description="AI automation implementation for Dubai businesses: workflow design, tool integration, and ongoing support from a Dubai-based team."
+  canonicalPath="/services/ai-automation/dubai"
+  arPath="/ar/services/ai-automation/dubai"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">AI Automation</a><span style="opacity:0.4;padding:0 4px;"> / </span>Dubai</div>
+    <h1>AI Automation Agency in <span class="gradient-text">Dubai</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      Lenoo AI is based in Business Bay, Dubai. Whether your company is set up on the mainland or in a free zone like DMCC, JAFZA, or DIFC, we can sit down with your team in person to map out the workflows worth automating, then build it on the tools you already run. No offshore account manager relaying messages back and forth.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">On-site discovery calls available in Dubai</span>
+      <span class="tchip">Refund guarantee if you're not satisfied with what we deliver</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_automation_dubai_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#what-we-automate" class="btn-outline">See What We Automate ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1400&q=80&auto=format&fit=crop" alt="AI workflow automation for a Dubai business team" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 30%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "40%", caption: "of work tasks in most UAE businesses are automatable with existing AI. Most haven't started." },
+      { value: "90 days", caption: "post-launch monitoring included on every Dubai project" },
+      { value: "100%", caption: "refund guarantee if you're not satisfied with what we deliver" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY LOCAL -->
+<section class="section" aria-labelledby="explain-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="explain-heading" style="margin-bottom:1.5rem;">Why Work With a Dubai-Based AI Automation Agency?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        A lot of automation vendors sell into Dubai from somewhere else. That works fine until something breaks at 4pm on a Wednesday and you're waiting on a reply from a different time zone. We're in Business Bay. If you want to talk through a problem in person, or bring us in for a working session with your team, that's a short drive, not a flight.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Being local also means we understand how business actually runs here: the Sunday-to-Thursday week, the split between free zone and mainland paperwork, VAT filing cycles, and the fact that a lot of Dubai companies run lean and can't afford a dedicated ops hire just to keep systems talking to each other. For a full breakdown of what AI automation is and how it's different from tools like Zapier or Make, see our <a href="/services/ai-automation">main AI automation page</a>. This page focuses on what that looks like for a business operating in Dubai specifically.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Dubai's business mix is unusually wide for a city this size: family-run trading houses that have operated for decades sit next to two-year-old free zone startups, and both sit next to regional branch offices of larger multinational companies. Each of those brings a different starting point. A founder-run business often has no ops team at all, so automation has to be simple enough for the owner to understand at a glance. A branch office usually already runs on a global CRM or ERP with rules set somewhere else, so the work is about building automation that fits inside those constraints rather than around them. We scope every project around which of these describes your business, not a generic template.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- DUBAI SKYLINE BAND -->
+<div style="position:relative; overflow:hidden; height:260px; margin:0 0 -1px;">
+  <img src="https://images.unsplash.com/photo-1580674684081-7617fbf3d745?w=1400&q=80&auto=format&fit=crop" alt="Downtown Dubai skyline with the Burj Khalifa rising above the business district" loading="lazy" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.35) 0%,transparent 55%);"></div>
+</div>
+
+<!-- TECH STACKS -->
+<section class="section" aria-labelledby="stack-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="stack-heading">Tools We Typically Integrate With for Dubai Businesses</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">A snapshot of what we most often connect automation to across Dubai companies. If your stack isn't listed, ask us; we build on top of whatever you already run.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">contacts</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">CRM &amp; Sales</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Zoho CRM, HubSpot, Salesforce, and Pipedrive show up across most industries here, from real estate brokerages to trading firms.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">receipt_long</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Accounting &amp; Finance</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Zoho Books, QuickBooks, Xero, and Tally are the most common systems we connect invoice and reconciliation automation to.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">chat</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Communication</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">WhatsApp Business, Gmail, Outlook, and Microsoft Teams are where most inbound customer and team communication actually happens.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">apartment</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Real Estate Platforms</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Property Finder and Bayut listing feeds, tenancy paperwork, and portal-driven lead sources for Dubai brokerages and property managers.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">dashboard</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Project &amp; Ops</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Monday.com, Asana, Notion, and Google Workspace, connected so status updates and handoffs stop living in someone's head.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">storefront</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Retail &amp; E-Commerce</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Shopify, Salla, and common point-of-sale systems, synced with inventory and order data so nothing needs updating twice.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT WE AUTOMATE -->
+<section id="what-we-automate" class="section" style="background:#f0f3ff;" aria-labelledby="automate-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="automate-heading">AI Automation We Build for Dubai Businesses</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">The same automation categories we build for any client, adapted to what actually shows up in Dubai companies day to day.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">home_work</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Real Estate &amp; Property Management</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Lead follow-up, listing sync across portals, and tenant document processing, automated instead of chased down manually.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A Dubai brokerage that used to lose leads over the weekend now has every inbound inquiry qualified and followed up within minutes, any day of the week.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">local_shipping</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Trade, Logistics &amp; Documentation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Bills of lading, customs paperwork, and supplier invoices read, checked, and posted into your system without manual entry.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A trading company cut the time spent matching invoices to purchase orders from a full day a week to under an hour.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">business_center</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Free Zone &amp; Mainland Business Admin</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">License renewal reminders, contract generation, and compliance checklists that run themselves instead of living in someone's inbox.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A DMCC-registered consultancy stopped tracking renewal dates in a spreadsheet; the system now flags them automatically, weeks in advance.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">hotel</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Hospitality &amp; Guest Communication</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Booking confirmations, guest questions, and review responses handled automatically, with escalation to a human when it actually matters.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A short-term rental operator automated 80% of routine guest messages, freeing staff to handle the ones that need judgment.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">calculate</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Professional Services Client Intake</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Legal, accounting, and consulting firms use automation to intake new clients, chase missing documents, and generate status reports.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> An accounting firm automated client document collection, cutting the back-and-forth email chain almost entirely.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Retail &amp; E-Commerce Operations</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Order sync, inventory updates, and customer service replies across your storefront and marketplaces, kept in sync automatically.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A Dubai retailer selling on three platforms stopped updating stock counts by hand across each one separately.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MANUAL VS AI AUTOMATION TOGGLE -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="dubai-toggle-heading">
+  <div class="container" style="max-width:800px;">
+    <div class="section-header">
+      <h2 id="dubai-toggle-heading">Manual Process vs. With AI Automation</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">What changes for the workflows above once AI takes the repetitive first pass.</p>
+    </div>
+    <div class="dubai-toggle" role="tablist" aria-label="Process comparison">
+      <button type="button" id="dubai-tier-manual" class="dubai-toggle-btn active" data-dubai-tier="manual" role="tab" aria-selected="true" aria-controls="dubai-panel-manual">Manual Process</button>
+      <button type="button" id="dubai-tier-ai" class="dubai-toggle-btn" data-dubai-tier="ai" role="tab" aria-selected="false" aria-controls="dubai-panel-ai">With AI Automation</button>
+    </div>
+    <div class="card" id="dubai-panel-manual" data-dubai-tier-panel="manual" role="tabpanel" aria-labelledby="dubai-tier-manual">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Weekend leads sit unread until someone gets back to a desk on Sunday. Invoices and bills of lading get keyed in and matched to purchase orders by hand. Free zone and mainland renewal dates live in a spreadsheet someone has to remember to check, guest messages get answered one at a time, and client documents get chased over a long back-and-forth email thread. Stock counts get updated separately on every storefront and marketplace.</p>
+    </div>
+    <div class="card" id="dubai-panel-ai" data-dubai-tier-panel="ai" role="tabpanel" aria-labelledby="dubai-tier-ai" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Inbound leads are qualified and followed up within minutes, any day of the week. Invoice and shipping data is extracted and matched automatically, and renewal dates get flagged weeks in advance instead of living in a spreadsheet. Guest questions and client document requests are handled automatically, with a person looped in only when something actually needs judgment, and stock counts sync across every platform on their own.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WORKING WITH YOUR TEAM -->
+<section class="section" aria-labelledby="dubai-team-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="dubai-team-heading" style="margin-bottom:1.5rem;">Automation decisions still start with people</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">Before anything gets built, we sit down with whoever actually owns the workflow, whether that's the founder or the person handling it day to day, to understand where the current process breaks down and what a fix needs to hold up against once it's live. That conversation shapes the build far more than any template does.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1552581234-26160f608093?w=800&q=80&auto=format&fit=crop" alt="Business team meeting around a table with laptops in a modern office" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FREE ZONE VS MAINLAND -->
+<section class="section" aria-labelledby="freezone-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="freezone-heading" style="margin-bottom:1rem;">Free Zone or Mainland: What Actually Changes for Automation</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">The automation itself doesn't care which license you hold. What changes is the compliance context we build around it, and it's worth knowing the difference before you scope a project.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Mainland companies</strong> are licensed through the Department of Economic Development and can trade freely across the UAE. If your business operates multiple branches under one mainland license, invoicing and reporting workflows often need to account for branch-level detail, and we build that into the automation rather than bolt it on afterward.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Free zone companies</strong> operate under their own zone's rules and, depending on the zone, may need a local distributor or agent to trade directly onshore. That doesn't affect how automation connects to your CRM or accounting system, but it does affect what fields and checks a workflow needs, for instance flagging which invoices require distributor details attached before they go out.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>DIFC-registered companies</strong> are a case worth calling out specifically: DIFC operates under its own common-law legal system, including its own data protection law, separate from the federal Personal Data Protection Law that applies onshore. If your company is DIFC-registered, that changes which data handling rules govern any automation that touches personal data, and we scope the project with that in mind from the start.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80&auto=format&fit=crop" alt="Dubai business district skyline" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">From Discovery to Live Automation</h2>
+    </div>
+    <div style="border-radius:20px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 20px 48px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&q=80&auto=format&fit=crop" alt="Analyst mapping an automation workflow at a desk in Dubai" loading="lazy" width="1200" height="320" style="width:100%; height:clamp(180px, 26vw, 320px); object-fit:cover; display:block;" />
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:0 auto 2.5rem;">
+      A typical Dubai project runs on roughly this timeline. Week one is the discovery session in Business Bay or over video call, where we map the workflow end to end and agree on scope. Week two is design: we lay out the exact triggers, logic, and outputs, and get your sign-off before any build work touches your systems. Weeks three and four are build and test, run against real data from your business rather than sample data, so what goes live has already handled the messy cases your actual workflow throws at it. For simpler single-workflow projects, that timeline compresses; for automations touching several systems at once, it can run a little longer, and we tell you which one you're in before you commit to anything.
+    </p>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- CROSS-LINKS -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="more-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="more-heading">More AI Automation Resources</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">apps</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Automation, Full Overview</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">What AI automation is, how it differs from Zapier and Make, and the full range of workflows we build across the UAE.</p>
+        <a href="/services/ai-automation" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">location_city</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Automation in Abu Dhabi</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Process automation and system integration for Abu Dhabi companies, served remotely or on-site from our Dubai base.</p>
+        <a href="/services/ai-automation/abu-dhabi" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">build</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Tools We Implement</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Zapier, Make, n8n, UiPath, Power Automate, and more: see what each tool is best at and which one fits your stack.</p>
+        <a href="/services/ai-automation/tools" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FIRST 90 DAYS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="ninety-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="ninety-heading" style="margin-bottom:1.5rem;">What to Expect in the First 90 Days After Launch</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        The first two weeks after an automation goes live are the ones that matter most. Real data behaves differently from test data, no matter how thorough the testing was, and the first edge case that wasn't in the sample set usually shows up during that window. We watch the workflow closely, not just for outright failures but for smaller mismatches, like an invoice format we hadn't seen before or a lead source the routing logic didn't expect.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        By week four, most workflows have settled into a steady pattern and the exceptions slow down. That's usually when we sit down again, in person in Business Bay or over a call, and look at what the automation has actually processed: how much time it's saved, where it's still routing things to a person, and whether it's worth expanding to a second workflow. A lot of our second and third projects with a client come out of this conversation rather than a fresh sales pitch.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        By day 90, the workflow should be running with minimal oversight, and the post-launch monitoring period ends. If you want ongoing maintenance beyond that, someone checking the automation regularly, updating it as your tools change, or building the next one, we offer retainers scoped to that. Plenty of Dubai clients don't need one; the automation just keeps running.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Based in Business Bay and ready to map your workflow this week.</p>
+    <button onclick="openModal(this)" data-source="ai_automation_dubai_mid" class="btn-primary">Book a Dubai Discovery Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Automate Your Biggest Time Wasters?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Book a free discovery call with our Business Bay team. We'll identify your top 3 automation opportunities and estimate the time and cost savings.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_automation_dubai_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+.dubai-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+.dubai-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.dubai-toggle-btn.active { background:#006875; color:#fff; }
+.dubai-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const dubaiToggleWrap = document.querySelector('.dubai-toggle');
+  if (dubaiToggleWrap) {
+    const btns = dubaiToggleWrap.querySelectorAll('.dubai-toggle-btn');
+    const panels = document.querySelectorAll('[data-dubai-tier-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-dubai-tier');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-dubai-tier-panel') !== key; });
+      });
+    });
+  }
+</script>
