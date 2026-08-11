@@ -1,0 +1,333 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import { getAutomationTool } from "../../../../data/automationTools";
+
+const tool = getAutomationTool('boomi');
+const slugKey = tool.slug.replace(/-/g, '_');
+
+let faqItems = tool.faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', `ai_automation_tools_${slugKey}`)
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: tool.h1,
+    url: `https://lenooai.com/services/ai-automation/tools/${tool.slug}`,
+    description: tool.metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'Enterprise automation implementation projects: pricing based on scope, systems involved, and governance requirements. Book a consultation for a quote.' },
+    serviceType: tool.name,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Automation', item: 'https://lenooai.com/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'Tools', item: 'https://lenooai.com/services/ai-automation/tools' },
+      { '@type': 'ListItem', position: 4, name: tool.name, item: `https://lenooai.com/services/ai-automation/tools/${tool.slug}` },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title={tool.metaTitle}
+  description={tool.metaDescription}
+  canonicalPath={`/services/ai-automation/tools/${tool.slug}`}
+  arPath={`/ar/services/ai-automation/tools/${tool.slug}`}
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;" aria-label="Breadcrumb">
+      <a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      <a href="/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">AI Automation</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      <a href="/services/ai-automation/tools" style="color:inherit;text-decoration:none;opacity:0.65;">Tools</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      {tool.name}
+    </div>
+    <div style="margin-bottom:1.5rem;">
+      <img src={`https://cdn.simpleicons.org/${tool.logoSlug}/${tool.logoColor}`} alt={`${tool.name} logo`} width="56" height="56" loading="eager" fetchpriority="high" style="background:#fff;border-radius:16px;padding:10px;box-shadow:0 8px 24px rgba(0,59,92,0.18);" />
+    </div>
+    <h1>{tool.h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {tool.heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source={`ai_automation_tools_${slugKey}_hero`} class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?w=1400&q=80&auto=format&fit=crop" alt="Close-up of an integration platform dashboard screen showing live performance metric tiles" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 45%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHAT IS -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">What Is {tool.name}?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.whatIs}
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        {tool.whatIsExtra}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATION ANGLE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="angle-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="angle-heading" style="margin-bottom:1.5rem;">How Lenoo AI Uses {tool.name} for UAE Enterprise Automation</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.integrationAngle}
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        {tool.integrationAngleExtra}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FREE VS PAID -->
+<section class="section" aria-labelledby="boomi-pricing-heading">
+  <div class="container" style="max-width:800px;">
+    <h2 id="boomi-pricing-heading" style="text-align:center; margin-bottom:1.5rem;">Boomi Free vs Paid</h2>
+    <div class="boomi-toggle" role="tablist" aria-label="Pricing tier">
+      <button type="button" id="boomi-tier-free" class="boomi-toggle-btn active" data-boomi-tier="free" role="tab" aria-selected="true" aria-controls="boomi-panel-free">Free (Trial)</button>
+      <button type="button" id="boomi-tier-paid" class="boomi-toggle-btn" data-boomi-tier="paid" role="tab" aria-selected="false" aria-controls="boomi-panel-paid">Paid (Subscription)</button>
+    </div>
+    <div class="card" id="boomi-panel-free" data-boomi-tier-panel="free" role="tabpanel" aria-labelledby="boomi-tier-free">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Boomi doesn't run a permanent free community edition the way some no-code tools do. What it offers is a time-limited free trial of the full Enterprise Platform, commonly quoted at around 30 days, enough to build and test a real integration process, including the local Atom runtime, before you commit to anything. We use that trial window during discovery to validate an approach against your actual systems before scoping the paid engagement.</p>
+    </div>
+    <div class="card" id="boomi-panel-paid" data-boomi-tier-panel="paid" role="tabpanel" aria-labelledby="boomi-tier-paid" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Production use requires a paid subscription edition (Integration Professional, Enterprise, or Enterprise Plus, plus add-ons like API Management and Data Hub), and Boomi doesn't publish list prices for these tiers, every quote is scoped against your actual connector count, message volume, and environments. Paid tiers unlock ongoing production support, more connectors, and the governance controls a regulated UAE enterprise needs before an integration touches live data. We get a quote against your scope rather than guessing at a number.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO IT'S FOR -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">Is {tool.name} Right for Your Enterprise?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.whoItsFor}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ENGAGEMENT PHASES -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="engagement-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="engagement-heading" style="margin-bottom:1.5rem;">What a Typical Boomi Enterprise Engagement Looks Like</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.75rem;">
+        A Boomi engagement is really an exercise in mapping a hybrid environment before building anything, since the on-premise systems involved usually accumulated years of small inconsistencies that a straightforward integration would otherwise copy forward into the new system.
+      </p>
+      <div style="display:flex; flex-direction:column; gap:1.5rem;">
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">1. Discovery and Data Mapping</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">We start by identifying exactly what data lives where, which system is the source of truth for each piece of it, and where the same field has drifted out of sync across systems over time. For a legacy ERP that has run for a decade or more, this phase alone often surfaces integration risks no one on the current team was aware of.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">2. Pilot Integration</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">We build the first integration process against the highest-value connection, usually the one causing the most manual work today, using Boomi's local Atom runtime where an on-premise system needs to stay inside your network rather than exposed directly to the internet.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">3. Architecture and Compliance Review</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">Before extending the pattern further, we review the integration architecture against your compliance requirements: where the Atom runtime sits, what gets logged, and how a bad record gets flagged rather than silently corrupting data on the other side. For UAE enterprises with data residency requirements, this is where we confirm the architecture actually satisfies them, not just that the integration technically works.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">4. Phased Rollout Across Systems</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">With the architecture validated, we connect additional systems in priority order, reusing the same validation and error handling patterns established in the pilot so each new connection takes less time than the last.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">5. Ongoing Management</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">We monitor the Atom runtime and integration processes after launch, and offer maintenance retainers for adding new connections or adjusting the mapping logic as the source systems themselves change over time.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">Boomi vs. MuleSoft</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Both are enterprise iPaaS platforms with strong integration credentials, but they are built for different scales of problem. Boomi's local Atom runtime and lighter setup make it a faster route to bridging a handful of on-premise systems with cloud applications, without needing to design a full API architecture up front. <a href="/services/ai-automation/tools/mulesoft">MuleSoft's</a> API-led approach, layering system, process, and experience APIs, pays off when an enterprise is connecting dozens of systems over a multi-year roadmap, since every new integration after the first few reuses APIs that already exist instead of starting from scratch. If you need to connect a legacy ERP to two or three cloud tools, Boomi usually gets there faster and at lower cost. If you are building an integration program across an entire regulated enterprise for the next several years, MuleSoft's architecture is built for exactly that scale.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- UAE CONTEXT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="uae-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="uae-heading" style="margin-bottom:1.5rem;">Where Boomi Fits in UAE Enterprises</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Boomi tends to show up in UAE enterprises running a core ERP or database on infrastructure that predates the cloud era: banking back offices, government-adjacent entities, and large operational businesses, where replacing the core system outright is not on the table but connecting it to modern cloud finance, CRM, or reporting tools is. The local Atom runtime is usually the deciding factor: it lets that legacy system stay inside your network exactly as it is today, rather than requiring it to be exposed directly to the internet before anything else can connect to it. That pattern repeats across sectors that grew quickly before cloud-first architecture became the default, where the core system stayed in place because replacing it was never worth the disruption, only connecting it to something newer was.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SCOPING -->
+<section class="section" aria-labelledby="scoping-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="scoping-heading" style="margin-bottom:1.5rem;">How We Scope a Boomi Project</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Boomi project cost and timeline come down mostly to how many systems need to connect, how messy the existing data mapping already is, and whether the integration needs to run through the local Atom runtime for data residency reasons. A single well-defined connection between two systems, with reasonably clean data, can go live within a few weeks. A larger program connecting several legacy and cloud systems, with real data inconsistencies to resolve along the way, gets phased so the highest-value connection ships first while the rest of the integration work continues in parallel rather than holding up the whole program until everything is ready at once.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PITFALLS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="pitfalls-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="pitfalls-heading" style="margin-bottom:1.5rem;">Where Boomi Integrations Typically Go Wrong</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        The most common issue we see in Boomi projects that predate us is data mapping done too quickly: an integration goes live assuming one system is the source of truth for a field, when in practice the data has drifted and neither system is fully correct anymore. That mistake gets copied into the new integration and often makes the inconsistency worse, not better. The second common issue is skipping validation on the assumption that the source data is always clean; it rarely is, especially in a legacy system that has accumulated years of manual workarounds. We build validation and error handling into every integration process from the first one, even when it adds a bit of time to the pilot. A third, quieter issue shows up months later: nobody left on the team fully understands why a mapping rule exists, because it was never written down. We document the reasoning behind each transformation rule as we build it, not just the rule itself, so a future change does not undo a fix someone made for a reason that is no longer visible.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- VS NO-CODE -->
+<section class="section" aria-labelledby="vsnocode-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vsnocode-heading" style="margin-bottom:1.5rem;">Boomi vs. No-Code Automation Tools</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        A no-code platform like Make or n8n can connect two cloud apps quickly, but most were not built to reach into an on-premise ERP or a legacy database sitting behind your firewall without exposing that system to the internet first. Boomi's local Atom runtime is built specifically for that case: it runs inside your network and talks to the legacy system directly, then pushes the transformed data out to whatever cloud tool needs it. If both systems in your integration already live in the cloud, a lighter no-code tool is usually the faster and cheaper build. Boomi earns its place specifically at the hybrid boundary, where a legacy system needs to reach the cloud without being exposed directly to it.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="what-we-build" class="section" aria-labelledby="usecases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="usecases-heading">What We Build With {tool.name}</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Representative engagements, scoped individually based on your systems and processes.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {tool.useCases.map((uc) => (
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Bridging a legacy ERP to the cloud? Tell us what you're working with.</p>
+    <button onclick="openModal(this)" data-source="ai_automation_tools_boomi_mid" class="btn-primary">Book an Enterprise Automation Consultation</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Enterprise Automation Consultation</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Put {tool.name} to Work for Your Enterprise?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Book a consultation with our Dubai team. We'll scope the integration, the systems involved, and the governance your project needs.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ Enterprise-scale scoping</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source={`ai_automation_tools_${slugKey}_cta`} class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book an Enterprise Automation Consultation</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+.boomi-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+.boomi-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.boomi-toggle-btn.active { background:#006875; color:#fff; }
+.boomi-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const boomiToggleWrap = document.querySelector('.boomi-toggle');
+  if (boomiToggleWrap) {
+    const boomiBtns = boomiToggleWrap.querySelectorAll('.boomi-toggle-btn');
+    const boomiPanels = document.querySelectorAll('[data-boomi-tier-panel]');
+    boomiBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-boomi-tier');
+        boomiBtns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        boomiPanels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-boomi-tier-panel') !== key; });
+      });
+    });
+  }
+</script>
