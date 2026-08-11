@@ -1,0 +1,274 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import { AUTOMATION_TOOLS } from "../../../data/automationTools";
+
+const teasers: Record<string, string> = {
+  zapier: "The fastest way to connect apps and automate everyday, linear workflows. Most UAE teams already have a few Zaps running somewhere, and we build on what exists rather than starting over.",
+  n8n: "Open-source and self-hostable, built for custom code steps and AI agent workflows. It's the platform we reach for when data residency matters or a workflow needs to reason, not just trigger.",
+  make: "Visual, branching scenarios for workflows that need more than a straight line. The flowchart view keeps complex, multi-path logic readable in a way a long list of steps doesn't.",
+  "power-automate": "Native automation for businesses already running on Microsoft 365. It connects to Outlook, SharePoint, and Teams under your existing permissions, so there's no separate login to manage.",
+  uipath: "The market leader in RPA, for high-volume, rules-based back-office work. It handles legacy systems with no modern API by operating the same screens a human employee would use.",
+  "automation-anywhere": "A cloud-native RPA platform for enterprises managing bots centrally. Its Automation 360 console simplifies rollout across multiple offices compared to older, on-premise-first architectures.",
+  workato: "Governed, IT-approved automation recipes built for larger organizations. IT keeps oversight over what moves where, while department teams still build their own recipes within set guardrails.",
+  boomi: "Integration built for bridging legacy, on-premise systems with modern cloud apps. Its local Atom runtime connects an on-premise database to the cloud without exposing it to the internet directly.",
+  mulesoft: "API-led connectivity for enterprises in regulated industries. It organizes integrations into reusable API layers, so each new connection gets faster to build than the last.",
+};
+
+const noCodeTools = AUTOMATION_TOOLS.filter((t) => t.category === "no-code");
+const enterpriseTools = AUTOMATION_TOOLS.filter((t) => t.category === "enterprise");
+
+const fallbackFaqs = [
+  { question: "How do you decide which automation tool to use?", answer: "We look at what you already run, how technical your team is, whether you need self-hosting or compliance controls, and how complex the underlying logic needs to be. A small team on Microsoft 365 usually gets Power Automate. A team that has outgrown Zapier and needs custom code or AI agent logic gets n8n. An enterprise connecting dozens of systems in a regulated industry gets MuleSoft or Boomi. We recommend the tool that fits the job, not the one we'd rather sell." },
+  { question: "Can you switch us from one automation tool to another?", answer: "Yes. We audit your existing automations, rebuild the ones worth keeping on the new platform, and validate the new setup against the old before cutover, so nothing breaks in the process." },
+  { question: "Do you build custom automation without any of these named tools?", answer: "Yes. Some workflows are better served by a custom-coded integration than any off-the-shelf platform, especially when performance at scale, cost, or a specific requirement rules out a no-code tool. We'll tell you honestly when that's the better route." },
+  { question: "Do we need to already own a license for one of these tools?", answer: "No. If you don't have a tool yet, we help you pick one and set it up as part of the project. If you already have Zapier, Make, n8n, or another platform running, we build inside what you have." },
+  { question: "How much does an automation project typically cost?", answer: "It depends entirely on the platform and the complexity of what you're automating. A single Zapier workflow with a few steps costs far less than a multi-branch Make scenario or a UiPath bot automating a legacy system. We scope and quote every project individually after a discovery call, rather than publishing a flat rate that wouldn't reflect what your workflow actually needs." },
+  { question: "Do you only build automations, or do you also handle ongoing maintenance?", answer: "Both. Every project we deliver includes a post-launch monitoring window, and we offer maintenance retainers after that for updates, new workflow additions, and fixing anything that breaks when a connected app changes on its end." },
+  { question: "Can one workflow use more than one of these tools at the same time?", answer: "Yes, and it happens more often than you'd expect. A common pattern is a Power Automate flow inside Microsoft 365 triggering a webhook into an n8n workflow that runs an AI agent step, then passes a result back. We design across tool boundaries when that's genuinely the best way to solve the problem." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_automation_tools')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Automation Tools & Implementation',
+    url: 'https://lenooai.com/services/ai-automation/tools',
+    description: 'The automation and RPA tools Lenoo AI implements for UAE clients: Zapier, n8n, Make, Power Automate, UiPath, and more.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'Automation tool implementation: pricing based on the platform and scope of work. Book a free discovery call for a quote.' },
+    serviceType: 'AI Automation Tool Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Automation', item: 'https://lenooai.com/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'Tools', item: 'https://lenooai.com/services/ai-automation/tools' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI Automation Tools We Implement | Lenoo AI"
+  description="The automation and RPA tools Lenoo AI implements for UAE clients: Zapier, n8n, Make, Power Automate, UiPath, and more."
+  canonicalPath="/services/ai-automation/tools"
+  arPath="/ar/services/ai-automation/tools"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">AI Automation</a><span style="opacity:0.4;padding:0 4px;"> / </span>Tools</div>
+    <h1>AI Automation Tools <span class="gradient-text">We Implement</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      We're not tied to one platform. Lenoo AI implements automation across the no-code, RPA, and integration tools listed below, and picks the one that fits your business rather than the one we'd rather sell.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ai_automation_tools_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#no-code" class="btn-outline">See the Tools ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1753715613388-7e03410b1dce?w=1400&q=80&auto=format&fit=crop" alt="Hand sketching an automation workflow diagram on a tablet screen, with code visible on a monitor in the background" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 68%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- INTRO -->
+<section class="section" aria-labelledby="intro-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="intro-heading" style="margin-bottom:1.5rem;">One Implementation Partner, Many Tools</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Most automation agencies push a single platform because that's what they know, or what they get a referral fee for. We build automation for a living, not software licenses, so we start from your workflow and your existing stack, then pick the tool that fits: a no-code platform for a straightforward workflow, a self-hosted engine when data residency matters, or an enterprise RPA platform when you're automating a legacy system with no API.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        That means we're not selling you Zapier, or n8n, or UiPath. We're selling the outcome: a workflow that runs on its own, built on whichever tool gets you there fastest and holds up over time. Below is the current list of platforms we implement, each with its own page covering how we use it and what we typically build.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        In practice, that decision happens during discovery, before we write a single workflow step. We ask what systems you already run, whether any of them lack a modern API, how many people need to understand or edit the automation after we hand it over, and whether compliance or data residency rules apply to what's being automated. Those answers usually point clearly at one category of tool, and often at one specific platform within it, well before we get to the technical design. If two tools would genuinely both work, we say so and let cost and your team's existing skills settle it, rather than pretending there's only ever one right answer.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORY COMPARISON -->
+<section class="section" aria-labelledby="category-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="category-heading" style="margin-bottom:1.5rem;">No-Code vs. Enterprise RPA: Which Category Fits Your Business</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        No-code and iPaaS platforms like Zapier, n8n, Make, and Power Automate fit businesses with a handful of clear processes to automate and no need for a dedicated automation team afterward. They connect through modern APIs, go live in days or weeks rather than months, and are built so a non-technical team member can read what a workflow does and make small changes without calling us first. That makes them the right starting point for most small and mid-sized UAE businesses, and for a large share of the mid-market too.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Enterprise RPA and integration platforms like UiPath, Automation Anywhere, Workato, Boomi, and MuleSoft earn their place in a different situation: high-volume, rules-based processes running on legacy or on-premise systems with no modern API to connect through, or an organization connecting dozens of systems where governance, audit trails, and centralized oversight matter as much as the automation itself. These platforms cost more to license and take longer to implement properly, so we only recommend them when the underlying problem actually requires that level of infrastructure.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        A few questions tend to settle which category fits. How many people on your team need to build or maintain automations, and how technical are they? Does your core software expose a modern API, or only a screen for a human to click through? Do you operate under regulatory requirements that demand audit trails and centralized approval before an automation goes live? And how many separate systems does the process actually touch, one or two, or a dozen? A small operations team automating lead routing between a CRM and WhatsApp rarely needs RPA. A bank automating data entry into a legacy core banking system with no API rarely gets there with a no-code tool alone. Most businesses land clearly on one side of that line once we walk through it together on a discovery call.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TOOL CATEGORIES (TABBED) -->
+<section id="no-code" class="section" style="background:#f0f3ff;" aria-labelledby="tools-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="tools-heading">AI Automation Tools by Category</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Browse each category below, or jump straight to the platform you're evaluating.</p>
+    </div>
+    <div class="automation-tools-tabs" role="tablist" aria-label="Tool categories">
+      <button type="button" id="automation-tools-tab-nocode" class="automation-tools-tab-btn active" data-automation-tools-tab="nocode" role="tab" aria-selected="true" aria-controls="automation-tools-panel-nocode">No-Code &amp; iPaaS</button>
+      <button type="button" id="automation-tools-tab-enterprise" class="automation-tools-tab-btn" data-automation-tools-tab="enterprise" role="tab" aria-selected="false" aria-controls="automation-tools-panel-enterprise">Enterprise RPA &amp; Integration</button>
+    </div>
+
+    <div id="automation-tools-panel-nocode" data-automation-tools-tab-panel="nocode" role="tabpanel" aria-labelledby="automation-tools-tab-nocode">
+      <p style="color:#42474e; font-size:1.0625rem; margin-bottom:1.5rem;">For businesses that want automation live fast, without a development team. Each platform below trades off differently between speed, flexibility, and how much control you keep over the underlying infrastructure.</p>
+      <div class="bento-grid bento-grid-3">
+        {noCodeTools.map((tool) => (
+          <div class="value-card">
+            <div class="tool-logo-wrap"><img src={`https://cdn.simpleicons.org/${tool.logoSlug}/${tool.logoColor}`} alt={`${tool.name} logo`} width="32" height="32" loading="lazy" /></div>
+            <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{tool.name}</h3>
+            <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">{teasers[tool.slug]}</p>
+            <a href={`/services/ai-automation/tools/${tool.slug}`} class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div id="automation-tools-panel-enterprise" data-automation-tools-tab-panel="enterprise" role="tabpanel" aria-labelledby="automation-tools-tab-enterprise" hidden>
+      <p style="color:#42474e; font-size:1.0625rem; margin-bottom:1.5rem;">For enterprises automating high-volume processes, legacy systems, or dozens of connected applications. These platforms cost more and take longer to deploy than a no-code tool, but they hold up under the compliance and scale requirements a large UAE organization actually has.</p>
+      <div class="bento-grid bento-grid-4">
+        {enterpriseTools.map((tool) => (
+          <div class="value-card">
+            <div class="tool-logo-wrap"><img src={`https://cdn.simpleicons.org/${tool.logoSlug}/${tool.logoColor}`} alt={`${tool.name} logo`} width="32" height="32" loading="lazy" /></div>
+            <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{tool.name}</h3>
+            <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">{teasers[tool.slug]}</p>
+            <a href={`/services/ai-automation/tools/${tool.slug}`} class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WRAP-UP -->
+<section class="section-sm" aria-label="How we choose">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        None of the platforms above are ranked, and there isn't a single best one; each solves a different shape of problem. What stays consistent across every project is how we work: we scope the workflow first, name the tool that fits it second, and build with monitoring and documentation included so your team isn't dependent on us for every small change afterward. If your workflow doesn't map cleanly onto any single platform, or spans two or three of them, we design across that boundary rather than force everything through one tool because it's the one we started the conversation with.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- BACK TO HUB -->
+<section class="section-sm" aria-label="Related">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1rem;">Looking for the bigger picture? See the full <a href="/services/ai-automation" class="learn-link" style="display:inline;">AI automation overview →</a></p>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Not sure which platform fits your workflow? We'll tell you honestly on a free call.</p>
+    <button onclick="openModal(this)" data-source="ai_automation_tools_mid" class="btn-primary">Book a Free Discovery Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Not Sure Which Tool Fits Your Workflow?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Book a free discovery call with our Dubai team. We'll look at your workflow and existing stack, then tell you which platform makes sense, honestly.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_automation_tools_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.tool-logo-wrap { background:#fff; border:1px solid #e6e9f0; border-radius:12px; width:56px; height:56px; display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+.value-card { display:flex; flex-direction:column; }
+.automation-tools-tabs { display:flex; gap:0.5rem; justify-content:center; margin-bottom:2rem; flex-wrap:wrap; }
+.automation-tools-tab-btn { padding:0.625rem 1.25rem; border-radius:100px; border:1px solid rgba(0,37,59,0.15); background:#fff; color:#42474e; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.automation-tools-tab-btn:hover { background:#e7eeff; }
+.automation-tools-tab-btn.active { background:#006875; border-color:#006875; color:#fff; }
+.automation-tools-tab-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+[data-automation-tools-tab-panel][hidden] { display:none; }
+</style>
+
+<script>
+  const automationToolsTabWrap = document.querySelector('.automation-tools-tabs');
+  if (automationToolsTabWrap) {
+    const btns = automationToolsTabWrap.querySelectorAll('.automation-tools-tab-btn');
+    const panels = document.querySelectorAll('[data-automation-tools-tab-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-automation-tools-tab');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-automation-tools-tab-panel') !== key; });
+      });
+    });
+  }
+</script>
