@@ -1,0 +1,336 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import { getAutomationTool } from "../../../../data/automationTools";
+
+const tool = getAutomationTool('mulesoft');
+const slugKey = tool.slug.replace(/-/g, '_');
+
+let faqItems = tool.faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', `ai_automation_tools_${slugKey}`)
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: tool.h1,
+    url: `https://lenooai.com/services/ai-automation/tools/${tool.slug}`,
+    description: tool.metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'Enterprise automation implementation projects: pricing based on scope, systems involved, and governance requirements. Book a consultation for a quote.' },
+    serviceType: tool.name,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Automation', item: 'https://lenooai.com/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'Tools', item: 'https://lenooai.com/services/ai-automation/tools' },
+      { '@type': 'ListItem', position: 4, name: tool.name, item: `https://lenooai.com/services/ai-automation/tools/${tool.slug}` },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title={tool.metaTitle}
+  description={tool.metaDescription}
+  canonicalPath={`/services/ai-automation/tools/${tool.slug}`}
+  arPath={`/ar/services/ai-automation/tools/${tool.slug}`}
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;" aria-label="Breadcrumb">
+      <a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      <a href="/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">AI Automation</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      <a href="/services/ai-automation/tools" style="color:inherit;text-decoration:none;opacity:0.65;">Tools</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      {tool.name}
+    </div>
+    <div style="margin-bottom:1.5rem;">
+      <img src={`https://cdn.simpleicons.org/${tool.logoSlug}/${tool.logoColor}`} alt={`${tool.name} logo`} width="56" height="56" loading="eager" fetchpriority="high" style="background:#fff;border-radius:16px;padding:10px;box-shadow:0 8px 24px rgba(0,59,92,0.18);" />
+    </div>
+    <h1>{tool.h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {tool.heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source={`ai_automation_tools_${slugKey}_hero`} class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1686061592689-312bbfb5c055?w=1400&q=80&auto=format&fit=crop" alt="Close-up of an enterprise dashboard screen showing integration usage metrics and cohort activity charts" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 45%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHAT IS -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">What Is {tool.name}?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.whatIs}
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        {tool.whatIsExtra}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATION ANGLE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="angle-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="angle-heading" style="margin-bottom:1.5rem;">How Lenoo AI Uses {tool.name} for UAE Enterprise Automation</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.integrationAngle}
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        {tool.integrationAngleExtra}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FREE VS PAID -->
+<section class="section" aria-labelledby="mulesoft-pricing-heading">
+  <div class="container" style="max-width:800px;">
+    <h2 id="mulesoft-pricing-heading" style="text-align:center; margin-bottom:1.5rem;">MuleSoft Free vs Paid</h2>
+    <div class="mulesoft-toggle" role="tablist" aria-label="Pricing tier">
+      <button type="button" id="mulesoft-tier-free" class="mulesoft-toggle-btn active" data-mulesoft-tier="free" role="tab" aria-selected="true" aria-controls="mulesoft-panel-free">Free (Open Source Runtime)</button>
+      <button type="button" id="mulesoft-tier-paid" class="mulesoft-toggle-btn" data-mulesoft-tier="paid" role="tab" aria-selected="false" aria-controls="mulesoft-panel-paid">Paid (Anypoint Platform)</button>
+    </div>
+    <div class="card" id="mulesoft-panel-free" data-mulesoft-tier-panel="free" role="tabpanel" aria-labelledby="mulesoft-tier-free">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Mule's underlying runtime engine is open source and free to self-host indefinitely, with no license fee for running integration flows on infrastructure you control. What it doesn't include is Anypoint Platform itself: the cloud control plane, API Manager, Anypoint Exchange, and centralized monitoring that a governed enterprise rollout needs. We sometimes use the open-source runtime to prototype flow logic early, but a production enterprise deployment almost always needs the licensed platform around it.</p>
+    </div>
+    <div class="card" id="mulesoft-panel-paid" data-mulesoft-tier-panel="paid" role="tabpanel" aria-labelledby="mulesoft-tier-paid" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">The full Anypoint Platform (API Manager, CloudHub, Exchange, and centralized governance) is licensed software with a free trial (commonly around 30 days) to evaluate it, not a permanent free tier for production use. Beyond the trial, MuleSoft doesn't publish list prices; enterprise contracts are quoted against API call volume, the number of integrations, and support level, and pricing scales quickly for a genuine multi-system rollout. We treat the trial as a proof-of-concept window during discovery, then get a quote scoped against your actual roadmap rather than guessing at a number.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO IT'S FOR -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">Is {tool.name} Right for Your Enterprise?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.whoItsFor}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ENGAGEMENT PHASES -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="engagement-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="engagement-heading" style="margin-bottom:1.5rem;">What a Typical MuleSoft Enterprise Engagement Looks Like</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.75rem;">
+        MuleSoft engagements start with compliance, not architecture, because audit logging, access control, and data handling rules need to be built into the API layers from the beginning rather than added after the fact, especially for the banking and insurance clients most MuleSoft projects in the UAE involve.
+      </p>
+      <div style="display:flex; flex-direction:column; gap:1.5rem;">
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">1. Discovery and Compliance Requirement Gathering</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">We start by understanding what regulators and internal compliance teams require of any system touching the data in question, alongside the usual technical discovery of which systems need to connect and what data each one owns. In regulated industries, this phase often takes longer than the technical mapping itself.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">2. Pilot with a Layered API</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">We build the first integration as a proper system, process, and experience API layer rather than a shortcut point-to-point connection, even though the pilot covers just one business process, because the layering is what makes every integration after it faster to build.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">3. Governance and Security Review</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">The pilot then goes through a security and governance review against your compliance requirements: audit trails, access control, and data handling, validated the same way any production system in a regulated UAE industry would be before going live.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">4. Phased Rollout Across the Integration Roadmap</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">We extend the architecture to additional systems in priority order, with each new integration reusing the system APIs already built rather than starting over, which is where a multi-year integration roadmap starts paying back the additional time the first integration took.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">5. Ongoing Management</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">We monitor the API layer after launch and maintain the system, process, and experience APIs as a shared asset the rest of the organization can build on, rather than a one-off project that ages out the moment it ships.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">MuleSoft vs. Boomi</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        MuleSoft and <a href="/services/ai-automation/tools/boomi">Boomi</a> both handle enterprise integration, but they are sized for different problems. MuleSoft's API-led architecture, system, process, and experience API layers, is built for enterprises connecting dozens of systems over a multi-year roadmap, where the reusability of the API layer is what makes the tenth integration cheaper than the first. Boomi is lighter to stand up and gets a hybrid connection between an on-premise system and the cloud live faster, without requiring a full API architecture up front. For a large bank or insurer with years of integration work ahead and hard governance requirements, MuleSoft's architecture earns its cost. For a business connecting two or three systems and needing it done quickly, Boomi or even <a href="/services/ai-automation/tools/workato">Workato</a> usually gets there for less. We scope against your actual roadmap rather than defaulting to either.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- UAE CONTEXT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="uae-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="uae-heading" style="margin-bottom:1.5rem;">Where MuleSoft Fits in UAE Enterprises</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        MuleSoft shows up almost exclusively in large UAE enterprises with a genuine multi-year integration roadmap and hard governance requirements: banks, insurers, and other regulated financial institutions connecting core banking systems to digital channels, partner integrations, and internal reporting tools. It is a heavier platform than most businesses need, and we say so directly when a smaller integration count or a shorter timeline points toward Boomi or Workato instead. Where it fits, though, the API-led architecture becomes the foundation the rest of the organization's integration work builds on for years. That regulatory weight is also why MuleSoft engagements in the UAE tend to start smaller than the eventual roadmap suggests, proving the architecture and the compliance model on one integration before committing budget to the following two or three years of the program.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SCOPING -->
+<section class="section" aria-labelledby="scoping-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="scoping-heading" style="margin-bottom:1.5rem;">How We Scope a MuleSoft Project</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        MuleSoft projects are priced against the size of the integration roadmap, not just the first integration, since the whole point of the API-led approach is that early investment in the system API layer pays off across every integration that follows. We scope the first one or two integrations in detail, since those set the architecture the rest of the roadmap builds on, and give a rough plan and cost range for the integrations that follow based on how many systems and business processes the full roadmap eventually needs to cover. For regulated clients, we also scope the compliance and governance review work separately, since it tends to take longer than the technical integration itself in a highly regulated environment.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        That phased approach also means a MuleSoft engagement doesn't need a full multi-year budget approved up front. We agree on the first phase, deliver it, and let the results inform whether and how the roadmap continues, rather than asking an enterprise to commit to the entire architecture before seeing a single integration live in production.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PITFALLS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="pitfalls-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="pitfalls-heading" style="margin-bottom:1.5rem;">Where MuleSoft Programs Typically Go Wrong</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        The most expensive mistake we see in MuleSoft programs is building point-to-point connections under time pressure and telling yourself the proper API layer will get built later. That layer almost never gets built later, and the enterprise ends up with the same tangled integration sprawl MuleSoft was supposed to prevent, just running through a more expensive platform. The other common issue is treating governance as something to bolt on once auditors ask for it, instead of building audit logging and access control into the API layer from the pilot onward. We hold to the layered architecture even on the first, smallest integration, because that discipline is what makes the rest of the roadmap actually pay off.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- VS NO-CODE -->
+<section class="section" aria-labelledby="vsnocode-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vsnocode-heading" style="margin-bottom:1.5rem;">MuleSoft vs. No-Code Automation Tools</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        A no-code tool like Make or Workato can connect a handful of systems well. What it generally cannot do is give you a reusable API layer that the next twenty integrations build on without starting from scratch each time. That reusability is the entire premise of MuleSoft's API-led architecture, and it only pays off at a scale most no-code tools were never designed to reach: dozens of systems, multiple business units, and an integration roadmap measured in years rather than weeks. If your integration count is small, a no-code or lighter iPaaS platform gets you there for less. MuleSoft earns its cost specifically on the large, multi-year programs where architecture, not build speed, is what determines whether the tenth integration is cheap or expensive.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="what-we-build" class="section" aria-labelledby="usecases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="usecases-heading">What We Build With {tool.name}</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Representative engagements, scoped individually based on your systems and processes.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {tool.useCases.map((uc) => (
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Building an API-led integration roadmap? Let's talk about where to start.</p>
+    <button onclick="openModal(this)" data-source="ai_automation_tools_mulesoft_mid" class="btn-primary">Book an Enterprise Automation Consultation</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Enterprise Automation Consultation</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Put {tool.name} to Work for Your Enterprise?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Book a consultation with our Dubai team. We'll scope the integration, the systems involved, and the governance your project needs.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ Enterprise-scale scoping</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source={`ai_automation_tools_${slugKey}_cta`} class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book an Enterprise Automation Consultation</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+.mulesoft-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+.mulesoft-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.mulesoft-toggle-btn.active { background:#006875; color:#fff; }
+.mulesoft-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const mulesoftToggleWrap = document.querySelector('.mulesoft-toggle');
+  if (mulesoftToggleWrap) {
+    const mulesoftBtns = mulesoftToggleWrap.querySelectorAll('.mulesoft-toggle-btn');
+    const mulesoftPanels = document.querySelectorAll('[data-mulesoft-tier-panel]');
+    mulesoftBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-mulesoft-tier');
+        mulesoftBtns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        mulesoftPanels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-mulesoft-tier-panel') !== key; });
+      });
+    });
+  }
+</script>
