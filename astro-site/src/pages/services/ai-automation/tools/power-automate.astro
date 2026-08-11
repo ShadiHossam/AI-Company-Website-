@@ -1,0 +1,288 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import { getAutomationTool } from "../../../../data/automationTools";
+
+const tool = getAutomationTool('power-automate');
+
+let faqItems = tool.faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_automation_tools_power_automate')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: tool.h1,
+    url: 'https://lenooai.com/services/ai-automation/tools/power-automate',
+    description: tool.metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'Power Automate implementation projects: pricing based on flow complexity and scope. Book a free discovery call for a quote.' },
+    serviceType: 'Power Automate Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Automation', item: 'https://lenooai.com/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'Tools', item: 'https://lenooai.com/services/ai-automation/tools' },
+      { '@type': 'ListItem', position: 4, name: 'Power Automate', item: 'https://lenooai.com/services/ai-automation/tools/power-automate' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title={tool.metaTitle}
+  description={tool.metaDescription}
+  canonicalPath="/services/ai-automation/tools/power-automate"
+  arPath="/ar/services/ai-automation/tools/power-automate"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">AI Automation</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-automation/tools" style="color:inherit;text-decoration:none;opacity:0.65;">Tools</a><span style="opacity:0.4;padding:0 4px;"> / </span>Power Automate</div>
+    <div class="tool-logo-hero"><img src={`https://cdn.simpleicons.org/${tool.logoSlug}/${tool.logoColor}`} alt="Power Automate logo" width="56" height="56" loading="eager" /></div>
+    <h1>{tool.h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {tool.heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ai_automation_tools_power_automate_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#use-cases" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1759752393975-7ca7b302fcc6?w=1400&q=80&auto=format&fit=crop" alt="Hands typing on a laptop displaying a workflow automation configuration screen in an office setting" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHAT IS POWER AUTOMATE -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">What Is Power Automate?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        {tool.whatIs}
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.whatIsExtra}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW LENOO USES POWER AUTOMATE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="how-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="how-heading" style="margin-bottom:1.5rem;">How Lenoo AI Uses Power Automate for UAE Automation Builds</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        {tool.integrationAngle}
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.integrationAngleExtra}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FREE VS PAID -->
+<section class="section" aria-labelledby="powerautomate-pricing-heading">
+  <div class="container" style="max-width:800px;">
+    <h2 id="powerautomate-pricing-heading" style="text-align:center; margin-bottom:1.5rem;">Power Automate Free vs Paid</h2>
+    <div class="powerautomate-toggle" role="tablist" aria-label="Pricing tier">
+      <button type="button" id="powerautomate-tier-free" class="powerautomate-toggle-btn active" data-powerautomate-tier="free" role="tab" aria-selected="true" aria-controls="powerautomate-panel-free">Free (Microsoft 365 Bundled)</button>
+      <button type="button" id="powerautomate-tier-paid" class="powerautomate-toggle-btn" data-powerautomate-tier="paid" role="tab" aria-selected="false" aria-controls="powerautomate-panel-paid">Paid (Premium Plans)</button>
+    </div>
+    <div class="card" id="powerautomate-panel-free" data-powerautomate-tier-panel="free" role="tabpanel" aria-labelledby="powerautomate-tier-free">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">If your organization already has a Microsoft 365 or Office subscription, a limited version of Power Automate is typically included at no extra cost: enough to build flows on standard connectors like SharePoint, Outlook, and Teams. What the bundled tier doesn't include is premium connectors to most non-Microsoft services, AI Builder credits for reading and classifying documents, and RPA or desktop flow automation for tasks outside the browser. We treat it as the right starting point for straightforward, all-Microsoft approval and notification flows, and check what's already licensed before assuming a paid plan is needed.</p>
+    </div>
+    <div class="card" id="powerautomate-panel-paid" data-powerautomate-tier-panel="paid" role="tabpanel" aria-labelledby="powerautomate-tier-paid" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Microsoft also licenses Power Automate separately, on top of what's bundled with Microsoft 365, as a per-user or per-flow plan. Paid plans unlock premium connectors to non-Microsoft services, AI Builder credits for document processing, and RPA capabilities for automating desktop applications that don't expose an API. Which plan makes sense depends on how many people need to trigger flows and whether the build touches premium connectors or desktop automation at all, so we confirm your existing licensing tier during discovery rather than defaulting to the more expensive option.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO THIS FITS -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">Is Power Automate Right for You?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        {tool.whoItsFor}
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        A few concrete signals we watch for: approvals are still moving through email threads instead of a proper flow, your team is manually copying data between SharePoint, Excel, and Teams every week, or you're already paying for Power Automate licensing that nobody has actually built anything with yet. Any of those is usually worth a short conversation before you consider bringing in a separate automation tool from outside your Microsoft stack.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">What a Typical Power Automate Project With Us Looks Like</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Because most of the tooling already sits inside your Microsoft 365 tenant, a Power Automate project starts with licensing rather than building.
+      </p>
+      <ol style="color:#42474e; font-size:1.0625rem; line-height:1.85; padding-left:1.25rem; margin:0;">
+        <li style="margin-bottom:0.75rem;"><strong>Discovery.</strong> We confirm which Power Automate license tier you're already on, then walk through where manual work is piling up today and build a shortlist of candidate processes ranked by volume and friction, along with who currently owns each one manually.</li>
+        <li style="margin-bottom:0.75rem;"><strong>Design.</strong> We sketch the flow's triggers, conditions, and approval steps as a diagram before opening the builder, and agree the exact notification and escalation points with whoever owns the process today, so nothing about how it's meant to behave is left implicit once building starts.</li>
+        <li style="margin-bottom:0.75rem;"><strong>Build and test.</strong> We build the flow inside your tenant, respecting whatever data loss prevention and security policies your IT team already has configured, and test it against real SharePoint, Teams, and Outlook data rather than a sample environment.</li>
+        <li style="margin-bottom:0.75rem;"><strong>Launch and monitor.</strong> We hand over a walkthrough your IT or operations team can follow, watch the flow's run history after go-live, and fix anything a connector update or a permissions change breaks down the line.</li>
+        <li><strong>Document and hand off.</strong> Every flow ships with plain-language documentation and sits inside your own Power Platform environment, so your team owns it outright rather than depending on us to make small future changes.</li>
+      </ol>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        A single, well-defined flow, like one approval chain or one email triage process, can typically go live within a week or two. Programs automating several flows across a department are scoped in phases, so the first flow is live and proving value while the rest of the rollout continues.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">Power Automate vs. the Alternatives</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        The deciding factor for Power Automate is rarely capability, it's what you already have licensed. If your core tools (email, files, CRM) already run on Microsoft 365, Power Automate gets you live faster than any other platform, because the authentication and permissions are already in place. If your stack is mixed, with tools scattered across Google Workspace, a non-Microsoft CRM, and a handful of other apps, <a href="/services/ai-automation/tools/zapier">Zapier</a> or <a href="/services/ai-automation/tools/make">Make</a> usually connects the pieces with less friction, since neither assumes a Microsoft-first environment. We check what's already licensed and what your team actually uses before recommending Power Automate over a platform-agnostic option. And where a process touches a genuinely legacy, on-premise system with no modern API at all, even inside a Microsoft-heavy environment, we'll say so rather than force a Power Automate connector onto something <a href="/services/ai-automation/tools/uipath">UiPath</a> or <a href="/services/ai-automation/tools/n8n">n8n</a> would handle more reliably.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- RELIABILITY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="reliability-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="reliability-heading" style="margin-bottom:1.5rem;">Keeping a Power Automate Flow Reliable After Launch</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Power Automate flows tend to break in a specific, predictable way: a connector changes on Microsoft's end, a SharePoint list gets restructured, or someone's access permissions change and the flow's owner account can no longer complete a step it used to handle without issue. We build flows with clear failure notifications so your team knows the moment a run fails rather than discovering it a week later, when a batch of approvals never went out to anyone.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Where a flow reads or processes documents through AI Builder, we monitor confidence scores on the extracted fields, so a form that comes back unusually messy gets flagged for a human to check instead of being pushed through automatically. We also document every flow in plain language and hand it over through the same Power Platform admin center your team already manages, so nothing about how it runs is hidden inside tooling only we can see.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        We also review flows periodically against changes on Microsoft's side, since new connector versions or tenant policy updates can quietly change how a flow behaves without anyone touching the flow itself. Catching that during a scheduled check is a lot less disruptive than your team discovering it because an approval silently stopped moving.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="use-cases" class="section" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">What We Build With Power Automate</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Common Power Automate projects for UAE clients already on Microsoft 365, from SharePoint approvals to AI Builder document processing to scheduled reporting. Every build is scoped to your actual workflow, not a generic template.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {tool.useCases.map((uc) => (
+        <div class="value-card">
+          <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Already licensed for Microsoft 365? We'll show you what's possible on a free call.</p>
+    <button onclick="openModal(this)" data-source="ai_automation_tools_power_automate_mid" class="btn-primary">Book a Free Power Automate Consultation</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Already Paying for Microsoft 365? Put It to Work.</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Book a free discovery call with our Dubai team. We'll look at your Microsoft stack, the approvals or reports eating up manual time, and tell you plainly what a Power Automate build would involve, including whether it's even the right platform for what you need.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_automation_tools_power_automate_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.tool-logo-hero { width:64px; height:64px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; }
+.value-card { display:flex; flex-direction:column; }
+.powerautomate-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+.powerautomate-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.powerautomate-toggle-btn.active { background:#006875; color:#fff; }
+.powerautomate-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const powerautomateToggleWrap = document.querySelector('.powerautomate-toggle');
+  if (powerautomateToggleWrap) {
+    const powerautomateBtns = powerautomateToggleWrap.querySelectorAll('.powerautomate-toggle-btn');
+    const powerautomatePanels = document.querySelectorAll('[data-powerautomate-tier-panel]');
+    powerautomateBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-powerautomate-tier');
+        powerautomateBtns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        powerautomatePanels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-powerautomate-tier-panel') !== key; });
+      });
+    });
+  }
+</script>
