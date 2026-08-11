@@ -1,0 +1,363 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import { getAutomationTool } from "../../../../data/automationTools";
+
+const tool = getAutomationTool('automation-anywhere');
+const slugKey = tool.slug.replace(/-/g, '_');
+
+let faqItems = tool.faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', `ai_automation_tools_${slugKey}`)
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: tool.h1,
+    url: `https://lenooai.com/services/ai-automation/tools/${tool.slug}`,
+    description: tool.metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'Enterprise automation implementation projects: pricing based on scope, systems involved, and governance requirements. Book a consultation for a quote.' },
+    serviceType: tool.name,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Automation', item: 'https://lenooai.com/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'Tools', item: 'https://lenooai.com/services/ai-automation/tools' },
+      { '@type': 'ListItem', position: 4, name: tool.name, item: `https://lenooai.com/services/ai-automation/tools/${tool.slug}` },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title={tool.metaTitle}
+  description={tool.metaDescription}
+  canonicalPath={`/services/ai-automation/tools/${tool.slug}`}
+  arPath={`/ar/services/ai-automation/tools/${tool.slug}`}
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;" aria-label="Breadcrumb">
+      <a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      <a href="/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">AI Automation</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      <a href="/services/ai-automation/tools" style="color:inherit;text-decoration:none;opacity:0.65;">Tools</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      {tool.name}
+    </div>
+    <div style="margin-bottom:1.5rem;">
+      <img src={`https://cdn.simpleicons.org/${tool.logoSlug}/${tool.logoColor}`} alt={`${tool.name} logo`} width="56" height="56" loading="eager" fetchpriority="high" style="background:#fff;border-radius:16px;padding:10px;box-shadow:0 8px 24px rgba(0,59,92,0.18);" />
+    </div>
+    <h1>{tool.h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {tool.heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source={`ai_automation_tools_${slugKey}_hero`} class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1686061593213-98dad7c599b9?w=1400&q=80&auto=format&fit=crop" alt="Close-up of an automation dashboard on a monitor showing activity charts and process metrics" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 45%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHAT IS -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">What Is {tool.name}?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.whatIs}
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        {tool.whatIsExtra}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATION ANGLE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="angle-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="angle-heading" style="margin-bottom:1.5rem;">How Lenoo AI Uses {tool.name} for UAE Enterprise Automation</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.integrationAngle}
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        {tool.integrationAngleExtra}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FREE VS PAID -->
+<section class="section" aria-labelledby="aa-pricing-heading">
+  <div class="container" style="max-width:800px;">
+    <h2 id="aa-pricing-heading" style="text-align:center; margin-bottom:1.5rem;">Automation Anywhere Free vs Paid</h2>
+    <div class="aa-toggle" role="tablist" aria-label="Pricing tier">
+      <button type="button" id="aa-tier-free" class="aa-toggle-btn active" data-aa-tier="free" role="tab" aria-selected="true" aria-controls="aa-panel-free">Free (Community Edition)</button>
+      <button type="button" id="aa-tier-paid" class="aa-toggle-btn" data-aa-tier="paid" role="tab" aria-selected="false" aria-controls="aa-panel-paid">Paid (Automation 360)</button>
+    </div>
+    <div class="card" id="aa-panel-free" data-aa-tier-panel="free" role="tabpanel" aria-labelledby="aa-tier-free">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Automation Anywhere's Community Edition gives individuals, students, and small teams free access to the Automation 360 cloud platform: the Bot Creator for building bots, the Bot Store for pre-built components, and community support. It's single-user, with attended bot execution only, and it doesn't include the role-based access controls or audit logging an enterprise governance review requires, which is why we treat it as a place to prototype and evaluate the platform, not where a production enterprise bot ends up living.</p>
+    </div>
+    <div class="card" id="aa-panel-paid" data-aa-tier-panel="paid" role="tabpanel" aria-labelledby="aa-tier-paid" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Paid Automation 360 (Cloud Starter through Enterprise) adds what a multi-department rollout actually needs: multiple users, unattended bot execution that runs without someone watching it, role-based access controls, and the audit trail your compliance team will ask for before a bot touches production. Pricing scales with how many bots you run and whether they're attended or unattended, and Automation Anywhere doesn't publish exact rates, so we get a quote against your actual scope rather than guessing at a number.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO IT'S FOR -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">Is {tool.name} Right for Your Enterprise?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.whoItsFor}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ENGAGEMENT PHASES -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="engagement-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="engagement-heading" style="margin-bottom:1.5rem;">What a Typical Automation Anywhere Enterprise Engagement Looks Like</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.75rem;">
+        An Automation Anywhere engagement follows a similar arc to any enterprise RPA program: discovery, a pilot, governance, then rollout. The cloud-native architecture changes how a few of those phases actually run.
+      </p>
+      <div style="display:flex; flex-direction:column; gap:1.5rem;">
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">1. Legacy System Discovery and Process Assessment</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">We start the same way we would with any RPA platform: mapping the legacy applications and manual steps the target process actually touches, since Automation Anywhere bots still interact with the same aging interfaces UiPath bots do. The difference shows up later, in how the bot gets deployed and managed, not in how it is discovered.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">2. Pilot on One Process</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">We build the first bot inside Automation 360 against a single process, testing it against real data before it goes anywhere near production. Because Automation 360 runs from a central cloud console, the pilot is visible to stakeholders from day one instead of living on a single developer's machine.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">3. Governance and Security Review</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">The bot then goes through a governance and security review: access controls, audit trails, and change management, matched to whatever standards your IT team already runs. For enterprises that are cloud-first already, this review tends to move faster with Automation Anywhere than with an on-premise-first platform, since the control plane is already centralized.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">4. Phased Rollout Across Departments</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">From there we roll the automation out to additional departments using the same shared bot framework, so every new bot follows the same naming conventions, access rules, and monitoring setup as the first one. Automation Anywhere's centrally managed console is what makes a multi-office rollout genuinely easier to administer than a set of separate on-premise installations.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">5. Ongoing Management</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">After go-live, we monitor bot performance and application interface changes from the same central console used to deploy them, and maintain the Bot Store components and custom logic together as one system rather than a patchwork of individually maintained scripts.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">Automation Anywhere vs. UiPath</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        The two platforms overlap more than they differ. Automation Anywhere's advantage is a cloud-native architecture built for central management from day one: no local control room to install, no on-premise Orchestrator to maintain, which tends to make multi-office and multi-department rollouts easier to administer. <a href="/services/ai-automation/tools/uipath">UiPath's</a> advantage is a larger installed base, a more mature on-premise deployment model, and a deeper bench of certified developers and partners. If your enterprise wants RPA managed centrally through the cloud with minimal local infrastructure, Automation Anywhere is usually the better starting point. If you are already running heavily on-premise, or your team already has UiPath expertise, staying with UiPath often costs less than switching. We implement both and can run a short evaluation against your actual environment before you commit either way.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- UAE CONTEXT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="uae-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="uae-heading" style="margin-bottom:1.5rem;">Where Automation Anywhere Fits in the UAE</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Automation Anywhere tends to show up in two situations in the UAE market: enterprises evaluating RPA platforms for the first time who want a cloud-native starting point rather than on-premise infrastructure to stand up and maintain, and multi-office operations, retail groups, logistics companies, and service organizations with several branches, who need bots deployed and monitored consistently across locations from one console. It is less common in the most compliance-heavy on-premise banking environments, where UiPath's longer track record still carries more weight, though that gap has narrowed as Automation Anywhere's own governance and audit capabilities have matured. That mix of multi-branch retail, logistics, and service businesses is also where the Bot Store's pre-built components tend to save the most time, since many of those processes are close enough to the existing templates that a build starts from something rather than a blank canvas.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SCOPING -->
+<section class="section" aria-labelledby="scoping-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="scoping-heading" style="margin-bottom:1.5rem;">How We Scope an Automation Anywhere Project</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        What drives cost and timeline on an Automation Anywhere project is largely the same as any RPA engagement: the number of processes involved, how much of the existing automation logic needs to be rebuilt and validated if you are migrating from another platform, and how much governance review your organization wants before a bot goes live. Because Automation 360 is centrally managed, standing up the platform itself tends to move faster than an on-premise-first alternative, which sometimes shifts more of the project timeline toward the actual bot design and testing work rather than infrastructure setup. We scope the first bot and a rough plan for the rest of the program together, so you know what the full rollout looks like even if you start with one process.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PITFALLS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="pitfalls-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="pitfalls-heading" style="margin-bottom:1.5rem;">Where Automation Anywhere Programs Typically Go Wrong</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        The most common failure mode we see with Automation Anywhere programs is not the platform, it is scope. Teams that try to automate an entire department's workload in the first release usually end up with a brittle bot nobody trusts, instead of a smaller one that runs reliably every day. The second most common issue is skipping the governance review because the cloud console makes it easy to publish a bot and move on. That shortcut tends to surface later as an access control gap or an untracked change nobody can explain during an audit. We build in the review and the narrower first scope from the start, even when a client is eager to move faster.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- VS NO-CODE -->
+<section class="section" aria-labelledby="vsnocode-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vsnocode-heading" style="margin-bottom:1.5rem;">Automation Anywhere vs. No-Code Automation Tools</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Enterprises sometimes ask why they need an RPA platform at all when tools like Zapier, Make, or n8n can already connect two systems in an afternoon. The answer is what each tool is built to touch. No-code platforms connect through APIs, which means they only work when the app on the other end exposes one. Automation Anywhere bots interact with an application's interface directly, clicking and typing the same way a person would, which is what makes it possible to automate a legacy system that has never had an API and never will. If your process already has API access on both ends, a no-code tool is almost always faster and cheaper to build. RPA earns its cost specifically where that access does not exist.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="what-we-build" class="section" aria-labelledby="usecases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="usecases-heading">What We Build With {tool.name}</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Representative engagements, scoped individually based on your systems and processes.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {tool.useCases.map((uc) => (
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- SECURITY AND GOVERNANCE FOR AUTOMATION ANYWHERE DEPLOYMENTS -->
+<section class="section" aria-labelledby="security-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="security-heading" style="margin-bottom:1.5rem;">Security &amp; Governance for Automation Anywhere Deployments</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Enterprise RPA deployments live or die on governance, and Automation Anywhere's centrally managed architecture is built with that in mind. Every bot we build runs under role-based access controls, so only authorized users can trigger, modify, or view the automation, and every run is logged with a timestamped audit trail your compliance or internal audit team can pull on demand. For UAE enterprises in banking, insurance, or government-adjacent sectors, that audit trail is often the deciding factor in whether a bot is approved for production at all.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        We design bots with your existing security review process in mind from the first discovery call rather than treating it as a final hurdle, since retrofitting audit logging or access controls after a bot is built usually means rebuilding parts of it. That includes documenting exactly what data each bot touches, where it's stored temporarily during a run, and how credentials are handled, so your security team has what it needs to sign off without a lengthy back-and-forth.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Weighing Automation Anywhere against UiPath? We'll walk you through the tradeoffs for your case.</p>
+    <button onclick="openModal(this)" data-source="ai_automation_tools_automation_anywhere_mid" class="btn-primary">Book an Enterprise Automation Consultation</button>
+  </div>
+</section>
+
+<!-- GETTING STARTED -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="getting-started-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="getting-started-heading" style="margin-bottom:1.5rem;">Getting Started With Automation Anywhere</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Most Automation Anywhere engagements start with a short pilot on a single process rather than a full department-wide rollout, since proving the bot works reliably against real data builds the internal confidence needed to expand it. We pick the pilot process together during discovery, usually the one with the clearest rules and the highest volume, so the win is both fast and visible to whoever needs to approve the next phase.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Once the pilot bot is live and stable, we document exactly how it was built and why, so extending the same pattern to the next process, or handing maintenance to your internal team later, doesn't require starting from a blank page. That documentation, not just the bot itself, is part of what we consider the deliverable.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Enterprise Automation Consultation</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Put {tool.name} to Work for Your Enterprise?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Book a consultation with our Dubai team. We'll scope the integration, the systems involved, and the governance your project needs.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ Enterprise-scale scoping</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source={`ai_automation_tools_${slugKey}_cta`} class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book an Enterprise Automation Consultation</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+.aa-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+.aa-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.aa-toggle-btn.active { background:#006875; color:#fff; }
+.aa-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const aaToggleWrap = document.querySelector('.aa-toggle');
+  if (aaToggleWrap) {
+    const aaBtns = aaToggleWrap.querySelectorAll('.aa-toggle-btn');
+    const aaPanels = document.querySelectorAll('[data-aa-tier-panel]');
+    aaBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-aa-tier');
+        aaBtns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        aaPanels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-aa-tier-panel') !== key; });
+      });
+    });
+  }
+</script>
