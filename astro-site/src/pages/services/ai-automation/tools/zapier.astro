@@ -1,0 +1,293 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import { getAutomationTool } from "../../../../data/automationTools";
+
+const tool = getAutomationTool('zapier');
+
+let faqItems = tool.faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_automation_tools_zapier')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: tool.h1,
+    url: 'https://lenooai.com/services/ai-automation/tools/zapier',
+    description: tool.metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'Zapier automation projects: pricing based on workflow complexity and scope. Book a free discovery call for a quote.' },
+    serviceType: 'Zapier Automation Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Automation', item: 'https://lenooai.com/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'Tools', item: 'https://lenooai.com/services/ai-automation/tools' },
+      { '@type': 'ListItem', position: 4, name: 'Zapier', item: 'https://lenooai.com/services/ai-automation/tools/zapier' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title={tool.metaTitle}
+  description={tool.metaDescription}
+  canonicalPath="/services/ai-automation/tools/zapier"
+  arPath="/ar/services/ai-automation/tools/zapier"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">AI Automation</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-automation/tools" style="color:inherit;text-decoration:none;opacity:0.65;">Tools</a><span style="opacity:0.4;padding:0 4px;"> / </span>Zapier</div>
+    <div class="tool-logo-hero"><img src={`https://cdn.simpleicons.org/${tool.logoSlug}/${tool.logoColor}`} alt="Zapier logo" width="56" height="56" loading="eager" /></div>
+    <h1>{tool.h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {tool.heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ai_automation_tools_zapier_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#use-cases" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1760360059358-d5885a1d735c?w=1400&q=80&auto=format&fit=crop" alt="Hand holding a smartphone displaying a home screen full of colorful app icons, representing the apps Zapier connects together" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 30%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHAT IS ZAPIER -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">What Is Zapier?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        {tool.whatIs}
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.whatIsExtra}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW LENOO USES ZAPIER -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="how-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="how-heading" style="margin-bottom:1.5rem;">How Lenoo AI Uses Zapier for UAE Automation Builds</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        {tool.integrationAngle}
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.integrationAngleExtra}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FREE VS PAID -->
+<section class="section" aria-labelledby="zapier-pricing-heading">
+  <div class="container" style="max-width:800px;">
+    <h2 id="zapier-pricing-heading" style="text-align:center; margin-bottom:1.5rem;">Zapier Free vs Paid</h2>
+    <div class="zapier-toggle" role="tablist" aria-label="Pricing tier">
+      <button type="button" id="zapier-tier-free" class="zapier-toggle-btn active" data-zapier-tier="free" role="tab" aria-selected="true" aria-controls="zapier-panel-free">Free</button>
+      <button type="button" id="zapier-tier-paid" class="zapier-toggle-btn" data-zapier-tier="paid" role="tab" aria-selected="false" aria-controls="zapier-panel-paid">Paid</button>
+    </div>
+    <div class="card" id="zapier-panel-free" data-zapier-tier-panel="free" role="tabpanel" aria-labelledby="zapier-tier-free">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Zapier's Free plan is a genuine way to run real automation, not just a trial. It includes 100 tasks a month and unlimited Zap workflows, though each Zap is capped at two steps: one trigger and one action. That covers a single, clear connection, like a new form entry landing in a spreadsheet, but the moment a workflow needs more than one action per trigger, or an AI step layered in, you hit the ceiling. We build on Free when a client's actual task volume and workflow shape genuinely fit inside those limits, and we say so plainly when they don't.</p>
+    </div>
+    <div class="card" id="zapier-panel-paid" data-zapier-tier-panel="paid" role="tabpanel" aria-labelledby="zapier-tier-paid" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Paid plans start with Professional, priced from $19.99 a month on an annual plan (or $29.99 billed monthly) for 750 tasks, and scale up from there as your task volume grows. That's the tier that unlocks multi-step Zaps, so one trigger can fire several actions in sequence, along with unlimited premium apps, webhooks for custom integrations, and the filters and AI steps most of our builds rely on. We size the right tier to your real task volume during discovery rather than defaulting to whichever plan looks safest, and we don't add a markup on top of your Zapier bill.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO THIS FITS -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">Is Zapier Right for You?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        {tool.whoItsFor}
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        A few concrete signals we watch for: you're already paying for Zapier but aren't sure it's being used well, you have five or six Zaps running with no one quite certain why they were built that way, or your team keeps hitting the same manual step that no simple trigger seems to catch. Any of those is usually a sign it's worth a short audit call before we add anything new.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">What a Typical Zapier Project With Us Looks Like</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Most Zapier engagements follow the same rough shape, though the exact steps change with what you're automating and how many Zaps are already running.
+      </p>
+      <ol style="color:#42474e; font-size:1.0625rem; line-height:1.85; padding-left:1.25rem; margin:0;">
+        <li style="margin-bottom:0.75rem;"><strong>Discovery.</strong> We get on a call to understand what's slowing your team down, which apps are involved, and whether any Zaps you already have are worth keeping. If Zaps exist, we ask to see them before designing anything new.</li>
+        <li style="margin-bottom:0.75rem;"><strong>Design.</strong> We map the workflow trigger by trigger, marking where a plain action does the job and where a step needs an AI action to read content and make a judgment call.</li>
+        <li style="margin-bottom:0.75rem;"><strong>Build and test.</strong> We build the Zap, or set of Zaps, inside your account and test against real data pulled from your business rather than sample records, so edge cases surface before launch instead of after.</li>
+        <li><strong>Launch and monitor.</strong> Once live, we watch the Zap for the first few weeks, catching failed runs and fixing anything that breaks against real-world input the test data didn't cover.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">Zapier vs. the Alternatives</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Zapier is not always the right tool, and we'll say so during discovery rather than build inside it anyway. If your workflow branches five or six different ways depending on conditions, <a href="/services/ai-automation/tools/make">Make's</a> visual scenario builder shows that logic on screen in a way that's easier to follow than a chain of Zapier filters. If you need to keep data on infrastructure you control, want custom code inside a step, or are building something closer to an AI agent that reasons through a task rather than following one fixed path, <a href="/services/ai-automation/tools/n8n">n8n</a> is usually the better fit. For most small and mid-sized UAE businesses automating a handful of clear, repeatable processes, though, Zapier gets you live fastest, and there's no reason to reach for a heavier tool just because it exists. The honest test we apply is volume and complexity: if you're running a few dozen tasks a month across three or four apps, Zapier's pricing and simplicity beat anything more elaborate, and we'll tell you that plainly even if it means a smaller project for us.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- RELIABILITY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="reliability-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="reliability-heading" style="margin-bottom:1.5rem;">Keeping a Zapier Workflow Reliable After Launch</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        A Zap that works perfectly in testing can still fail once it's handling live data, usually because a field arrives empty, an app renames a value the automation expected, or two records land at nearly the same time and collide. We build error handling into every multi-step Zap so a failed run gets flagged and retried automatically rather than silently disappearing, and we set up a notification path, Slack, email, or a dashboard, whichever your team actually checks, so someone finds out within minutes, not weeks. For Zaps with an AI step, we also log what the model returned at each run, so if a decision ever looks wrong, we can see exactly what data it saw and why it decided what it did, rather than guessing after the fact. That visibility is part of every build we hand over, along with a plain-language explanation of what each Zap does, so a new hire on your team can understand the automation without needing us in the room.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="use-cases" class="section" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">What We Build With Zapier</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Common Zapier projects for UAE clients, spanning lead handling, approvals, data sync, and inbox triage. Every build is scoped to your actual workflow, not a generic template.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {tool.useCases.map((uc) => (
+        <div class="value-card">
+          <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- PRICING & GETTING STARTED -->
+<section class="section" aria-labelledby="pricing-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="pricing-heading" style="margin-bottom:1.5rem;">What a Zapier Project Costs</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        We quote Zapier projects based on how many workflows you need, how many apps are involved, and whether any step requires an AI action to read and judge content rather than just move it. A single, straightforward Zap connecting two apps with a clear trigger is a small, fixed-scope engagement. A set of interlinked Zaps handling lead routing, approvals, and reporting across five or six tools, some with AI steps reading emails or documents, is a larger project scoped after we've seen your actual workflow on a discovery call.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Your own Zapier subscription cost sits on top of that and depends on the plan tier your task volume needs, which we help you size correctly rather than defaulting to whatever tier looks safest. We don't charge a markup on your Zapier bill, and we're upfront if a lower plan than the one you're currently paying for would cover your actual usage. The build itself is a one-time cost; ongoing maintenance beyond the included post-launch window is a separate, optional retainer, only worth it if you want us watching the automation rather than your own team.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Already have Zaps running? We'll audit them for free before you commit to anything new.</p>
+    <button onclick="openModal(this)" data-source="ai_automation_tools_zapier_mid" class="btn-primary">Book a Free Zapier Audit</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Put Your Zaps to Work?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Book a free discovery call with our Dubai team. We'll look at what you're trying to automate and tell you exactly what a Zapier build would involve.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_automation_tools_zapier_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.tool-logo-hero { width:64px; height:64px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; }
+.value-card { display:flex; flex-direction:column; }
+.zapier-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+.zapier-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.zapier-toggle-btn.active { background:#006875; color:#fff; }
+.zapier-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const zapierToggleWrap = document.querySelector('.zapier-toggle');
+  if (zapierToggleWrap) {
+    const zapierBtns = zapierToggleWrap.querySelectorAll('.zapier-toggle-btn');
+    const zapierPanels = document.querySelectorAll('[data-zapier-tier-panel]');
+    zapierBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-zapier-tier');
+        zapierBtns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        zapierPanels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-zapier-tier-panel') !== key; });
+      });
+    });
+  }
+</script>
