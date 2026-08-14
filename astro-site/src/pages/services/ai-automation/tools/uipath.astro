@@ -1,0 +1,321 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import { getAutomationTool } from "../../../../data/automationTools";
+
+const tool = getAutomationTool('uipath');
+const slugKey = tool.slug.replace(/-/g, '_');
+
+let faqItems = tool.faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', `ai_automation_tools_${slugKey}`)
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: tool.h1,
+    url: `https://lenooai.com/services/ai-automation/tools/${tool.slug}`,
+    description: tool.metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'Enterprise automation implementation projects: pricing based on scope, systems involved, and governance requirements. Book a consultation for a quote.' },
+    serviceType: tool.name,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Automation', item: 'https://lenooai.com/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'Tools', item: 'https://lenooai.com/services/ai-automation/tools' },
+      { '@type': 'ListItem', position: 4, name: tool.name, item: `https://lenooai.com/services/ai-automation/tools/${tool.slug}` },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title={tool.metaTitle}
+  description={tool.metaDescription}
+  canonicalPath={`/services/ai-automation/tools/${tool.slug}`}
+  arPath={`/ar/services/ai-automation/tools/${tool.slug}`}
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;" aria-label="Breadcrumb">
+      <a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      <a href="/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">AI Automation</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      <a href="/services/ai-automation/tools" style="color:inherit;text-decoration:none;opacity:0.65;">Tools</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      {tool.name}
+    </div>
+    <div style="margin-bottom:1.5rem;">
+      <img src={`https://cdn.simpleicons.org/${tool.logoSlug}/${tool.logoColor}`} alt={`${tool.name} logo`} width="56" height="56" loading="eager" fetchpriority="high" style="background:#fff;border-radius:16px;padding:10px;box-shadow:0 8px 24px rgba(0,59,92,0.18);" />
+    </div>
+    <h1>{tool.h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {tool.heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source={`ai_automation_tools_${slugKey}_hero`} class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1684369175833-4b445ad6bfb5?w=1400&q=80&auto=format&fit=crop" alt="White software robot working at a laptop, representing UiPath's automated bots handling desktop tasks" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHAT IS -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">What Is {tool.name}?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.whatIs}
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        {tool.whatIsExtra}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATION ANGLE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="angle-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="angle-heading" style="margin-bottom:1.5rem;">How Lenoo AI Uses {tool.name} for UAE Enterprise Automation</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.integrationAngle}
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        {tool.integrationAngleExtra}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FREE VS PAID -->
+<section class="section" aria-labelledby="uipath-pricing-heading">
+  <div class="container" style="max-width:800px;">
+    <h2 id="uipath-pricing-heading" style="text-align:center; margin-bottom:1.5rem;">UiPath Free vs Paid</h2>
+    <div class="uipath-toggle" role="tablist" aria-label="Pricing tier">
+      <button type="button" id="uipath-tier-free" class="uipath-toggle-btn active" data-uipath-tier="free" role="tab" aria-selected="true" aria-controls="uipath-panel-free">Free (Community Edition)</button>
+      <button type="button" id="uipath-tier-paid" class="uipath-toggle-btn" data-uipath-tier="paid" role="tab" aria-selected="false" aria-controls="uipath-panel-paid">Paid (Standard / Enterprise)</button>
+    </div>
+    <div class="card" id="uipath-panel-free" data-uipath-tier-panel="free" role="tabpanel" aria-labelledby="uipath-tier-free">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">UiPath's Community Edition is free for individual developers, students, and small businesses under a modest revenue threshold, with up to three attended robots for building and testing automations. It's a genuine way to learn the platform and prototype a bot, but it doesn't include Orchestrator, the governance layer covered above that gives IT one place to see every bot running and the audit trail compliance teams ask for, which is why we treat it as a place to evaluate UiPath, not where a production enterprise bot ends up living.</p>
+    </div>
+    <div class="card" id="uipath-panel-paid" data-uipath-tier-panel="paid" role="tabpanel" aria-labelledby="uipath-tier-paid" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Paid UiPath tiers (Standard and Enterprise) unlock Orchestrator, unattended bot execution that runs without someone watching it, and the role-based access controls and audit logging your compliance team will want before a bot touches production. UiPath licenses by robot count and whether bots run attended or unattended rather than publishing a flat rate, so we scope a quote against your actual process volume once we know how many bots the program needs.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO IT'S FOR -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">Is {tool.name} Right for Your Enterprise?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.whoItsFor}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ENGAGEMENT PHASES -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="engagement-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="engagement-heading" style="margin-bottom:1.5rem;">What a Typical UiPath Enterprise Engagement Looks Like</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.75rem;">
+        A UiPath program for a UAE enterprise rarely starts with the bot itself. It starts with understanding which systems the process actually touches, since most of the applications involved were never built with automation in mind.
+      </p>
+      <div style="display:flex; flex-direction:column; gap:1.5rem;">
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">1. Legacy System Discovery and Process Assessment</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">We spend the first stretch of the engagement mapping every screen, application, and manual handoff involved in the target process, often working with staff who have been doing the task by hand for years. For banking and government-adjacent clients, this phase also means cataloging which legacy systems have no documentation left at all, since the people who built them have long since moved on.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">2. Pilot on One Process</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">Rather than committing to a department-wide rollout up front, we build the first bot against a single, well-bounded process and run it in parallel with the existing manual workflow. That parallel run is where we catch the edge cases a process walkthrough alone would miss, before the bot ever touches production data unsupervised.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">3. Governance and Security Review</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">Once the pilot proves out, the bot goes through a governance and security review: role-based access controls, audit logging, and a change management process that satisfies whatever internal compliance function the enterprise already runs. In regulated UAE sectors, this step is not optional, and we build it in from the start rather than adding it later.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">4. Phased Rollout Across Departments</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">With governance in place, we roll the automation out to additional departments or process variants in stages, validating each one against the same standard before it goes live. This is also where UiPath's Orchestrator earns its keep, giving IT one place to see every bot running across the organization instead of a dozen disconnected scripts.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">5. Ongoing Management</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">Bots stay live long after launch, and interface changes in the applications they interact with are the most common cause of failure months down the line. We build monitoring and a clear escalation path into every engagement, so a broken bot gets flagged and fixed quickly rather than failing silently for weeks.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">UiPath vs. Automation Anywhere</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        UiPath and <a href="/services/ai-automation/tools/automation-anywhere">Automation Anywhere</a> solve the same problem in different ways. UiPath has the larger installed base, the more mature on-premise Orchestrator, and the deeper partner ecosystem, which tends to matter for enterprises with complex, on-premise-heavy environments and existing UiPath-certified staff. Automation Anywhere leans cloud-native from the ground up, with bots built, deployed, and monitored through a central web console rather than a locally installed control room, which can simplify rollout across multiple offices. If your enterprise already runs mostly on-premise infrastructure and needs deep legacy system reach, UiPath is usually the stronger starting point. If IT wants automation managed centrally through the cloud with less local infrastructure to maintain, Automation Anywhere deserves a look. We work with both and will tell you honestly which one fits your environment during the discovery call.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- UAE CONTEXT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="uae-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="uae-heading" style="margin-bottom:1.5rem;">Where UiPath Shows Up in UAE Enterprises</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        UiPath shows up most often in UAE banking, government-adjacent entities, and large back-office operations: the kinds of organizations running core systems that were installed years or decades ago and never designed to expose an API. These are also the sectors where a rules-based process runs at genuinely high volume, reconciliations, batch data entry, and repetitive report generation, so the return on a well-built bot is direct and easy to measure against the manual alternative. Where a process still calls for human judgment or the underlying data is unstructured, we typically recommend pairing a UiPath bot with an AI step rather than relying on RPA alone.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SCOPING -->
+<section class="section" aria-labelledby="scoping-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="scoping-heading" style="margin-bottom:1.5rem;">How We Scope a UiPath Project</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Pricing and timeline for a UiPath engagement depend on three things: how many distinct processes need automating, how stable and well-documented those processes already are, and what governance and compliance review your organization requires before a bot can touch production data. A single, well-understood process with light governance needs can move from discovery to production in a matter of weeks. A department-wide program spanning several legacy systems, heavier compliance review, and phased rollout across multiple teams gets scoped and priced in stages, so you see value from the first process going live rather than waiting for the entire program to finish before anything ships.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PITFALLS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="pitfalls-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="pitfalls-heading" style="margin-bottom:1.5rem;">Where UiPath Programs Typically Go Wrong</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Most failed RPA programs we get called in to fix share the same root causes, and none of them are really about the software. A process that is not actually stable, one that changes format or exception handling every few weeks, will break a bot faster than any interface update, so we push back hard when a process still has too many undocumented exceptions to automate reliably. Bots built without a monitoring plan tend to fail quietly for weeks before anyone notices the backlog piling up behind them. And bots built to impress a demo audience rather than survive a full month of real production data usually don't hold up. We would rather scope a smaller, more stable process first than promise a department-wide rollout that stalls at the first edge case nobody planned for.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="what-we-build" class="section" aria-labelledby="usecases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="usecases-heading">What We Build With {tool.name}</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Representative engagements, scoped individually based on your systems and processes.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {tool.useCases.map((uc) => (
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Considering UiPath for a legacy process? We'll give you an honest read before you commit.</p>
+    <button onclick="openModal(this)" data-source="ai_automation_tools_uipath_mid" class="btn-primary">Book an Enterprise Automation Consultation</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Enterprise Automation Consultation</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Put {tool.name} to Work for Your Enterprise?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Book a consultation with our Dubai team. We'll scope the integration, the systems involved, and the governance your project needs.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ Enterprise-scale scoping</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source={`ai_automation_tools_${slugKey}_cta`} class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book an Enterprise Automation Consultation</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+.uipath-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+.uipath-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.uipath-toggle-btn.active { background:#006875; color:#fff; }
+.uipath-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const uipathToggleWrap = document.querySelector('.uipath-toggle');
+  if (uipathToggleWrap) {
+    const uipathBtns = uipathToggleWrap.querySelectorAll('.uipath-toggle-btn');
+    const uipathPanels = document.querySelectorAll('[data-uipath-tier-panel]');
+    uipathBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-uipath-tier');
+        uipathBtns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        uipathPanels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-uipath-tier-panel') !== key; });
+      });
+    });
+  }
+</script>
