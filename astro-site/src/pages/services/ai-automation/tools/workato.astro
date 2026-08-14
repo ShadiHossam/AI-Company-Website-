@@ -1,0 +1,363 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import { getAutomationTool } from "../../../../data/automationTools";
+
+const tool = getAutomationTool('workato');
+const slugKey = tool.slug.replace(/-/g, '_');
+
+let faqItems = tool.faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', `ai_automation_tools_${slugKey}`)
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: tool.h1,
+    url: `https://lenooai.com/services/ai-automation/tools/${tool.slug}`,
+    description: tool.metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'Enterprise automation implementation projects: pricing based on scope, systems involved, and governance requirements. Book a consultation for a quote.' },
+    serviceType: tool.name,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Automation', item: 'https://lenooai.com/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'Tools', item: 'https://lenooai.com/services/ai-automation/tools' },
+      { '@type': 'ListItem', position: 4, name: tool.name, item: `https://lenooai.com/services/ai-automation/tools/${tool.slug}` },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title={tool.metaTitle}
+  description={tool.metaDescription}
+  canonicalPath={`/services/ai-automation/tools/${tool.slug}`}
+  arPath={`/ar/services/ai-automation/tools/${tool.slug}`}
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;" aria-label="Breadcrumb">
+      <a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      <a href="/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">AI Automation</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      <a href="/services/ai-automation/tools" style="color:inherit;text-decoration:none;opacity:0.65;">Tools</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      {tool.name}
+    </div>
+    <div style="margin-bottom:1.5rem;">
+      <img src={`https://cdn.simpleicons.org/${tool.logoSlug}/${tool.logoColor}`} alt={`${tool.name} logo`} width="56" height="56" loading="eager" fetchpriority="high" style="background:#fff;border-radius:16px;padding:10px;box-shadow:0 8px 24px rgba(0,59,92,0.18);" />
+    </div>
+    <h1>{tool.h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {tool.heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source={`ai_automation_tools_${slugKey}_hero`} class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1610563166150-b34df4f3bcd6?w=1400&q=80&auto=format&fit=crop" alt="Close-up of application code on a screen, representing the backend logic behind a governed enterprise integration recipe" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHAT IS -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">What Is {tool.name}?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.whatIs}
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        {tool.whatIsExtra}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATION ANGLE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="angle-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="angle-heading" style="margin-bottom:1.5rem;">How Lenoo AI Uses {tool.name} for UAE Enterprise Automation</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.integrationAngle}
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        {tool.integrationAngleExtra}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FREE VS PAID -->
+<section class="section" aria-labelledby="workato-pricing-heading">
+  <div class="container" style="max-width:800px;">
+    <h2 id="workato-pricing-heading" style="text-align:center; margin-bottom:1.5rem;">Workato Free Trial vs Paid</h2>
+    <div class="workato-toggle" role="tablist" aria-label="Pricing tier">
+      <button type="button" id="workato-tier-free" class="workato-toggle-btn active" data-workato-tier="free" role="tab" aria-selected="true" aria-controls="workato-panel-free">Free Trial</button>
+      <button type="button" id="workato-tier-paid" class="workato-toggle-btn" data-workato-tier="paid" role="tab" aria-selected="false" aria-controls="workato-panel-paid">Paid (Enterprise)</button>
+    </div>
+    <div class="card" id="workato-panel-free" data-workato-tier-panel="free" role="tabpanel" aria-labelledby="workato-tier-free">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Workato doesn't offer a self-serve free tier the way Zapier or Make do. What's available is a trial, arranged through a sales conversation rather than a signup form, that gives your team hands-on time with the recipe builder and a look at how the governance controls work before committing to a contract. It's a genuine way to evaluate the platform, but there's no scaled-down free option for running governed automation long-term, which is consistent with Workato positioning itself for mid-market and enterprise use cases rather than individual users or small teams.</p>
+    </div>
+    <div class="card" id="workato-panel-paid" data-workato-tier-panel="paid" role="tabpanel" aria-labelledby="workato-tier-paid" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Workato is priced through direct sales rather than published self-serve tiers, with contracts typically scaling from the tens of thousands of dollars a year at the entry level into six figures for larger programs, based on task volume, connector count, and support needs. That cost buys the governance layer this page is about: approval workflows, audit trails, and role-based access for who can publish a recipe, not a bare integration tool. We help you scope which tier your automation volume and governance requirements actually need before you sign, since a sales-led pricing model leaves room to over-buy without that scoping done first.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO IT'S FOR -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">Is {tool.name} Right for Your Enterprise?</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        {tool.whoItsFor}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ENGAGEMENT PHASES -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="engagement-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="engagement-heading" style="margin-bottom:1.5rem;">What a Typical Workato Enterprise Engagement Looks Like</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.75rem;">
+        Workato engagements center on one question before anything else gets built: who is allowed to publish an automation to production, and what happens when someone tries to move a category of data the business considers sensitive. Everything else in the engagement follows from how that question gets answered.
+      </p>
+      <div style="display:flex; flex-direction:column; gap:1.5rem;">
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">1. Discovery and Automation Audit</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">We start by cataloging what already exists: the Zaps, Make scenarios, and one-off scripts individual departments built on their own over time. Most organizations that reach out for Workato already have automation sprawling across five or six different tools with no one person accountable for all of it.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">2. Pilot Recipe</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">We build the first recipe against a real, bounded process, usually one that already involves a system IT is comfortable exposing, to prove out the connection standards and data handling rules before extending the pattern anywhere else.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">3. Governance Model Definition</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">This is the phase that sets Workato apart from a purely self-serve tool. We work with your IT or platform team to define who can publish a recipe, which data classes require approval before they can move, and how a change gets reviewed before it reaches production. Get this wrong and Workato just becomes an expensive version of the same sprawl it was meant to fix.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">4. Phased Rollout Across Departments</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">With the governance model agreed, we extend recipe-building access to individual department teams within those guardrails, so a finance or HR team can build its own automations without every request routing through a central IT queue.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">5. Ongoing Management</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">We hand over documentation so your internal team can maintain and extend what we built, and offer ongoing retainers for anything that needs a specialist: updating a recipe when a connected system changes its API, or reviewing a new data class that needs a governance decision.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">Workato vs. Boomi</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Workato and <a href="/services/ai-automation/tools/boomi">Boomi</a> both sit in the enterprise integration category, but they solve different problems. Workato is built around governed, recipe-based automation for organizations that have outgrown ad-hoc no-code sprawl and need IT oversight without losing the self-service speed department teams are used to. Boomi is built around hybrid connectivity, bridging an on-premise ERP or legacy database with modern cloud tools through its local Atom runtime. If your problem is automation sprawl across departments and a lack of governance, Workato is the better fit. If your problem is a legacy system that needs to talk to the cloud without exposing it directly to the internet, Boomi is built for exactly that. Some enterprises end up running both, for different parts of the business, and we will say so plainly if that is what your situation calls for.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- UAE CONTEXT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="uae-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="uae-heading" style="margin-bottom:1.5rem;">Where Workato Fits in UAE Organizations</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Workato tends to show up once a UAE mid-market or enterprise business has grown past the point where a handful of Zaps built by whoever had time is manageable, and IT wants a say in what gets automated without becoming the bottleneck for every request. That is common in organizations with several business units each running their own tools, where the same customer or financial record needs to move between five or six systems and no one wants that logic living in an unowned Zap that only one person understands.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SCOPING -->
+<section class="section" aria-labelledby="scoping-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="scoping-heading" style="margin-bottom:1.5rem;">How We Scope a Workato Project</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        A Workato engagement is priced around two variables more than most integration projects: how many systems and departments the automation needs to span, and how much governance design work is required before your IT team is comfortable letting department teams build their own recipes. An organization consolidating a handful of existing automations onto Workato with a straightforward governance model can move relatively quickly. An organization defining governance from scratch across many departments, each with its own data sensitivity concerns, takes longer up front but tends to move faster on every recipe after that foundation is in place. We scope the governance definition work separately from the recipe-building work, since they genuinely are two different kinds of effort.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PITFALLS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="pitfalls-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="pitfalls-heading" style="margin-bottom:1.5rem;">Where Workato Rollouts Typically Go Wrong</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        The failure mode we see most with Workato is the governance model existing on paper but not in practice: a policy says a given data classification requires approval, but no one actually checks a new recipe against it before it goes live, so the sprawl the platform was meant to fix quietly comes back in a governed shell. The other common issue is treating the governance model as a one-time decision instead of something that gets revisited as new systems and data types get added. We build review checkpoints into the rollout itself, not just the initial setup, so the governance model stays real rather than becoming a document nobody consults.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- VS NO-CODE -->
+<section class="section" aria-labelledby="vsnocode-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vsnocode-heading" style="margin-bottom:1.5rem;">Workato vs. No-Code Automation Tools</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        The line between Workato and a tool like Zapier or Make is not really about capability. Both connect apps and move data. It is about who is allowed to build what. Zapier and Make are self-serve: anyone with an account can publish an automation that touches production data with no review. Workato adds a governance layer on top of the same kind of recipe-based building, so a department can still move fast, but a change touching sensitive data routes through approval first. If your organization has a handful of automations and no real oversight problem yet, Zapier or Make is the cheaper, faster route, and we will say so. Workato earns its cost once that lack of oversight becomes a genuine risk rather than a hypothetical one.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="what-we-build" class="section" aria-labelledby="usecases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="usecases-heading">What We Build With {tool.name}</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Representative engagements, scoped individually based on your systems and processes.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {tool.useCases.map((uc) => (
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- DATA HANDLING AND COMPLIANCE IN WORKATO RECIPES -->
+<section class="section" aria-labelledby="security-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="security-heading" style="margin-bottom:1.5rem;">Data Handling &amp; Compliance in Workato Recipes</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Because Workato sits at the center of enterprise data flows, often touching HR, finance, and customer data in the same recipe, we build every integration with your data classification rules in mind from the start. That means identifying which fields are sensitive before the recipe is designed, applying field-level encryption or masking where your policy requires it, and making sure the audit trail Workato generates natively is actually reviewed, not just switched on and forgotten.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        For UAE enterprises operating under sector-specific regulation, banking, insurance, or healthcare among them, we also document the recipe's data flow end to end: what enters, what's transformed, what leaves, and to where. That documentation is usually what a compliance review actually asks for, and having it ready from day one avoids the recipe sitting in an approval queue for weeks after it's technically finished.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Automation sprawling across departments with no oversight? Let's talk about fixing that.</p>
+    <button onclick="openModal(this)" data-source="ai_automation_tools_workato_mid" class="btn-primary">Book an Enterprise Automation Consultation</button>
+  </div>
+</section>
+
+<!-- GETTING STARTED -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="getting-started-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="getting-started-heading" style="margin-bottom:1.5rem;">Getting Started With Workato</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        The first step in any Workato engagement is agreeing on the governance model before a single recipe is built: who can publish to production, which data categories need approval, and how changes get reviewed. Skipping that step tends to mean rebuilding the access model later once the platform is already in use across several departments, which is more disruptive than settling it up front.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Once that's agreed, we usually build one or two recipes end to end as a reference pattern, involving whichever department team will eventually own that kind of automation, so they see exactly how a recipe moves from draft to approved to live before being asked to build their own within the guardrails IT has set.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Enterprise Automation Consultation</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Put {tool.name} to Work for Your Enterprise?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Book a consultation with our Dubai team. We'll scope the integration, the systems involved, and the governance your project needs.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ Enterprise-scale scoping</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source={`ai_automation_tools_${slugKey}_cta`} class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book an Enterprise Automation Consultation</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+.workato-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+.workato-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.workato-toggle-btn.active { background:#006875; color:#fff; }
+.workato-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const workatoToggleWrap = document.querySelector('.workato-toggle');
+  if (workatoToggleWrap) {
+    const workatoBtns = workatoToggleWrap.querySelectorAll('.workato-toggle-btn');
+    const workatoPanels = document.querySelectorAll('[data-workato-tier-panel]');
+    workatoBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-workato-tier');
+        workatoBtns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        workatoPanels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-workato-tier-panel') !== key; });
+      });
+    });
+  }
+</script>
