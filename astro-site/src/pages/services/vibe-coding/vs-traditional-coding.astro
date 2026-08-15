@@ -1,0 +1,296 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "Did Andrej Karpathy invent vibe coding?", answer: "He coined the term in a February 2025 post, describing a style of building software by talking to an AI and accepting its output without reading every line closely. The practice of using AI to write code existed before that, but Karpathy's post is where the name and the current debate around it both trace back to." },
+  { question: "Is vibe coding just a hype cycle?", answer: "The term and the discourse around it will likely fade the way most named trends do. The underlying shift, AI writing a growing share of code under human direction, is not a fad; it's already how a large share of professional developers work day to day, whether or not anyone calls it \"vibe coding\" a year from now." },
+  { question: "Which approach actually wins for production software?", answer: "Neither wins outright, they're not really competing at the same job. Fully manual coding without any AI assistance is now the slower, more expensive option for most standard software tasks. Fully unreviewed vibe coding is a real risk for anything serious. The approach that wins is AI-accelerated development with human review and testing layered on top, which is faster than traditional coding and safer than unreviewed AI output." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'vibe_coding_vs_traditional')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+---
+
+<BaseLayout
+  title="Vibe Coding vs Traditional Coding: Is It Dead or Real? | Lenoo AI"
+  description="Where the term vibe coding came from, the real debate around it, and an honest side-by-side comparison with traditional coding."
+  canonicalPath="/services/vibe-coding/vs-traditional-coding"
+  ogImage="/assets/og-services.jpg"
+  ldJson={[faqLdJson]}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services" style="color:inherit;text-decoration:none;opacity:0.65;">Services</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/vibe-coding" style="color:inherit;text-decoration:none;opacity:0.65;">Vibe Coding</a><span style="opacity:0.4;padding:0 4px;"> / </span>Vibe Coding vs Traditional Coding</div>
+    <h1>Vibe Coding vs. <span class="gradient-text">Traditional Coding.</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      Where the term came from, what the debate is actually about, and an honest look at where each approach wins.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="vibe_vstraditional_hero" class="btn-primary">Discuss Your Project</button>
+      <a href="#comparison" class="btn-outline">See the Comparison ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1765561667528-28e39c6174dd?w=1400&h=260&q=80&auto=format&fit=crop" alt="Two developers looking closely at a shared screen, comparing coding approaches side by side" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- ORIGIN -->
+<section class="section" aria-labelledby="origin-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="origin-heading" style="margin-bottom:1.5rem;">Where the Term Came From</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+          Andrej Karpathy, a founding member of OpenAI and former head of AI at Tesla, coined "vibe coding" in a February 2025 post describing a way of building software by talking to an AI, accepting what it generates, and moving forward on feel rather than reading every line closely. The name stuck because it captured something a lot of developers were already doing without a word for it. The practice, directing an AI to write code and reviewing the result rather than typing every character by hand, existed before the term. What Karpathy's post did was give the wider debate, about speed, quality, and what's actually being traded off, a name to argue over.
+        </p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+          It's worth noting Karpathy's original framing was narrower than how the term is often used today. He was describing a specific, casual mode of building, side projects, weekend experiments, where correctness mattered less than speed and the code wasn't going anywhere important. As the term spread, it got applied much more broadly, to serious production software as well as throwaway experiments, which is a large part of why the current debate exists: people are often arguing about different things while using the same word.
+        </p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1695891689981-0be360e84d3f?w=800&h=600&q=80&auto=format&fit=crop" alt="Two developers collaborating at a desk over a laptop, representing the traditional software development process" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THE DEBATE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="debate-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="debate-heading">The Debate, Both Sides Fairly</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Reddit threads and developer forums split roughly into two camps. Both are making a real point.</p>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div class="value-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:1rem;">The Case For</h3>
+        <p style="color:#42474e; font-size:0.9rem; line-height:1.8;">Software gets built and shipped dramatically faster. Boilerplate, tests, and repetitive implementation work that used to eat most of a project's timeline now takes a fraction of the time. Ideas get tested with real users instead of sitting in a backlog for months. For a huge share of standard software tasks, correct AI-generated code reviewed by a competent engineer is simply better economics than the same task done entirely by hand. Proponents also point out that most software isn't novel, it's a variation on patterns that already exist, which is exactly the kind of work AI handles well.</p>
+      </div>
+      <div class="value-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:1rem;">The Case Against</h3>
+        <p style="color:#42474e; font-size:0.9rem; line-height:1.8;">Code nobody fully understands is code nobody can safely maintain, debug under pressure, or trust with sensitive data. Critics point to real incidents, security bugs, unmaintainable structure, "it worked in the demo" products that fell apart under real use, all traced back to skipping the review and testing that any serious codebase needs. The criticism isn't of AI writing code; it's of AI writing code with nobody checking it. Critics also worry about a skills gap forming, developers who never learn what the AI is doing underneath, and struggle when something breaks in a way the AI can't fix on its own.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMMON OBJECTIONS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="objections-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="objections-heading" style="text-align:left; margin-bottom:1.5rem;">The Objections Raised Most Often, Answered Honestly</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      <strong>"It's just autocomplete with extra steps."</strong> This was closer to true a few years ago. Current tools can plan multi-file changes, run tests, and correct their own mistakes across a session, closer to directing a junior developer than accepting a single suggestion. The comparison to autocomplete undersells what's changed in the last two years specifically.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      <strong>"You can't trust code you didn't write yourself."</strong> Most professional software already runs on code the current maintainer didn't personally write, open-source libraries, code from former employees, generated boilerplate. Trust has always come from testing and review, not from personal authorship. That standard doesn't change for AI-generated code; it just needs to actually be applied.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      <strong>"This is going to put developers out of work."</strong> The clearest evidence so far points the other way: demand for developers who can direct AI tools well, review their output critically, and handle the judgment calls AI can't make is rising, not falling. What's changing is the shape of the job, less time typing syntax, more time on architecture and review, not whether the job exists.
+    </p>
+  </div>
+</section>
+
+<!-- COMPARISON -->
+<section id="comparison" class="section" aria-labelledby="comparison-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="comparison-heading">Side by Side</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Not two competing philosophies, two points on the same spectrum. Most real projects today sit somewhere between them.</p>
+    </div>
+    <div style="max-width:820px; margin:0 auto;">
+      <div class="vscoding-toggle" role="tablist" aria-label="Coding approach">
+        <button type="button" id="vscoding-tab-traditional" class="vscoding-toggle-btn active" data-vscoding-tier="traditional" role="tab" aria-selected="true" aria-controls="vscoding-panel-traditional">Traditional Coding</button>
+        <button type="button" id="vscoding-tab-vibe" class="vscoding-toggle-btn" data-vscoding-tier="vibe" role="tab" aria-selected="false" aria-controls="vscoding-panel-vibe">Vibe Coding</button>
+      </div>
+      <div class="card" id="vscoding-panel-traditional" data-vscoding-tier-panel="traditional" role="tabpanel" aria-labelledby="vscoding-tab-traditional">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:1rem;">Traditional Coding (No AI)</h3>
+        <div class="vc-week-row"><span class="vc-week-tag">Speed</span><span>Slowest of the three approaches for standard tasks</span></div>
+        <div class="vc-week-row"><span class="vc-week-tag">Cost</span><span>Highest, since every line is written manually</span></div>
+        <div class="vc-week-row"><span class="vc-week-tag">Quality</span><span>Depends entirely on the individual developer's skill and time</span></div>
+        <div class="vc-week-row"><span class="vc-week-tag">Maintainability</span><span>Generally strong, since the author understands every part they wrote</span></div>
+        <div class="vc-week-row"><span class="vc-week-tag">Best for</span><span>Highly specialized, novel problems with no existing pattern to draw on</span></div>
+      </div>
+      <div class="card" id="vscoding-panel-vibe" data-vscoding-tier-panel="vibe" role="tabpanel" aria-labelledby="vscoding-tab-vibe" hidden>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:1rem;">Unreviewed Vibe Coding</h3>
+        <div class="vc-week-row"><span class="vc-week-tag vc-week-tag-fast">Speed</span><span>Fastest to a working demo</span></div>
+        <div class="vc-week-row"><span class="vc-week-tag vc-week-tag-fast">Cost</span><span>Lowest upfront cost</span></div>
+        <div class="vc-week-row"><span class="vc-week-tag">Quality</span><span>Unpredictable; real risk on anything handling data or access control</span></div>
+        <div class="vc-week-row"><span class="vc-week-tag">Maintainability</span><span>Often poor once the builder didn't closely follow what was generated</span></div>
+        <div class="vc-week-row"><span class="vc-week-tag">Best for</span><span>Personal projects, prototypes, low-stakes experiments</span></div>
+      </div>
+    </div>
+    <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin-top:1.5rem;">
+      Neither option describes how most professional software actually gets built today. Traditional coding is slower than necessary for the large share of tasks that follow familiar patterns. Unreviewed vibe coding is too risky for anything with real users or real data behind it. The approach that's actually winning ground in the industry sits between them.
+    </p>
+    <div style="text-align:center; margin-top:2rem; padding:1.75rem; background:#f0f3ff; border-radius:16px;">
+      <p style="color:#42474e; font-size:0.95rem; line-height:1.8; margin:0;"><strong>What actually wins for production software:</strong> AI-accelerated development with senior engineer review and automated testing layered on top. It keeps the speed advantage of vibe coding while removing the unpredictable quality that critics rightly point to, which is the whole premise of how we build. See our <a href="/services/vibe-coding/risks-and-limitations" style="color:#006875;">risks and limitations</a> breakdown for exactly what that review catches.</p>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.5rem;">
+      Think of it less as a third option and more as taking the "Cost" and "Speed" row from unreviewed vibe coding and the "Quality" and "Maintainability" rows from traditional coding, without inheriting either one's downside. That's a deliberate description, not a marketing claim; it's exactly what adding a fixed review and testing step to an AI-accelerated workflow does structurally, regardless of who's doing it.
+    </p>
+  </div>
+</section>
+
+<!-- REDDIT DEBATE -->
+<section class="section" aria-labelledby="reddit-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="reddit-heading" style="text-align:left; margin-bottom:1.5rem;">What the Reddit Threads Actually Argue About</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      Developer communities on Reddit split roughly along experience lines. Threads from newer developers and non-technical builders tend to focus on what's now possible, shipping something real without years of prior training, and treat the speed gain as the headline. Threads from senior engineers tend to focus on what happens after launch, who maintains this in a year, what happens the first time it needs a feature the original prompt never anticipated, and treat the maintainability question as the one that actually matters.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      Both groups are usually talking about genuinely different projects without realizing it. A newer builder shipping a personal weekend project and a senior engineer maintaining a five-year-old production system have almost nothing in common except the word "vibe coding," which is why the same thread often reads as two separate arguments happening at once rather than one disagreement.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      The most productive threads tend to converge on a version of the same conclusion this page argues for directly: vibe coding is a legitimate way to build, provided the review and testing step scales with how much is at stake. The least productive threads are the ones arguing past each other because nobody names what kind of project, and what kind of stakes, they're actually talking about.
+    </p>
+  </div>
+</section>
+
+<!-- IS IT DYING -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="dying-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="dying-heading" style="text-align:left; margin-bottom:1.5rem;">Is Vibe Coding Dying or Overhyped?</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      The specific phrase will likely fade, most named trends do, and there's already visible backlash to the term itself in developer communities. But the underlying shift it describes, a growing share of code being generated by AI under human direction, isn't a fad. It's already the default working style at a large share of software companies, whether or not anyone still calls it "vibe coding" in a year.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      What's actually happening isn't AI replacing developers or developers rejecting AI wholesale. It's the industry converging on a middle position: AI generates the first draft, a person reviews it, tests confirm it, and only then does it ship. That's not a hype cycle. It's just what professional software development looks like now.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      A reasonable prediction: within a couple of years, this entire debate will feel dated, the same way arguing about whether developers should use a code editor's autocomplete once felt like a real question. Not because the underlying concern about quality disappears, but because the review-and-test workflow that answers it becomes so standard that nobody bothers to name it separately anymore. The term will likely be remembered the way "the cloud" or "Web 2.0" are now, a useful label for its moment, not a permanent category.
+    </p>
+  </div>
+</section>
+
+<!-- BRIDGE / MID CTA -->
+<section class="section" aria-labelledby="next-step-heading">
+  <div class="container" style="max-width:820px; text-align:center;">
+    <h2 id="next-step-heading" style="margin-bottom:1rem;">Speed Without the Downsides Critics Point To</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      Every real criticism of vibe coding is a criticism of skipping review, not of AI-accelerated development itself. Our process keeps the speed advantage and adds the senior engineer review, testing, and QA that turns "unreviewed AI output" into production-grade software.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:2rem;">
+      That's the whole difference between the debate's two camps, solved by process, not by picking a side, and it's why the argument itself doesn't need to be settled before you can build something that holds up.
+    </p>
+    <button onclick="openModal(this)" data-source="vibe_vstraditional_mid" class="btn-primary">Discuss Your Project</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Build It the Right Way?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Tell us what you want to build. We'll give you a timeline and cost estimate, free, with no commitment.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="vibe_vstraditional_final" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Discuss Your Project</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "name": "Vibe Coding vs Traditional Coding",
+      "url": "https://lenooai.com/services/vibe-coding/vs-traditional-coding",
+      "description": "Where the term vibe coding came from, the real debate around it, and an honest side-by-side comparison with traditional coding.",
+      "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+      "areaServed": "United Arab Emirates",
+      "serviceType": "Software Development"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://lenooai.com/services" },
+        { "@type": "ListItem", "position": 3, "name": "Vibe Coding", "item": "https://lenooai.com/services/vibe-coding" },
+        { "@type": "ListItem", "position": 4, "name": "Vibe Coding vs Traditional Coding", "item": "https://lenooai.com/services/vibe-coding/vs-traditional-coding" }
+      ]
+    }
+  ]
+}
+</script>
+
+</BaseLayout>
+
+<style>
+.vc-week-row { display:flex; align-items:center; gap:1rem; padding:0.875rem 0; border-bottom:1px solid rgba(0,37,59,0.08); color:#42474e; font-size:0.9375rem; }
+.vc-week-row:last-child { border-bottom:none; }
+.vc-week-tag { flex-shrink:0; width:110px; font-weight:700; font-size:0.8125rem; color:#72787e; }
+.vc-week-tag-fast { color:#006875; }
+.vscoding-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+.vscoding-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.vscoding-toggle-btn.active { background:#006875; color:#fff; }
+.vscoding-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const vscodingToggleWrap = document.querySelector('.vscoding-toggle');
+  if (vscodingToggleWrap) {
+    const vscodingBtns = vscodingToggleWrap.querySelectorAll('.vscoding-toggle-btn');
+    const vscodingPanels = document.querySelectorAll('[data-vscoding-tier-panel]');
+    vscodingBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-vscoding-tier');
+        vscodingBtns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        vscodingPanels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-vscoding-tier-panel') !== key; });
+      });
+    });
+  }
+</script>
