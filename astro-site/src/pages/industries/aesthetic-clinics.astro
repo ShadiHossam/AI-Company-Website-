@@ -1,0 +1,327 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "How is patient privacy actually handled in an automated DM conversation?", answer: "Conversations run through Meta's official, encrypted messaging APIs, and the AI is configured to keep specific treatment details out of anything that isn't necessary, offering a private consultation booking rather than discussing a client's condition in detail over DM. Sensitive topics, or anything that reads as a medical question rather than a booking question, get routed to a practitioner instead of answered by the bot." },
+  { question: "Can the AI make treatment claims, or does that create a compliance risk?", answer: "The bot is built to stay within DHA-compliant language: it can describe a treatment, share pricing and availability, and book a consultation, but it doesn't make specific outcome guarantees or medical claims. Anything that requires a clinical answer, expected results for a specific patient, contraindications, is routed to a practitioner rather than answered automatically." },
+  { question: "How does session and package tracking work for multi-visit treatments?", answer: "It tracks sessions used and remaining per patient, per package, whether that's a 6-session laser course or a quarterly filler touch-up plan, and sends a reminder as the next session or renewal comes due. Patients get a timely nudge instead of a package quietly expiring unused." },
+  { question: "Will an AI response feel too automated for a clinic that depends on trust?", answer: "The tone, formality, and language are set by your clinic before it goes live, and most patients messaging at 11pm just want a fast, accurate answer about availability and pricing, not a long conversation. Anything more sensitive, or anything a bot genuinely can't answer well, gets handed to a practitioner." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI for Aesthetic and Derma Clinics in the UAE",
+    "url": "https://lenooai.com/industries/aesthetic-clinics",
+    "description": "Custom AI systems for UAE aesthetic and derma clinics: Instagram and WhatsApp DM response, consultation booking, treatment follow-up, and package tracking.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Aesthetic and Derma Clinics"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Aesthetic Clinics AI", "item": "https://lenooai.com/industries/aesthetic-clinics" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation for Aesthetic and Derma Clinics in the UAE: The Complete Guide | Lenoo AI"
+  description="AI for aesthetic clinics in Dubai: Instagram and WhatsApp DM response, consultation booking, treatment follow-up, and DHA-compliant patient communication."
+  canonicalPath="/industries/aesthetic-clinics"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Aesthetic Clinics</div>
+    <h1>AI for Dubai<br><span class="gradient-text">Aesthetic & Derma Clinics</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI systems for UAE aesthetic and derma clinics: Instagram and WhatsApp DM response, consultation booking, and package tracking. Built for a clinic where the real front door is a DM, not a phone line, and discretion isn't optional.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="aesthetic_clinics_hero" class="btn-primary">Book a Free Aesthetic Clinic AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&q=80&auto=format&fit=crop" alt="Modern aesthetic clinic treatment room interior" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 55%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "9x", caption: "more likely to convert when a lead is contacted within 5 minutes instead of 30 (MIT)" },
+      { value: "11pm", caption: "is when a lot of genuine enquiry intent actually arrives on Instagram DM" },
+      { value: "24/7", caption: "coverage that keeps replying while the clinic is closed" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY AESTHETIC CLINICS & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why Instagram DMs are the real front door, and why nobody's answering at 11pm</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Discovery happens on Instagram, and so does the first message.</strong> A prospective patient sees a before-and-after post, or a treatment video, and messages the clinic right there, often late at night when they've had time to actually browse. If nobody replies until the clinic opens, a lot of that initial interest has already gone cold, or gone to a clinic that answered.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>These conversations are more sensitive than a typical booking enquiry.</strong> A patient asking about a treatment is often asking something personal, and the way that first reply is handled, discreet, professional, unhurried, matters more here than in most industries. Getting that tone wrong loses trust before a consultation is even booked.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Most of the revenue is repeat and package-based.</strong> Courses of sessions, quarterly touch-ups, membership-style treatment plans, the clinics that do well are the ones that reliably bring patients back for the next session, not just the ones that book the first consultation.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80&auto=format&fit=crop" alt="Aesthetic clinic reception area with a calm, private waiting space" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE Aesthetic and Derma Clinics</h2>
+      <p>Six systems built around Instagram-led enquiries, discretion, and package-based treatment plans.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">chat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Instagram/WhatsApp DM Response Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Replies to treatment enquiries the moment they arrive, in a discreet, professional tone, sharing pricing and availability and moving toward a consultation without a long wait.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Covers Instagram, WhatsApp, and website chat in one system</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Consultation Booking Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Books a consultation against the right practitioner's real calendar, collects the basic intake details needed ahead of time, and confirms the appointment in the same conversation.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Books against real practitioner availability, not a generic slot</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Treatment Follow-up & Rebooking</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Follows up after a treatment to check how the patient is doing, and reaches out again as the next session in their course or plan comes due.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Timed to each patient's own treatment schedule</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">healing</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Pre/Post-care Instruction Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends clinic-approved pre-treatment prep and post-treatment care instructions automatically, at the right time, so patients aren't relying on memory for aftercare.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Sent automatically, so aftercare instructions never get skipped</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">payments</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Payment Plan & Package Reminder</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Tracks sessions used and remaining on a course or package, and sends a renewal or instalment reminder before it quietly lapses or a payment is missed.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reminders sent before a package expires, not after</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">rate_review</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Review & Before-After Consent Request</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Asks for a review at the right moment, and separately, clearly requests consent before any before-and-after content is used, never assumed or bundled into another message.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Consent requested explicitly, never bundled or assumed</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Built around DHA-compliant language, in Arabic and English.</p>
+      <button onclick="openModal(this)" data-source="aesthetic_clinics_mid" class="btn-primary">Book a Free Aesthetic Clinic AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- ONE DM JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="journey-heading">One DM, midnight enquiry to booked consultation</h2>
+      <p>What the AI handles from a late-night Instagram message to a returning, well-cared-for patient.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Answered instantly instead of by morning</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A late-night DM asks about a treatment seen on the clinic's page. The reply doesn't wait until opening hours.</p>
+        <ul class="journey-list">
+          <li>Replies in a discreet, professional tone in the same conversation</li>
+          <li>Shares pricing and availability without a long delay</li>
+          <li>Moves the conversation toward a booked consultation</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Booked with the right practitioner</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">The consultation gets booked against a real calendar, not a placeholder.</p>
+        <ul class="journey-list">
+          <li>Checks the requested practitioner's actual availability</li>
+          <li>Collects basic intake details ahead of the visit</li>
+          <li>Sends pre-visit instructions and a reminder closer to the date</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The follow-up that brings the client back</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">The visit ends, but the treatment plan usually isn't a one-time thing.</p>
+        <ul class="journey-list">
+          <li>Sends post-treatment care instructions automatically</li>
+          <li>Checks in after the treatment to catch any concern early</li>
+          <li>Reaches out again as the next session or renewal comes due</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BIGGEST IMPACT -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">nightlight</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">After-hours lead capture</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">A significant share of Instagram enquiries about aesthetic treatments happen outside clinic hours. A discreet, professional reply that arrives immediately, instead of the next morning, keeps that interest from cooling off or going to a competitor.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">The gap between an evening DM and a morning reply is where enquiries get lost</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Consultation booking</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Turning a DM conversation directly into a booked consultation, without needing the patient to call or fill out a separate form, removes friction at exactly the moment interest is highest.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Fewer steps between interest and a booked slot means fewer drop-offs</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Package and course rebooking</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Multi-session treatment plans depend on the patient actually returning for each session. A reminder timed to their specific course, not a generic marketing message, is what keeps a plan on track.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">A course that's followed through is worth far more than one that lapses</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT MAKES IT WORK -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Instagram + WhatsApp integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Connected through official, encrypted messaging APIs, so conversations happen in the same channel patients already trust, not a separate portal they have to switch to.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">DHA-compliant claims language</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Built to describe treatments and pricing without making specific medical claims or outcome guarantees, and to route genuinely clinical questions to a practitioner.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Sensitive/private topic handling</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Keeps replies discreet and steers anything that needs a clinical or highly personal answer to a practitioner rather than trying to handle it automatically.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Package/multi-session tracking</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Knows exactly how many sessions a patient has used and has left on any course or plan, so renewal and rebooking reminders go out on schedule.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT THE DATA SHOWS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1562564055-71e051d33c19?w=1200&q=80&auto=format&fit=crop" alt="Aesthetic clinic consultation room with a phone showing a booking conversation" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">9x</p>
+        <p style="color:#42474e; font-size:0.875rem;">more likely to convert when contacted within 5 minutes instead of 30 (MIT)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">11pm</p>
+        <p style="color:#42474e; font-size:0.875rem;">is a common time for real treatment enquiries, well outside clinic hours</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">DM-first</p>
+        <p style="color:#42474e; font-size:0.875rem;">is how most patients now start the conversation, before they ever call</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Enquiry Timing</p>
+          <p style="color:#42474e; line-height:1.7;">Clinics we talk to consistently describe evening and late-night as the busiest window for genuine Instagram enquiries, exactly when the front desk isn't staffed. An enquiry answered the next morning has often already gone to a clinic that replied overnight.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Trust and Tone</p>
+          <p style="color:#42474e; line-height:1.7;">Aesthetic and derma enquiries are more personal than a typical booking message. Clinics report that a fast, discreet, well-worded reply builds trust before a consultation even happens, while a slow or generic one loses it.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Package Follow-through</p>
+          <p style="color:#42474e; line-height:1.7;">Multi-session courses depend on patients actually returning for every visit. Clinics that send a timed reminder for the next session in a course report noticeably better follow-through than relying on the patient to remember on their own.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for aesthetic and derma clinics</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Aesthetic Clinic AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll look at how enquiries actually arrive at your clinic, where discretion and DHA-compliant language matter most, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="aesthetic_clinics_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book a Free Aesthetic Clinic AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    /* Journey list markers (reused inside static bento-grid-3 cards) */
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>
