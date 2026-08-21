@@ -1,0 +1,327 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Can the parts availability checker connect to our actual stock system?", answer: "Yes, it's built to read from your parts inventory or workshop management system directly, so a customer or advisor gets a real answer, not a guess. Where a part isn't in stock, it can check lead time from your usual supplier connection if that data is available, or flag it for a quick manual check." },
+  { question: "How does fleet account management work differently from a normal customer?", answer: "Fleet and B2B accounts get a separate flow: multiple vehicles under one account, consolidated service scheduling, and invoicing that matches how the fleet manager actually wants to be billed, whether that's per vehicle or on a consolidated monthly statement. Status updates can go to one fleet coordinator instead of chasing individual drivers." },
+  { question: "How fast can customers expect a quote approval to come back?", answer: "The system doesn't change how long your technicians take to diagnose a job; it changes how fast the approval request reaches the customer and how fast their response reaches the workshop floor. Sending the quote with photos over WhatsApp the moment diagnosis is done, instead of waiting for a phone call window, is usually where most of the delay disappears." },
+  { question: "Do customers need to install an app to get status updates?", answer: "No. Everything runs over WhatsApp, which is already on nearly every customer's phone. There's no app to download and no portal login to remember, which is part of why response and approval rates are higher than with email or a customer portal." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Automation for Auto Service Centres in the UAE",
+    "url": "https://lenooai.com/industries/auto-service",
+    "description": "Custom AI systems for UAE auto service centres and garages: service booking, job status updates, quote approval via WhatsApp, parts availability, and fleet coordination.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Auto Service Centres"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Auto Service AI", "item": "https://lenooai.com/industries/auto-service" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation for Auto Service Centres in the UAE: The Complete Guide | Lenoo AI"
+  description="How UAE auto service centres and garages use AI for booking, job status updates, quote approval via WhatsApp, parts availability, and fleet coordination."
+  canonicalPath="/industries/auto-service"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Auto Service</div>
+    <h1>AI Automation for<br>UAE <span class="gradient-text">Auto Service Centres</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI systems for UAE garages and auto service centres: booking, job status updates, quote approval, and parts availability. Bilingual, workshop-integrated, and backed by our 100% refund guarantee.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="auto_service_hero" class="btn-primary">Book Free Auto Service AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1600&q=80&auto=format&fit=crop" alt="Auto service centre workshop in the UAE" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 50%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "9×", caption: "more likely a booking converts when answered within 5 minutes (MIT)" },
+      { value: "200+", caption: "nationalities live in the UAE, most defaulting to WhatsApp for service updates" },
+      { value: "24/7", caption: "AI coverage for bookings, status updates, and quote approvals" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY AUTO SERVICE & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why the service desk phone never stops ringing</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Every stage of a service job generates a phone call.</strong> Booking the appointment, checking status mid-day, approving a quote once the technician finds something extra, confirming the car is ready: all of it defaults to a call, and all of it competes for the same one or two people staffing the front desk.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Quote approvals are where jobs stall the longest.</strong> A technician finds a worn part mid-service, the advisor calls the customer, the customer doesn't pick up, and the car sits on the ramp until someone reaches them. That dead time is pure lost throughput on a bay that could be running another job.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Fleet and individual customers need genuinely different handling.</strong> A fleet manager with 40 vehicles wants consolidated scheduling and one invoice, not 40 separate phone calls. Treating every customer the same way, whether it's a single car owner or a corporate account, wastes time on both sides.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=800&q=80&auto=format&fit=crop" alt="Mechanic working on a vehicle in a UAE auto service centre" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for Auto Service Centres</h2>
+      <p>Six specific systems our Dubai AI agency deploys for garages and auto service centres across the UAE, each integrated with your workshop management system.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Service Booking &amp; Reminder Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Lets customers check availability and book a service slot over WhatsApp, and sends reminders ahead of the appointment and for upcoming scheduled maintenance based on mileage or time since the last visit.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Booking made without a call during your busiest hours</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">directions_car</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Job Status Update Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends the customer a status update as the job moves through diagnosis, approval, and repair, so they're not calling the desk to ask if the car is ready.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Status update sent before the customer asks</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">receipt_long</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Quote Approval via WhatsApp</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends the customer the quote with photos of the issue the moment diagnosis is done, and lets them approve or decline directly in the chat, instead of waiting by the phone for a call.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Quote approved from a WhatsApp message, not a missed call</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">inventory_2</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Parts Availability Checker</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Checks your parts inventory in real time so advisors and customers get an accurate answer on stock and lead time instead of a guess, and flags jobs that need to wait on a part before they're scheduled.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Real stock answer, not a guess from the counter</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">star</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Follow-up &amp; Review Request</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Follows up after pickup to confirm everything's running well, and asks for a review at the moment satisfaction is highest, protecting your Google rating without a manual ask from staff.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Review requests sent when satisfaction is highest, not forgotten</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">local_shipping</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Fleet Service Coordinator (B2B)</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Manages scheduling, status updates, and invoicing for fleet accounts through one coordinator contact instead of individual driver calls, matching how the fleet manager actually wants to be billed.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">One contact handles a whole fleet, not 40 separate calls</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems are bilingual and integrated with your workshop management system.</p>
+      <button onclick="openModal(this)" data-source="auto_service_mid" class="btn-primary">Book Free Auto Service AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICE JOB JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="as-journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="as-journey-heading">One service job, drop-off to pickup</h2>
+      <p>What the AI takes care of at every stage, while your technicians focus on the vehicle, not the phone.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The booking made without a call</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A customer needs a service slot, at any hour, without waiting for the desk to pick up.</p>
+        <ul class="journey-list">
+          <li>Checks bay availability and confirms a slot directly over WhatsApp</li>
+          <li>Collects vehicle details and the reason for the visit ahead of drop-off</li>
+          <li>Sends a reminder the day before, so no-shows drop and bays stay filled</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The status update sent before the customer asks</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">While the car's on the ramp, the AI keeps the customer in the loop without a call from the desk.</p>
+        <ul class="journey-list">
+          <li>Confirms drop-off and gives an initial time estimate</li>
+          <li>Sends an update as diagnosis completes and work begins</li>
+          <li>Notifies the customer the moment the vehicle is ready for pickup</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The quote approved from a WhatsApp message</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">If the technician finds something extra mid-job, the AI keeps the car moving instead of sitting on the ramp.</p>
+        <ul class="journey-list">
+          <li>Sends the quote with photos of the issue the moment diagnosis is complete</li>
+          <li>Lets the customer approve or decline directly in the chat</li>
+          <li>Notifies the technician the instant a decision comes back, so the bay doesn't sit idle</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Booking &amp; Reminders</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Booking is the highest-volume, lowest-complexity call the front desk fields, which makes it the easiest to move off the phone entirely. Automated reminders based on mileage and service history also bring customers back proactively instead of waiting for them to remember.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Every booking captured, even outside opening hours</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">directions_car</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Status Updates</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">A large share of inbound calls to a workshop are customers asking where their car is in the process. Sending proactive updates at each stage eliminates most of that call volume before it happens.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Proactive updates replace the "is it ready yet" call</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">receipt_long</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Quote Approvals</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">The gap between "technician finds an issue" and "customer approves the extra work" is where the most bay time gets wasted. Cutting that gap from hours to minutes is the single biggest throughput improvement most workshops can make.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Approval requests reach the customer the moment diagnosis is done</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Workshop management system integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Bookings, job status, and quotes need to read and write directly into the system your advisors and technicians already use. A booking tool that runs separately from the workshop system creates a second version of the schedule nobody trusts.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Photo/video status updates</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A quote with a photo of the worn part attached gets approved faster and disputed less than a quote that's just a number. Status updates that include a photo of the vehicle build trust that a text message alone doesn't.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Multilingual support</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A UAE workshop's customer base spans a wide range of nationalities and first languages. Booking, status updates, and quote approval in Arabic and English cover far more of a workshop's actual customers than English alone.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Fleet/B2B account handling</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Fleet accounts need consolidated scheduling and invoicing routed to one coordinator, not the same flow built for a single walk-in customer. Treating both the same way frustrates the accounts that generate the most repeat business.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1517840901100-8179e982acb7?w=1200&q=80&auto=format&fit=crop" alt="Service advisor reviewing a vehicle repair quote in a UAE auto workshop" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">9×</p>
+        <p style="color:#42474e; font-size:0.875rem;">more likely a booking or approval lands when sent within 5 minutes (MIT)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">200+</p>
+        <p style="color:#42474e; font-size:0.875rem;">nationalities living in the UAE, reflected in most workshops' customer base</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">24/7</p>
+        <p style="color:#42474e; font-size:0.875rem;">coverage for bookings, status updates, and quote approvals</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">The Approval Bottleneck</p>
+          <p style="color:#42474e; line-height:1.7;">Workshop managers we talk to consistently point to the same choke point: a car sitting on the ramp waiting for a customer to answer a phone call about extra work. The MIT finding on 5-minute response speed applies just as much here as it does to a sales lead; a quote sent and answered fast keeps the bay moving, and a quote stuck on voicemail doesn't.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Call Volume at the Front Desk</p>
+          <p style="color:#42474e; line-height:1.7;">A meaningful share of inbound calls to a busy service centre are customers checking on status rather than booking something new. Every one of those calls is a routine question that a proactive WhatsApp update answers before it's asked, freeing the desk for the calls that actually need a person.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Channel Preference</p>
+          <p style="color:#42474e; line-height:1.7;">WhatsApp is the default channel most UAE customers already use for everyday communication with businesses. Booking, updates, and approvals sent there, instead of a phone call or a portal login, get answered faster simply because they arrive somewhere the customer already checks.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for auto service centres</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Auto Service AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll look at how bookings, status updates, and quote approvals are handled at your workshop today, and show you exactly what we'd automate first. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="auto_service_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Auto Service AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    /* Service job journey list markers (reused inside static bento-grid-3 cards) */
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>

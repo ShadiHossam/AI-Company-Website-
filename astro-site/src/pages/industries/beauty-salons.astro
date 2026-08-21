@@ -1,0 +1,327 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Is there a limit to how many Instagram DMs an AI can handle at once?", answer: "No practical limit that matters for a salon or spa. The bot connects through Meta's official messaging APIs, so it can hold hundreds of simultaneous conversations without a queue forming. The only thing that changes with volume is how you configure handoff rules, so a genuinely unusual request (a complaint, a medical question about a treatment) still reaches a human quickly instead of getting stuck in an automated loop." },
+  { question: "Can the bot actually book against a specific stylist's real calendar, not just a generic slot?", answer: "Yes, that's the difference between a booking bot and a real scheduling assistant. It reads live availability per stylist or treatment room from your booking software, accounts for service duration and any buffer time you've set, and only offers times that are genuinely free for the person or chair the client asked for. If a client has no preference, it can also route to whoever has the next open slot." },
+  { question: "How does the AI handle package and membership expiry without annoying clients?", answer: "It tracks sessions remaining and expiry dates per client and sends reminders on a schedule you set, usually a first nudge with a few sessions or weeks left, and a closer one nearer the deadline. The tone and timing are configurable, so a monthly membership renewal reads differently from a 6-session package that's about to lapse. Clients get a useful reminder, not a sales push." },
+  { question: "Do we lose the personal touch if bookings go through a bot instead of our front desk?", answer: "Most salons find the opposite happens. The bot handles the repetitive part, confirming a time, collecting a phone number, answering \"do you have anything Friday evening\", and your front desk or stylists spend their attention on clients who are actually in the chair or need something the bot can't handle. The brand voice, greeting style, and even emoji use are all set by you before the bot goes live." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI for Salons and Spas in the UAE",
+    "url": "https://lenooai.com/industries/beauty-salons",
+    "description": "Custom AI systems for UAE salons and spas: Instagram and WhatsApp booking bots, no-show reduction, stylist-level scheduling, and package renewal automation.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Salons and Spas"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Salons & Spas AI", "item": "https://lenooai.com/industries/beauty-salons" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation for Salons and Spas in the UAE: The Complete Guide | Lenoo AI"
+  description="AI for salons in Dubai: Instagram and WhatsApp booking bots, no-show reduction, stylist-level scheduling, and package renewal automation for UAE salons and spas."
+  canonicalPath="/industries/beauty-salons"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Salons & Spas</div>
+    <h1>AI for Dubai<br><span class="gradient-text">Salons & Spas</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI systems for UAE salons and spas: Instagram and WhatsApp booking bots, stylist-level scheduling, no-show reduction, and package renewal reminders. Built for the hours your clients actually message you, not just the hours your desk is staffed.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="beauty_salons_hero" class="btn-primary">Book a Free Salon & Spa AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1560184897-ae75f418493e?w=1600&q=80&auto=format&fit=crop" alt="Modern salon interior in Dubai with styling chairs" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 55%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "9x", caption: "more likely to convert when a lead is contacted within 5 minutes instead of 30 (MIT)" },
+      { value: "24/7", caption: "the window a booking bot actually covers, not just desk hours" },
+      { value: "200+", caption: "nationalities live in Dubai, most defaulting to WhatsApp or Instagram DM over phone calls" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY SALONS & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why your best bookings arrive when nobody's at the desk</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>The booking window and the working day don't overlap.</strong> A client scrolling Instagram at 11pm sees a hairstyle she wants and messages the salon right then. A front desk that closes at 8pm and reopens at 10am means that message sits for twelve hours, and by the time someone replies, she's often already booked somewhere that answered first.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Instagram and WhatsApp are the real booking channels, not the website.</strong> Most UAE salons get more genuine booking intent through a DM or a WhatsApp message than through a contact form. Clients want to send a reference photo, ask if a specific stylist is free, or confirm a price before they commit, and they want that conversation on the app they're already in.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>No-shows and late cancellations quietly eat the calendar.</strong> An empty chair at 3pm is a service slot that usually can't be resold on short notice. Reminders sent by hand, if they happen at all, tend to go out inconsistently. The salons with the fullest calendars are usually the ones where reminders happen every time, not just when the front desk remembers.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80&auto=format&fit=crop" alt="Stylist checking a phone for booking messages in a Dubai salon" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE Salons and Spas</h2>
+      <p>Six systems built for how salons and spas actually get booked, connected to your existing booking software.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">chat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Instagram/WhatsApp Booking Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Replies to booking DMs and WhatsApp messages the moment they arrive, day or night. Understands a reference photo request, checks real availability, and confirms a time without a client waiting for the desk to open.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Covers Instagram, WhatsApp, and your website chat from one system</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">notifications_active</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Appointment Reminder & No-show Reducer</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends confirmation and reminder messages automatically ahead of every appointment, with an easy reschedule link, so a client who genuinely can't make it tells you early enough to refill the slot.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Every appointment gets a reminder, every time, without a manual list</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">calendar_month</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Stylist/Room Scheduling Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Books against the real calendar of the stylist, therapist, or treatment room a client actually asked for, accounting for service duration and buffer time, so double-bookings and overruns stop happening.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reads live per-stylist availability, not a generic shared slot</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">card_membership</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Package & Membership Renewal Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Tracks sessions remaining and expiry dates for every package and membership, and reaches out with a renewal reminder before the client lets it quietly lapse.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Sends renewal nudges before expiry, not after the client's already gone</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">rate_review</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Review & Referral Request</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends a review request at the right moment, right after a client has clearly had a good visit, and asks satisfied clients for referrals with a simple share link.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Timed to the visit, not a generic blast to the whole client list</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Rebooking Follow-up</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Reaches out around the point a client's usual cycle (a color touch-up, a facial, a fill) would naturally come due, with a one-tap link to rebook the same stylist and service.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Timed to each client's own rebooking cycle, not a fixed calendar date</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Connects to Fresha, Zenoti, and most booking software already in use, in Arabic and English.</p>
+      <button onclick="openModal(this)" data-source="beauty_salons_mid" class="btn-primary">Book a Free Salon & Spa AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- ONE BOOKING JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="journey-heading">One booking, midnight DM to chair</h2>
+      <p>What the AI handles from the moment a client messages, to the moment she's back in the chair next month.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The Instagram DM answered at midnight</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A client sends a reference photo and asks for a Friday appointment. It's late, but the reply isn't.</p>
+        <ul class="journey-list">
+          <li>Understands the request, including a reference photo or a specific treatment name</li>
+          <li>Checks real availability instantly instead of leaving her waiting until morning</li>
+          <li>Confirms the appointment in the same conversation, in Arabic or English</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Booked against the right stylist's calendar</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">The booking doesn't just land in a shared column, it lands where it actually belongs.</p>
+        <ul class="journey-list">
+          <li>Checks the specific stylist or room's real availability, not a generic time slot</li>
+          <li>Accounts for service duration and buffer time so the day doesn't run over</li>
+          <li>Sends a confirmation and, closer to the date, a reminder with a reschedule link</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The rebooking reminder that fills next month</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">The visit ends, but the relationship, and the calendar, keeps moving.</p>
+        <ul class="journey-list">
+          <li>Sends a review request once the visit has clearly gone well</li>
+          <li>Reaches out again as her usual rebooking window approaches</li>
+          <li>Offers a one-tap link to rebook the same stylist and service</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BIGGEST IMPACT -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">nightlight</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">After-hours booking capture</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Most beauty and grooming discovery happens on Instagram, and a lot of it happens in the evening, when the salon is closed. Salons that answer in that window are simply first in line for a client who was already comparing options.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">A reply within minutes beats a reply the next morning almost every time</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_busy</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">No-show reduction</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Consistent, automatic reminders sent before every single appointment mean a client who can't make it usually says so early enough for the slot to be refilled, instead of the chair sitting empty.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Consistency matters more than any single reminder's wording</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">favorite</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Rebooking and retention</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">A client who already likes her stylist is the easiest booking a salon will ever get, if someone reaches out at the right time. AI does that reliably, on the client's own cycle, instead of relying on her to remember.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Keeping an existing client costs far less effort than winning a new one</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT MAKES IT WORK -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Instagram + WhatsApp integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Connected through official messaging APIs, so it reads and replies in the same threads your clients already use, not a separate app they have to be convinced to try.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Booking software integration (Fresha, Zenoti)</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Reads and writes directly to the booking system you already run, so availability shown to a client is always the real, current calendar, not a separate copy that can drift out of sync.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Stylist-level calendar logic</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Understands that a request for "Sarah on Friday" is different from a request for "any colorist this week," and books against the specific chair, room, or person, not a generic pool.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Package/membership tracking</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Knows exactly how many sessions a client has left and when a membership renews, so reminders go out on schedule instead of a package quietly expiring unused.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT THE DATA SHOWS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1200&q=80&auto=format&fit=crop" alt="Salon front desk with a phone showing incoming booking messages" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">9x</p>
+        <p style="color:#42474e; font-size:0.875rem;">more likely to convert when contacted within 5 minutes instead of 30 (MIT)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">24/7</p>
+        <p style="color:#42474e; font-size:0.875rem;">the actual booking window once messaging is automated, not just desk hours</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">1st</p>
+        <p style="color:#42474e; font-size:0.875rem;">reply usually wins the booking when a client is comparing salons on Instagram</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">After-Hours Demand</p>
+          <p style="color:#42474e; line-height:1.7;">Salon owners we talk to consistently describe the same pattern: a burst of Instagram and WhatsApp messages in the evening and late at night, well outside desk hours, then nothing answered until the next morning. Whoever replies first, or replies at all, tends to get the booking.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">No-Show Patterns</p>
+          <p style="color:#42474e; line-height:1.7;">Reminders sent manually tend to happen inconsistently, some appointments get one, some don't, depending on how busy the desk was that day. Salons that automate reminders for every appointment report the pattern flattens out, because the reminder never gets forgotten.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Retention Economics</p>
+          <p style="color:#42474e; line-height:1.7;">A client who already knows and likes her stylist is a far easier booking to close than a new one found through paid ads or discovery content. The gap is less about price and more about who actually reaches out, and when.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for salons and spas</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Salon & Spa AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll look at how bookings actually arrive at your salon, where they're getting missed, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="beauty_salons_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book a Free Salon & Spa AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    /* Journey list markers (reused inside static bento-grid-3 cards) */
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>
