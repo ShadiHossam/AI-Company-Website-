@@ -1,0 +1,237 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../../components/ProcessSteps.astro";
+
+const fallbackFaqs = [
+  { question: "ما الجدول الزمني الواقعي لأول وكيل؟", answer: "وكيل قرار واحد يقرأ مصدر مدخل واحد ويتخذ إجراءً أو اثنين عادة ينتقل من الاكتشاف للإطلاق خلال أسبوعين إلى ثلاثة أسابيع. وكيل ينسّق عبر ثلاثة أنظمة أو أكثر، أو يحتاج بنية متعددة الوكلاء، عادة يستغرق أربعة إلى ثمانية أسابيع. نعطيكم رقماً محدداً بعد الاكتشاف، بمجرد معرفة بالضبط ما يحتاج الوكيل فعله، لا نطاقاً عاماً." },
+  { question: "ما منظومتكم التقنية الفعلية؟", answer: "يعتمد على المشروع. نبني على منصات وكلاء مخصصة (Gumloop، Lindy)، منصات قائمة على الكود (Pipedream، n8n)، وطبقات مدمجة بنظام CRM (Salesforce Agentforce) حسب ما يحتاجه سير العمل، بالإضافة لكود مخصص كامل عندما لا يناسب أي منها. للتفكير الأساسي، نعمل مع الجيل الحالي من النماذج اللغوية المتطورة، نختار لكل مشروع بناءً على التكلفة وزمن الاستجابة وجودة التفكير المطلوبة، لا نموذج افتراضي واحد لكل شيء." },
+  { question: "كيف يعمل الاختبار فعلياً قبل إطلاق أي شيء؟", answer: "نختبر كل فرع من منطق الوكيل بشكل منفصل مقابل بيانات حقيقية مسحوبة من عملكم، لا أمثلة اصطناعية، قبل اختبار خط الأنابيب الكامل من البداية للنهاية. للقرارات ذات العواقب الحقيقية، دفعة، رسالة موجهة للعميل، نشغّل فترة ظل حيث يتخذ الوكيل قراره لكن شخص يؤكد قبل التنفيذ، فنستطيع مقارنة حكم الوكيل بحكم بشري على حالات حقيقية قبل إزالة تلك النقطة." },
+  { question: "من يملك الكود والإعدادات الناتجة بعد التسليم؟", answer: "أنتم. في المنصات القائمة على الكود، تحصلون على كود قابل للقراءة والنقل دون حبس ملكي. في المنصات بلا كود، يعيش سير العمل في حساب تتحكمون به. في كلتا الحالتين، لا شيء من منطق وكيلكم شيء نحن فقط نستطيع الوصول إليه أو شرحه." },
+  { question: "هل تبنون أنظمة متعددة الوكلاء، أم وكلاء منفردين فقط؟", answer: "كلاهما، حسب ما تحتاجه المشكلة فعلياً. عموماً نبني وكلاء منفردين ضيقي النطاق يؤدون عملاً واحداً جيداً افتراضياً، لأن ذلك ينتج نتائج أكثر موثوقية من وكيل عام واحد يحاول فعل كل شيء. الأنظمة متعددة الوكلاء، وكلاء متخصصون ينسّقهم منسّق، تأتي عندما يمتد سير عمل فعلياً عبر مجالات متمايزة متعددة لا تنتمي لحكم وكيل واحد." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_agents_development')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+const processSteps = [
+  { icon: "search", step: "الخطوة ١", title: "تحديد النطاق", description: "نجرد كل أداة يحتاج الوكيل لمسها، ونحدد بالضبط ما يُسمح له بتقريره مقابل ما يحتاج نقطة تحقق بشرية." },
+  { icon: "architecture", step: "الخطوة ٢", title: "قرارات البنية", description: "وكيل واحد أم متعدد، أي نموذج، كيف تُدار الحالة والذاكرة: نقرر ونوثّق هذا قبل كتابة خطوة واحدة." },
+  { icon: "build", step: "الخطوة ٣", title: "البناء", description: "تكامل الأدوات، تصميم التعليمات، وإطار اختبار مبني جنباً إلى جنب مع الوكيل نفسه، لا مضافاً لاحقاً." },
+  { icon: "rocket_launch", step: "الخطوة ٤", title: "النشر", description: "المراقبة، التسجيل المنظم، ومسار تراجع تعمل منذ اليوم الأول، لا تُضاف بعد أن يسوء شيء." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'عملية تطوير وكلاء الذكاء الاصطناعي',
+    url: 'https://lenooai.com/ar/services/ai-agents/development',
+    description: 'كيف تبني Lenoo AI وكلاء الذكاء الاصطناعي فعلياً: تحديد النطاق، قرارات البنية، البناء والاختبار، والنشر، مشروحة لمشترٍ تقني.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'تطوير وكلاء الذكاء الاصطناعي: التسعير حسب تعقيد القرار، التكاملات، ونطاق الاختبار. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر.' },
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'وكلاء الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'التطوير', item: 'https://lenooai.com/ar/services/ai-agents/development' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="تطوير وكلاء الذكاء الاصطناعي: كيف نبني | Lenoo AI"
+  description="كيف تبني Lenoo AI وكلاء الذكاء الاصطناعي فعلياً: تحديد النطاق، قرارات البنية، البناء والاختبار، والنشر، مشروحة لمشترٍ تقني."
+  canonicalPath="/ar/services/ai-agents/development"
+  enPath="/services/ai-agents/development"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">وكلاء الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>التطوير</div>
+    <h1>تطوير وكلاء الذكاء الاصطناعي: <span class="gradient-text">كيف نبني فعلياً</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      هذه الصفحة للمُقيّم التقني: قائد العمليات أو المدير التقني الذي يريد معرفة بالضبط ما يحدث بين مكالمة الاكتشاف ووكيل عامل، لا لغة تسويقية عن قدرات الوكلاء.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_ai_agents_development_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#process" class="btn-outline">شاهدوا العملية ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- SCOPING -->
+<section class="section" aria-labelledby="scoping-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="scoping-heading" style="margin-bottom:1.5rem;">تحديد النطاق: جرد الأدوات وتحديد ضوابط الحماية</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        كل مشروع يبدأ بجرد دقيق: أي أنظمة يحتاج الوكيل القراءة منها، أيها يحتاج الكتابة إليها، وهل يعرض كل منها واجهة API قابلة للاستخدام أم يحتاج حلاً بديلاً. نرسم هذا مقابل سير عملكم الفعلي، لا قائمة تحقق عامة، لأن نفس فئة الوكيل، وكيل فرز دعم مثلاً، يحتاج خطة تكامل مختلفة تماماً حسب ما إذا كنتم تشغّلون Zendesk أو نظام تذاكر مطوَّر داخلياً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        بالتوازي، نحدد ضوابط الحماية: قائمة إجراءات مسموحة محددة يُسمح للوكيل باتخاذها، لا تعليمات عامة باستخدام الحكم الجيد. لأي إجراء بعواقب حقيقية، إرسال رسالة موجهة للعميل، معالجة دفعة، حذف سجل، نحدد نقطة موافقة قبل أن يستطيع الوكيل تنفيذها دون إشراف. هذا ليس شكلياً؛ إنه الفرق بين وكيل تستطيعون الوثوق به ببيانات إنتاجية ووكيل هو التزام ينتظر أن يحدث.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE DECISIONS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="architecture-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="architecture-heading" style="margin-bottom:1.5rem;">قرارات البنية</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        <strong>وكيل واحد مقابل متعدد الوكلاء:</strong> نلجأ افتراضياً لوكلاء منفردين ضيقي النطاق يؤدون عملاً واحداً جيداً، لأن ذلك ينتج نتائج أكثر موثوقية من وكيل عام واحد يحاول فعل كل شيء. ننتقل لبنية متعددة الوكلاء، وكلاء متخصصون ينسّقهم منسّق، فقط عندما يمتد سير عمل فعلياً عبر مجالات متمايزة متعددة: وكيل يبحث، وكيل يصيغ، وكيل يراجع، وكيل ينشر، كل بمسؤوليته الواضحة.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        <strong>اختيار النموذج اللغوي:</strong> نختار نموذجاً لكل مشروع بناءً على تعقيد التفكير الذي تحتاجه المهمة فعلياً، زمن الاستجابة الذي يتحمله سير عملكم، والتكلفة عند الحجم الذي تتوقعون تشغيله، لا نموذج افتراضي واحد يُطبَّق على كل شيء بغض النظر عن الملاءمة. مهمة تصنيف عالية الحجم منخفضة التعقيد ومهمة بحث منخفضة الحجم عالية المخاطر لهما متطلبات مختلفة، ونحدد النطاق وفقاً لذلك.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        <strong>إدارة الذاكرة والحالة:</strong> نحدد صراحة ما يحتاج الوكيل تذكره ضمن مهمة واحدة مقابل عبر الجلسات، وأين تعيش تلك الحالة فعلياً. الوكيل الذي ينسى سياقاً يحتاجه ينتج نتائج غير متسقة؛ الوكيل الذي يحتفظ بأكثر مما يحتاج يخلق التزاماً في التعامل مع البيانات. نصمم الحد الأدنى من الحالة التي تحتاجها المهمة فعلياً، لا الحد الأقصى الذي تجعله منصة ما مريحاً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- BUILD PHASE -->
+<section class="section" aria-labelledby="build-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="build-heading" style="margin-bottom:1.5rem;">البناء: التكامل، تصميم التعليمات، والاختبار</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        تكامل الأدوات يأتي أولاً، ربط الوكيل بالأنظمة التي يحتاج القراءة منها والتصرف عليها، بمصادقة ومعالجة أخطاء مبنية للإنتاج منذ البداية، لا مرقّعة بمجرد أن ينكسر شيء. تصميم التعليمات، ما يعنيه كثيرون بـ"الأمر التوجيهي"، هو حيث نحدد كيف يفكر الوكيل خلال المهمة: أي سياق يُعطى، كيف يوازن الإشارات المتضاربة، وماذا يفعل عندما يكون غير متأكد بدلاً من التخمين.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        إطار الاختبار مبني جنباً إلى جنب مع الوكيل، لا مضافاً في النهاية. نختبر كل فرع من منطق الوكيل بمعزل مقابل بيانات حقيقية من عملكم، ثم نختبر خط الأنابيب الكامل من البداية للنهاية. للقرارات الأعلى مخاطرة، نشغّل فترة ظل حيث يتخذ الوكيل قراره لكن شخص يؤكد قبل التنفيذ، فنستطيع مقارنة حكم الوكيل بحكم بشري على حالات حقيقية قبل إزالة تلك النقطة، بدلاً من الثقة به من اليوم الأول.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- DEPLOYMENT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="deployment-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="deployment-heading" style="margin-bottom:1.5rem;">النشر: المراقبة، التسجيل، والتراجع</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        كل وكيل يُشحَن بتسجيل منظم لما قرأه، ماذا قرر، وماذا فعل، فنتيجة تبدو خاطئة يمكن تتبعها للمدخل الدقيق الذي أنتجها بدلاً من معاملتها كصندوق أسود لا يمكن تفسيره. نراقب عن كثب الأسابيع الأولى بعد الإطلاق تحديداً، لأن بيانات الإنتاج الحقيقية تُظهر حالات حدية لا تُظهرها حتى بيانات الاختبار الشاملة.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        مسار التراجع جزء من النشر، لا فكرة لاحقة: إذا أدخل تغيير انحداراً في سلوك الوكيل، نستطيع العودة للإصدار السابق العامل بدلاً من التصحيح مباشرة مقابل حركة إنتاجية فعلية. ٩٠ يوماً من المراقبة بعد الإطلاق مشمولة في كل مشروع؛ بعدها، الصيانة المستمرة تنتقل لعقد شهري إذا أردتمونا نستمر بضبط وتوسيع الوكيل.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- DOCUMENTATION -->
+<section class="section" aria-labelledby="docs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="docs-heading" style="margin-bottom:1.5rem;">ما تحصلون عليه فعلياً عند التسليم</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        كل مشروع ينتهي بتوثيق يستطيع فريقكم قراءته فعلياً: ماذا يفعل الوكيل، أي أدوات وصلاحيات لديه، ما ضوابط حمايته، وكيف تقرؤون سجلاته عند الحاجة لتحقيق. في المنصات القائمة على الكود، يشمل ذلك الكود نفسه، مُعلَّقاً ومنظماً لمطور يلتقطه بارداً. في المنصات بلا كود، يشمل شرحاً لسير العمل فيفهم عضو فريق غير تقني ما تفعله كل خطوة. الهدف هو أن يفهم فريقكم النظام الذي بنيناه، لا مجرد الثقة بأنه يعمل، لأن الثقة دون فهم تنهار في أول مرة يتصرف فيها شيء بشكل غير متوقع ولا يعرف أحد من جانبكم أين ينظر.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW COST GETS SCOPED -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="cost-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="cost-heading" style="margin-bottom:1.5rem;">كيف نحدد التكلفة فعلياً</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        ثلاثة أمور تحدد تكلفة بناء وكيل أكثر من أي شيء آخر: كم نقطة قرار متمايزة يحتاج تفكير الوكيل تغطيتها، كم نظاماً خارجياً يحتاج التكامل معه، وكم اختباراً تحتاجه كل نقطة قرار قبل أن نثق بها مقابل بيانات حقيقية. وكيل قرار واحد يقرأ مصدر مدخل واحد ويتخذ إجراءً واحداً يكلف أقل بشكل ملموس من وكيل ينسّق قرارات عبر خمسة أنظمة بعدة نتائج محتملة في كل خطوة.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        لا ننشر سعراً ثابتاً، لأن السعر الثابت إما يبالغ في تسعير المشاريع البسيطة أو يقلل تسعير المعقدة، ولا يخدمكم أي منهما جيداً. ما نفعله بدلاً من ذلك هو إعطاؤكم رقماً محدداً بعد الاكتشاف، بمجرد معرفتنا فعلياً ما يحتاج الوكيل فعله، مُقسَّماً بوضوح كافٍ لتفهموا ما يحدد السعر، لا فقط الإجمالي في الأسفل.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process" class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">المراحل الأربع، ملخصة</h2>
+    </div>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">لديكم سؤال تقني حول كيف سنتعامل مع سير عملكم المحدد؟ اسألونا مباشرة.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_agents_development_mid" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لتحديد نطاق بنية وكيلكم؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">أحضروا لنا سير العمل. سنشرح قرارات البنية معكم في المكالمة، لا بعد أن توقّعوا على أي شيء.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_agents_development_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>

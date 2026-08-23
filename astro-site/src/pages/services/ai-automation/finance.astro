@@ -1,0 +1,296 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../components/ProcessSteps.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Does this replace our bookkeeper or finance team?", answer: "No. Automation handles the repetitive work in front of your team: invoice keying, matching, chasing documents, first-pass reconciliation. Your bookkeeper or finance manager still makes the judgment calls and signs off on the numbers. Most teams use the time this frees up to close faster or take on more work, not to cut headcount." },
+  { question: "How does it handle multi-currency transactions?", answer: "It reads the currency and amount on each invoice or receipt as it comes in, converts using the exchange rate your accounting software already has configured (or a rate source you specify), and posts in your base currency alongside the original. If your business deals in AED, USD, and a handful of supplier currencies, the automation treats each one consistently instead of needing someone to convert figures by hand before entry." },
+  { question: "What audit trail requirements does the automation meet?", answer: "Every automated action, an invoice matched, a transaction flagged, a report generated, is logged with a timestamp, the source document, and the rule that triggered it. If your auditor or the FTA asks why a figure appears the way it does, you can trace it straight back to the document it came from. We build the trail into the workflow itself rather than adding it as a separate reporting step afterward." },
+  { question: "Do you integrate with the accounting software we already use?", answer: "Yes. Most of our finance automation work connects to Zoho Books, QuickBooks, or Tally through their APIs, and we've also built around SAP for larger finance teams with more complex chart-of-accounts structures. If your stack is different, we scope the integration during the discovery call and build around what your platform actually supports." },
+  { question: "How long does it take to get a finance automation workflow live?", answer: "A single workflow, invoice processing or reconciliation on its own, usually goes from audit to live in two to four weeks. Projects covering several workflows at once, or with more complex approval chains, take longer. We give you a specific timeline after the discovery call, once we've seen your actual invoice and transaction volume." },
+];
+
+const processSteps = [
+  { icon: "search", step: "Step 1", title: "Finance Workflow Audit", description: "We map how invoices, reconciliations, and reports currently move through your team and identify where manual work is costing the most hours." },
+  { icon: "edit", step: "Step 2", title: "Design & Plan", description: "We design the automation around your existing accounting software and chart of accounts, and get sign-off before building anything." },
+  { icon: "build", step: "Step 3", title: "Build & Test", description: "We build the automation and test it against real invoices, statements, and transactions until the output matches what your team expects." },
+  { icon: "rocket_launch", step: "Step 4", title: "Go Live & Monitor", description: "Automation goes live alongside your existing process. We monitor it for 90 days and adjust thresholds as real volume comes through." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI for Finance and Accounts Teams',
+    url: 'https://lenooai.com/services/ai-automation/finance',
+    description: 'AI automation for UAE finance and accounts teams: invoice processing, reconciliation, expense capture, cash flow forecasting, VAT and Corporate Tax prep support, and financial reporting.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'AI automation projects for in-house finance and accounts teams: pricing based on workflow complexity and scope. Book a free finance automation audit for a quote.' },
+    serviceType: 'AI Automation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Automation', item: 'https://lenooai.com/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'Finance', item: 'https://lenooai.com/services/ai-automation/finance' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI for Finance and Accounts Teams in the UAE | Lenoo AI"
+  description="AI automation for UAE finance and accounts teams: invoice processing, reconciliation, expense capture, cash flow forecasting, and VAT/Corporate Tax prep support."
+  canonicalPath="/services/ai-automation/finance"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">AI Automation</a><span style="opacity:0.4;padding:0 4px;"> / </span>Finance</div>
+    <h1>AI for <span class="gradient-text">Finance and Accounts Teams</span> in the UAE</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      In-house finance teams spend their week on the same pattern of work: keying invoices, chasing approvals, matching bank lines, assembling reports before a deadline. We build automation around the accounting software you already run, so that work happens on its own and your team reviews the output instead of producing it by hand.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">Post-launch monitoring included with every project</span>
+      <span class="tchip">Refund guarantee if you're not satisfied with what we deliver</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_automation_finance_hero" class="btn-primary">Book a Free Finance Automation Audit</button>
+      <a href="#finance-systems" class="btn-outline">See What We Automate ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1400&q=80&auto=format&fit=crop" alt="Finance professional reviewing invoices and financial reports" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "40%", caption: "of work tasks in most finance functions are automatable with existing AI. Invoice entry and reconciliation are usually first in line." },
+      { value: "90 days", caption: "post-launch monitoring included with every project" },
+      { value: "100%", caption: "refund guarantee if you're not satisfied with what we deliver" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHERE TIME IS LOST -->
+<section class="section" aria-labelledby="lost-time-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="lost-time-heading" style="margin-bottom:1.5rem;">Where Finance Teams Lose the Most Time</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>AP and AR sit at the top of the list.</strong> Someone on your team is still opening supplier invoices one at a time, keying line items into the ledger, and matching them against purchase orders by hand. On the receivables side, someone is chasing overdue customer payments through a spreadsheet, sending reminders manually, and updating the status after every phone call. Neither task requires judgment. Both eat hours every single week.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Reconciliation is the other repeat offender.</strong> Checking bank statement lines against the ledger, transaction by transaction, is exactly the kind of work that's tedious precisely because it's mechanical: match the amount, match the date, flag what doesn't line up. Teams we talk to consistently describe reconciliation as the task that quietly consumes a day or more each month, with most of that time spent confirming matches that were never in question in the first place.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Reporting closes out the cycle.</strong> Pulling numbers from the accounting system, formatting them into a management pack or a board deck, and chasing anyone whose figures came in late usually falls on whoever has the most spreadsheet patience on the team. It's repeated every month or every quarter, in almost exactly the same shape each time.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1611746869696-d09bce200020?w=800&q=80&auto=format&fit=crop" alt="Finance team member reviewing numbers on a laptop dashboard at a desk" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI SYSTEMS FOR FINANCE -->
+<section id="finance-systems" class="section" style="background:#e7eeff;" aria-labelledby="systems-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="systems-heading">AI Systems for Finance</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Built on top of the accounting software your team already uses. Every project includes post-launch monitoring.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">receipt_long</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Invoice Processing &amp; AP Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI reads incoming supplier invoices, extracts line items, and matches them against purchase orders automatically, routing anything that doesn't match to a human before it posts.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A finance team that keyed in fifty supplier invoices a week by hand now has them extracted, matched, and queued for approval before anyone opens the inbox.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">account_balance</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Reconciliation AI</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Matches bank statement lines against your ledger automatically and leaves a short list of genuine exceptions instead of a full line-by-line manual check.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A day and a half of manual bank reconciliation each month became a 20-minute review of the handful of lines that actually needed a human look.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">receipt</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Expense &amp; Receipt Capture</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Employees photograph or forward a receipt and the AI extracts the amount, vendor, category, and VAT treatment, then routes it into the right expense workflow for approval.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A team that used to spend a week each month chasing missing receipts before expense close now has most of them captured and categorized the day they're incurred.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">trending_up</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Cash Flow Forecasting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI pulls together receivables, payables, and recurring costs from your accounting system into a rolling forecast that updates as new transactions post, instead of a static spreadsheet someone rebuilds every month.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A business that used to guess at its 60-day cash position from memory and a stale spreadsheet now checks a forecast that updates itself daily.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">fact_check</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">VAT &amp; Corporate Tax Prep Support</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">We automate the data preparation behind your VAT and Corporate Tax filings: pulling transactions together, applying the tagging your accountant or tax agent has defined, and generating the report they review before it's filed.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A quarterly VAT prep that used to take two full days of pulling documents together now lands as a same-day review for the accountant to sign off on.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bar_chart</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Financial Reporting Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Recurring management reports, board packs, and department-level breakdowns get compiled and delivered on a schedule, pulled directly from your accounting data instead of assembled by hand the night before.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A CFO who used to get a management report the morning of the board meeting now has it waiting in their inbox every Monday.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Every workflow is scoped around your existing accounting software and chart of accounts, with 90 days of post-launch monitoring included.</p>
+      <button onclick="openModal(this)" data-source="ai_automation_finance_mid" class="btn-primary">Book a Free Finance Automation Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT STAYS HUMAN -->
+<section class="section" aria-labelledby="human-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="human-heading">What Stays Human</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Automation moves data and flags what needs attention. It doesn't make the calls that carry financial or legal weight.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">how_to_reg</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Approvals</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">The automation routes an invoice or an expense to the right approver and tracks who has signed off, but it doesn't decide whether a spend is justified. That decision, and the authority to say no, stays with whoever owns the budget.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">psychology</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Judgment Calls</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Estimating an accrual with no clean historical pattern, deciding on a write-off, or explaining why a variance looks the way it does still needs a person who understands the business behind the numbers. Automation can flag that a variance exists. It can't tell you why.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">verified</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Audit Sign-Off</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Nothing gets filed or declared final without your accountant, controller, or auditor reviewing it first. Automation gets the numbers ready for that review and keeps the paper trail intact. It doesn't replace the review itself.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATION WITH UAE ACCOUNTING STACKS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="stacks-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="stacks-heading" style="margin-bottom:1.5rem;">Integration With UAE Accounting Stacks</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">Most of our finance automation work connects directly to <strong>Zoho Books</strong> or <strong>QuickBooks</strong> through their APIs, which covers the majority of small and mid-sized finance teams we work with in the UAE. We've also built around <strong>Tally</strong>, which is still widely used by businesses with roots in the subcontinent trading community, and <strong>SAP</strong>, for larger finance teams running a more complex chart of accounts and multiple cost centers.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">The automation reads from and writes to your ledger through the same access your team already has, so nothing runs in a separate system your finance team has to check on top of the one they already use. If your stack is a mix of tools, or something not on this list, we scope the integration during the discovery call and build around what the platform's API actually supports.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1762558978967-709b17a00415?w=800&q=80&auto=format&fit=crop" alt="Spreadsheet with rows and columns of financial data open on a laptop screen" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPLIANCE -->
+<section class="section" aria-labelledby="compliance-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="compliance-heading" style="margin-bottom:1.5rem;">Compliance: FTA Requirements and Audit Trails</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        We are not a tax advisory service and we don't submit filings to the Federal Tax Authority on your behalf. What we automate is the data workflow that sits in front of a VAT or Corporate Tax filing: the part where someone currently spends days pulling transactions together, tagging them, and cross-checking totals before your accountant or tax agent ever reviews the numbers.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        That means transactions get pulled from your accounting system and matched against source documents automatically, VAT treatment gets tagged using the rules your accountant has already defined, and anything ambiguous, an invoice that doesn't match a clear category, a document that's missing, gets flagged rather than silently included or excluded. The output goes to your accountant or tax agent for review and sign-off. Nothing is filed automatically, and nothing skips the human judgment that FTA compliance actually requires.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        The audit trail comes as a byproduct of building the workflow this way rather than as a separate reporting step. Every figure in a report links back to the source document it came from, along with a timestamp for when it was processed and which rule handled it. If the FTA or an internal auditor asks why a number appears the way it does, your team can trace it in seconds instead of reconstructing the history from memory.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">From Finance Audit to Live Automation</h2>
+    </div>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Tell us which close-week task eats the most hours and we'll show you what automating it looks like.</p>
+    <button onclick="openModal(this)" data-source="ai_automation_finance_mid2" class="btn-primary">Book a Finance Automation Audit</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- CROSS-LINK -->
+<section class="section-sm" aria-labelledby="related-heading">
+  <div class="container">
+    <div style="max-width:720px; margin:0 auto; text-align:center;">
+      <h2 id="related-heading" style="font-size:1.375rem; margin-bottom:1rem;">Looking at Automation Beyond Finance?</h2>
+      <p style="color:#42474e; font-size:1rem; line-height:1.8;">
+        This page covers automation for in-house finance and accounts teams. See our <a href="/services/ai-automation">AI automation hub</a> for the full range of workflows we automate across sales, operations, and admin, or our <a href="/services/ai-automation/accounting">AI automation for accounting firms</a> page if you're an accounting or bookkeeping practice serving multiple clients.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Finance Automation Audit</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Get Your Finance Team Out of Manual Data Entry?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Book a free finance automation audit with our Dubai team. We'll identify the workflows costing your finance team the most time and estimate the savings.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_automation_finance_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Finance Automation Audit</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>

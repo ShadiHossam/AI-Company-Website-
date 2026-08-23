@@ -1,0 +1,256 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../../lib/supabase";
+import FaqAccordion from "../../../../../components/FaqAccordion.astro";
+
+const h1 = 'وكلاء ذكاء اصطناعي مبنيون على Salesforce Agentforce';
+const metaTitle = 'وكلاء ذكاء اصطناعي مبنيون على Salesforce Agentforce | Lenoo AI';
+const metaDescription = "تبني Lenoo AI وكلاء ذكاء اصطناعي على Salesforce Agentforce للشركات الإماراتية التي تشغّل Salesforce أصلاً: وكلاء يعملون داخل بيانات وصلاحيات نظام CRM الحالي لديكم.";
+const heroSubtext = "Agentforce طبقة الوكيل الأصلية لـ Salesforce. تعمل داخل بيانات وصلاحيات نظام CRM التي تملكونها أصلاً، لا كأداة منفصلة مضافة على الجانب. إذا كان Salesforce نظام السجل الرسمي لديكم أصلاً، هكذا نبني الوكيل فوقه.";
+
+const useCases = [
+  { title: 'وكيل تسجيل وتوجيه العملاء المحتملين', description: "يقرأ العملاء المحتملين الواردين مقابل معايير التسجيل وقواعد النطاق لديكم، يُسنِد كل واحد للمندوب الصحيح تلقائياً، ويترك ملاحظة على السجل تشرح لماذا سجّله كما فعل، فيفتح المندوب عميلاً محتملاً بسياق مرفق أصلاً." },
+  { title: 'وكيل فرز الحالات', description: "يقرأ حالة دعم جديدة لحظة وصولها، يصنّفها، يتحقق منها مقابل مشاكل معروفة وحالات سابقة، وإما يصيغ رداً أو يصعّد للطابور الصحيح، عاملاً داخل نفس كائن الحالة الذي يستخدمه فريق دعمكم أصلاً." },
+  { title: 'وكيل متابعة الفرص', description: "يراقب الفرص المفتوحة لرصد نشاط متوقف، يصيغ بريداً إلكترونياً أو مهمة متابعة للمندوب المالك، ويُعلِّم على الصفقات التي صمتت أطول مما تسمح به قواعد خط أنابيبكم، فلا تتقادم صفقة قيّمة بصمت." },
+  { title: 'وكيل نظافة خط الأنابيب', description: "يتحقق من السجلات المفتوحة مقابل قواعد جودة بياناتكم، حقول ناقصة، تواريخ إغلاق قديمة، قفزات مراحل غير واقعية، وإما يصلح ما يستطيع بأمان أو يُعلِّم السجل والمالك لمراجعة يدوية." },
+  { title: 'وكيل مخاطر التجديد', description: "يقرأ نشاط الحساب، تاريخ حالات الدعم، وإشارات الاستخدام الموجودة أصلاً في منظمتكم، يُعلِّم على الحسابات المتجهة نحو التسرب قبل موعد تجديدها، ويصيغ مذكرة إحاطة لمالك الحساب تشرح بالضبط ما تغيّر." },
+];
+
+const faqFallback = [
+  { question: "هل نحتاج ترخيص Salesforce موجوداً لاستخدام Agentforce؟", answer: "نعم. Agentforce يعمل فوق منظمة Salesforce الحالية لديكم، فتحتاجون ترخيصاً ومنظمة Salesforce نشطة قبل أن يكون بناء وكيل منطقياً. إذا لم تكونوا على Salesforce أصلاً، هذه ليست نقطة البداية الصحيحة، وسننظر في Lindy أو Gumloop أو n8n بدلاً من ذلك حسب نظام CRM ومنظومتكم الفعليين." },
+  { question: "هل يستبدل هذا مسؤول Salesforce لدينا؟", answer: "لا. مسؤولكم لا يزال يملك المنظمة، صلاحياتها، وإعداداتها. ما نضيفه هو طبقة الوكيل فوقها: المنطق الذي يقرأ السجلات، يفكر فيها، ويتخذ إجراءً ضمن الصلاحيات التي حددها مسؤولكم أصلاً. نعمل مع مسؤولكم أثناء البناء، لا حوله." },
+  { question: "ما الذي يحدد فعلياً تكلفة بناء Agentforce؟", answer: "بشكل أساسي كم كائن ومجموعة صلاحيات Salesforce يحتاج الوكيل العمل عبرها، كم إجراءً متمايزاً يحتاج اتخاذه، وكم اختباراً مطلوباً داخل منظمة تجريبية قبل أن نثق به مقابل بيانات عملاء وصفقات حية." },
+  { question: "هل تبقى البيانات داخل Salesforce؟", answer: "نعم، هذه الميزة الأساسية للبناء هنا تحديداً. الوكيل يقرأ ويكتب ضمن نموذج بيانات وهيكل صلاحيات Salesforce الحالي لديكم، بدلاً من سحب سجلات لمنصة منفصلة. للأعمال ذات القواعد الصارمة حول أين تعيش بيانات CRM، هذا يهم أكثر من أي شيء آخر تقريباً في المقارنة." },
+  { question: "كم يستغرق مشروع Agentforce نموذجي؟", answer: "الاكتشاف ورسم الصلاحيات عادة يستغرقان أسبوعاً إلى أسبوعين، لأننا نحتاج صورة واضحة لأي كائنات وحقول يلمسها الوكيل قبل بناء أي شيء. البناء والاختبار في المنظمة التجريبية عادة يضيفان أسبوعين إلى أربعة أسابيع أخرى حسب كم إجراءً يحتاج الوكيل اتخاذه وكم تحققاً يتطلبه كل منها." },
+  { question: "هل نحتاج تغيير إعداد Salesforce الحالي لدينا لكي يعمل هذا؟", answer: "نادراً. معظم بناءات Agentforce تعمل ضمن هيكل الكائنات ومجموعات الصلاحيات الحالية لديكم كما هي. إذا احتاج الوكيل حقلاً جديداً أو مجموعة صلاحيات غير موجودة بعد، نُعلِّم على ذلك أثناء الاكتشاف ونصممها مع مسؤولكم، بدلاً من إعادة هيكلة أجزاء من منظمتكم تعمل أصلاً." },
+];
+
+let faqItems = faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_agents_tools_salesforce-agentforce')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: h1,
+    url: 'https://lenooai.com/ar/services/ai-agents/tools/salesforce-agentforce',
+    description: metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع Salesforce Agentforce: التسعير حسب الكائنات والصلاحيات التي يحتاجها الوكيل. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر.' },
+    serviceType: 'Salesforce Agentforce Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'وكلاء الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'الأدوات', item: 'https://lenooai.com/ar/services/ai-agents/tools' },
+      { '@type': 'ListItem', position: 4, name: 'Salesforce Agentforce', item: 'https://lenooai.com/ar/services/ai-agents/tools/salesforce-agentforce' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonicalPath="/ar/services/ai-agents/tools/salesforce-agentforce"
+  enPath="/services/ai-agents/tools/salesforce-agentforce"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">وكلاء الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents/tools" style="color:inherit;text-decoration:none;opacity:0.65;">الأدوات</a><span style="opacity:0.4;padding:0 4px;"> / </span>Salesforce Agentforce</div>
+    <div class="tool-logo-hero"><img src="https://cdn.simpleicons.org/salesforce/00A1E0" alt="شعار Salesforce" width="56" height="56" loading="eager" onerror="this.parentElement.style.display='none'" /></div>
+    <h1>{h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ar_ai_agents_tools_salesforce-agentforce_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#use-cases" class="btn-outline">شاهدوا ما نبنيه ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- WHAT IS AGENTFORCE -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">ما هو Salesforce Agentforce؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Agentforce طبقة الوكيل الخاصة بـ Salesforce، مبنية لتعمل داخل المنظمة التي تملكونها أصلاً. بدلاً من تصدير البيانات لمنصة ذكاء اصطناعي منفصلة، ربطها مرة أخرى بتكامل، وإدارة نظام ثانٍ بصلاحياته الخاصة، وكيل Agentforce يقرأ ويتصرف على سجلات Salesforce لديكم مباشرة، محكوماً بنفس مجموعات الصلاحيات وقواعد المشاركة التي أعدّها مسؤولكم أصلاً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        هذا يهم أكثر مما يبدو. وكيل تسجيل عملاء محتملين مبني على منصة خارجية يحتاج نسخته الخاصة من بيانات عملائكم المحتملين، عملية مزامنة خاصة به، ومراجعة أمنية خاصة به. وكيل Agentforce يؤدي نفس العمل يقرأ سجل العميل المحتمل الفعلي، يحترم أمن مستوى الحقل الموجود أصلاً، ويكتب مرة أخرى لنفس الكائن الذي يعمل فيه مندوبوكم أصلاً. لا يوجد مخزن بيانات ثانٍ يجب إبقاؤه متزامناً، ولا أداة مُضافة يتعلمها فريقكم.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW LENOO USES AGENTFORCE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="how-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="how-heading" style="margin-bottom:1.5rem;">كيف تستخدم Lenoo AI منصة Agentforce لمنظمات Salesforce الإماراتية</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        نبني ونُعِدّ وكلاء Agentforce داخل منظمة Salesforce لديكم؛ لا نبيع Salesforce نفسها، ونفترض أنكم تملكون الترخيص أصلاً. كل مشروع يبدأ برسم صلاحيات: أي كائنات يحتاج الوكيل قراءتها، أيها يحتاج الكتابة إليها، وأيها تغطيه مجموعات صلاحيات موجودة أصلاً مقابل ما يحتاج مجموعة جديدة محددة للوكيل.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        نبني ونختبر داخل منظمة تجريبية قبل أن يلمس أي شيء بيانات الإنتاج، نفس الانضباط الذي يستحقه أي تغيير جاد في Salesforce. مرحلة المنظمة التجريبية تلك هي حيث نتحقق من صمود قرارات الوكيل مقابل أشكال سجلات حقيقية وحالات حدية في بياناتكم، لا الأمثلة النظيفة التي بدأنا بها فقط، قبل أن يراه فريقكم يعمل حياً أبداً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO THIS FITS -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">هل Agentforce مناسب لكم؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Agentforce يناسب حالة واحدة بوضوح: تشغّلون Salesforce أصلاً كنظام CRM الرسمي لديكم، وتريدون وكيلاً يعمل بالبيانات والصلاحيات التي تملكونها أصلاً هناك، بدلاً من أداة منفصلة تجلس بجانبه. إذا وصف ذلك عملكم، Agentforce عادة أقل مسار احتكاكاً لإطلاق وكيل، لأن معظم السباكة، نموذج البيانات، الصلاحيات، هيكل الكائنات، موجود أصلاً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        إذا لم تكونوا على Salesforce، هذه الصفحة ليست نقطة البداية الصحيحة، والبناء عليها فقط لإطلاق وكيل يعني تبني ترحيل CRM لم تحتاجوه أصلاً. في تلك الحالة، Lindy أو Gumloop أو n8n تصل لنفس الهدف الأساسي، وكيل يفكر عبر بيانات عملائكم، دون تطلب تغيير نظام CRM لديكم. وإذا كنتم على Salesforce لكن لشريحة ضيقة فقط من عملياتكم، مع سير العمل الفعلي الذي تريدون أتمتته يعيش معظمه خارجه، في البريد الإلكتروني، أداة دعم، أو نظام داخلي، منصة وكلاء عامة الغرض تصل لـ Salesforce عبر واجهة API أحياناً تناسب شكل المشكلة أفضل من بناء كل شيء داخل نظام CRM نفسه. سنخبركم أي حالة أنتم فيها فعلياً أثناء مكالمة الاكتشاف.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">كيف يبدو مشروع Agentforce نموذجي معنا</h2>
+      <ol class="journey-list" style="gap:1rem;">
+        <li><strong style="color:#00253b;">الاكتشاف.</strong> نرسم أي كائنات وحقول ومجموعات صلاحيات Salesforce يحتاج الوكيل القراءة منها والكتابة إليها، عاملين مباشرة مقابل هيكل منظمتكم الحالي.</li>
+        <li><strong style="color:#00253b;">التصميم.</strong> نحدد منطق قرار الوكيل والحد الدقيق لما يُسمح له تغييره، متوافقاً مع الصلاحيات التي اعتمدها مسؤولكم أصلاً.</li>
+        <li><strong style="color:#00253b;">البناء والاختبار.</strong> نبني ونختبر داخل منظمة تجريبية، نتحقق من قرارات الوكيل مقابل أشكال سجلات حقيقية مسحوبة من بياناتكم الفعلية قبل أن يعمل أي شيء حياً.</li>
+        <li><strong style="color:#00253b;">الإطلاق والمراقبة.</strong> ننشر للإنتاج، نوثّق صلاحيات ومنطق الوكيل لمسؤولكم، ونراقب قراراته خلال الأسابيع الأولى لرصد أي شيء يحتاج تعديلاً.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">لماذا Agentforce بدلاً من منصة وكلاء عامة</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        هذه ليست فعلياً مقارنة عامة بالطريقة التي تُقارَن بها <a href="/ar/services/ai-agents/tools/n8n-ai-agent">n8n</a> و<a href="/ar/services/ai-agents/tools/gumloop">Gumloop</a> و<a href="/ar/services/ai-agents/tools/lindy">Lindy</a> و<a href="/ar/services/ai-agents/tools/pipedream">Pipedream</a> مع بعضها. هذه الأربع منصات وكلاء عامة الغرض تستطيع الاتصال بأي نظام CRM تقريباً، بما في ذلك Salesforce، عبر واجهة API. Agentforce مختلف لأنه ليس عام الغرض إطلاقاً: يوجد تحديداً للأعمال التي تشغّل Salesforce أصلاً، وقيمته الكاملة هي أن الوكيل يعمل داخل بيانات وصلاحيات بنيتموها أصلاً، بدلاً من منصة خارجية تصل من الخارج. إذا كان Salesforce نظام السجل الرسمي لديكم أصلاً، أنتم تشغّلون أصلاً الاستثمار الذي تجلس طبقة الوكيل هذه فوقه. إذا لم يكن كذلك، إحدى المنصات العامة دائماً تقريباً نقطة البداية الأفضل.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- RELIABILITY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="reliability-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="reliability-heading" style="margin-bottom:1.5rem;">الحفاظ على موثوقية وكيل Agentforce بعد الإطلاق</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        لأن الوكيل يعمل داخل بيانات CRM حية، نبني بنفس العناية التي يستحقها أي تغيير إنتاجي في Salesforce. كل إجراء يتخذه يُسجَّل مقابل السجل الذي لمسه، فإذا وُجِّه عميل محتمل أو صُعِّدت حالة بطريقة تبدو خاطئة، يستطيع مسؤولكم تتبعها بالضبط لما قرأه الوكيل ولماذا قرر ما فعله. نُبقي مجموعة صلاحيات الوكيل ضيقة ومُراجَعة حسب جدول، لأن أكبر خطر في وكيل مدمج في CRM ليس أنه يفكر بشكل سيء، بل أن صلاحياته تنجرف أوسع مما تحتاجه المهمة فعلياً عبر الزمن. اختبار المنظمة التجريبية قبل كل تغيير معتبر يبقى جزءاً من عمليتنا بعد الإطلاق أيضاً، لا البناء الأولي فقط، وأي تغيير على ما يُسمح للوكيل لمسه يمر بنفس المراجعة التي سيطبّقها مسؤولكم على تغيير مجموعة صلاحيات أجراه شخص.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="use-cases" class="section" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">ما نبنيه بـ Agentforce</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">مشاريع Agentforce شائعة لعملاء Salesforce الإماراتيين، من توجيه العملاء المحتملين لنظافة خط الأنابيب. كل بناء محدد النطاق لمنظمتكم الفعلية، لا قالب عام.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {useCases.map((uc) => (
+        <div class="value-card">
+          <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">تشغّلون Salesforce أصلاً وتريدون وكيلاً داخله؟ أخبرونا بما يجب أن يتعامل معه، وسنبنيه على Agentforce.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_agents_tools_salesforce-agentforce_mid" class="btn-primary">احجزوا استشارة Agentforce مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لبناء وكيلكم على Agentforce؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">أخبرونا بما تريدون من الوكيل التعامل معه داخل Salesforce. سنرسم الصلاحيات، نبنيه في منظمة تجريبية، ونُريكم بالضبط كيف يعمل قبل أن يلمس الإنتاج.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_agents_tools_salesforce-agentforce_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.tool-logo-hero { width:64px; height:64px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; }
+.value-card { display:flex; flex-direction:column; }
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.journey-list li { position:relative; padding-right:1.75rem; color:#42474e; font-size:1.0625rem; line-height:1.85; }
+.journey-list li::before { content:''; position:absolute; right:0; top:0.6em; width:9px; height:9px; border-radius:50%; background:#00e3fd; }
+</style>

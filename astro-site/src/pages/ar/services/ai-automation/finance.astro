@@ -1,0 +1,297 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../../components/ProcessSteps.astro";
+import StatStrip from "../../../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "هل يستبدل هذا مسك دفاترنا أو فريقنا المالي؟", answer: "لا. الأتمتة تتعامل مع العمل المتكرر أمام فريقكم: إدخال الفواتير، المطابقة، ملاحقة المستندات، التسوية الأولى. مسك دفاتركم أو مدير ماليتكم لا يزال يتخذ الأحكام ويعتمد الأرقام. معظم الفرق تستخدم الوقت المُحرَّر للإغلاق أسرع أو تولي عمل أكثر، لا لتقليص الموظفين." },
+  { question: "كيف تتعامل مع المعاملات متعددة العملات؟", answer: "تقرأ العملة والمبلغ على كل فاتورة أو إيصال عند وصوله، تحوّل باستخدام سعر الصرف الذي يعده برنامج محاسبتكم أصلاً (أو مصدر سعر تحددونه)، وترحّل بعملتكم الأساسية جنباً إلى جنب مع الأصل. إذا كان عملكم يتعامل بالدرهم والدولار وعدة عملات موردين، تعامل الأتمتة كل منها باتساق دون حاجة لأحد لتحويل الأرقام يدوياً قبل الإدخال." },
+  { question: "ما متطلبات مسار التدقيق التي تلبيها الأتمتة؟", answer: "كل إجراء آلي، فاتورة مطابَقة، معاملة مُعلَّمة، تقرير مولَّد، يُسجَّل بختم زمني، المستند المصدر، والقاعدة التي أطلقته. إذا سأل مدققكم أو الهيئة الاتحادية للضرائب لماذا يظهر رقم بالشكل الذي يظهر به، تستطيعون تتبعه مباشرة للمستند الذي جاء منه. نبني المسار في سير العمل نفسه بدلاً من إضافته كخطوة تقرير منفصلة لاحقاً." },
+  { question: "هل تتكاملون مع برنامج المحاسبة الذي نستخدمه أصلاً؟", answer: "نعم. معظم عمل أتمتة المالية لدينا يتصل بـ Zoho Books أو QuickBooks أو Tally عبر واجهات API الخاصة بها، وبنينا أيضاً حول SAP لفرق مالية أكبر بهياكل دليل حسابات أكثر تعقيداً. إذا كانت منظومتكم مختلفة، نحدد نطاق التكامل أثناء مكالمة الاكتشاف ونبني حول ما تدعمه منصتكم فعلياً." },
+  { question: "كم يستغرق تشغيل سير عمل أتمتة مالية؟", answer: "سير عمل واحد، معالجة فواتير أو تسوية بمفردها، عادة ينتقل من التدقيق للتشغيل خلال أسبوعين إلى أربعة أسابيع. المشاريع التي تغطي عدة سير عمل في آن واحد، أو بسلاسل موافقة أكثر تعقيداً، تستغرق أطول. نعطيكم جدولاً زمنياً محدداً بعد مكالمة الاكتشاف، بمجرد رؤيتنا حجم فواتيركم ومعاملاتكم الفعلي." },
+];
+
+const processSteps = [
+  { icon: "search", step: "الخطوة ١", title: "تدقيق سير العمل المالي", description: "نرسم كيف تنتقل الفواتير والتسويات والتقارير حالياً عبر فريقكم ونحدد أين يكلف العمل اليدوي أكثر ساعات." },
+  { icon: "edit", step: "الخطوة ٢", title: "التصميم والتخطيط", description: "نصمم الأتمتة حول برنامج محاسبتكم ودليل حساباتكم الحاليين، ونحصل على الموافقة قبل بناء أي شيء." },
+  { icon: "build", step: "الخطوة ٣", title: "البناء والاختبار", description: "نبني الأتمتة ونختبرها مقابل فواتير، كشوفات، ومعاملات حقيقية حتى يطابق المُخرَج ما يتوقعه فريقكم." },
+  { icon: "rocket_launch", step: "الخطوة ٤", title: "الإطلاق والمراقبة", description: "تُطلَق الأتمتة جنباً إلى جنب مع عمليتكم الحالية. نراقبها لمدة ٩٠ يوماً ونعدّل العتبات مع وصول الحجم الفعلي." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'الذكاء الاصطناعي لفرق المالية والحسابات',
+    url: 'https://lenooai.com/ar/services/ai-automation/finance',
+    description: 'أتمتة الذكاء الاصطناعي لفرق المالية والحسابات الإماراتية: معالجة الفواتير، التسوية، التقاط المصاريف، توقع التدفق النقدي، دعم إعداد ضريبة القيمة المضافة وضريبة الشركات، والتقارير المالية.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع أتمتة ذكاء اصطناعي لفرق المالية والحسابات الداخلية: التسعير حسب تعقيد سير العمل والنطاق. احجزوا تدقيق أتمتة مالية مجاني للحصول على عرض سعر.' },
+    serviceType: 'AI Automation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'أتمتة الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'المالية', item: 'https://lenooai.com/ar/services/ai-automation/finance' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="الذكاء الاصطناعي لفرق المالية والحسابات في الإمارات | Lenoo AI"
+  description="أتمتة الذكاء الاصطناعي لفرق المالية والحسابات الإماراتية: معالجة الفواتير، التسوية، التقاط المصاريف، توقع التدفق النقدي، ودعم إعداد ضريبة القيمة المضافة/ضريبة الشركات."
+  canonicalPath="/ar/services/ai-automation/finance"
+  enPath="/services/ai-automation/finance"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">أتمتة الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>المالية</div>
+    <h1>الذكاء الاصطناعي <span class="gradient-text">لفرق المالية والحسابات</span> في الإمارات</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      فرق المالية الداخلية تقضي أسبوعها بنفس نمط العمل: إدخال فواتير، ملاحقة موافقات، مطابقة سطور بنكية، تجميع تقارير قبل موعد نهائي. نبني أتمتة حول برنامج المحاسبة الذي تشغّلونه أصلاً، فيحدث ذلك العمل بنفسه ويراجع فريقكم المُخرَج بدلاً من إنتاجه يدوياً.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">مراقبة بعد الإطلاق مشمولة في كل مشروع</span>
+      <span class="tchip">ضمان استرداد إذا لم تكونوا راضين عما نقدمه</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_ai_automation_finance_hero" class="btn-primary">احجزوا تدقيق أتمتة مالية مجاني</button>
+      <a href="#finance-systems" class="btn-outline">شاهدوا ما نؤتمته ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1400&q=80&auto=format&fit=crop" alt="محترف مالية يراجع فواتير وتقارير مالية" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "٤٠٪", caption: "من مهام العمل في معظم وظائف المالية قابلة للأتمتة بالذكاء الاصطناعي المتاح حالياً. إدخال الفواتير والتسوية عادة في المقدمة." },
+      { value: "٩٠ يوماً", caption: "مراقبة بعد الإطلاق مشمولة في كل مشروع" },
+      { value: "١٠٠٪", caption: "ضمان استرداد إذا لم تكونوا راضين عما نقدمه" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHERE TIME IS LOST -->
+<section class="section" aria-labelledby="lost-time-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="lost-time-heading" style="margin-bottom:1.5rem;">أين تفقد فرق المالية معظم وقتها</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>الذمم الدائنة والمدينة في قمة القائمة.</strong> لا يزال أحد في فريقكم يفتح فواتير الموردين واحدة تلو الأخرى، يُدخِل البنود في دفتر الأستاذ، ويطابقها مع أوامر الشراء يدوياً. على جانب الذمم المدينة، أحدهم يلاحق دفعات العملاء المتأخرة عبر جدول بيانات، يرسل تذكيرات يدوياً، ويحدّث الحالة بعد كل مكالمة هاتفية. لا مهمة تحتاج حكماً. كلاهما يستهلك ساعات كل أسبوع.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>التسوية هي المخالف المتكرر الآخر.</strong> التحقق من سطور كشف الحساب البنكي مقابل دفتر الأستاذ، معاملة تلو الأخرى، بالضبط نوع العمل المُتعِب لأنه ميكانيكي: طابق المبلغ، طابق التاريخ، عَلِّم ما لا يتطابق. الفرق التي نتحدث معها تصف التسوية باستمرار كالمهمة التي تستهلك بصمت يوماً أو أكثر كل شهر، معظم ذلك الوقت في تأكيد مطابقات لم تكن موضع شك أصلاً.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>التقارير تغلق الدورة.</strong> سحب الأرقام من نظام المحاسبة، تنسيقها في حزمة إدارية أو عرض مجلس، وملاحقة أي شخص وصلت أرقامه متأخرة عادة تقع على من لديه أكبر صبر لجداول البيانات في الفريق. تتكرر كل شهر أو كل ربع، بنفس الشكل تقريباً في كل مرة.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1611746869696-d09bce200020?w=800&q=80&auto=format&fit=crop" alt="عضو فريق مالية يراجع أرقاماً على لوحة تحكم حاسوب محمول على مكتب" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI SYSTEMS FOR FINANCE -->
+<section id="finance-systems" class="section" style="background:#e7eeff;" aria-labelledby="systems-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="systems-heading">أنظمة ذكاء اصطناعي للمالية</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">مبنية فوق برنامج المحاسبة الذي يستخدمه فريقكم أصلاً. كل مشروع يشمل مراقبة بعد الإطلاق.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">receipt_long</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">معالجة الفواتير وأتمتة الذمم الدائنة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">الذكاء الاصطناعي يقرأ فواتير الموردين الواردة، يستخرج البنود، ويطابقها مع أوامر الشراء تلقائياً، موجّهاً أي شيء لا يتطابق لشخص قبل ترحيله.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> فريق مالية كان يُدخِل خمسين فاتورة مورد أسبوعياً يدوياً الآن يجدها مُستخرَجة، مُطابَقة، ومُصفَّة للموافقة قبل أن يفتح أحد صندوق الوارد.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">account_balance</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">ذكاء اصطناعي للتسوية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يطابق سطور كشف الحساب البنكي مع دفتر أستاذكم تلقائياً ويترك قائمة قصيرة من الاستثناءات الحقيقية بدلاً من فحص يدوي كامل سطراً بسطر.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> يوم ونصف من التسوية البنكية اليدوية كل شهر أصبح مراجعة ٢٠ دقيقة لحفنة السطور التي احتاجت فعلياً نظرة بشرية.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">receipt</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">التقاط المصاريف والإيصالات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">الموظفون يصوّرون أو يرسلون إيصالاً ويستخرج الذكاء الاصطناعي المبلغ، البائع، الفئة، ومعاملة ضريبة القيمة المضافة، ثم يوجّهه لسير عمل المصاريف الصحيح للموافقة.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> فريق كان يقضي أسبوعاً كل شهر يلاحق إيصالات مفقودة قبل إغلاق المصاريف الآن يجد معظمها مُلتقَطة ومُصنَّفة في يوم حدوثها.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">trending_up</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">توقع التدفق النقدي</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">الذكاء الاصطناعي يجمع الذمم المدينة والدائنة والتكاليف المتكررة من نظام محاسبتكم في توقع متجدد يتحدث مع ترحيل معاملات جديدة، بدلاً من جدول بيانات ثابت يعيد أحدهم بناءه كل شهر.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> عمل كان يخمّن موقفه النقدي لستين يوماً من الذاكرة وجدول بيانات قديم الآن يفحص توقعاً يحدّث نفسه يومياً.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">fact_check</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">دعم إعداد ضريبة القيمة المضافة وضريبة الشركات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">نؤتمت تحضير البيانات خلف تقديماتكم لضريبة القيمة المضافة وضريبة الشركات: جمع المعاملات معاً، تطبيق الوسم الذي حدده محاسبكم، وتوليد التقرير الذي يراجعونه قبل التقديم.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> تحضير ضريبة قيمة مضافة ربع سنوي كان يستغرق يومين كاملين لجمع المستندات الآن يصل كمراجعة في نفس اليوم للمحاسب ليعتمدها.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bar_chart</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">أتمتة التقارير المالية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">التقارير الإدارية المتكررة، حزم المجلس، وتفصيلات مستوى الأقسام تُجمَّع وتُسلَّم حسب جدول، مسحوبة مباشرة من بيانات محاسبتكم بدلاً من تجميعها يدوياً الليلة السابقة.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> مدير مالي كان يحصل على تقرير إداري صباح اجتماع المجلس الآن يجده ينتظر في بريده كل اثنين.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">مشمول بضمان استرداد كامل ١٠٠٪</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">كل سير عمل محدد النطاق حول برنامج محاسبتكم ودليل حساباتكم الحاليين، مع ٩٠ يوماً من المراقبة بعد الإطلاق مشمولة.</p>
+      <button onclick="openModal(this)" data-source="ar_ai_automation_finance_mid" class="btn-primary">احجزوا تدقيق أتمتة مالية مجاني</button>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT STAYS HUMAN -->
+<section class="section" aria-labelledby="human-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="human-heading">ما يبقى بشرياً</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">الأتمتة تنقل البيانات وتُعلِّم على ما يحتاج انتباهاً. لا تتخذ القرارات التي تحمل وزناً مالياً أو قانونياً.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">how_to_reg</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">الموافقات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">الأتمتة توجّه فاتورة أو مصروفاً للمعتمِد الصحيح وتتتبع من وافق، لكنها لا تقرر ما إذا كان إنفاق ما مبرراً. ذلك القرار، وصلاحية الرفض، تبقى مع من يملك الميزانية.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">psychology</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">الأحكام</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">تقدير مستحق دون نمط تاريخي نظيف، القرار بشطب، أو شرح لماذا يبدو انحراف بشكله لا يزال يحتاج شخصاً يفهم العمل خلف الأرقام. الأتمتة تستطيع تعليم وجود انحراف. لا تستطيع إخباركم لماذا.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">verified</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">اعتماد التدقيق</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">لا شيء يُقدَّم أو يُعلَن نهائياً دون مراجعة محاسبكم أو مراقبكم المالي أو مدققكم أولاً. الأتمتة تُجهِّز الأرقام لتلك المراجعة وتُبقي مسار الأوراق سليماً. لا تستبدل المراجعة نفسها.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATION WITH UAE ACCOUNTING STACKS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="stacks-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="stacks-heading" style="margin-bottom:1.5rem;">التكامل مع منظومات محاسبة إماراتية</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">معظم عمل أتمتة المالية لدينا يتصل مباشرة بـ<strong>Zoho Books</strong> أو <strong>QuickBooks</strong> عبر واجهات API الخاصة بها، وهو ما يغطي غالبية فرق المالية الصغيرة والمتوسطة التي نعمل معها في الإمارات. بنينا أيضاً حول <strong>Tally</strong>، لا يزال مستخدماً على نطاق واسع من أعمال بجذور في مجتمع التجارة بشبه القارة، و<strong>SAP</strong>، لفرق مالية أكبر تشغّل دليل حسابات أكثر تعقيداً وعدة مراكز تكلفة.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">الأتمتة تقرأ من دفتر أستاذكم وتكتب إليه عبر نفس الوصول الذي يملكه فريقكم أصلاً، فلا يعمل شيء في نظام منفصل يجب على فريقكم الماليّ فحصه فوق النظام الذي يستخدمونه أصلاً. إذا كانت منظومتكم مزيجاً من الأدوات، أو شيئاً ليس في هذه القائمة، نحدد نطاق التكامل أثناء مكالمة الاكتشاف ونبني حول ما تدعمه واجهة API للمنصة فعلياً.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1762558978967-709b17a00415?w=800&q=80&auto=format&fit=crop" alt="جدول بيانات بصفوف وأعمدة بيانات مالية مفتوح على شاشة حاسوب محمول" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPLIANCE -->
+<section class="section" aria-labelledby="compliance-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="compliance-heading" style="margin-bottom:1.5rem;">الامتثال: متطلبات الهيئة الاتحادية للضرائب ومسارات التدقيق</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        لسنا خدمة استشارات ضريبية ولا نقدّم إقرارات للهيئة الاتحادية للضرائب نيابة عنكم. ما نؤتمته هو سير عمل البيانات الذي يسبق تقديم ضريبة القيمة المضافة أو ضريبة الشركات: الجزء الذي يقضي فيه أحدهم حالياً أياماً يجمع المعاملات، يُعلِّمها، ويتحقق من الإجماليات قبل أن يراجع محاسبكم أو وكيلكم الضريبي الأرقام إطلاقاً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        هذا يعني أن المعاملات تُسحَب من نظام محاسبتكم وتُطابَق مع المستندات المصدر تلقائياً، معاملة ضريبة القيمة المضافة تُعلَّم باستخدام القواعد التي حددها محاسبكم أصلاً، وأي شيء غامض، فاتورة لا تطابق فئة واضحة، مستند مفقود، يُعلَّم بدلاً من إدراجه أو استبعاده بصمت. المُخرَج يذهب لمحاسبكم أو وكيلكم الضريبي للمراجعة والاعتماد. لا شيء يُقدَّم تلقائياً، ولا شيء يتخطى الحكم البشري الذي يتطلبه الامتثال للهيئة الاتحادية فعلياً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        مسار التدقيق يأتي كنتيجة ثانوية لبناء سير العمل بهذه الطريقة بدلاً من خطوة تقرير منفصلة. كل رقم في تقرير يرتبط بالمستند المصدر الذي جاء منه، مع ختم زمني لوقت معالجته وأي قاعدة تعاملت معه. إذا سألت الهيئة أو مدقق داخلي لماذا يظهر رقم بالشكل الذي يظهر به، يستطيع فريقكم تتبعه خلال ثوانٍ بدلاً من إعادة بناء التاريخ من الذاكرة.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">من تدقيق مالي لأتمتة فعالة</h2>
+    </div>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">أخبرونا أي مهمة أسبوع الإغلاق تستهلك أكثر ساعات وسنُريكم كيف تبدو أتمتتها.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_automation_finance_mid2" class="btn-primary">احجزوا تدقيق أتمتة مالية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- CROSS-LINK -->
+<section class="section-sm" aria-labelledby="related-heading">
+  <div class="container">
+    <div style="max-width:720px; margin:0 auto; text-align:center;">
+      <h2 id="related-heading" style="font-size:1.375rem; margin-bottom:1rem;">تبحثون عن أتمتة خارج المالية؟</h2>
+      <p style="color:#42474e; font-size:1rem; line-height:1.8;">
+        هذه الصفحة تغطي أتمتة لفرق المالية والحسابات الداخلية. راجعوا <a href="/ar/services/ai-automation">مركز أتمتة الذكاء الاصطناعي لدينا</a> للنطاق الكامل لسير العمل الذي نؤتمته عبر المبيعات والعمليات والإدارة، أو صفحة <a href="/ar/services/ai-automation/accounting">أتمتة الذكاء الاصطناعي لمكاتب المحاسبة</a> إذا كنتم ممارسة محاسبة أو مسك دفاتر تخدم عدة عملاء.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">تدقيق أتمتة مالية مجاني</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لإخراج فريقكم المالي من الإدخال اليدوي للبيانات؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجزوا تدقيق أتمتة مالية مجاني مع فريقنا في دبي. سنحدد سير العمل الذي يكلف فريقكم المالي أكثر وقت ونقدّر التوفير.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_automation_finance_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا تدقيق أتمتة مالية مجاني</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>

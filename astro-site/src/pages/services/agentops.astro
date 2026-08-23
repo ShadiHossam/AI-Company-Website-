@@ -1,0 +1,243 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Can you send us a sample observability report before we commit to anything?", answer: "Yes. We'll walk you through a real report from one of our live deployments on the audit call, with the client's own numbers redacted, so you can see exactly what a month of monitoring actually produces: conversation volume, cost per interaction, accuracy trend, and what we changed because of it. Most people find it more convincing than any pitch we could give them, because it's evidence, not a promise." },
+  { question: "How fast do you respond when an alert fires?", answer: "It depends on the retainer tier and how severe the issue is. A full outage, the agent can't reach a system it depends on, gets treated as urgent and acted on the same day, usually within a couple of hours during business hours. A quality dip, the agent answering slightly worse on one topic, gets reviewed and fixed on the next scheduled pass rather than triggering an emergency. We'll agree specific response times with you before anything goes live, so nobody's guessing during an actual incident." },
+  { question: "What actually counts as a 'failure' worth alerting on?", answer: "Three categories: the agent can't complete its job at all (an integration is down, a tool call is failing), the agent gives a wrong or unsafe answer that a customer flags or that our evaluation catches, or cost per conversation spikes well outside its normal range. We set the specific thresholds with you based on what your agent does and how much a bad answer actually costs you, since a wrong answer on a pricing question matters more than a slightly off answer on a general FAQ." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AgentOps and AI Agent Monitoring",
+    "url": "https://lenooai.com/services/agentops",
+    "description": "Ongoing monitoring, evaluation, and monthly ROI reporting for AI agents deployed in the UAE. Accuracy tracking, cost per conversation, drift detection, and incident response.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Agent Monitoring"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://lenooai.com/services" },
+      { "@type": "ListItem", "position": 3, "name": "AgentOps", "item": "https://lenooai.com/services/agentops" }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems.map((f) => ({
+      "@type": "Question",
+      "name": f.question,
+      "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+    }))
+  }
+];
+---
+
+<BaseLayout
+  title="AI Agent Monitoring: The Observability Stack Behind Every Lenoo Build | Lenoo AI"
+  description="How we monitor AI agents after launch: accuracy tracking, cost per conversation, drift detection, and a monthly report that proves ROI instead of assuming it."
+  canonicalPath="/services/agentops"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services" style="color:inherit;text-decoration:none;opacity:0.65;">Services</a><span style="opacity:0.4;padding:0 4px;"> / </span>AgentOps</div>
+    <h1>The <span class="gradient-text">AI Observability Stack</span> Behind Every Build</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">"It's working" isn't a metric. We monitor every agent we deploy for accuracy, cost, and drift, and send a monthly report that shows exactly what it's doing and what it's worth, not just an invoice asking you to trust us.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="agentops_hero" class="btn-primary">See a Sample Observability Report</button>
+      <a href="/services/agentops/what-is-agentops" class="btn-outline">What is AgentOps? →</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1600&q=80&auto=format&fit=crop" alt="Analytics dashboard showing live performance metrics" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 50%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "5", caption: "signals we track on every agent: accuracy, cost, latency, satisfaction, drift" },
+      { value: "Monthly", caption: "reporting cadence, so you see the trend, not just a snapshot" },
+      { value: "1", caption: "team that both built the agent and watches it, no handoff to a stranger" },
+    ]} />
+  </div>
+</div>
+
+<!-- INTRO -->
+<section class="section" aria-labelledby="intro-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="intro-heading" style="margin-bottom:1.5rem;">Why "it's working" isn't good enough for the business</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Most AI vendors hand you a login and disappear.</strong> The agent goes live, someone tests it a few times, it looks fine, and that's the last anyone checks until a customer complains. "It's working" becomes a feeling instead of a fact, based on the absence of complaints rather than any actual measurement of what the agent is doing across hundreds of conversations nobody read.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">That gap is where most of the value of an AI system quietly leaks away. An agent that's 95% accurate sounds fine until you realize which 5% it's getting wrong, if a pricing question or a refund policy is in that 5%, the cost of not knowing is a lot higher than the cost of finding out. Without real monitoring, you don't get to choose which mistakes matter. You just find out about them eventually, usually from someone unhappy.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">We built our observability stack because we got tired of clients asking "is it actually working?" and not having a confident answer beyond "nobody's complained." Every agent we deploy reports back: what it handled, what it cost, what it got right, and what it got wrong, so the question has a real answer every month, not a shrug.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&q=80&auto=format&fit=crop" alt="Team reviewing charts and performance metrics together" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT WE MONITOR -->
+<section id="what-we-monitor" class="section" style="background:#e7eeff;" aria-labelledby="monitor-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="monitor-heading">What we monitor</h2>
+      <p>Five signals, checked on a set schedule, not whenever someone happens to remember to look.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">rule</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Accuracy &amp; Escalation Rate</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">A sample of real conversations reviewed against known-correct answers, plus how often the agent hands off to a human. A rising escalation rate is usually the first sign something in the agent's knowledge or logic has gone stale.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">payments</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Cost per Conversation/Task</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Token spend and API cost broken down per interaction, tracked over time, so a bloated prompt or an unnecessary extra tool call shows up as a specific, fixable number instead of a mystery line on next month's bill.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">bolt</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Latency &amp; Uptime</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">How long the agent takes to respond, and whether it's reachable at all. A slow agent loses customers just as effectively as a wrong one, and an integration that silently drops keeps the agent talking while it's actually broken.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">sentiment_satisfied</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Satisfaction Signals</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Where they exist, thumbs-up/down responses, repeat questions, conversations that end in frustration or abandonment, read as a signal, not just a number in a spreadsheet nobody opens.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">show_chart</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Drift Over Time</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">This month's accuracy compared against launch-month accuracy, on the same test set. Drift is slow and quiet by nature; the only way to catch it early is to keep measuring the same thing the same way, every month.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Monitoring is built into every deployment, not sold as a separate add-on after something's already gone wrong.</p>
+      <button onclick="openModal(this)" data-source="agentops_mid" class="btn-primary">See a Sample Observability Report</button>
+    </div>
+  </div>
+</section>
+
+<!-- MONTHLY REPORT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="report-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="report-heading">The monthly ROI report</h2>
+      <p>What actually lands in your inbox, once a month, whether or not anything went wrong.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Volume and outcomes</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">How many conversations the agent handled, how many it resolved without a human, and how many it correctly escalated, so you can see what it's actually taking off your team's plate that month.</p>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Cost and accuracy trend</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Cost per conversation and accuracy score, plotted against last month, so a slow drift in either direction is visible before it becomes a problem you hear about from a customer instead of a report.</p>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">What we changed, and why</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">The specific fixes made that month, a prompt update, a new FAQ added, a broken integration patched, tied to the specific issue that prompted each one. Not a generic "all good," an actual list.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATCHING FAILURES -->
+<section class="section" aria-labelledby="alert-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="alert-heading">Catching failures before your customers do</h2>
+      <p>Alerts and thresholds set before launch, not improvised after the first complaint.</p>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">notifications_active</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Thresholds set with you, not for you</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Before an agent goes live, we agree what counts as urgent for your business specifically: an outage always is, a wrong answer on a pricing question is, a slightly slower response on a low-stakes FAQ usually isn't. Generic thresholds miss the failures that actually matter to you.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">emergency</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">A defined response, not a scramble</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Every alert has an owner and a response time attached to it in advance, so when something does trip a threshold, there's already a plan instead of a group chat trying to figure out who's supposed to look at it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT'S IN THE RETAINER -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="retainer-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto; text-align:center;">
+      <h2 id="retainer-heading" style="margin-bottom:1.25rem;">What's included in the retainer</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.5rem;">Monitoring is one part of a wider maintenance retainer that also covers bug fixes, prompt tuning, model updates, and priority support, all handled by the same team that built the agent in the first place. If you want the full breakdown of what's included, what isn't, and what the tiers cost, that's on our maintenance page.</p>
+      <a href="/services/ai-maintenance" class="btn-outline" style="border-color:#006875; color:#006875;">See What's In a Real Retainer →</a>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS AND STACK -->
+<section class="section" aria-labelledby="stack-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="stack-heading">Tools and stack we use</h2>
+      <p>The observability layer sits alongside whatever platform the agent itself runs on, logging, evaluation, and alerting tooling appropriate to the size and risk profile of the deployment, from lightweight logging on a single WhatsApp bot to a full evaluation pipeline on a multi-agent system handling payments or medical intake. We pick the tooling to match what the agent is actually doing, not the other way around.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI agent monitoring</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Walkthrough</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">See a Sample Observability Report</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll walk you through a real (redacted) monthly report so you can see exactly what monitoring actually produces before you decide whether it's worth paying for.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="agentops_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">See a Sample Observability Report</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+.num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+.apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+@media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } }
+</style>

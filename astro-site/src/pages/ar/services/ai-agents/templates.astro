@@ -1,0 +1,216 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+
+const blueprints = [
+  { title: 'وكيل تأهيل عملاء محتملين', trigger: 'عميل محتمل وارد جديد (نموذج، واتساب، أو منصة)', tools: 'قراءة/كتابة CRM، البحث عن المعايير', logic: 'يتحقق من العميل المحتمل مقابل معايير مشترٍ محددة ويسجّل الملاءمة', output: 'يوجّه العملاء المحتملين الجادين لمندوب، يسجّل الأضعف في تسلسل رعاية' },
+  { title: 'وكيل معالجة الفواتير', trigger: 'فاتورة جديدة مستلمة', tools: 'نظام محاسبة، سجلات أوامر الشراء', logic: 'يطابق بنود الفاتورة مقابل أمر الشراء وشروط العقد', output: 'يوافق على المطابقات النظيفة، يُعلِّم على عدم التطابق مع شرح مكتوب' },
+  { title: 'وكيل فرز تذاكر الدعم', trigger: 'تذكرة دعم جديدة', tools: 'منصة مكتب مساعدة، قاعدة معرفة', logic: 'يصنّف الإلحاح ويتحقق مقابل مشاكل معروفة', output: 'يصيغ رداً للحالات الروتينية، يصعّد الباقي بسياق' },
+  { title: 'وكيل متابعة الاجتماعات', trigger: 'انتهاء الاجتماع (تكامل تقويم أو تسجيل مكالمة)', tools: 'مصدر ملاحظات/نص، أداة CRM أو مهام', logic: 'يستخرج بنود الإجراء والخطوات التالية من المحادثة', output: 'يسجّل ملخصاً وينشئ مهام متابعة مقابل المسؤولين' },
+  { title: 'وكيل مراقبة الامتثال', trigger: 'مراجعة مجدولة أو مستند/معاملة جديدة', tools: 'مخزن مستندات، قواعد سياسة محددة', logic: 'يتحقق من المحتوى مقابل السياسة ويُعلِّم على مخالفات محتملة', output: 'ينبّه الشخص الصحيح بالبند المحدد الذي يتعارض معه' },
+];
+
+const fallbackFaqs = [
+  { question: "هل هذه القوالب مجانية للاستخدام؟", answer: "المخططات أعلاه توضيحية، تُظهر شكل وكيل حقيقي، لا ملفاً قابلاً للتنزيل تثبّتونه وتشغّلونه. لا نبيع منتج قالب؛ كل وكيل نبنيه مصمم مقابل بياناتكم وأدواتكم وحالاتكم الحدية الفعلية منذ البداية." },
+  { question: "لماذا لا نستخدم قالباً بدلاً من بناء مخصص؟", answer: "القالب يفترض مدخلات نظيفة وعامة. الأعمال الحقيقية لديها اصطلاحات تسمية غير متسقة، حالات حدية لم يوثقها أحد، وغرائب أدوات لم يتوقعها أي قالب عام. الوكيل المبني مقابل بياناتكم الفعلية يتعامل معها منذ اليوم الأول؛ القالب عادة يحتاج إعادة عمل كبيرة قبل أن ينجو من ملامسة سير عملكم الحقيقي، وعند تلك النقطة تكونون قد أعدتم بناءه أصلاً." },
+  { question: "كم يستغرق بناء مخصص مقارنة بتكييف قالب؟", answer: "لا يوجد فرق جوهري عملياً، لأن تكييف قالب عام للتعامل مع حالاتكم الحدية المحددة ينتهي بكونه معظم نفس العمل كبناء مخصص من الصفر. وكيل قرار واحد عادة ينتقل من الاكتشاف للإطلاق خلال أسبوعين إلى ثلاثة أسابيع في كلتا الحالتين؛ ما يتغير هو ما إذا كان ذلك الوقت يذهب لمقاومة افتراضات قالب أو للبناء حول متطلباتكم الفعلية منذ البداية." },
+  { question: "هل تستطيعون بناء شيء قريب من أحد هذه المخططات لنا؟", answer: "نعم، هذا بالضبط ما يُقصد منها التوضيح له: شكل وكيل شائع، لا المنتج النهائي. أخبرونا أثناء الاكتشاف أي مخطط أقرب لما تحتاجونه، وسنحدد نطاق النسخة الحقيقية مقابل معاييركم وأدواتكم وحالاتكم الحدية المحددة." },
+  { question: "ماذا لو احتاج سير عملنا أكثر من مخطط واحد من هذه مجتمعاً؟", answer: "هذا شائع، وعادة علامة على أن المشروع يحتاج إما وكيلاً واحداً بنطاق أوسع أو، أكثر شيوعاً، فريقاً صغيراً من وكلاء منسّقين بدلاً من مخطط واحد مُمدَّد ليغطي كل شيء. وكيل تأهيل عملاء محتملين يحتاج أيضاً صياغة تواصل وتحديث CRM، مثلاً، قد يكون وكيلاً واحداً بثلاث مسؤوليات أو وكيلين يحوّل أحدهما للآخر، حسب مدى استقلالية كل جزء الذي يحتاج اختباره والثقة به. نحدد أي بنية تناسب أثناء الاكتشاف بدلاً من افتراض أن أكبر نطاق ممكن هو الصحيح." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_agents_templates')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'قوالب وكلاء الذكاء الاصطناعي',
+    url: 'https://lenooai.com/ar/services/ai-agents/templates',
+    description: 'أمثلة مخططات وكلاء ذكاء اصطناعي حسب حالة الاستخدام: المحفز، الأدوات، منطق القرار، والمخرجات، ولماذا يتفوق البناء المخصص على قالب عام.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'وكلاء الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'القوالب', item: 'https://lenooai.com/ar/services/ai-agents/templates' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="قوالب ومخططات وكلاء الذكاء الاصطناعي | Lenoo AI"
+  description="أمثلة مخططات وكلاء ذكاء اصطناعي حسب حالة الاستخدام: المحفز، الأدوات، منطق القرار، والمخرجات، ولماذا يتفوق البناء المخصص على قالب عام."
+  canonicalPath="/ar/services/ai-agents/templates"
+  enPath="/services/ai-agents/templates"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">وكلاء الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>القوالب</div>
+    <h1>قوالب <span class="gradient-text">ومخططات وكلاء الذكاء الاصطناعي</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      خمسة مخططات وكلاء شائعة، تُظهر بالضبط كيف تبدو بنية وكيل حقيقي: المحفز، الأدوات، منطق القرار، والمخرجات، فتعرفون ما تطلبونه فعلياً قبل أن نحدد نطاق واحد لعملكم.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_ai_agents_templates_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#blueprints" class="btn-outline">شاهدوا المخططات ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- BLUEPRINTS -->
+<section id="blueprints" class="section" aria-labelledby="blueprints-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="blueprints-heading">خمسة مخططات نموذجية</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">نقاط بداية توضيحية، لا شيء تنسخونه وتلصقونه وتتوقعون أن يعمل مقابل بياناتكم الحقيقية. اخترنا هذه الخمسة لأنها تظهر عبر كل قطاع تقريباً نعمل فيه، مبيعات، مالية، دعم، عمليات، وامتثال، بشكل ما، رغم أن الحقول والقواعد المحددة تحتها تبدو مختلفة في كل عمل.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {blueprints.map((b) => (
+        <div class="value-card">
+          <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">schema</span></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem;">{b.title}</h3>
+          <p style="color:#42474e; font-size:0.8125rem; line-height:1.7; margin:0 0 0.5rem;"><strong>المحفز:</strong> {b.trigger}</p>
+          <p style="color:#42474e; font-size:0.8125rem; line-height:1.7; margin:0 0 0.5rem;"><strong>الأدوات:</strong> {b.tools}</p>
+          <p style="color:#42474e; font-size:0.8125rem; line-height:1.7; margin:0 0 0.5rem;"><strong>منطق القرار:</strong> {b.logic}</p>
+          <p style="color:#42474e; font-size:0.8125rem; line-height:1.7; margin:0;"><strong>المخرجات:</strong> {b.output}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- PIVOT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="pivot-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="pivot-heading" style="margin-bottom:1.5rem;">لماذا ينهار القالب العام مع بيانات عمل حقيقية</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        كل مخطط أعلاه يعمل بنظافة في المجرد. وكيل تأهيل العملاء المحتملين يسجّل عميلاً محتملاً مقابل معايير؛ وكيل الفواتير يطابق بنوداً مع أمر شراء. في العالم الحقيقي، نموذج عملائكم المحتملين له ثلاثة أسماء حقول مختلفة حسب الحملة التي جاء منها، فواتيركم تصل كملفات PDF ممسوحة ضوئياً نصف الوقت، وفئة تذكرة "عاجل" تعني شيئاً مختلفاً لثلاثة أعضاء فريق مختلفين. القالب العام ليس لديه طريقة لمعرفة أي من ذلك مسبقاً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        الوكيل المبني مخصصاً يتعامل مع بياناتكم الفعلية منذ اليوم الأول، لأنه صُمم مقابلها، لا مقابل حالة نظيفة افتراضية. هذا ليس عرضاً تسويقياً، إنه ببساطة أين يعيش العمل الحقيقي في بناء وكيل: ليس في البنية عالية المستوى، المتشابهة فعلياً عبر الأعمال، بل في الحالات الحدية، عدم اتساق التسمية، وغرائب الأدوات التي لا تظهر إلا عند النظر لبياناتكم الحقيقية. نقوم بذلك النظر قبل البناء، لا بعد أن ينكسر شيء في الإنتاج.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW WE USE BLUEPRINTS -->
+<section class="section" aria-labelledby="discovery-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="discovery-heading" style="margin-bottom:1.5rem;">كيف نستخدم فعلياً هذه المخططات في مكالمة اكتشاف</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        المخططات الخمسة أعلاه مفردات بداية، لا إجابة نهائية. في مكالمة اكتشاف، عادة نبدأ بسؤال أيها يبدو أقرب لما تتخيلونه، ثم نقضي معظم المحادثة في إيجاد أين يتباعد سير عملكم الفعلي عنه. ذلك التباعد هو حيث يحدث تحديد النطاق الحقيقي: كيف يبدو نموذج عملائكم المحتملين فعلياً، بأي صيغة تصل فواتيركم فعلياً، ماذا يعني "عاجل" فعلياً لفريقكم عندما يقولونها بصوت عالٍ لا عندما تُكتب كسياسة.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        بمجرد أن تكون لدينا تلك الصورة، تُعاد كتابة أعمدة المحفز والأدوات ومنطق القرار والمخرجات للمخطط مقابل تفاصيلكم. قد يتبين أن المحفز ثلاثة مصادر مختلفة لا مصدراً واحداً. قد تشمل الأدوات نظاماً دون واجهة API حديثة، مما يغيّر نهج البناء كلياً. منطق القرار يحتاج دائماً تقريباً دقة أكثر من "تحقق مقابل المعايير"، لأن قواعد التأهيل الحقيقية لها استثناءات يطبقها فريقكم غريزياً لكن لم يكتبها أحد أبداً. تسمية تلك الغريزة بصوت عالٍ، فتصبح قاعدة يتبعها الوكيل باستمرار، غالباً أثمن جزء من محادثة الاكتشاف، بغض النظر عن أي منصة أو مخطط ننتهي ببنائه عليه.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        إذا لم يطابق أي من المخططات الخمسة أعلاه ما تتخيلونه إطلاقاً، فهذا جيد أيضاً، وأكثر شيوعاً مما تتوقعون. كثير من الوكلاء التي نبنيها لا تنطبق بنظافة على أي من الفئات الشائعة، لأنها تحل مشكلة محددة بما يكفي لعملكم أن أي مخطط عام لم يكن ليتوقعها. أحضروا لنا المهمة الفعلية، موصوفة بلغة واضحة، وسنكتشف شكل الوكيل معاً بدلاً من محاولة إجباره في أحد الصناديق الخمسة أعلاه.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- COMMON MISTAKES -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="mistakes-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="mistakes-heading" style="margin-bottom:1.5rem;">إذا كنتم تكيّفون قالباً منزَّلاً بأنفسكم</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        بعض الأعمال تأتي إلينا بعد تجربة قالب وكيل منزَّل من مكتبة مجتمع منصة بلا كود أولاً، وهو شيء معقول لتجربته قبل الالتزام بميزانية لبناء مخصص. بضعة أنماط تظهر بما يكفي من التكرار في تلك المحادثات لتستحق ذكرها هنا. الأكثر شيوعاً: منطق قرار القالب يفترض صيغة بيانات واحدة نظيفة، وينهار بصمت، لا بخطأ، فقط إجابة خاطئة، لحظة أن لا يطابق سجل حقيقي ذلك الشكل بالضبط.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        النمط الشائع الثاني هو ضوابط الحماية المفقودة. القالب المنزَّل المبني كعرض توضيحي عادة ليس له قائمة إجراءات مسموحة ولا نقطة موافقة، لأن من نشره كان يُظهر ما هو ممكن، لا يبني شيئاً مقصوداً للعمل دون إشراف مقابل بياناتكم الحية. إذا كنتم تكيّفون واحداً بأنفسكم، إضافة حد صريح لما يستطيع الوكيل فعله دون تأكيد شخص أولاً يستحق فعله قبل أن يلمس أي شيء حقيقي، لا بعده.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        الثالث هو غياب التسجيل. عندما ينتج وكيل قائم على قالب نتيجة خاطئة، غالباً لا يوجد سجل لما قرأه أو لماذا قرر ما قرره، مما يجعل الخطأ شبه مستحيل تشخيصه أو منعه من التكرار. إذا كنتم تبنون على قالب بأنفسكم وتريدون رأياً ثانياً حول ما إذا كانت ضوابط الحماية والتسجيل صلبة قبل إطلاقه مقابل بيانات حقيقية، هذه محادثة يسعدنا إجراؤها حتى لو لم تنتهوا بتوظيفنا لبناء كل شيء.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        لا شيء من هذا يعني أن القالب المنزَّل مضيعة للوقت. غالباً طريقة مفيدة فعلياً لرؤية شكل الممكن قبل الالتزام بميزانية، وبعض سير العمل البسيط منخفض المخاطر يعمل بشكل جيد عليه إلى أجل غير مسمى دون الحاجة لإعادة بناء مخصصة أبداً. التمييز الذي يهم فعلياً هو المخاطر والتعقيد: قالب يصيغ ملخصاً داخلياً لا يعتمد عليه أحد لقرار يحمل مخاطرة قليلة إذا أخطأ أحياناً. قالب يتخذ قرارات حول تواصل العملاء، بيانات مالية، أو أي شيء بعواقب حقيقية يستحق نفس انضباط ضوابط الحماية والتسجيل الذي يحصل عليه بناء مخصص، سواء بنيتم ذلك الانضباط بأنفسكم أو استعنتم بنا لإضافته.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">أحد هذه المخططات قريب مما تحتاجونه؟ أخبرونا ببياناتكم وحالاتكم الحدية الفعلية، وسنحدد نطاق النسخة الحقيقية.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_agents_templates_mid" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون للنسخة المخصصة؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">أخبرونا أي مخطط أقرب لحاجتكم، والتفاصيل التي تجعل عملكم مختلفاً. سنحدد نطاق الشيء الحقيقي.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_agents_templates_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>

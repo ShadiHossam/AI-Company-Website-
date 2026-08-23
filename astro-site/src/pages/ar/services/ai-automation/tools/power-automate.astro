@@ -1,0 +1,308 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../../lib/supabase";
+import FaqAccordion from "../../../../../components/FaqAccordion.astro";
+
+const h1 = 'تنفيذ Power Automate للأعمال الإماراتية';
+const metaTitle = 'تنفيذ Power Automate للأعمال الإماراتية | Lenoo AI';
+const metaDescription = 'تنفذ Lenoo AI تدفقات Microsoft Power Automate للأعمال الإماراتية التي تعمل أصلاً على Microsoft 365، تربط Outlook وSharePoint وTeams وأكثر من ٩٠٠ موصل.';
+const heroSubtext = 'إذا كان عملكم يعمل أصلاً على Microsoft 365، Power Automate عادة أسرع طريق للأتمتة، لأنه مرخّص أصلاً ومتصل أصلاً ببياناتكم. نصمم ونبني التدفقات.';
+
+const useCases = [
+  { title: 'موافقات SharePoint وTeams', description: 'موافقات المستندات، طلبات الإجازة، والتوقيعات الداخلية تنتقل عبر Teams وSharePoint تلقائياً، مع حالة مرئية لكل المتورطين.' },
+  { title: 'أتمتة Outlook والبريد الإلكتروني', description: 'الرسائل الواردة تُصنَّف، تُوجَّه، وتُنفَّذ عليها الإجراءات تلقائياً، ما يقلل الفرز اليدوي المتراكم في صناديق الوارد المشتركة.' },
+  { title: 'معالجة مستندات AI Builder', description: 'استخراج بيانات من الفواتير والنماذج والعقود باستخدام AI Builder، مُتحقَّق منها ومدفوعة مباشرة لـ Dynamics 365 أو Excel دون إدخال يدوي.' },
+  { title: 'تقارير آلية لـ Teams وExcel', description: 'سحب بيانات من عبر منظومة Microsoft 365 لديكم في تقرير مجدول يهبط في Teams أو ملف Excel مشترك، منسّقاً وجاهزاً للقراءة.' },
+];
+
+const faqFallback = [
+  { question: 'هل نحتاج ترخيص Microsoft 365 محدداً لـ Power Automate؟', answer: 'التدفقات الأساسية مشمولة في معظم خطط Microsoft 365 للأعمال. الموصلات المميزة، أرصدة AI Builder، وأحجام تشغيل أعلى تتطلب ترخيص Power Automate مميزاً، الذي نساعدكم على تقييمه بناءً على ما تحتاجه تدفقاتكم فعلياً.' },
+  { question: 'هل Power Automate ملاءمة جيدة إذا لم نكن كلياً على Microsoft 365؟', answer: 'يكون أقوى عندما تعمل أدواتكم الأساسية (بريد إلكتروني، ملفات، CRM) أصلاً على Microsoft. إذا كانت منظومتكم مختلطة أو معظمها غير Microsoft، نوصي عادة بـ Zapier أو Make أو n8n بدلاً منه، وسنقول ذلك مباشرة أثناء مكالمة الاكتشاف.' },
+  { question: 'هل تستطيع تدفقات Power Automate قراءة ومعالجة المستندات بذكاء؟', answer: 'نعم، عبر AI Builder وخطوات ذكاء اصطناعي مخصصة نضيفها. بنينا تدفقات تستخرج بيانات من فواتير، تتحقق منها مقابل طلبات الشراء، وتنشرها مباشرة في Dynamics 365 أو Excel دون إدخال يدوي.' },
+  { question: 'هل يعمل Power Automate مع سياسات أمان وامتثال Microsoft 365 الحالية لدينا؟', answer: 'نعم، هذه إحدى مزاياه: التدفقات تعمل تحت هويتكم وسياسات منع فقدان البيانات الحالية في Microsoft 365 بدلاً من مجموعة صلاحيات منفصلة. نصمم التدفقات لاحترام أياً كانت قواعد الحوكمة التي وضعها فريق تقنية المعلومات لديكم أصلاً.' },
+  { question: 'من يدير التدفقات بعد أن تبنوها؟', answer: 'نسلّم توثيقاً وشرحاً فيستطيع فريق تقنية المعلومات أو العمليات لديكم إجراء تعديلات صغيرة بأنفسهم، ونقدّم عقود صيانة لأي شيء أكثر تعقيداً، كإضافة خطوة جديدة أو ربط نظام إضافي.' },
+];
+
+let faqItems = faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_automation_tools_power_automate')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: h1,
+    url: 'https://lenooai.com/ar/services/ai-automation/tools/power-automate',
+    description: metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع تنفيذ Power Automate: التسعير حسب تعقيد التدفق ونطاقه. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر.' },
+    serviceType: 'Power Automate Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'أتمتة الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'الأدوات', item: 'https://lenooai.com/ar/services/ai-automation/tools' },
+      { '@type': 'ListItem', position: 4, name: 'Power Automate', item: 'https://lenooai.com/ar/services/ai-automation/tools/power-automate' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonicalPath="/ar/services/ai-automation/tools/power-automate"
+  enPath="/services/ai-automation/tools/power-automate"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">أتمتة الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-automation/tools" style="color:inherit;text-decoration:none;opacity:0.65;">الأدوات</a><span style="opacity:0.4;padding:0 4px;"> / </span>Power Automate</div>
+    <div class="tool-logo-hero"><img src="https://cdn.simpleicons.org/microsoftpowerautomate/0066FF" alt="شعار Power Automate" width="56" height="56" loading="eager" onerror="this.parentElement.style.display='none'" /></div>
+    <h1>{h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ar_ai_automation_tools_power_automate_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#use-cases" class="btn-outline">شاهدوا ما نبنيه ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1759752393975-7ca7b302fcc6?w=1400&q=80&auto=format&fit=crop" alt="أيدٍ تكتب على حاسوب محمول يعرض شاشة إعداد أتمتة سير عمل في بيئة مكتبية" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHAT IS POWER AUTOMATE -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">ما هو Power Automate؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Power Automate أداة أتمتة سير عمل من Microsoft، مبنية داخل منظومة Microsoft 365 ومتصلة أصلياً بـ Outlook وSharePoint وTeams وExcel وDynamics 365، بالإضافة لأكثر من ٩٠٠ موصل من أطراف ثالثة.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        لأنه يجلس داخل نفس المستأجر الذي يجلس فيه بقية Microsoft 365، يتخطى Power Automate خطوة تحتاجها معظم أدوات الأتمتة الأخرى: المصادقة منفصلة في كل تطبيق. تدفق ينقل ملفاً من مرفق بريد إلكتروني إلى SharePoint، ثم ينشر إشعاراً في Teams، يعمل أصلاً مع بيانات أمّنتها مؤسستكم ومنحت صلاحياتها بشكل صحيح، لأنه يعمل تحت نفس قواعد الهوية والوصول لكل شيء آخر في بيئة Microsoft لديكم. هذا يجعله ملاءمة طبيعية لتدفقات الموافقة وتوجيه المستندات داخل مؤسسات وحّدت أصلاً على Microsoft.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW LENOO USES POWER AUTOMATE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="how-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="how-heading" style="margin-bottom:1.5rem;">كيف تستخدم Lenoo AI منصة Power Automate لبناءات الأتمتة الإماراتية</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        نحن شريك تنفيذ Power Automate للأعمال الإماراتية المستثمرة أصلاً في منظومة Microsoft. لأن معظم عملائنا الذين يشغّلون Microsoft 365 لديهم أصلاً ترخيص Power Automate، الفوز الأسرع عادة البناء على ما يدفعون مقابله أصلاً بدلاً من إدخال أداة أتمتة منفصلة. نصمم التدفقات، نُوصِّل الموافقات عبر SharePoint وTeams، ونضيف AI Builder أو خطوات ذكاء اصطناعي مخصصة حيث يحتاج تدفق قراءة وتفسير محتوى.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        قبل تصميم تدفق واحد، نتحقق مما هو مرخّص أصلاً، لأن موصلات Power Automate المميزة وأرصدة AI Builder تجلس خلف مستويات ترخيص مختلفة ومن الهدر التصميم حول قدرة لا تملكونها فعلياً. من هناك، نرسم سلاسل الموافقة، تدفقات المستندات، أو مهام التقارير التي تريدون أتمتتها مقابل موصلات Microsoft الأصلية أولاً، ولا نلجأ لاستدعاء API مخصص أو خطوة ذكاء اصطناعي خارجية إلا عندما يعجز خيار أصلي فعلياً عن أداء المهمة. النتيجة تدفق يتعرف عليه فريق تقنية المعلومات لديكم ويستطيع إدارته عبر نفس مركز إدارة Power Platform الذي يستخدمونه أصلاً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FREE VS PAID -->
+<section class="section" aria-labelledby="powerautomate-pricing-heading">
+  <div class="container" style="max-width:800px;">
+    <h2 id="powerautomate-pricing-heading" style="text-align:center; margin-bottom:1.5rem;">Power Automate مجاني مقابل مدفوع</h2>
+    <div class="powerautomate-toggle" role="tablist" aria-label="مستوى التسعير">
+      <button type="button" id="powerautomate-tier-free" class="powerautomate-toggle-btn active" data-powerautomate-tier="free" role="tab" aria-selected="true" aria-controls="powerautomate-panel-free">مجاني (مضمّن في Microsoft 365)</button>
+      <button type="button" id="powerautomate-tier-paid" class="powerautomate-toggle-btn" data-powerautomate-tier="paid" role="tab" aria-selected="false" aria-controls="powerautomate-panel-paid">مدفوع (خطط مميزة)</button>
+    </div>
+    <div class="card" id="powerautomate-panel-free" data-powerautomate-tier-panel="free" role="tabpanel" aria-labelledby="powerautomate-tier-free">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">إذا كان لدى مؤسستكم أصلاً اشتراك Microsoft 365 أو Office، نسخة محدودة من Power Automate عادة مشمولة دون تكلفة إضافية: تكفي لبناء تدفقات على موصلات قياسية مثل SharePoint وOutlook وTeams. ما لا يشمله المستوى المضمّن هو موصلات مميزة لمعظم الخدمات غير Microsoft، أرصدة AI Builder لقراءة وتصنيف المستندات، وأتمتة RPA أو تدفق سطح المكتب لمهام خارج المتصفح. نعامله كنقطة البداية الصحيحة لتدفقات الموافقة والإشعار المباشرة الكلية على Microsoft، ونتحقق مما هو مرخّص أصلاً قبل افتراض أن خطة مدفوعة مطلوبة.</p>
+    </div>
+    <div class="card" id="powerautomate-panel-paid" data-powerautomate-tier-panel="paid" role="tabpanel" aria-labelledby="powerautomate-tier-paid" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">تُرخِّص Microsoft أيضاً Power Automate منفصلاً، فوق ما هو مضمّن مع Microsoft 365، كخطة لكل مستخدم أو لكل تدفق. الخطط المدفوعة تفتح موصلات مميزة لخدمات غير Microsoft، أرصدة AI Builder لمعالجة المستندات، وقدرات RPA لأتمتة تطبيقات سطح المكتب التي لا تعرض واجهة API. أي خطة منطقية يعتمد على كم شخصاً يحتاج إطلاق تدفقات وهل يلمس البناء موصلات مميزة أو أتمتة سطح مكتب إطلاقاً، لذا نؤكد مستوى ترخيصكم الحالي أثناء الاكتشاف بدلاً من الافتراض للخيار الأغلى.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO THIS FITS -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">هل Power Automate مناسب لكم؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Power Automate الخيار الصحيح للمؤسسات الإماراتية الموحّدة أصلاً على Microsoft 365، خاصة حيث SharePoint وTeams وOutlook أصلاً العمود الفقري لكيفية تواصل العمل وتخزين المستندات.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        بضع إشارات ملموسة نراقبها: الموافقات لا تزال تنتقل عبر سلاسل بريد إلكتروني بدلاً من تدفق مناسب، فريقكم ينسخ بيانات يدوياً بين SharePoint وExcel وTeams كل أسبوع، أو تدفعون أصلاً مقابل ترخيص Power Automate ولم يبنِ أحد أي شيء به بعد. أي من هذه عادة يستحق محادثة قصيرة قبل التفكير بإدخال أداة أتمتة منفصلة من خارج منظومة Microsoft لديكم.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">كيف يبدو مشروع Power Automate نموذجي معنا</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        لأن معظم الأدوات تجلس أصلاً داخل مستأجر Microsoft 365 لديكم، مشروع Power Automate يبدأ بالترخيص بدلاً من البناء.
+      </p>
+      <ol class="journey-list" style="gap:1rem;">
+        <li><strong style="color:#00253b;">الاكتشاف.</strong> نؤكد مستوى ترخيص Power Automate الذي أنتم عليه أصلاً، ثم نمر عبر أين يتراكم العمل اليدوي اليوم ونبني قائمة مختصرة من العمليات المرشحة مرتبة حسب الحجم والاحتكاك، مع من يمتلك كل واحدة يدوياً حالياً.</li>
+        <li><strong style="color:#00253b;">التصميم.</strong> نرسم محفزات التدفق، شروطه، وخطوات الموافقة كمخطط قبل فتح المنشئ، ونتفق على نقاط الإشعار والتصعيد الدقيقة مع من يمتلك العملية اليوم، فلا يبقى شيء عن كيفية تصرفه المقصود ضمنياً بمجرد بدء البناء.</li>
+        <li><strong style="color:#00253b;">البناء والاختبار.</strong> نبني التدفق داخل مستأجركم، نحترم أياً كانت سياسات منع فقدان البيانات والأمان التي أعدّها فريق تقنية المعلومات لديكم أصلاً، ونختبره مقابل بيانات SharePoint وTeams وOutlook حقيقية لا بيئة نموذجية.</li>
+        <li><strong style="color:#00253b;">الإطلاق والمراقبة.</strong> نسلّم شرحاً يستطيع فريق تقنية المعلومات أو العمليات لديكم اتباعه، نراقب سجل تشغيل التدفق بعد الإطلاق، ونصلح أي شيء يكسره تحديث موصل أو تغيير صلاحيات لاحقاً.</li>
+        <li><strong style="color:#00253b;">التوثيق والتسليم.</strong> كل تدفق يُشحَن بتوثيق بلغة واضحة ويجلس داخل بيئة Power Platform الخاصة بكم، فيمتلكه فريقكم كلياً بدلاً من الاعتماد علينا لتغييرات صغيرة مستقبلية.</li>
+      </ol>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        تدفق واحد محدد جيداً، كسلسلة موافقة واحدة أو عملية فرز بريد إلكتروني واحدة، يمكن عادة أن يُطلَق خلال أسبوع أو أسبوعين. البرامج التي تؤتمت عدة تدفقات عبر قسم تُحدَّد نطاقها على مراحل، فيُطلَق التدفق الأول ويُثبت قيمته بينما يستمر بقية الطرح.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">Power Automate مقابل البدائل</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        العامل الحاسم لـ Power Automate نادراً ما يكون القدرة، بل ما تملكونه مرخّصاً أصلاً. إذا كانت أدواتكم الأساسية (بريد إلكتروني، ملفات، CRM) تعمل أصلاً على Microsoft 365، Power Automate يوصلكم للتشغيل الحي أسرع من أي منصة أخرى، لأن المصادقة والصلاحيات موجودة أصلاً. إذا كانت منظومتكم مختلطة، بأدوات متناثرة عبر Google Workspace، نظام CRM غير Microsoft، وحفنة من التطبيقات الأخرى، <a href="/ar/services/ai-automation/tools/zapier">Zapier</a> أو <a href="/ar/services/ai-automation/tools/make">Make</a> عادة يربط القطع باحتكاك أقل، لأن كليهما لا يفترض بيئة أولوية Microsoft. نتحقق مما هو مرخّص أصلاً وما يستخدمه فريقكم فعلياً قبل التوصية بـ Power Automate على خيار محايد للمنصة. وحيث تلمس عملية نظاماً قديماً ومحلياً فعلياً دون واجهة API حديثة إطلاقاً، حتى داخل بيئة كثيفة Microsoft، سنقول ذلك بدلاً من فرض موصل Power Automate على شيء يتعامل معه <a href="/ar/services/ai-automation/tools/uipath">UiPath</a> أو <a href="/ar/services/ai-automation/tools/n8n">n8n</a> بشكل أكثر موثوقية.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- RELIABILITY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="reliability-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="reliability-heading" style="margin-bottom:1.5rem;">الحفاظ على موثوقية تدفق Power Automate بعد الإطلاق</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        تدفقات Power Automate تميل للانكسار بطريقة محددة ومتوقعة: موصل يتغير من طرف Microsoft، قائمة SharePoint تُعاد هيكلتها، أو صلاحيات وصول أحدهم تتغير فلا يستطيع حساب مالك التدفق إتمام خطوة كان يتعامل معها بدون مشكلة. نبني تدفقات بإشعارات فشل واضحة فيعرف فريقكم لحظة فشل تشغيل بدلاً من اكتشافه بعد أسبوع، عندما لا تصل دفعة موافقات لأحد أبداً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        حيث يقرأ أو يعالج تدفق مستندات عبر AI Builder، نراقب درجات الثقة على الحقول المستخرَجة، فنموذج يعود فوضوياً بشكل غير معتاد يُعلَّم ليراجعه إنسان بدلاً من دفعه تلقائياً. نوثّق أيضاً كل تدفق بلغة واضحة ونسلّمه عبر نفس مركز إدارة Power Platform الذي يديره فريقكم أصلاً، فلا يبقى شيء عن كيفية عمله مخفياً داخل أدوات نحن فقط نستطيع رؤيتها.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        نراجع أيضاً التدفقات دورياً مقابل تغييرات من طرف Microsoft، لأن إصدارات موصل جديدة أو تحديثات سياسة المستأجر يمكن أن تغيّر بصمت كيفية تصرف تدفق دون أن يلمسه أحد. اكتشاف ذلك خلال مراجعة مجدولة أقل إخلالاً بكثير من اكتشاف فريقكم إياه لأن موافقة توقفت عن الحركة بصمت.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="use-cases" class="section" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">ما نبنيه بـ Power Automate</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">مشاريع Power Automate شائعة للعملاء الإماراتيين الموجودين أصلاً على Microsoft 365، من موافقات SharePoint إلى معالجة مستندات AI Builder إلى التقارير المجدولة. كل بناء محدد النطاق لسير عملكم الفعلي، لا قالب عام.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {useCases.map((uc) => (
+        <div class="value-card">
+          <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">مرخّصون أصلاً لـ Microsoft 365؟ سنريكم ما هو ممكن في مكالمة مجانية.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_automation_tools_power_automate_mid" class="btn-primary">احجزوا استشارة Power Automate مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">تدفعون أصلاً مقابل Microsoft 365؟ شغّلوها.</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجزوا مكالمة اكتشاف مجانية مع فريقنا في دبي. سننظر في منظومة Microsoft لديكم، الموافقات أو التقارير التي تستهلك وقتاً يدوياً، ونخبركم بصراحة ماذا يتطلب بناء Power Automate، بما في ذلك هل هو حتى المنصة الصحيحة لما تحتاجونه.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_automation_tools_power_automate_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.tool-logo-hero { width:64px; height:64px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; }
+.value-card { display:flex; flex-direction:column; }
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.journey-list li { position:relative; padding-right:1.75rem; color:#42474e; font-size:1.0625rem; line-height:1.85; }
+.journey-list li::before { content:''; position:absolute; right:0; top:0.6em; width:9px; height:9px; border-radius:50%; background:#00e3fd; }
+.powerautomate-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+.powerautomate-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.powerautomate-toggle-btn.active { background:#006875; color:#fff; }
+.powerautomate-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const powerautomateToggleWrap = document.querySelector('.powerautomate-toggle');
+  if (powerautomateToggleWrap) {
+    const powerautomateBtns = powerautomateToggleWrap.querySelectorAll('.powerautomate-toggle-btn');
+    const powerautomatePanels = document.querySelectorAll('[data-powerautomate-tier-panel]');
+    powerautomateBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-powerautomate-tier');
+        powerautomateBtns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        powerautomatePanels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-powerautomate-tier-panel') !== key; });
+      });
+    });
+  }
+</script>

@@ -1,0 +1,365 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../../components/ProcessSteps.astro";
+import StatStrip from "../../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "هل يستبدل هذا نظام CRM لدينا؟", answer: "لا. نبني الأتمتة فوق نظام CRM الذي تستخدمونه أصلاً. يبقى نظام CRM نظام السجل لديكم؛ نضيف أتمتة تُبقيه متزامناً مع تقويمكم، أدوات المراسلة، ومنصات العقارات، فيتوقف فريقكم عن تحديث نفس المعلومات في ثلاثة أماكن." },
+  { question: "هل تستطيعون مزامنة الإعلانات عبر عدة منصات عقارية؟", answer: "نعم. نربط بيانات إعلاناتكم بـ Property Finder وBayut وDubizzle وموقعكم الخاص فيدفع تحديث واحد لإعلان لكل مكان تلقائياً، بدلاً من إعادة إدخال فريقكم نفس التفاصيل على كل منصة." },
+  { question: "كيف يختلف هذا عن صفحة الذكاء الاصطناعي لوكالات العقارات لديكم؟", answer: "هذه الصفحة تغطي طبقة الأتمتة وسير العمل تحديداً: تسلسلات متابعة العملاء المحتملين، مزامنة الإعلانات، توجيه المستندات، ومزامنة حالة خط الأنابيب. صفحة صناعاتنا تغطي نظام الذكاء الاصطناعي الكامل الذي نبنيه لوكالات العقارات، بما يشمل بوتات محادثة العملاء المحتملين، تسجيل عملاء CRM، ولوحات معلومات ذكاء السوق. كثير من الوكالات تبدأ بطبقة الأتمتة هنا وتضيف نظام الذكاء الاصطناعي الأكمل لاحقاً." },
+  { question: "ماذا لو كان وكلاؤنا يتابعون العملاء المحتملين يدوياً أصلاً؟", answer: "الأتمتة لا توقف وكلاءكم عن التواصل شخصياً، بل تتأكد ألا يُترَك عميل محتمل دون لمس بينما هم مشغولون بمعاينات أو إغلاق صفقة. المتابعة الآلية تعمل في الخلفية وتحوّل لوكيلكم لحظة أن يرد عميل محتمل." },
+  { question: "أي أنظمة CRM وأدوات عقارية تبنون الأتمتة حولها؟", answer: "بنينا أتمتة حول Salesforce وHubSpot وZoho وأنظمة CRM عقارية خاصة بالوكالات شائعة في الإمارات، إلى جانب Property Finder وBayut وDubizzle لمزامنة الإعلانات، وواتساب للأعمال لمراسلة العملاء المحتملين. إذا كانت وكالتكم تستخدم مزيجاً مختلفاً من الأدوات، نحدد نطاق التكامل أثناء مكالمة الاكتشاف ونبني حول ما هو متاح فعلياً عبر واجهة API لكل منصة." },
+  { question: "كم يستغرق تشغيل سير عمل أتمتة؟", answer: "معظم مشاريع سير العمل الواحد، مثل متابعة عملاء محتملين أو مزامنة إعلانات، تنتقل من تدقيق سير العمل للتشغيل خلال أسبوعين إلى أربعة أسابيع، حسب كم نظاماً يحتاج الاتصال وكم اختباراً يتطلبه حجم العملاء المحتملين أو الإعلانات. مشاريع سير العمل المتعدد التي تلمس عدة أنظمة معاً تستغرق أطول. نعطي جدولاً زمنياً محدداً بعد مكالمة الاكتشاف، بمجرد معرفتنا منظومة أدواتكم الدقيقة." },
+  { question: "هل تستطيع الأتمتة التعامل مع صفقات البيع والإيجار بشكل مختلف؟", answer: "نعم. سير عمل البيع والإيجار عادة يحتاج وتائر متابعة مختلفة، مجموعات مستندات مختلفة (اتفاقية بيع وشراء مقابل عقد إيجار مثلاً)، وتنسيق منصة مختلف. نبني قواعد منفصلة لكل نوع إعلان ضمن نفس الأتمتة، فلا يحصل استفسار إيجار على تسلسل متابعة بيع والعكس صحيح." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_automation_real_estate')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+const processSteps = [
+  { icon: "search", step: "الخطوة ١", title: "تدقيق سير العمل", description: "نرسم كيف تنتقل العملاء المحتملون والإعلانات والمستندات حالياً عبر وكالتكم ونحدد أين تبطئ الخطوات اليدوية الأمور." },
+  { icon: "edit", step: "الخطوة ٢", title: "التصميم والتخطيط", description: "نصمم الأتمتة حول نظام CRM وحسابات المنصات وأدوات المراسلة الحالية، ونحصل على موافقتكم قبل البناء." },
+  { icon: "build", step: "الخطوة ٣", title: "البناء والاختبار", description: "نبني الأتمتة ونختبرها مقابل عملاء محتملين وإعلانات حقيقية حتى يعمل سير العمل بالطريقة التي يتوقعها فريقكم." },
+  { icon: "rocket_launch", step: "الخطوة ٤", title: "الإطلاق والمراقبة", description: "تُطلَق الأتمتة عبر أدواتكم. نراقبها لمدة ٩٠ يوماً ونعدّلها مع تطور عمليتكم." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'سير عمل أتمتة الذكاء الاصطناعي للعقارات',
+    url: 'https://lenooai.com/ar/services/ai-automation/real-estate',
+    description: 'سير عمل أتمتة لوكالات العقارات الإماراتية: تسلسلات متابعة العملاء المحتملين، مزامنة الإعلانات عبر المنصات، توجيه المستندات، ومزامنة حالة خط الأنابيب.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع سير عمل أتمتة لوكالات العقارات: التسعير حسب النطاق. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر.' },
+    serviceType: 'AI Automation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'أتمتة الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'العقارات', item: 'https://lenooai.com/ar/services/ai-automation/real-estate' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="أتمتة الذكاء الاصطناعي في العقارات: أتمتة سير العمل للوكالات | Lenoo AI"
+  description="سير عمل أتمتة لوكالات العقارات: متابعة العملاء المحتملين، مزامنة الإعلانات، وأتمتة معالجة المستندات. مبنية لوكالات دبي."
+  canonicalPath="/ar/services/ai-automation/real-estate"
+  enPath="/services/ai-automation/real-estate"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">أتمتة الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>العقارات</div>
+    <h1>أتمتة الذكاء الاصطناعي في العقارات: <span class="gradient-text">أتمتة سير العمل للوكالات</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      هذه الصفحة تغطي سير عمل الأتمتة تحديداً: متابعة العملاء المحتملين، مزامنة الإعلانات عبر المنصات، توجيه المستندات، ومزامنة حالة خط الأنابيب. لنظام الذكاء الاصطناعي الكامل الذي نبنيه لوكالات العقارات، بما يشمل بوتات محادثة العملاء المحتملين وذكاء CRM، راجعوا <a href="/ar/industries/real-estate" style="color:#a8f2ff;">صفحة قطاع العقارات</a>.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">مراقبة بعد الإطلاق مشمولة في كل مشروع</span>
+      <span class="tchip">ضمان استرداد إذا لم تكونوا راضين عما نقدمه</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_ai_automation_real_estate_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#what-we-automate" class="btn-outline">شاهدوا ما نؤتمته ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1400&q=80&auto=format&fit=crop" alt="وكيل عقارات يراجع إعلانات وعملاء محتملين" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "×٩", caption: "فرصة تحويل أعلى عند التواصل مع عميل محتمل خلال ٥ دقائق بدلاً من ساعات لاحقاً (MIT)" },
+      { value: "٩٠ يوماً", caption: "مراقبة بعد الإطلاق مشمولة في كل مشروع" },
+      { value: "١٠٠٪", caption: "ضمان استرداد إذا لم تكونوا راضين عما نقدمه" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHAT WE AUTOMATE -->
+<section id="what-we-automate" class="section" aria-labelledby="automate-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="automate-heading">سير عمل أتمتة عقارية نبنيها</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">طبقة الأتمتة التي تُبقي العملاء المحتملين والإعلانات والمستندات تتحرك دون إعادة إدخال يدوي، متصلة بالأدوات التي تستخدمها وكالتكم أصلاً.</p>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">forward_to_inbox</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">أتمتة متابعة العملاء المحتملين</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">رد وتسلسلات متابعة تلقائية لحظة وصول استفسار، بالإضافة لفحوصات مجدولة قبل وبعد المعاينات، فلا يبقى عميل محتمل دون لمس.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">التسلسل نفسه يعمل عبر أياً كانت القناة التي وصل منها العميل المحتمل، واتساب، بريد إلكتروني، أو رسالة نصية، حسب جدول يحدده فريقكم: إقرار فوري، متابعة إذا لم يرد خلال نافذة محددة، وتذكير قبل معاينة محجوزة. لحظة أن يرد عميل محتمل بسؤال فعلي، تحوّل الأتمتة لوكيلكم بدلاً من الاستمرار بإرسال رسائل، فلا يحصل أحد على رد آلي على محادثة حقيقية.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;"><strong>مثال حقيقي:</strong> وكالة كانت ترد على الاستفسارات صباح اليوم التالي الآن تجد كل عميل محتمل مُتابَعاً خلال دقائق، في أي وقت من اليوم.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال ثانٍ:</strong> استفسار عطلة نهاية أسبوع على إعلان كان ينتظر حتى الاثنين الآن يحصل على رد فوري وموعد معاينة مُقترَح قبل أن يعود الوكيل لمكتبه حتى.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">sync_alt</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">مزامنة الإعلانات عبر المنصات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">حدّثوا إعلاناً مرة واحدة ويبقى متسقاً عبر Property Finder وBayut وDubizzle وموقعكم الخاص، دون إعادة إدخال يدوي على كل منصة.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">هذا يغطي أكثر من تغييرات السعر. تحديثات الحالة (متاح، تحت عرض، مباع أو مؤجَّر)، صور جديدة، وأوصاف مُعدَّلة كلها تُزامَن معاً، منسّقة لتطابق ما تتوقعه كل منصة، لأن Property Finder وBayut وDubizzle كل منها يريد حقولاً مُرتَّبة بشكل مختلف قليلاً. عندما تصبح وحدة تحت عرض، تسحبها الأتمتة أو تحدّث حالتها في كل مكان دفعة واحدة، فلا تجدون أنفسكم أبداً في موقف منصة لا تزال تُظهر وحدة كمتاحة بعد أن رحلت فعلاً.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;"><strong>مثال حقيقي:</strong> فريق كان يحدّث تغييرات التسعير على أربع منصات يدوياً الآن يحدّث واحدة والباقي يتبع تلقائياً.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال ثانٍ:</strong> وحدة أصبحت تحت عرض يوم جمعة كانت لا تزال تظهر كمتاحة على منصتين طوال عطلة نهاية الأسبوع. الآن كل منصة تعكس تغيير الحالة خلال دقائق.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">task_alt</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">أتمتة معالجة المستندات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">اتفاقيات البيع والشراء، شهادات عدم الممانعة، وعقود الإيجار تُوجَّه وتُجمَّع عبر سير عمل موافقة تلقائياً، فتنتقل الأوراق بين الأشخاص الصحيحين دون ملاحقة.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">كل نوع مستند يتبع مسار توجيهه الخاص: اتفاقية بيع وشراء تذهب للمشتري، البائع، ثم لمراجع الامتثال لديكم بالتسلسل؛ طلب شهادة عدم ممانعة يذهب للمطوّر ويتتبع كم مدة بقي هناك فلا ينسى أحد المتابعة. الأتمتة أيضاً تتتبع مواعيد انتهاء المستندات التي تحتاج تجديداً، مثل شهادات عدم الممانعة أو التراخيص التجارية المرتبطة بإعلان، وتُعلِّم عليها قبل انتهائها بدلاً من بعد ملاحظة أحدهم أن صفقة تعثرت.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;"><strong>مثال حقيقي:</strong> صفقة كانت تتعثر بانتظار أحد ليُحوِّل المستند الصحيح الآن تنتقل عبر خطواتها بنفسها.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال ثانٍ:</strong> شهادة عدم ممانعة كانت تجلس دون ملاحظة في بريد مطوّر لأسبوعين الآن تُطلق متابعة تلقائية بعد ثلاثة أيام دون رد.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">route</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">مزامنة حالة خط الأنابيب</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">أبقوا نظام CRM والتقويم وأدوات المراسلة متزامنة تلقائياً مع تحرك صفقة عبر دورة حياتها، من الاستفسار الأول للإغلاق.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">معاينة مُعلَّمة كمكتملة في التقويم تحدّث مرحلة الصفقة في CRM دون أن يلمسها أحد. تغيير مرحلة في CRM يُطلق الإشعار الصحيح للوكيل المُسنَد وحيث يكون ذا صلة، تحديثاً للعميل. إذا جلست صفقة في نفس المرحلة متجاوزة عتبة يحددها فريقكم، تُعلِّم الأتمتة عليها بدلاً من تركها تتعثر بصمت، فيستطيع مدير رؤية أين تتعثر الأمور دون ملاحقة كل وكيل لتحديث حالة.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;"><strong>مثال حقيقي:</strong> وكالة كانت تحدّث ثلاثة أنظمة يدوياً بعد كل معاينة الآن تحدّث واحداً، والحالة تتدفق للباقي.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال ثانٍ:</strong> مدير مبيعات كان يطلب من كل وكيل تحديث أسبوعي لخط الأنابيب الآن يرى الصفقات المتعثرة مُعلَّمة تلقائياً، أيام قبل أن كان سيلاحظها بنفسه.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">event_available</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">أتمتة جدولة المعاينات والتذكيرات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">المعاينات تُحجَز مباشرة مقابل توفر تقويم وكلائكم الفعلي، بتذكيرات تلقائية لكل من العميل المحتمل والوكيل، وتدفق إعادة حجز إذا فات موعد.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">حجز معاينة عبر تبادل مكالمات أو رسائل متبادلة أحد أكثر أجزاء رحلة عميل محتمل استهلاكاً للوقت في بدايتها. الأتمتة تتحقق من تقويم الوكيل المُسنَد، تعرض أوقاتاً متاحة، وتؤكد الحجز دون أن يتحقق أحد من التوفر يدوياً. التذكيرات تخرج للعميل المحتمل مسبقاً لتقليل عدم الحضور، وإذا ألغى عميل محتمل أو لم يؤكد، يُعرَض الموعد تلقائياً لإعادة الحجز بدلاً من أن يبقى فارغاً في التقويم فقط.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;"><strong>مثال حقيقي:</strong> وكالة كانت تفقد مواعيد معاينة لعدم الحضور دون متابعة الآن تتواصل تلقائياً لإعادة الجدولة بدلاً من شطب العميل المحتمل.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال ثانٍ:</strong> حجز معاينة كان يعني ثلاث أو أربع رسائل متبادلة لإيجاد وقت مناسب. الآن يختار عميل محتمل موعداً من التوفر الحي والحجز يؤكد نفسه.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- APPLICATIONS BY DEAL TYPE -->
+<section id="realestate-applications" class="section" aria-labelledby="realestate-apps-heading">
+  <div style="position:relative; overflow:hidden; height:220px; border-radius:20px; max-width:1280px; margin:0 auto 3.5rem;">
+    <img src="https://images.unsplash.com/photo-1714647212555-520e683791e9?w=1400&q=80&auto=format&fit=crop" alt="وكيل عقارات بلوح ملاحظات يعرض شقة مفروشة لزوجين شابين" loading="lazy" width="1400" height="220" style="width:100%; height:100%; object-fit:cover; object-position:center 25%;" />
+    <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.35));"></div>
+  </div>
+  <div class="container">
+    <div class="section-header">
+      <h2 id="realestate-apps-heading">أتمتة تتكيف مع صفقات البيع أو التأجير</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">سير العمل أعلاه يعمل بشكل مختلف قليلاً حسب ما إذا كان وكيل يُغلِق بيعاً أو يُوقِّع مستأجراً، لأن المستندات، حالات المنصات، ووتيرة المتابعة ليست نفسها لكليهما.</p>
+    </div>
+    <div class="realestate-tabs" role="tablist" aria-label="فئات نوع الصفقة">
+      <button type="button" id="realestate-tab-sales" class="realestate-tab-btn active" data-realestate-tab="sales" role="tab" aria-selected="true" aria-controls="realestate-panel-sales">معاملات البيع</button>
+      <button type="button" id="realestate-tab-leasing" class="realestate-tab-btn" data-realestate-tab="leasing" role="tab" aria-selected="false" aria-controls="realestate-panel-leasing">التأجير والإيجارات</button>
+    </div>
+    <div class="bento-grid bento-grid-2" id="realestate-panel-sales" data-realestate-tab-panel="sales" role="tabpanel" aria-labelledby="realestate-tab-sales">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">description</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">توجيه اتفاقية البيع والشراء لاعتماد الامتثال</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">بمجرد أن يصبح عميل محتمل صفقة موقّعة، اتفاقية البيع والشراء تنتقل من المشتري للبائع لمراجع الامتثال لديكم بالتسلسل، ومرحلة خط الأنابيب في CRM تُحدَّث لحظة انتهاء كل خطوة توقيع.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">sell</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">مزامنة حالة البيع عبر المنصات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">لحظة بيع وحدة، تُحدَّث حالتها لمباعة عبر Property Finder وBayut وDubizzle وموقعكم في آن واحد، بدلاً من البقاء مُدرَجة كمتاحة على منصة لم يصل أحد لتحديثها بعد.</p>
+      </div>
+    </div>
+    <div class="bento-grid bento-grid-2" id="realestate-panel-leasing" data-realestate-tab-panel="leasing" role="tabpanel" aria-labelledby="realestate-tab-leasing" hidden>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">key</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">توجيه عقد الإيجار وشهادة عدم الممانعة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">عقود الإيجار وطلبات شهادة عدم الممانعة تتبع مسار توجيهها الخاص مع تتبع انتهاء مبني فيه، فيُعلَّم مستند مرتبط بتجديد قبل انتهائه بدلاً من بعد ملاحظة مالك أن الصفقة تعثرت.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">home_work</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">مزامنة حالة التأجير وتذكيرات المعاينة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">إعلانات الإيجار تُزامَن كمؤجَّرة عبر كل منصة لحظة توقيع مستأجر، وتذكيرات المعاينة تخرج لكل من العميل المحتمل والوكيل بنفس الطريقة التي تفعلها لمعاينة بيع.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEAL CLOSING SYNC -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="realestate-close-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="realestate-close-heading" style="margin-bottom:1.5rem;">لحظة إغلاق صفقة، كل نظام يعكسها</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">مصافحة ومجموعة مفاتيح هي الجزء المرئي من إغلاق صفقة. خلف ذلك، يحتاج الإعلان النزول من ثلاث منصات، تحتاج مرحلة CRM الانتقال للمُغلَق، ويحتاج العميل المحتمل التالي في خط الأنابيب معرفة أن الوحدة رحلت.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">الأتمتة تتولى ذلك الجزء الثاني لحظة حدوث الأول، فتتوقف وحدة مباعة أو مؤجَّرة عن الظهور كمتاحة في أي مكان يبحث فيه مشتروكم ومستأجروكم.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1781229771042-2a859f8f8022?w=800&h=600&q=80&auto=format&fit=crop" alt="وكيل عقارات وعميل يتصافحان فوق نموذج منزل ومفاتيح على مكتب" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VOLUME AND SCALE -->
+<section class="section" aria-labelledby="volume-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="volume-heading" style="margin-bottom:1.5rem;">مبنية لأسابيع الإطلاق، لا الأشهر الهادئة فقط</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        حجم عملاء ومستندات وكالة دبي ليس ثابتاً. إطلاق مشروع على الخارطة يمكن أن يجلب مئات الاستفسارات في يوم واحد، ونفس الوكالة قد ترى جزءاً من ذلك الحجم الأسبوع التالي. عمليات المتابعة اليدوية تميل للصمود جيداً في ثلاثاء هادئ وتنهار لحظة وصول إطلاق، وهي عادة بالضبط اللحظة التي تهم فيها الاستجابة السريعة أكثر، لأن الاستفسارات المبكرة أثناء إطلاق تتحول بمعدل أعلى ملموس من نفس الاستفسار بعد أسبوع.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        سير العمل الآلي ليس له سقف سعة بالطريقة التي يكونها فريق يجيب على استفسارات يدوياً. سواء وصل عشرة عملاء محتملين أو أربعمائة في يوم إطلاق، كل منهم يحصل على نفس الإقرار الفوري ونفس تسلسل المتابعة، وكل مستند، سواء كانت خمس شهادات عدم ممانعة أسبوعياً أو خمسين خلال موسم نقل ملكية مزدحم، ينتقل عبر نفس مسار التوجيه. الحجم يتغير؛ منطق سير العمل لا يتغير.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        هذا أيضاً يهم لمزامنة الإعلانات خلال فترات النشاط العالي. عندما يُطلق مطوّر مرحلة جديدة من وحدات، ربما تحتاج عشرات الإعلانات للتفعيل عبر المنصات الثلاث كلها دفعة واحدة، بتسعير وتوفر يتغيران طوال اليوم مع بيع وحدات. تحديث أربع منصات يدوياً في الوقت الفعلي خلال تلك النافذة ليس واقعياً لمعظم الفرق. الأتمتة تطبق نفس التحديث في كل مكان لحظة تغيّر بياناتكم المصدر، فتبقى إعلانات منصاتكم دقيقة خلال الفترة بالضبط التي يراقب فيها المشترون بأشد انتباه.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SCOPE BOUNDARY -->
+<section class="section-sm" style="background:#f0f3ff;" aria-labelledby="boundary-heading">
+  <div class="container">
+    <div style="max-width:760px; margin:0 auto;">
+      <h2 id="boundary-heading" style="font-size:1.375rem; margin-bottom:1rem; text-align:center;">ما يبقى يدوياً، عمداً</h2>
+      <p style="color:#42474e; font-size:1rem; line-height:1.8; margin-bottom:1rem;">
+        كل سير عمل في هذه الصفحة ينقل معلومات أو يُطلق مهمة، لا يتخذ أحكاماً حول مشترٍ، إعلان، أو تفاوض. تقرير ما إذا كان عميل محتمل يستحق الأولوية، التفاوض على السعر، وتقييم نية عميل الفعلية لا تزال تقع مع وكلائكم، وذلك مقصود. الأتمتة موثوقة بالضبط لأنها متوقعة: نفس المحفز ينتج نفس الإجراء في كل مرة. لحظة أن يبدأ سير عمل باتخاذ حكم بدلاً من اتباع قاعدة، يتوقف عن كونه أتمتة ويحتاج شخصاً، أو نوعاً مختلفاً من نظام الذكاء الاصطناعي، خلفه.
+      </p>
+      <p style="color:#42474e; font-size:1rem; line-height:1.8; margin-bottom:1rem;">
+        إذا كنتم تبحثون أيضاً عن طبقة الحكم تلك، تسجيل عملاء محتملين يرتب الاستفسارات حسب احتمالية تحويلها، بوت محادثة يستطيع الإجابة عن أسئلة عقارية بشكل محادثي، أو ذكاء سوق يتتبع اتجاهات التسعير، ذلك نوع نظام مختلف عما في هذه الصفحة، وهو ما تغطيه <a href="/ar/industries/real-estate#what-we-build">صفحة قطاع العقارات</a> لدينا.
+      </p>
+      <p style="color:#42474e; font-size:1rem; line-height:1.8;">
+        عملياً، معظم الوكالات التي نعمل معها تبدأ هنا، بطبقة سير العمل، لأنها الانتصار الأسرع: القواعد واضحة، الأنظمة موجودة أصلاً، والعائد يظهر خلال أسابيع لا أشهر. بعضها يتوقف هناك لأن طبقة سير العمل تغطي ما احتاجوه فعلياً. آخرون يعودون لاحقاً بمجرد رؤية الأتمتة تعمل ويريدون طبقة الحكم مُضافة فوقها. كلا المسارين جيد. نفضّل تحديد نطاق مشروع لما سيُستخدَم فعلياً على بيع نظام أكبر مقدماً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">من تدقيق سير العمل لأتمتة فعالة</h2>
+    </div>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">أخبرونا أي مرحلة من الصفقة تستهلك أكثر وقت وكلائكم.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_automation_real_estate_mid" class="btn-primary">احجزوا مكالمة أتمتة عقارية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- CALLOUT: FULL AI SYSTEM CROSS-LINK -->
+<section class="section-sm" aria-labelledby="callout-heading">
+  <div class="container">
+    <div style="max-width:760px; margin:0 auto; background:#f0f3ff; border:1px solid rgba(0,104,117,0.18); border-radius:20px; padding:2rem 2.25rem; text-align:center;">
+      <h2 id="callout-heading" style="font-size:1.25rem; margin-bottom:0.75rem;">تريدون نظام الذكاء الاصطناعي الكامل، لا طبقة الأتمتة فقط؟</h2>
+      <p style="color:#42474e; font-size:1rem; line-height:1.8; margin-bottom:1rem;">هذه الصفحة تغطي سير عمل الأتمتة: المتابعة، مزامنة الإعلانات، توجيه المستندات، ومزامنة خط الأنابيب. إذا أردتم أيضاً بوتات محادثة للعملاء المحتملين، تسجيل عملاء CRM، وذكاء سوق، فذلك النظام الكامل الذي نغطيه في صفحة صناعاتنا.</p>
+      <a href="/ar/industries/real-estate#what-we-build" class="learn-link">أنظمة ذكاء اصطناعي مبنية لوكالات عقارات دبي <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- CROSS-LINK: HUB -->
+<section class="section-sm" aria-labelledby="related-heading">
+  <div class="container">
+    <div style="max-width:720px; margin:0 auto; text-align:center;">
+      <h2 id="related-heading" style="font-size:1.25rem; margin-bottom:1rem;">تبحثون عن أتمتة عبر عملكم بأكمله؟</h2>
+      <p style="color:#42474e; font-size:1rem; line-height:1.8;">
+        راجعوا <a href="/ar/services/ai-automation">مركز أتمتة الذكاء الاصطناعي لدينا</a> للنطاق الكامل لسير العمل الذي نؤتمته عبر المبيعات والعمليات والإدارة، لا العقارات فقط.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون للتوقف عن ملاحقة العملاء المحتملين والإعلانات والأوراق يدوياً؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجزوا مكالمة اكتشاف مجانية مع فريقنا في دبي. سنحدد سير العمل الذي يكلف وكالتكم أكثر وقت ونقدّر التوفير.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_automation_real_estate_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+.realestate-tabs { display:flex; gap:0.5rem; justify-content:center; margin-bottom:2rem; flex-wrap:wrap; }
+.realestate-tab-btn { padding:0.625rem 1.25rem; border-radius:100px; border:1px solid rgba(0,37,59,0.15); background:#fff; color:#42474e; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.realestate-tab-btn:hover { background:#e7eeff; }
+.realestate-tab-btn.active { background:#006875; border-color:#006875; color:#fff; }
+.realestate-tab-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+[data-realestate-tab-panel][hidden] { display:none; }
+</style>
+
+<script>
+  const realestateTabWrap = document.querySelector('.realestate-tabs');
+  if (realestateTabWrap) {
+    const btns = realestateTabWrap.querySelectorAll('.realestate-tab-btn');
+    const panels = document.querySelectorAll('[data-realestate-tab-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-realestate-tab');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-realestate-tab-panel') !== key; });
+      });
+    });
+  }
+</script>

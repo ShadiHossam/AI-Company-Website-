@@ -1,0 +1,261 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "هل يستطيع وكيل التكامل مع Property Finder وBayut؟", answer: "نعم، كلاهما عبر خلاصات الإعلانات، وحيث تتوفر، واجهات API للعملاء المحتملين. الوكيل يستطيع قراءة الاستفسارات الواردة من أي من المنصتين، التحقق منها مقابل معايير المشتري أو المستأجر لديكم، وتقرير الخطوة التالية، دون أن يفحص شخص ثلاث صناديق وارد لمنصات منفصلة يدوياً طوال اليوم." },
+  { question: "هل يتعامل الوكيل مع استفسارات واتساب أيضاً؟", answer: "نعم. واتساب واحدة من أكثر القنوات الواردة شيوعاً للعقارات الإماراتية، ويقرأ الوكيل ويرد عبرها بنفس طريقة عملاء منصات الإعلانات: يتحقق من الاستفسار مقابل معاييركم، يقرر ما إذا كان يحجز معاينة، يطلب مزيداً من المعلومات، أو يوجّهه لبشري." },
+  { question: "ماذا يحدث مع عميل محتمل عالي القيمة؟ هل يتعامل معه الوكيل وحده؟", answer: "لا، بالتصميم. نحدد عتبة، حجم الصفقة، ملف المشتري، أو الإلحاح، فوقها يُعلِّم الوكيل العميل المحتمل لبشري بدلاً من المتابعة بنفسه. الوكيل يتعامل مع الحجم والتأهيل الروتيني؛ الشخص يتعامل مع أي شيء تستفيد فيه العلاقة أو القرار فعلياً من حكم بشري." },
+  { question: "كيف يختلف هذا عن الأتمتة التي تبنونها للعقارات؟", answer: "الأتمتة تنقل بيانات بمحفز ثابت: نشر إعلان جديد على ثلاث منصات كل صباح الساعة ٩، دون حكم متضمن. الوكيل يفكر: يقرأ استفساراً وارداً، يزنه مقابل معاييركم، ويقرر ما يجب أن يحدث تالياً. إذا كانت حاجتكم من النوع الأول، راجعوا صفحة الأتمتة لدينا بدلاً من ذلك؛ عادة أرخص وأبسط لمهام نقل البيانات البحت. إذا كانت من النوع الثاني، فالوكيل الأداة الصحيحة." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_agents_for_real_estate')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'وكلاء الذكاء الاصطناعي للعقارات',
+    url: 'https://lenooai.com/ar/services/ai-agents/for-real-estate',
+    description: 'وكلاء ذكاء اصطناعي لوكالات العقارات الإماراتية: تأهيل عملاء محتملين، مطابقة عقارات، جدولة معاينات، ومتابعة، مبنية للتفكير والقرار، لا نقل البيانات فقط.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع وكلاء ذكاء اصطناعي لوكالات العقارات: التسعير حسب تعقيد القرار والنطاق. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر.' },
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'وكلاء الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'العقارات', item: 'https://lenooai.com/ar/services/ai-agents/for-real-estate' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="وكلاء الذكاء الاصطناعي للعقارات | Lenoo AI"
+  description="وكلاء ذكاء اصطناعي لوكالات العقارات الإماراتية: تأهيل عملاء محتملين، مطابقة عقارات، جدولة معاينات، ومتابعة، مبنية للتفكير والقرار، لا نقل البيانات فقط."
+  canonicalPath="/ar/services/ai-agents/for-real-estate"
+  enPath="/services/ai-agents/for-real-estate"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">وكلاء الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>العقارات</div>
+    <h1>وكلاء ذكاء اصطناعي <span class="gradient-text">للعقارات</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      استفسار جديد يصل على واتساب الساعة ١١ مساءً يوم جمعة. وكيل يقرأه، يتحقق منه مقابل معايير إعلاناتكم، ويقرر ما إذا كان يحجز معاينة، يطلب تفاصيل أكثر، أو يُعلِّمه لبشري، قبل أن يصل فريقكم لمكتبه يوم الأحد حتى.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_ai_agents_for-real-estate_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#use-cases" class="btn-outline">شاهدوا ما نبنيه ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- DIFFERENTIATION BOX -->
+<section class="section" aria-labelledby="diff-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto; background:#fff; border:1px solid rgba(0,104,117,0.18); border-radius:16px; padding:2rem;">
+      <h2 id="diff-heading" style="margin-bottom:1rem; font-size:1.375rem;">وكيل مقابل أتمتة العقارات: ما الفرق فعلياً</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1rem;">
+        <strong>الأتمتة تنقل بيانات بمحفز ثابت.</strong> نشر إعلان جديد على ثلاث منصات كل صباح الساعة ٩. مزامنة التوفر عبر نظام CRM وموقعكم. دون حكم متضمن، نفس الخطوات تعمل في كل مرة. راجعوا <a href="/ar/services/ai-automation/real-estate">صفحة أتمتة الذكاء الاصطناعي للعقارات</a> إذا كان ذلك ما تحتاجونه؛ عادة أبسط وأرخص لمهام نقل البيانات البحت.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin:0;">
+        <strong>الوكيل يفكر ويقرر.</strong> يقرأ استفساراً وارداً عبر واتساب، يتحقق منه مقابل معايير المشتري لديكم، ويقرر ما إذا كان يجدول معاينة، يسأل سؤال متابعة، أو يُعلِّم العميل المحتمل لبشري، وازناً معلومات تتغير في كل مرة. إذا كانت الخطوة التالية الصحيحة تعتمد على حكم، لا قاعدة ثابتة، فهذه مهمة وكيل، وهو ما تغطيه هذه الصفحة.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="use-cases" class="section" style="background:#f0f3ff;" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">وكلاء ذكاء اصطناعي نبنيها للعقارات</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">مشاريع وكلاء شائعة لوكالات العقارات ومديري الممتلكات الإماراتيين. كل بناء محدد النطاق لمعاييركم وسير عملكم الفعلي، لا قالب عام.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">fact_check</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء تأهيل عملاء محتملين</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يقرأ استفساراً وارداً من واتساب أو Property Finder أو Bayut، يتحقق منه مقابل معايير المشتري أو المستأجر لديكم، ويقرر ما إذا كان يدفعه للأمام أو يسأل سؤالاً توضيحياً أولاً.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">home_work</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء مطابقة العقارات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يقارن متطلبات عميل محتمل المُعلَنة مقابل إعلاناتكم الحالية، يرتب أقرب المطابقات، ويصيغ رسالة تعرض أفضل الخيارات مع تبرير مرفق.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">event_available</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء جدولة المعاينات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يتحقق من توفر الوكيل والعقار، يقترح أوقاتاً تناسب فعلياً، ويؤكد الحجز دون تبادل رسائل الجدولة اليدوية.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">forum</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء متابعة ما بعد المعاينة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يرسل متابعة في الفترة الصحيحة بعد المعاينة، يقرأ الرد لقياس الاهتمام، ويقدّم العميل المحتمل أو يُعلِّمه كمتبرد، فلا يفوت أحد.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">handshake</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء تواصل المستأجرين والملاك</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يتولى طلبات الصيانة الروتينية وتذكيرات التجديد، يقرر ما يحتاج تصعيداً فورياً مقابل ما يمكن تسجيله وجدولته بشكل عادي.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">priority_high</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">تصعيد العملاء عالي القيمة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يدرك متى يتجاوز حجم صفقة عميل محتمل أو إلحاحه عتبة محددة ويوجّهه مباشرة لوكيل أول بدلاً من اتباع مسار التأهيل القياسي.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">كيف يبدو مشروع وكيل عقارات نموذجي</h2>
+      <ol class="journey-list" style="gap:1rem;">
+        <li><strong style="color:#00253b;">الاكتشاف.</strong> نرسم بالضبط ما يعنيه "مؤهل" لعملكم، نطاق السعر، المنطقة، حالة التمويل، الجدول الزمني، والمعايير التي سيحكم بها الوكيل فعلياً كل استفسار وارد.</li>
+        <li><strong style="color:#00253b;">التصميم.</strong> نربط الوكيل بخلاصات إعلاناتكم، نظام CRM، وقنوات المراسلة، ونحدد عتبة التصعيد، بالضبط متى يكون عميل محتمل مهماً بما يكفي لتخطي الوكيل والوصول لشخص فوراً.</li>
+        <li><strong style="color:#00253b;">البناء والاختبار.</strong> نبني الوكيل ونختبره مقابل استفسارات تاريخية حقيقية من عملكم، نتحقق من أن قرارات تأهيله تطابق ما كان سيقرره وكيل ذو خبرة في فريقكم.</li>
+        <li><strong style="color:#00253b;">الإطلاق والمراقبة.</strong> ننشر الوكيل، ونراقب قرارات تأهيله عن كثب خلال الأسابيع الأولى، لأن الاستفسارات الحقيقية تُظهر حالات حدية لم تتوقعها معاييركم أصلاً.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- WHY UAE REAL ESTATE FITS -->
+<section class="section" aria-labelledby="uae-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="uae-heading" style="margin-bottom:1.5rem;">لماذا يناسب هذا عقارات الإمارات تحديداً</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        عقارات الإمارات تعمل بمزيج قنوات لا تجمعه معظم الأسواق بهذا الحجم: عملاء منصات Property Finder وBayut، استفسارات واتساب مباشرة، واهتمام حضوري من حملات تسويقية، غالباً لنفس الإعلان في آن واحد. عميل محتمل يصل مساء جمعة، أمر شائع نظراً لعطلة نهاية الأسبوع المحلية، يبقى دون رد حتى الأحد إذا لم يراقب أحد كل قناة حول الساعة، وبحلول ذلك الوقت عادة يكون مشترٍ جاد قد راسل ثلاثة وكلاء آخرين أصلاً. وكيل يقرأ ويؤهل عبر كل تلك القنوات لحظة وصول استفسار يسد تلك الفجوة، وهذا يهم أكثر في سوق سريع الحركة وعالي المنافسة مثل دبي أو أبوظبي مما يهم في مكان بدورات شراء أبطأ.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- BROKERAGE VS SINGLE AGENT -->
+<section class="section" aria-labelledby="scale-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="scale-heading" style="margin-bottom:1.5rem;">وكيل مستقل أو وكالة كاملة: ما يتغير فعلياً</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        المنطق الأساسي، قراءة الاستفسار، التحقق منه مقابل المعايير، تقرير الخطوة التالية، يبقى نفسه سواء كنتم وكيلاً مستقلاً واحداً أو وكالة بخمسين مكتباً. ما يتغير هو التوجيه وتعقيد المعايير. معايير الوكيل المستقل عادة بسيطة: نطاق سعر ومنطقة محددان، تقويم واحد للتحقق منه. معايير الوكالة يجب أن تأخذ في الحسبان أي إعلانات تخص أي وكيل، أي وكيل لديه سعة لعميل محتمل جديد، وقواعد نطاق تمنع وصول نفس العميل المحتمل لمكتبين في آن واحد.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        للوكالات، منطق التوجيه ذلك غالباً أثمن جزء من البناء: عميل محتمل مؤهل بشكل صحيح لكن موجَّه لمكتب خاطئ، أو لوكيل مثقل أصلاً، مهدور تقريباً كعميل محتمل لم يرد عليه أحد إطلاقاً. نحدد نطاق طبقة التوجيه تلك صراحة أثناء الاكتشاف بدلاً من معاملتها كفكرة لاحقة مُضافة على منطق التأهيل.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- BILINGUAL COMMUNICATION -->
+<section class="section" aria-labelledby="bilingual-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="bilingual-heading" style="margin-bottom:1.5rem;">تواصل بالإنجليزية والعربية مع المشترين</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        استفسارات العقارات الإماراتية تصل بالإنجليزية والعربية معاً، أحياناً ضمن تدفق عملاء نفس الوكالة، ووكيل تأهيل أو متابعة يحتاج الرد بشكل مناسب بأي لغة يستخدمها المشتري بدلاً من اللجوء لواحدة افتراضياً. هذا يهم أكثر مما قد يبدو: مشترٍ يراسل بالعربية ويستلم رداً بالإنجليزية فقط يقرأ ذلك كوكالة غير مبنية له فعلياً، بغض النظر عن دقة التأهيل تحته.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        نحدد نطاق التعامل الثنائي اللغة صراحة أثناء الاكتشاف، نختبر ردود الوكيل بالعربية مقابل عبارات إقليمية حقيقية بدلاً من افتراض جودة ترجمة لم تُفحَص فعلياً. إذا كان تدفق عملائكم بلغة واحدة غالباً، نبني لذلك ولا نضيف تعقيداً لا يحتاجه سير العمل. إذا كان مختلطاً فعلياً، وهو شائع عبر وكالات دبي وأبوظبي، نبني لكليهما منذ اليوم الأول.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- COST -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="cost-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="cost-heading" style="margin-bottom:1.5rem;">ما الذي يحدد التكلفة</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        حجم العملاء المحتملين وعدد القنوات يهمان أكثر. وكيل يؤهل عملاء من منصة واحدة بناء محصور؛ وكيل يقرأ ويؤهل عبر Property Finder وBayut وواتساب معاً، بتوجيه على مستوى الوكالة فوق ذلك، يكلف أكثر، لأن كل قناة وكل قاعدة توجيه تضيف اختبارها الخاص قبل أن نثق بها مقابل عملاء محتملين حقيقيين. نحدد نطاق التكلفة مقابل مصادر عملائكم المحتملين ومعاييركم الفعلية أثناء الاكتشاف، لا معدل ثابت يتجاهل كيفية توليد عملكم للعملاء المحتملين فعلياً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">تفقدون عملاء محتملين في عطلات نهاية الأسبوع والمساء؟ أخبرونا بمعاييركم، وسنبني الوكيل الذي يؤهلهم لحظة وصولهم.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_agents_for-real-estate_mid" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لتأهيل كل عميل محتمل لحظة وصوله؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">أخبرونا بمعايير مشتريكم وسير عملكم الحالي. سنصمم وكيلاً يتعامل مع التأهيل ونُريكم بالضبط كيف يقرر قبل أن نبني.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_agents_for-real-estate_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.journey-list li { position:relative; padding-right:1.75rem; color:#42474e; font-size:1.0625rem; line-height:1.85; }
+.journey-list li::before { content:''; position:absolute; right:0; top:0.6em; width:9px; height:9px; border-radius:50%; background:#00e3fd; }
+</style>

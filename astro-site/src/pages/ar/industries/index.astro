@@ -1,0 +1,346 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../layouts/ArBaseLayout.astro";
+
+const faqItems = [
+  { question: "قطاعي غير مدرج هنا. هل هذا يعني أن الأتمتة بالذكاء الاصطناعي لن تنفع معنا؟", answer: "لا. الأنماط أدناه (استفسارات فائتة، متابعة يدوية، اختناقات مستندات، جدولة وحجوزات فائتة) تظهر في كل قطاع خدمي تقريباً، بغض النظر عن وجود دليل مخصص لقطاعكم هنا أم لا. احجزوا تقييماً مجانياً وسنخبركم بصراحة بما يستحق أتمتته أولاً، سواء كان لقطاعكم صفحة هنا أم لا." },
+  { question: "ما الفرق بين نظام مخصص لقطاع معين وبوت محادثة عام؟", answer: "بوت المحادثة العام يجيب عن الأسئلة. النظام المخصص لقطاع معين يفهم سير عملكم: بوت العيادات يعرف ألا يقدم نصيحة طبية ويحوّل الحالة للموظفين بشكل صحيح، بوت العقارات يعرف مصطلحات RERA وDLD، بوت المطاعم يعرف كيف تختلف طلبات التطبيقات عن الطلبات المباشرة. هذا السياق هو ما يميز نظاماً يعمل فعلاً عن نظام يستجيب تقنياً فقط." },
+  { question: "هل يمكن لنظام ذكاء اصطناعي واحد أن يغطي أكثر من جزء من عملي، مثل الحجوزات والمالية معاً؟", answer: "نعم، ولكثير من الأعمال هذا هو الشكل الصحيح تماماً: وكيل واحد أو مجموعة صغيرة من الوكلاء تنسق بين الوظائف، بدلاً من بوت منفصل غير مترابط لكل قسم. عادة ننصح بالبدء بسير العمل الأعلى تأثيراً أولاً، ثم التوسع بعد إثبات نجاحه، بدلاً من أتمتة كل شيء دفعة واحدة." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const industryGroups = [
+  {
+    label: "العقارات والممتلكات والإنشاءات",
+    icon: "apartment",
+    items: [
+      { name: "العقارات", href: "/ar/industries/real-estate" },
+      { name: "إدارة الممتلكات", href: "/ar/industries/property-management" },
+      { name: "المقاولات والإنشاءات", href: "/ar/industries/construction" },
+      { name: "التصميم الداخلي والتشطيب", href: "/ar/industries/interior-fitout" },
+      { name: "الاستشارات الهندسية", href: "/ar/industries/engineering-consultancies" },
+    ],
+  },
+  {
+    label: "الرعاية الصحية والعافية",
+    icon: "medical_services",
+    items: [
+      { name: "الرعاية الصحية", href: "/ar/industries/healthcare" },
+      { name: "العيادات الطبية", href: "/ar/industries/healthcare-clinics" },
+      { name: "عيادات الأسنان", href: "/ar/industries/dental-clinics" },
+      { name: "عيادات التجميل والجلدية", href: "/ar/industries/aesthetic-clinics" },
+      { name: "الصيدليات", href: "/ar/industries/pharmacies" },
+      { name: "الأندية الرياضية واللياقة", href: "/ar/industries/fitness-gyms" },
+      { name: "الصالونات والسبا", href: "/ar/industries/beauty-salons" },
+    ],
+  },
+  {
+    label: "التجزئة والمطاعم والمستهلك",
+    icon: "storefront",
+    items: [
+      { name: "التجزئة", href: "/ar/industries/retail" },
+      { name: "التجارة الإلكترونية", href: "/ar/industries/ecommerce" },
+      { name: "المطاعم", href: "/ar/industries/restaurants" },
+      { name: "معارض السيارات", href: "/ar/industries/car-dealerships" },
+      { name: "وكالات السفر", href: "/ar/industries/travel-agencies" },
+      { name: "إدارة الفعاليات", href: "/ar/industries/event-management" },
+    ],
+  },
+  {
+    label: "الخدمات المهنية والمالية",
+    icon: "work",
+    items: [
+      { name: "الخدمات المهنية", href: "/ar/industries/consulting" },
+      { name: "القانونية", href: "/ar/industries/legal" },
+      { name: "المالية والمصرفية", href: "/ar/industries/finance-banking" },
+      { name: "مكاتب المحاسبة", href: "/ar/industries/accounting-firms" },
+      { name: "التأمين", href: "/ar/industries/insurance" },
+      { name: "استشارات تأسيس الأعمال", href: "/ar/industries/coworking-business-setup" },
+      { name: "التسويق", href: "/ar/industries/marketing" },
+      { name: "وكالات التسويق", href: "/ar/industries/marketing-agencies" },
+      { name: "الموارد البشرية والتوظيف", href: "/ar/industries/hr-recruitment" },
+    ],
+  },
+  {
+    label: "الخدمات الميدانية والعمليات",
+    icon: "engineering",
+    items: [
+      { name: "اللوجستيات", href: "/ar/industries/logistics" },
+      { name: "التوصيل والميل الأخير", href: "/ar/industries/last-mile-delivery" },
+      { name: "إدارة المرافق", href: "/ar/industries/facilities-management" },
+      { name: "خدمات التنظيف", href: "/ar/industries/cleaning-services" },
+      { name: "مراكز صيانة السيارات", href: "/ar/industries/auto-service" },
+      { name: "الأمن والقوى العاملة", href: "/ar/industries/security-services" },
+      { name: "التجارة والتوزيع", href: "/ar/industries/trading-distribution" },
+      { name: "التصنيع", href: "/ar/industries/manufacturing" },
+    ],
+  },
+  {
+    label: "الضيافة والتعليم وخدمات التقنية",
+    icon: "school",
+    items: [
+      { name: "الضيافة", href: "/ar/industries/hospitality" },
+      { name: "التعليم", href: "/ar/industries/education" },
+      { name: "معاهد التدريب", href: "/ar/industries/training-institutes" },
+      { name: "مزودو خدمات تقنية المعلومات", href: "/ar/industries/it-msp" },
+    ],
+  },
+];
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "أتمتة الذكاء الاصطناعي حسب القطاع",
+    "url": "https://lenooai.com/ar/industries",
+    "description": "أدلة أتمتة الذكاء الاصطناعي لقطاعات الإمارات: العقارات، الرعاية الصحية، التجزئة، الخدمات المهنية، الخدمات الميدانية، والمزيد."
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
+      { "@type": "ListItem", "position": 2, "name": "الصناعات", "item": "https://lenooai.com/ar/industries" }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems.map((f) => ({
+      "@type": "Question",
+      "name": f.question,
+      "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+    }))
+  }
+];
+---
+
+<ArBaseLayout
+  title="أتمتة الذكاء الاصطناعي حسب القطاع: ما ينجح في كل قطاع إماراتي | Lenoo AI"
+  description="أدلة أتمتة الذكاء الاصطناعي لكل قطاع رئيسي في الإمارات: العقارات، الرعاية الصحية، التجزئة، الخدمات المهنية، الخدمات الميدانية، والمزيد. اعثر على دليل قطاعكم."
+  canonicalPath="/ar/industries"
+  enPath="/industries"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التنقل"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span>الصناعات</div>
+    <h1>أتمتة الذكاء الاصطناعي، <span class="gradient-text">حسب القطاع</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">ما ينجح فعلياً يختلف حسب القطاع، لا حسب حجم الشركة فقط. تصفحوا قطاعات الإمارات التي نبني لها أدناه، كل قطاع له دليله الخاص بالأنظمة وسير العمل وما يجعله ناجحاً في هذا السوق تحديداً.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="industries_hub_hero_ar" class="btn-primary">احجز تقييماً مجانياً</button>
+      <a href="#browse" class="btn-outline">تصفح حسب القطاع ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=1600&q=80&auto=format&fit=crop" alt="أفق دبي يمثل تنوع قطاعات الإمارات" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 55%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <div class="hosp-stats-grid">
+      <div class="stat-item">
+        <p class="stat-num">٣٩</p>
+        <p class="stat-lbl">صفحة قطاع أدناه، من العقارات إلى الخدمات الأمنية</p>
+      </div>
+      <div class="stat-item">
+        <p class="stat-num">٦</p>
+        <p class="stat-lbl">مجموعات قطاعية، لتتصفحوا حسب الوظيفة لا قائمة مسطحة</p>
+      </div>
+      <div class="stat-item">
+        <p class="stat-num">٤</p>
+        <p class="stat-lbl">مشاكل تتكرر في كل قطاع تقريباً، مغطاة أدناه بالتفصيل</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WHY INDUSTRY MATTERS -->
+<section class="section" aria-labelledby="why-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="why-heading" style="margin-bottom:1.5rem;">لماذا القطاع أهم من حجم الشركة عند اختيار الذكاء الاصطناعي</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>عيادة أسنان بعشرين موظفاً ومكتب محاسبة بعشرين موظفاً لا يحتاجان تقريباً أي شيء مشترك من نظام ذكاء اصطناعي.</strong> الأول يحتاج حجز مواعيد وموافقات تأمين ورسائل متوافقة مع هيئة الصحة، والآخر يحتاج جمع مستندات وتتبع مواعيد ضريبية وتكاملاً مع Zoho Books. حجم الشركة لا يخبركم بشيء عن سير العمل الذي يستحق الأتمتة أولاً. القطاع يخبركم بالكثير.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">لهذا نبني أدلة مخصصة لكل قطاع بدلاً من صفحة "ذكاء اصطناعي للأعمال" عامة واحدة. كل دليل أدناه مبني حول الأنظمة التي تنطبق فعلاً على ذلك القطاع، والجهات التنظيمية والمنصات التي تحدد ما يستطيع الوكيل فعله وما لا يستطيعه، ورحلة عميل أو زبون حقيقية تُظهر ما يتغير من البداية للنهاية.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">إذا لم تجدوا نوع نشاطكم التجاري بالضبط أدناه، فالأنماط الموضحة لاحقاً في هذه الصفحة تنطبق عليكم أيضاً. احجزوا تقييماً مجانياً وسنخبركم بما يستحق أتمتته فعلاً في حالتكم تحديداً.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&q=80&auto=format&fit=crop" alt="صاحب عمل يراجع العمليات عبر أقسام مختلفة" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BROWSE BY SECTOR -->
+<section id="browse" class="section" style="background:#e7eeff;" aria-labelledby="browse-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="browse-heading">تصفح حسب القطاع</h2>
+      <p>كل دليل قطاعي نشرناه، مجمّع حسب الوظيفة.</p>
+    </div>
+    <div class="industry-groups">
+      {industryGroups.map((group) => (
+        <div class="industry-group">
+          <div class="industry-group-head">
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:22px; direction:ltr;">{group.icon}</span></div>
+            <h3>{group.label}</h3>
+          </div>
+          <div class="industry-link-list">
+            {group.items.map((item) => (
+              <a href={item.href} class="industry-link">{item.name}</a>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- REPEATING PATTERNS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="patterns-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="patterns-heading">الأنماط التي تتكرر في كل قطاع</h2>
+      <p>أربع مشاكل نراها في كل عمل تقريباً نراجعه، بغض النظر عن القطاع.</p>
+    </div>
+    <div class="bento-grid bento-grid-4">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px; direction:ltr;">phone_missed</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">استفسارات فائتة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">مكالمات ورسائل تصل خارج ساعات العمل، أو خلال فترة ازدحام، وتبقى دون رد حتى يفوت الأوان.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px; direction:ltr;">forward_to_inbox</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">متابعة يدوية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">عملاء محتملون أو مرضى أو زبائن يحتاجون تواصلاً ثانياً وثالثاً لا يحدث إلا إذا تذكر شخص إرساله بنفسه.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px; direction:ltr;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">اختناقات المستندات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">أوراق وموافقات وملاحقة مستندات تبطئ عملية يتفق الجميع على أنها يجب أن تسير أسرع.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px; direction:ltr;">event_busy</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">الجدولة والحجوزات الفائتة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">حجوزات تُنشأ دون نظام تذكير خلفها، والفترات الفارغة والإيرادات المفقودة التي تتبعها.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SELF DIAGNOSTIC -->
+<section class="section" aria-labelledby="diagnostic-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="diagnostic-heading">كيف تجدون أعلى فرصة أتمتة في قطاعكم</h2>
+    </div>
+    <div class="research-panel">
+      <ul class="journey-list" style="gap:1rem;">
+        <li>ما أول شيء يجب أن يفعله عميل محتمل جديد للوصول إليكم، وما مدى سرعة حدوث ذلك فعلياً اليوم؟</li>
+        <li>أين تتعثر مهمة في انتظار شخص، ليس لأنها صعبة، بل لأن أحداً يجب أن يتذكر القيام بها؟</li>
+        <li>ما الذي يتكرر كل أسبوع أو كل شهر بنفس الشكل تماماً، تقرير، تذكير، متابعة؟</li>
+        <li>ما السبب الأكثر شيوعاً لإحباط عميل أو مريض أو زبون من عمليتكم تحديداً؟</li>
+        <li>لو خمّنتم، ما الذي يكلفكم أكثر في الإيرادات الضائعة: الاستجابة البطيئة، أم غياب المتابعة، أم الوقت الإداري؟</li>
+      </ul>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin-top:1.5rem;">أياً كانت الإجابة التي تخطر أسرع فهي غالباً نقطة البداية. التقييم المجاني يقوم بنفس التمرين مع شخص رأى هذا النمط في عشرات الأعمال في قطاعكم بالفعل.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT'S DIFFERENT ABOUT UAE -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="uae-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="uae-heading">ما الذي يميز قطاعات الإمارات تحديداً</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">عملاء ثنائيو اللغة افتراضياً</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">أي نظام موجه للإمارات يعمل بالإنجليزية فقط يفوّت حصة حقيقية من عملائه المحتملين. العربية ليست إضافة اختيارية هنا، بل تغطية أساسية.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">واتساب أولاً، لا البريد الإلكتروني</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">في كل قطاع تقريباً في هذه الصفحة، واتساب هو المكان الذي يتوقع العملاء فعلياً الوصول للعمل من خلاله، لا نموذج تواصل أو بريد دعم.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">كثافة تنظيمية</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">الرعاية الصحية والمالية والعقارات والأمن كلها تحمل متطلبات تنظيمية إماراتية محددة لن يراعيها دليل ذكاء اصطناعي عام مستورد من تلقاء نفسه.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">أسئلة حول الذكاء الاصطناعي المخصص لكل قطاع</h2>
+    </div>
+    <div class="faq-list">
+      {faqItems.map((item) => (
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            <span>{item.question}</span>
+            <span class="material-symbols-outlined faq-icon" aria-hidden="true" style="direction:ltr;">expand_more</span>
+          </button>
+          <div class="faq-answer"><p>{item.answer}</p></div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">لا تجدون قطاعكم؟ احجزوا تقييماً مجانياً على أي حال</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">الأنماط أعلاه تنطبق على معظم الأعمال. أخبرونا بما تفعلونه، وسنخبركم بصراحة بما يستحق أتمتته أولاً.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+      <span class="cta-trust-badge">✓ دون التزام</span>
+      <span class="cta-trust-badge">✓ ضمان استرداد</span>
+    </div>
+    <button onclick="openModal(this)" data-source="industries_hub_cta_ar" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجز تقييماً مجانياً</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+  </div>
+</div>
+
+</ArBaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; }
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.journey-list li { position:relative; padding-right:1.75rem; color:#42474e; font-size:0.9375rem; line-height:1.7; }
+.journey-list li::before { content:''; position:absolute; right:0; top:0.55em; width:9px; height:9px; border-radius:50%; background:#00e3fd; }
+
+.industry-groups { display:grid; grid-template-columns:repeat(2,1fr); gap:1.5rem; }
+.industry-group { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:16px; padding:1.5rem 1.75rem; }
+.industry-group-head { display:flex; align-items:center; gap:0.75rem; margin-bottom:1.1rem; }
+.industry-group-head h3 { font-weight:700; font-size:1.0625rem; color:#00253b; }
+.industry-link-list { display:flex; flex-direction:column; gap:0.4rem; }
+.industry-link { color:#42474e; font-size:0.9375rem; text-decoration:none; padding:0.4rem 0; border-bottom:1px solid rgba(0,37,59,0.06); transition:color 0.15s; }
+.industry-link:last-child { border-bottom:none; }
+.industry-link:hover { color:#006875; }
+
+@media(max-width:900px) { .industry-groups { grid-template-columns:1fr; } }
+
+.hosp-stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; max-width:900px; margin:0 auto; }
+.stat-item { text-align:center; }
+.stat-num { font-size:2rem; font-weight:800; color:#fff; margin-bottom:0.25rem; }
+.stat-lbl { color:rgba(255,255,255,0.72); font-size:0.875rem; line-height:1.5; }
+@media(max-width:600px) { .hosp-stats-grid { grid-template-columns:1fr; gap:1.25rem; } }
+
+.faq-list { display:flex; flex-direction:column; gap:0.75rem; }
+.faq-item { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:16px; overflow:hidden; }
+.faq-question { width:100%; display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:1.25rem 1.5rem; background:none; border:none; text-align:right; font-size:1rem; font-weight:600; color:#00253b; cursor:pointer; }
+.faq-icon { transition:transform 0.2s; color:#006875; }
+.faq-question[aria-expanded="true"] .faq-icon { transform:rotate(180deg); }
+.faq-answer { padding:0 1.5rem 1.25rem; color:#42474e; font-size:0.9375rem; line-height:1.75; }
+</style>

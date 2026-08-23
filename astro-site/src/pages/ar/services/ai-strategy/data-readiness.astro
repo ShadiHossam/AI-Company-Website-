@@ -1,0 +1,246 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "ليس لدينا CRM، كل شيء في WhatsApp وجداول بيانات. هل نستطيع فعل الذكاء الاصطناعي؟", answer: "نعم، لكن هذا بالضبط ما يجب أن تلتقطه مراجعة الجاهزية أولاً. سجل محادثات WhatsApp وجداول البيانات يمكن أن تكون مصادر بيانات قابلة للاستخدام، لكنها تحتاج أن تُهيكَل وتُصبح متاحة قبل أن يستطيع نظام ذكاء اصطناعي استخدامها بموثوقية. عملياً، هذا غالباً يعني أن المرحلة الأولى من مشروع هي إدخال بياناتكم في شكل يستطيع الذكاء الاصطناعي العمل معه، لا بناء نظام الذكاء الاصطناعي نفسه. تخطي تلك الخطوة السبب الأكثر شيوعاً لضعف أداء مشاريع الذكاء الاصطناعي." },
+  { question: "كم تستغرق مراجعة جاهزية البيانات؟", answer: "لمعظم الأعمال الإماراتية الصغيرة والمتوسطة، مراجعة الجاهزية تستغرق أسبوعاً لأسبوعين: مراجعة أين تعيش بياناتكم، مدى اكتمالها وإتاحتها، من يملكها، وهل لديكم ما يكفي منها لحالة الاستخدام التي تفكرون فيها. المنظمات الأكبر بأنظمة وأقسام أكثر تستغرق وقتاً أطول، لأن ببساطة هناك أكثر لرسمه." },
+  { question: "ماذا لو وجدت المراجعة أن بياناتنا غير جاهزة؟ هل ندفع مقابل مشروع الذكاء الاصطناعي على أي حال؟", answer: "لا، هذا بيت القصيد من إجراء المراجعة أولاً. إذا لم تكن بياناتكم جاهزة، ستعرفون بالضبط ماذا يحتاج إصلاحاً، وكم يستغرق ذلك، قبل الالتزام بميزانية لبناء. بعض الأعمال تصلح الفجوات بنفسها؛ آخرون يطلبون منا التعامل مع تنظيف البيانات كمرحلة منفصلة وأصغر قبل بناء أي نظام ذكاء اصطناعي." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_strategy_data_readiness')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: 'هل بياناتكم جاهزة للذكاء الاصطناعي؟ مراجعة الجاهزية التي تُجرى قبل إنفاق درهم واحد',
+    url: 'https://lenooai.com/ar/services/ai-strategy/data-readiness',
+    description: 'مراجعة جاهزية بيانات عملية للشركات الصغيرة والمتوسطة الإماراتية المفكرة بالذكاء الاصطناعي: أين تعيش بياناتكم، الجودة والاكتمال، الوصول والهيكلة، الحوكمة، والحجم.',
+    author: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    publisher: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'الخدمات', item: 'https://lenooai.com/ar/services' },
+      { '@type': 'ListItem', position: 3, name: 'استراتيجية الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-strategy' },
+      { '@type': 'ListItem', position: 4, name: 'جاهزية البيانات', item: 'https://lenooai.com/ar/services/ai-strategy/data-readiness' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="هل بياناتكم جاهزة للذكاء الاصطناعي؟ مراجعة الجاهزية للشركات الإماراتية | Lenoo AI"
+  description="جاهزية البيانات للذكاء الاصطناعي: المراجعة التي يجب على الشركات الإماراتية الصغيرة والمتوسطة إجراؤها قبل الإنفاق على أي مشروع ذكاء اصطناعي. أين تعيش بياناتكم، الجودة، الهيكلة، الحوكمة، والحجم."
+  canonicalPath="/ar/services/ai-strategy/data-readiness"
+  enPath="/services/ai-strategy/data-readiness"
+  ogImage="/assets/og-ai-strategy.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services" style="color:inherit;text-decoration:none;opacity:0.65;">الخدمات</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-strategy" style="color:inherit;text-decoration:none;opacity:0.65;">استراتيجية الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>جاهزية البيانات</div>
+    <h1>هل بياناتكم جاهزة للذكاء الاصطناعي؟<br>مراجعة الجاهزية التي تُجرى <span class="gradient-text">قبل إنفاق درهم واحد</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:660px; margin:1.5rem auto 2rem; line-height:1.8;">معظم مشاريع الذكاء الاصطناعي التي لا تفي بالتوقعات لا تفشل بسبب النموذج. تفشل لأن البيانات وراءها لم تكن جاهزة فعلياً أبداً. إليكم المراجعة التي تُجرى أولاً، والفجوات التي نراها أكثر في الشركات الإماراتية الصغيرة والمتوسطة.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_data_readiness_hero" class="btn-primary">أجروا مراجعة جاهزية بيانات مجانية</button>
+      <a href="#the-audit" class="btn-outline">شاهدوا المراجعة ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1400&q=80&auto=format&fit=crop" alt="صاحب عمل يراجع جداول بيانات وبيانات على حاسوب محمول قبل مشروع ذكاء اصطناعي" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHY MOST AI PROJECTS FAIL BEFORE THEY START -->
+<section class="section" aria-labelledby="why-fail-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="why-fail-heading" style="margin-bottom:1.5rem;">لماذا تفشل معظم مشاريع الذكاء الاصطناعي قبل أن تبدأ</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>بيانات سيئة، لا نماذج سيئة.</strong> عندما يضعف أداء مشروع ذكاء اصطناعي، الغريزة عادة لوم النموذج: ليس ذكياً بما يكفي، ليس الأداة الصحيحة، ربما أداة منافس كانت ستعمل أفضل. في خبرتنا بتحديد نطاق مشاريع الذكاء الاصطناعي، السبب الفعلي دائماً تقريباً قبل النموذج. طُلب من الذكاء الاصطناعي فعل شيء ببيانات غير مكتملة، متناثرة عبر خمسة أماكن مختلفة، منسّقة بتضارب، أو ببساطة رقيقة جداً لتعلّم نمط موثوق منها.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">نموذج تسجيل عملاء محتملين مدرَّب على ستة أشهر من إدخالات CRM متضاربة سينتج درجات غير موثوقة، بغض النظر عن قدرة النموذج الأساسي. ذكاء اصطناعي لدعم العملاء مبني على توثيق قديم ومتناقض سيعطي العملاء بثقة إجابات خاطئة. روبوت محادثة يجيب من كتالوج منتجات نصفه قديم سيذكر أسعاراً وتوافراً خاطئاً ببساطة. لا شيء من هذا مشاكل نموذج. إنها مشاكل بيانات مُتنكِّرة بشكل مشكلة نموذج.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">هذا يهم أكثر قبل إنفاق أي شيء. مراجعة جاهزية تُجرى قبل بدء بناء تكلف جزءاً بسيطاً مما تكلفه اكتشاف نفس الفجوة بعد ثلاثة أشهر من مشروع، بعد أن ذهبت الميزانية والوقت والمصداقية الداخلية أصلاً لشيء لم يكن ليعمل بموثوقية على البيانات التي أُعطيَ إياها أبداً.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80&auto=format&fit=crop" alt="جداول بيانات فوضوية وملفات متناثرة تمثل بيانات أعمال غير منظّمة" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THE READINESS AUDIT -->
+<section id="the-audit" class="section" style="background:#e7eeff;" aria-labelledby="audit-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="audit-heading">مراجعة الجاهزية</h2>
+      <p>خمسة أسئلة نمر بها مع كل عمل قبل التوصية بما يجب بناؤه، بهذا الترتيب.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">travel_explore</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">أين تعيش بياناتكم اليوم</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">معظم الأعمال لا تستطيع الإجابة عن هذا بنظافة من المحاولة الأولى. بيانات العملاء في CRM، لكن أيضاً في محادثات WhatsApp، صناديق بريد إلكتروني، جداول بيانات بناها أحدهم قبل عامين، ونظام نقاط بيع لا يتحدث مع أي منها. نرسم كل مصدر قبل لمس أي شيء آخر.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">عادة أكثر تناثراً مما يدرك العمل عند البدء</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">fact_check</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">جودة البيانات واكتمالها</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">حقول مملوءة تقنياً لكن خاطئة، ناقصة، أو مكررة. CRM بثلاثة إدخالات لنفس العميل بأسماء مختلفة قليلاً. سجلات طلبات دون طوابع زمنية. نتحقق هل البيانات تقول فعلياً ما تدّعي قوله.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">الاكتمال يهم بقدر أهمية الحجم الخام</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">api</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">الوصول والهيكلة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">هل يستطيع نظام ذكاء اصطناعي الوصول للبيانات فعلياً يهم بقدر أهمية هل البيانات جيدة. بيانات خلف واجهة API سهلة الاتصال. بيانات في جدول بيانات قابلة للعمل بإعداد بسيط. بيانات على ورق في خزانة ملفات تحتاج الرقمنة قبل أن تصبح قابلة للاستخدام إطلاقاً.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">واجهات API مقابل جداول بيانات مقابل ورق: كل منها يحتاج خطة مختلفة</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">gavel</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">الحوكمة والملكية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">من مسموح له فعلياً استخدام هذه البيانات، ولأي غرض. بيانات العملاء لها التزامات خصوصية مرتبطة بها بغض النظر عن كيفية تخزينها. نحدد من يملك كل مصدر بيانات داخلياً وأي صلاحيات وموافقات تغطيه أصلاً قبل أن يبدأ نظام ذكاء اصطناعي استخدامها.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">أسئلة الملكية أسهل إجابة قبل الإطلاق منها بعده</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">database</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">الحجم: هل لديكم ما يكفي</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">بعض حالات استخدام الذكاء الاصطناعي تحتاج بيانات تاريخية قليلة جداً لتعمل جيداً: روبوت محادثة يجيب من كتالوج منتجات يحتاج الكتالوج، لا سنوات من التاريخ. نموذج تنبؤي يحاول تسجيل عملاء محتملين يحتاج أمثلة سابقة كافية لتعلّم نمط حقيقي منها. نطابق حالة الاستخدام مع ما يستطيع حجم بياناتكم دعمه فعلياً.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">الكمية الصحيحة من البيانات تعتمد كلياً على حالة الاستخدام</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">مشمولة بضمان استرداد ١٠٠٪</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">مراجعة جاهزية تخبركم بماذا تصلحون قبل الإنفاق على بناء، لا بعده.</p>
+      <button onclick="openModal(this)" data-source="ar_data_readiness_mid" class="btn-primary">أجروا مراجعة جاهزية بيانات مجانية</button>
+    </div>
+  </div>
+</section>
+
+<!-- COMMON READINESS GAPS IN UAE SMES -->
+<section class="section" aria-labelledby="gaps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="gaps-heading">فجوات الجاهزية الشائعة في الشركات الإماراتية الصغيرة والمتوسطة</h2>
+      <p>ثلاثة أنماط نصادفها بتكرار عند مراجعة أعمال إماراتية صغيرة ومتوسطة.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">chat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">سجل محادثات WhatsApp</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">كمية هائلة من تفاعل العملاء الحقيقي في الإمارات يحدث عبر WhatsApp: تأكيدات طلبات، مفاوضات أسعار، شكاوى، متابعات. إنها بيانات مفيدة فعلياً، لكنها غير منظّمة ومحبوسة داخل خيوط محادثة فردية، غالباً على هاتف شخصي أو مشترك للفريق بدلاً من نظام يستطيع تصديرها بنظافة.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">contacts</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">دون CRM</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">معلومات العملاء والعملاء المحتملين مقسّمة بين جهات اتصال هاتف مندوب مبيعات، جدول بيانات مشترك، وأياً كان من يتذكر صفقة معينة. دون نظام سجل واحد، ليس لدى نظام ذكاء اصطناعي مكان ثابت للقراءة منه أو كتابة تحديثات إليه.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">سجلات ورقية</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">فواتير، عقود، ونماذج استقبال لا تزال محفوظة على ورق أو كصور مُمسوحة ضوئياً بدلاً من نص قابل للبحث. هذا شائع في الأعمال التي تعمل منذ سنوات قبل أن تصبح الأدوات الرقمية معياراً، وهو عائق حقيقي حتى تُرقمَن السجلات وتصبح قابلة للقراءة آلياً.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT TO FIX BEFORE YOU BUILD ANYTHING -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="fix-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="fix-heading" style="margin-bottom:1.5rem;">ماذا تصلحون قبل بناء أي شيء</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">إصلاح كل فجوة بيانات بشكل مثالي قبل بدء مشروع ذكاء اصطناعي ليس واقعياً، وليس ضرورياً. المهم هو إصلاح الفجوات التي ستكسر فعلياً النظام المحدد الذي تخططون لبنائه. إذا كنتم تبنون روبوت محادثة يجيب من كتالوج منتجاتكم، يحتاج الكتالوج أن يكون دقيقاً ومكتملاً؛ جدول مبيعاتكم عمره خمس سنوات لا يحتاج لمساً بعد.</p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">التسلسل الذي يعمل أفضل: تحديد مصدر أو مصدرين بيانات يعتمد عليهما نظام الذكاء الاصطناعي المخطط له فعلياً، إصلاحهما تحديداً (توحيد التكرارات، ملء الحقول الناقصة، إدخال البيانات في صيغة متاحة)، وترك كل شيء آخر للمراحل اللاحقة مع توسع المشروع. محاولة تنظيف كل نظام في العمل قبل بدء أي شيء عادة تتحول لمشروع لا يبدأ فعلياً أبداً.</p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">الملكية تستحق التسوية مبكراً أيضاً. يحتاج أحدهم في العمل أن يكون مسؤولاً عن إبقاء البيانات التي يعتمد عليها نظام الذكاء الاصطناعي دقيقة مستقبلاً، سواء كان ذلك تحديث كتالوج المنتجات عند تغيّر الأسعار أو تسجيل عملاء محتملين جدد باتساق في CRM. نظام ذكاء اصطناعي مبني على بيانات جيدة عند الإطلاق سيتدهور إذا لم يمتلك أحد إبقاء تلك البيانات محدّثة.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT "GOOD ENOUGH" ACTUALLY LOOKS LIKE -->
+<section class="section" aria-labelledby="good-enough-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="good-enough-heading" style="margin-bottom:1.5rem;">كيف يبدو "الكافي" فعلياً</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">"الكافي" ليس نفس المعيار لكل حالة استخدام ذكاء اصطناعي، ونادراً ما يكون "مثالياً". روبوت محادثة يجيب على أسئلة بأسلوب الأسئلة الشائعة من كتالوج منتجات قابل للعمل بمجرد أن يصبح الكتالوج دقيقاً، مكتملاً، وفي مكان واحد، حتى لو كانت بيانات مبيعاتكم التاريخية لا تزال فوضى. نموذج تسجيل عملاء محتملين يحتاج قاعدة أمثلة تاريخية أكبر وأنظف بشكل معتبر، لأنه يتعلّم نمطاً لا يبحث عن حقيقة.</p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">النسخة الصادقة من "الكافي" هي: البيانات تغطي القرارات أو الإجابات المحددة التي يحتاج نظام الذكاء الاصطناعي إنتاجها، متاحة بصيغة يستطيع النظام قراءتها فعلياً، وأحدهم مسؤول عن إبقائها كذلك بعد الإطلاق. هذا سقف أدنى مما يفترضه معظم الأعمال عند البدء، وهو بالضبط ما تهدف مراجعة الجاهزية لإثباته بوضوح، بدلاً من تركه تخميناً حتى يسوء شيء بعد الإطلاق.</p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">غير متأكدين إن كانت بياناتكم جاهزة لمشروع الذكاء الاصطناعي الذي تفكرون فيه؟ سنخبركم بصدق، قبل إنفاق أي شيء على بناء.</p>
+    <button onclick="openModal(this)" data-source="ar_data_readiness_pre_faq" class="btn-primary">أجروا مراجعة جاهزية بيانات مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">أسئلة حول جاهزية البيانات</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">أجروا مراجعة جاهزية بيانات مجانية</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">سنراجع أين تعيش بياناتكم، مدى جاهزيتها، وماذا تصلحون أولاً، قبل إنفاق أي شيء على بناء يعتمد عليها.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+      <span class="cta-trust-badge">✓ دون التزام</span>
+      <span class="cta-trust-badge">✓ ضمان استرداد</span>
+    </div>
+    <button onclick="openModal(this)" data-source="ar_data_readiness_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">أجروا مراجعة جاهزية بيانات مجانية</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+  </div>
+</div>
+
+</ArBaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+.apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+@media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } }
+</style>

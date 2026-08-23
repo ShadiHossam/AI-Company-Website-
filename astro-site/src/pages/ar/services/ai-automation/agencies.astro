@@ -1,0 +1,469 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../../components/ProcessSteps.astro";
+import StatStrip from "../../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "ماذا تبني وكالة أتمتة ذكاء اصطناعي فعلياً؟", answer: "برمجيات عاملة، لا عروضاً تقديمية. الوكالة الجيدة تبني سير عمل آلياً يعمل داخل الأدوات التي تستخدمونها أصلاً: فرز بريد إلكتروني يقرأ ويوجّه الرسائل، معالجة فواتير تستخرج وترحّل البيانات تلقائياً، تسلسلات متابعة عملاء محتملين، سلاسل موافقة، ومزامنة بيانات بين الأنظمة. المُخرَج أتمتة عاملة، مُختبَرة على بياناتكم الحقيقية، تستمر بالعمل بعد انتهاء المشروع." },
+  { question: "كم تكلف الاستعانة بوكالة أتمتة ذكاء اصطناعي؟", answer: "يعتمد على عدد سير العمل، الأنظمة المعنية، وكم تنظيف بيانات مطلوب. سير عمل واحد محدد جيداً، مثل معالجة الفواتير الآلية، عادة يكلف أقل من تكامل متعدد الأنظمة يلمس نظام CRM وERP وصندوق الدعم في آن واحد. الوكالات ذات السمعة الجيدة تحدد نطاق السعر بعد مكالمة اكتشاف، لا قبلها. احذروا من أي شخص يعرض رقماً قبل رؤية سير عملكم الفعلي." },
+  { question: "ما الفرق بين وكالة أتمتة ذكاء اصطناعي ومستقل؟", answer: "المستقل شخص واحد بمجموعة مهارات محدودة ودون احتياط إذا مرض، انشغل، أو انتقل. الوكالة تجلب فريقاً يغطي الاكتشاف، البناء، والدعم المستمر، بالإضافة لعملية للتعامل مع تغييرات النطاق ومشاكل ما بعد الإطلاق. لسكربت صغير واحد، قد يكون مستقل مناسباً. لأي شيء يلمس عدة أنظمة عمل يحتاج الاستمرار بالعمل لسنوات، الوكالة تحمل مخاطرة أقل." },
+  { question: "كم يستغرق تعامل نموذجي مع وكالة؟", answer: "معظم المشاركات تستغرق من بضعة أسابيع لشهرين، حسب النطاق. سير عمل واحد بتكامل واحد يمكن أن يعمل خلال أقل من شهر. مشاريع متعددة سير العمل تلمس عدة أنظمة تستغرق أطول، بشكل أساسي بسبب رسم البيانات والاختبار على بيانات حقيقية وفوضوية لا مجموعة بيانات عرض توضيحي نظيفة." },
+  { question: "هل أحتاج استبدال برمجياتنا الحالية للعمل مع وكالة أتمتة ذكاء اصطناعي؟", answer: "لا، ويجب أن تكونوا متشككين من أي وكالة تخبركم بعكس ذلك. الوكالة الكفؤة تؤتمت فوق نظام CRM وERP والبريد الإلكتروني وأدوات العمل الحالية لديكم عبر API. استبدال منظومتكم مشروع أكبر بكثير وأكثر مخاطرة من أتمتة العمل اليدوي الجالس داخلها." },
+  { question: "هل تستطيع وكالة أتمتة ذكاء اصطناعي العمل مع فريق صغير أو شركة ناشئة؟", answer: "نعم. الوكالات تحدد نطاق المشاريع لسير عمل واحد بنفس تكرار طرح متعدد الأنظمة. شركة بخمسة أشخاص تؤتمت متابعة عملاء محتملين لا تحتاج نفس المشاركة كعملية بـ٢٠٠ شخص تؤتمت المالية عبر ثلاثة أنظمة. النطاق والسعر يجب أن يطابقا ما تحتاجونه فعلياً، لا حزمة ثابتة مبنية لعمل أكبر." },
+  { question: "ماذا يحدث للأتمتة إذا توقفنا عن العمل مع الوكالة؟", answer: "مع وكالة جيدة، تستمر بالعمل. الأتمتة تعيش داخل أنظمتكم الخاصة، نظام CRM لديكم، حساب منصة الأتمتة لديكم، تكاملاتكم، لا على بنية تحتية تتحكم بها الوكالة وتستطيع إيقافها. اسألوا هذا مباشرة قبل التوقيع: إذا انسحبنا غداً، هل ستستمر الأتمتة بالعمل؟" },
+  { question: "هل يجب أن تملك الوكالة خبرة في قطاعنا المحدد؟", answer: "يساعد، لكنه ليس العامل الحاسم. المهارة الأساسية، رسم سير عمل، التعامل مع حالات حدية، تكامل أنظمة عبر API، تنتقل عبر القطاعات. الأهم هو ما إذا كانوا يطرحون أسئلة جيدة حول كيفية عمل عملكم فعلياً، بدلاً من افتراض أن عمليتكم تطابق قالباً عاماً." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_automation_agencies')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+const processSteps = [
+  { icon: "search", step: "الخطوة ١", title: "مكالمة اكتشاف", description: "نسأل عن سير عملكم الحالي، أدواتكم، وأين يعيش العمل اليدوي فعلياً. دون تحضير تقني مطلوب من جانبكم." },
+  { icon: "edit", step: "الخطوة ٢", title: "عرض محدد النطاق", description: "تحصلون على نطاق مكتوب: أي سير عمل، أي أنظمة، كم يكلف، وكيف يبدو 'الإنجاز'، قبل بدء أي عمل." },
+  { icon: "build", step: "الخطوة ٣", title: "البناء والاختبار", description: "نبني مقابل بياناتكم الحقيقية في بيئة تجريبية ونصلح الحالات الحدية قبل أن يلمس أي شيء الإنتاج." },
+  { icon: "rocket_launch", step: "الخطوة ٤", title: "الإطلاق والدعم", description: "تُطلَق الأتمتة. نراقبها لمدة ٩٠ يوماً ونبقى متاحين إذا احتاج شيء تعديلاً." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'خدمات وكالة أتمتة الذكاء الاصطناعي',
+    url: 'https://lenooai.com/ar/services/ai-automation/agencies',
+    description: 'ماذا تفعل وكالة أتمتة الذكاء الاصطناعي، كيف تُقيّمون واحدة، وكيف تدير Lenoo AI الاكتشاف والبناء والدعم بعد الإطلاق لمشاريع الأتمتة في الإمارات.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاركات وكالة أتمتة الذكاء الاصطناعي: محددة النطاق ومُسعَّرة بعد مكالمة اكتشاف مجانية.' },
+    serviceType: 'AI Automation Agency',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'أتمتة الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'الوكالات', item: 'https://lenooai.com/ar/services/ai-automation/agencies' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="وكالات أتمتة الذكاء الاصطناعي: ماذا تفعل وكيف تختارون واحدة | Lenoo AI"
+  description="ماذا تُسلِّم وكالة أتمتة الذكاء الاصطناعي فعلياً، كيف تعمل عملية Lenoo AI، وما يجب تقييمه قبل توظيف واحدة في الإمارات."
+  canonicalPath="/ar/services/ai-automation/agencies"
+  enPath="/services/ai-automation/agencies"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">أتمتة الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>الوكالات</div>
+    <h1>وكالات أتمتة الذكاء الاصطناعي: <span class="gradient-text">ماذا تفعل وكيف تختارون واحدة</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      تبحثون عن وكالة أتمتة ذكاء اصطناعي وغير متأكدين ما يميز الجيدة عن السيئة؟ إليكم ماذا يتضمن العمل فعلياً، ماذا تتحققون منه قبل التوقيع على أي شيء، وكيف تدير Lenoo AI، وكالة أتمتة ذكاء اصطناعي مقرها الإمارات، العملية من البداية للنهاية.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">محدد النطاق ومُسعَّر بعد الاكتشاف، أبداً قبله</span>
+      <span class="tchip">دعم ٩٠ يوماً بعد الإطلاق في كل مشروع</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_ai_automation_agencies_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#what-agencies-do" class="btn-outline">شاهدوا ماذا تفعل الوكالة ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1400&q=80&auto=format&fit=crop" alt="فريق يراجع نطاق أتمتة أثناء مكالمة اكتشاف وكالة" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "٤٠٪", caption: "من مهام العمل في معظم الشركات قابلة للأتمتة بالذكاء الاصطناعي المتاح حالياً، وفقاً لبحث McKinsey." },
+      { value: "٩٠ يوماً", caption: "مراقبة بعد الإطلاق مشمولة في كل مشروع Lenoo AI" },
+      { value: "١٠٠٪", caption: "ضمان استرداد إذا لم تكونوا راضين عما نقدمه" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHAT AGENCIES DO -->
+<section id="what-agencies-do" class="section" aria-labelledby="what-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="what-heading">ماذا تفعل وكالة أتمتة ذكاء اصطناعي فعلياً</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">التسمية تغطي مساحة واسعة. إليكم كيف يبدو العمل يومياً، مقسماً لخمس مراحل تمر بها معظم المشاريع.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">search</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">الاكتشاف</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">فهم كيف يعمل سير عمل فعلياً اليوم: من يلمسه، أي أدوات معنية، وأين يتراكم الجهد اليدوي.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">account_tree</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">رسم سير العمل</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">تحويل عملية موصوفة لتسلسل محدد من المحفزات، القرارات، والمخرجات التي تستطيع البرمجيات التصرف عليها.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">build</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">البناء</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">كتابة واختبار منطق الأتمتة نفسه، بما يشمل كيفية تعامله مع الحالات الفوضوية وغير المعتادة، لا الأمثلة النظيفة فقط.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">integration_instructions</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">التكامل</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">ربط الأتمتة بنظام CRM وERP والبريد الإلكتروني أو جداول البيانات الحالية عبر API، فتعمل داخل الأدوات التي يستخدمها فريقكم أصلاً.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">monitoring</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">المراقبة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">مراقبة الأتمتة بمجرد إطلاقها، إصلاح ما ينكسر، وتعديلها مع تغيّر عمليتكم أو بياناتكم عبر الزمن.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">extension</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">تعمل عبر أدوات عديدة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">الوكالة الجيدة ليست مقيدة بمنصة واحدة. شاهدوا <a href="/ar/services/ai-automation/tools">القائمة الكاملة للأدوات التي نبني بها</a>، من Zapier وMake إلى n8n وPower Automate.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DIY VS AGENCY DECISION -->
+<section id="agencies-operations" class="section" style="background:#f9f9ff;" aria-labelledby="agencies-operations-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="agencies-operations-heading">ليس كل مشروع أتمتة يحتاج وكالة خارجية</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">بعض عمل الأتمتة بسيط بما يكفي للتعامل معه بأداة جاهزة وعصر أحد أيام العمل. مشاريع أخرى تتضمن منطقاً مخصصاً كافياً، تكامل أنظمة، أو صيانة مستمرة كافية أن إدخال وكالة ينتهي أسرع وأرخص من الساعات التي كانت ستكلفها داخلياً.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">معرفة أي فئة يقع فيها مشروع قبل بدء تقييم المزودين توفر وقتاً على الجانبين. الوكالة الجيدة تفضّل تحديد نطاق عمل حقيقي على إقناعكم بترك شيء تستطيعون إنهاءه بأنفسكم في عطلة نهاية أسبوع.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1758518731462-d091b0b4ed0d?w=800&q=80&auto=format&fit=crop" alt="رجلا أعمال يوقعان عقداً على طاولة بينما يراقب زميل في مكتب حديث" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AGENCY PRESENTATION IMAGE BAND -->
+<div style="position:relative; overflow:hidden; height:280px; margin:0 0 -1px;">
+  <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1400&q=80&auto=format&fit=crop" alt="استشاري يعرض خطة على شاشة لفريق يجلس حول طاولة بحواسيب محمولة" loading="lazy" width="1400" height="280" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.35) 0%,transparent 55%);"></div>
+</div>
+
+<!-- DIY VS AGENCY TABS -->
+<section class="section" aria-labelledby="agencies-tabs-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="agencies-tabs-heading">افعلوها بأنفسكم مقابل إدخال وكالة</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">دليل تقريبي لأي مشاريع أتمتة تستحق البناء داخلياً، وأيها تستحق التسليم لوكالة.</p>
+    </div>
+    <div class="agencies-tabs" role="tablist" aria-label="إرشاد افعلوها بأنفسكم مقابل الوكالة">
+      <button type="button" id="agencies-tab-diy" class="agencies-tab-btn active" data-agencies-tab="diy" role="tab" aria-selected="true" aria-controls="agencies-panel-diy">افعلوها بأنفسكم</button>
+      <button type="button" id="agencies-tab-agency" class="agencies-tab-btn" data-agencies-tab="agency" role="tab" aria-selected="false" aria-controls="agencies-panel-agency">أدخلوا وكالة</button>
+    </div>
+    <div class="bento-grid bento-grid-3" id="agencies-panel-diy" data-agencies-tab-panel="diy" role="tabpanel" aria-labelledby="agencies-tab-diy">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">handyman</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">أداة جاهزة تناسب أصلاً</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">أداة بلا كود مثل Zapier أو Make تفعل بالفعل ما تحتاجونه، دون منطق مخصص أو حالات حدية خاصة بالنظام للتعامل معها.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">shield</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">تكلفة منخفضة إذا انكسرت</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">سير العمل يلمس نظاماً واحداً، وأتمتة معطلة إزعاج بسيط للإصلاح، لا مخاطرة تجارية أثناء تعطلها.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">person</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">شخص لديه الوقت</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">أحد في الفريق مرتاح بما يكفي مع الأدوات لبنائها وصيانتها دون أن يسحب ذلك تركيزه عن عمله الفعلي طويلاً.</p>
+      </div>
+    </div>
+    <div class="bento-grid bento-grid-3" id="agencies-panel-agency" data-agencies-tab-panel="agency" role="tabpanel" aria-labelledby="agencies-tab-agency" hidden>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">hub</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">منطق مخصص أو عدة أنظمة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">سير العمل يمتد عبر عدة أنظمة أو يحتاج منطقاً مخصصاً ومعالجة حالات حدية لا تستطيع الأدوات الجاهزة دعمها بنظافة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">verified_user</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">الموثوقية تهم فعلياً</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">العملية حرجة للعمل بما يكفي أن التوقف أو الأخطاء تحمل تكلفة حقيقية، وتحتاج مراقبة ودعماً بعد الإطلاق.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">group_off</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">لا سعة داخلية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">لا أحد في الفريق لديه الوقت أو الخلفية التقنية لبنائها وصيانتها بشكل صحيح، والتوظيف لأجلها لا يستحق دوراً كاملاً.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GOOD VS BAD -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="good-bad-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="good-bad-heading">ما يميّز وكالة جيدة عن سيئة</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">تسمية "وكالة أتمتة ذكاء اصطناعي" تُطبَّق بتساهل. هذه الأمور الأربعة هي ما يميّز فعلياً مشاركة جيدة عن سيئة.</p>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">support_agent</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">دعم ما بعد الإطلاق</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">الأتمتة تنكسر عندما تتحول بياناتكم أو عمليتكم. الوكالة الجيدة تشمل فترة مراقبة بعد الإطلاق. السيئة تسلّمكم ملفاً وتختفي في يوم الإطلاق.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">hub</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">تعمل مع أدواتكم، لا ضدها</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">الوكالة الجيدة تبني فوق نظام CRM وERP والبريد الإلكتروني الحاليين عبر API. كونوا حذرين من أي شخص يريد ترحيلكم لمنصة جديدة قبل حتى تحديد نطاق الأتمتة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">receipt_long</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">تحديد نطاق شفاف</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يجب أن تحصلوا على نطاق مكتوب لأي سير عمل مغطى بالضبط، ما السعر، وماذا يعني "الإنجاز"، قبل بدء أي عمل. العروض الغامضة تؤدي لمخرجات غامضة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">lock_open</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">دون حبس</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يجب أن تملكوا الأتمتة وتفهموا كيف تعمل، لا الاعتماد بشكل دائم على الوكالة للمسها. إذا رفض مزود شرح بنائه أو لم يسلّمكم شيئاً تستطيعون تسليمه لاحقاً، هذه علامة تحذيرية.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHECKLIST -->
+<section class="section" aria-labelledby="checklist-heading">
+  <div class="container">
+    <div style="max-width:760px; margin:0 auto;">
+      <div class="section-header">
+        <h2 id="checklist-heading">ماذا تسألون قبل توظيف وكالة أتمتة ذكاء اصطناعي</h2>
+        <p style="color:#42474e; font-size:1.0625rem;">تسعة أسئلة تستحق طرحها على أي وكالة قبل التوقيع على أي شيء، ولماذا يهم كل منها فعلياً.</p>
+      </div>
+      <div class="tools-strip" style="text-align:right;">
+        <ul style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1.5rem;">
+          <li style="display:flex; gap:0.75rem; align-items:flex-start;"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; margin-top:2px;">check_circle</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>هل سيعمل هذا فوق أدواتنا الحالية، أم نحتاج تبديل أنظمة أولاً؟</strong><br />ترحيل المنصات مشروع أكبر بكثير من أتمتة سير العمل داخلها. إذا اعتمدت الإجابة على استبدال نظام CRM أو مزود بريدكم أولاً، فتلك تكلفة ومخاطرة إضافية لم تطلبوها، وعلامة على أن الوكالة لا تبني بمرونة حول ما لديكم أصلاً.</span></li>
+          <li style="display:flex; gap:0.75rem; align-items:flex-start;"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; margin-top:2px;">check_circle</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>ماذا يحدث عندما تواجه الأتمتة حالة لم تُبنَ لها؟</strong><br />البيانات الحقيقية فوضوية: فاتورة ينقصها حقل، عميل محتمل دون بريد إلكتروني، موافقة تحتاج استثناءً. اسألوا تحديداً كيف تُعلِّم الأتمتة على هذه الحالات لمراجعة بشرية، بدلاً من الفشل بصمت أو تخمين إجابة.</span></li>
+          <li style="display:flex; gap:0.75rem; align-items:flex-start;"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; margin-top:2px;">check_circle</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>هل توجد فترة دعم بعد الإطلاق، وماذا تغطي؟</strong><br />سير العمل يتحول مع تغيّر عملكم: حقل جديد يُضاف لنموذج، مورّد يغيّر صيغة فاتورته، أداة تحدّث واجهتها. اعرفوا بالضبط كم يستمر الدعم وما إذا كان يغطي هذا النوع من التعديلات أم الأخطاء الصريحة فقط.</span></li>
+          <li style="display:flex; gap:0.75rem; align-items:flex-start;"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; margin-top:2px;">check_circle</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>هل تستطيعون إظهار نطاق مكتوب قبل أن ألتزم بأي شيء؟</strong><br />النطاق المكتوب هو ما يحوّل محادثة مبيعات لاتفاق قابل للمساءلة. إذا قاومت وكالة وضع سير العمل، الأنظمة، الجدول الزمني، والسعر كتابياً قبل التوقيع، لا يوجد شيء لمحاسبتهم عليه لاحقاً.</span></li>
+          <li style="display:flex; gap:0.75rem; align-items:flex-start;"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; margin-top:2px;">check_circle</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>من يملك الأتمتة بمجرد بنائها، وهل نستطيع صيانتها بأنفسنا إذا احتجنا؟</strong><br />تريدون أن ينتمي المنطق الأساسي لكم، لا أن يجلس بشكل دائم داخل أدوات الوكالة الخاصة. اسألوا ما إذا كنتم ستستطيعون تسليم الأتمتة لمطور أو فريق آخر إذا احتجتم يوماً.</span></li>
+          <li style="display:flex; gap:0.75rem; align-items:flex-start;"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; margin-top:2px;">check_circle</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>ماذا يحدث إذا لم نكن راضين عن النتيجة؟</strong><br />هنا تكتشفون كيف تبدو ثقة الوكالة فعلياً كتابياً. سياسة استرداد، فترة مراجعة، أو ضمان رضا يخبركم أنهم يتوقعون التسليم. الهزّة بالكتفين تخبركم أنهم لا يتوقعون ذلك.</span></li>
+          <li style="display:flex; gap:0.75rem; align-items:flex-start;"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; margin-top:2px;">check_circle</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>هل أستطيع رؤية مثال لسير عمل مماثل بنيتموه من قبل، حتى مع إخفاء التفاصيل؟</strong><br />العمل السابق، حتى بإزالة أسماء العملاء والأرقام، يخبركم ما إذا كانت الوكالة حلّت فعلاً مشكلة مماثلة من قبل أو تتعلم على مشروعكم وميزانيتكم.</span></li>
+          <li style="display:flex; gap:0.75rem; align-items:flex-start;"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; margin-top:2px;">check_circle</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>كيف تتعاملون مع الوصول للبيانات والخصوصية أثناء بناء المشروع؟</strong><br />منح فريق خارجي وصول API لنظام CRM أو أدوات المالية لديكم قرار أمني حقيقي. اسألوا كيف تُخزَّن بيانات الاعتماد، وما إذا كان الوصول يُلغى بمجرد انتهاء المشروع، ومن على جانبهم يستطيع رؤية بياناتكم فعلياً أثناء الاختبار.</span></li>
+          <li style="display:flex; gap:0.75rem; align-items:flex-start;"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; margin-top:2px;">check_circle</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>ما التكلفة الإجمالية، بما يشمل أي رسوماً مستمرة، لا البناء فقط؟</strong><br />بعض الوكالات تعرض سعر بناء منخفضاً ثم تضيف رسوم استضافة أو API أو صيانة لم تُذكَر مسبقاً أبداً. احصلوا على الصورة الكاملة، تكلفة البناء بالإضافة لأي تكلفة متكررة، قبل التوقيع على أي شيء.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RED FLAGS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="red-flags-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="red-flags-heading">علامات تحذيرية: مؤشرات أن وكالة أتمتة لن تُسلِّم</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">الأسئلة أعلاه تكشف معظم هذه بنفسها. إليكم ما تراقبونه إذا بدت الإجابات مراوغة.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">help</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">تحديد نطاق غامض</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">إذا لم تستطع وكالة وصف بالضبط أي سير عمل ستؤتمته وكيف يبدو "الإنجاز" قبل التوقيع، توقعوا زحف نطاق، توقعات فائتة، أو مشروعاً يضيق بصمت بمجرد دفع الفاتورة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">block</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">لا دعم بعد الإطلاق</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">الأتمتة ليست "إعداد وانسَ". صيغ البيانات تتغير، واجهات API تُحدَّث، قواعد العمل تتحول. الوكالة التي تختفي في يوم إطلاق المشروع تسلّمكم التزاماً، لا منتجاً منتهياً.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">lock</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">حبس ملكي</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">بعض الوكالات تبني على أدوات داخلية مغلقة لا تستطيعون الوصول إليها، تعديلها، أو أخذها معكم. إذا لم تستطيعوا نقل الأتمتة لمزود آخر دون البدء من الصفر، أنتم لا تملكونها. تستأجرونها.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">visibility_off</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">لا محفظة أو مراجع</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">وكالة لا تستطيع الإشارة لأي شيء بنته من قبل، حتى تحت اتفاقية سرية بإزالة التفاصيل، قد لا تكون فعلت هذا بحجمكم. اطلبوا شرحاً لمشروع مماثل أو مكالمة مرجعية.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">schedule</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">ضغط للتوقيع بسرعة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">قرار متسرع على مشاركة متعددة الأسابيع نادراً ما يسير جيداً. خصومات محدودة الوقت أو ضغط للالتزام قبل رؤية نطاق مكتوب أساليب مبيعات، لا علامات وكالة تُدار جيداً.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">payments</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">دفع كامل مسبقاً</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">الوكالات الشرعية تحدد نطاق العمل قبل تسعيره، ومعظمها يقسّم الدفع عبر محطات بدلاً من طلب المبلغ الكامل قبل بدء أي عمل. الدفع الكامل مسبقاً يُزيل حافزهم للإنهاء.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING MODELS -->
+<section class="section" aria-labelledby="pricing-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="pricing-heading">كيف تُسعِّر وكالات أتمتة الذكاء الاصطناعي عملها عادة</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">معظم الوكالات تستخدم أحد ثلاثة نماذج تسعير، أو مزيجاً منها. معرفة الفرق تساعدكم في الحكم على ما إذا كان عرض مناسباً لحالتكم.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">request_quote</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">مشروع بنطاق ثابت</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">تتفقون على مجموعة محددة من سير العمل، سعر ثابت، وجدول تسليم قبل بدء العمل. هذا النموذج الأكثر شيوعاً لسير عمل واحد أو مجموعة صغيرة مترابطة منها، لأن الطرفين يعرفان بالضبط ما يشترونه. يعمل بشكل أفضل عندما تكون العملية مفهومة جيداً وغير مرجّح تغييرها في منتصف المشروع.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">event_repeat</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">عقد شهري</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">تدفعون رسماً شهرياً متكرراً لعمل أتمتة مستمر: سير عمل جديد، تعديلات على الحالي، ومراقبة مستمرة. يناسب هذا الأعمال التي تتوقع الاستمرار بالأتمتة عبر الزمن بدلاً من إتمام مشروع واحد والتوقف، لأنه يتجنب إعادة التفاوض على النطاق كلما ظهر شيء جديد.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">schedule</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">بالساعة / الوقت والمواد</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">تدفعون مقابل الساعات الفعلية المُنفَقة بدلاً من مُخرَج ثابت. قد يكون هذا منطقياً لعمل استكشافي لا يزال نطاقه غير واضح فعلياً، لكنه ينقل مخاطرة التكلفة إليكم إذا طال المشروع. اطلبوا حداً أقصى لا يُتجاوَز إذا اقترحت وكالة هذا لمشروع محدد.</p>
+      </div>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:2rem auto 0; text-align:center;">
+      أي نموذج يناسب يعتمد على مدى وضوح حاجة الأتمتة لديكم. سير عمل واحد وواضح يناسبه سعر ثابت. حاجة أتمتة مفتوحة عبر عمل ينمو يناسبها عقد شهري. كونوا حذرين من وكالة تدفع نحو الفوترة بالساعة لمشروع بنطاق واضح ومحصور، عادة تلك علامة على أن السعر يُبقَى غامضاً عمداً بدلاً من الالتزام به.
+    </p>
+  </div>
+</section>
+
+<!-- WHY LENOO -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="why-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="why-heading">لماذا تختارون Lenoo AI</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">بنينا عمليتنا حول النقاط بالضبط أعلاه، لأننا رأينا ماذا يحدث عندما تتخطاها الوكالات.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">handshake</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">نطاق محدد قبل البناء</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">تحصلون على نطاق مكتوب وسعر بعد مكالمة اكتشاف مجانية. لا يبدأ أي عمل حتى توافقوا عليه.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">visibility</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">٩٠ يوماً من المراقبة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">كل مشروع يشمل ٩٠ يوماً من الدعم بعد الإطلاق. نراقب المشاكل ونصلحها دون عقد منفصل.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">verified</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">ضمان استرداد</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">إذا لم تكونوا راضين عما نقدمه، نسترد لكم أموالكم. هذا هيكل الحافز الذي يبقينا صادقين حول النطاق.</p>
+      </div>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:2rem auto 0; text-align:center;">
+      Lenoo AI وكالة أتمتة ذكاء اصطناعي مقرها الإمارات. عمليتنا الكاملة، من الاكتشاف لأتمتة فعالة ومراقَبة، على <a href="/ar/services/ai-automation">صفحة مركز أتمتة الذكاء الاصطناعي لدينا</a>. إذا أردتم التفاصيل حول أي المنصات نبني بها، راجعوا <a href="/ar/services/ai-automation/tools">قائمة أدواتنا</a>.
+    </p>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">كيف تعمل عملية Lenoo AI</h2>
+    </div>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">تقارنون بين وكالات؟ احجزوا مكالمة وسنحدد نطاق مشروعكم بنفس الطريقة الصادقة، دون التزام.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_automation_agencies_mid" class="btn-primary">احصلوا على مكالمة تحديد نطاق مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لرؤية ما يجب أن تُسلِّمه وكالة فعلياً؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجزوا مكالمة اكتشاف مجانية مع فريقنا في دبي. ستحصلون على عرض مكتوب ومحدد النطاق، لا عرض سعر غامض.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_automation_agencies_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.tools-strip { max-width:900px; margin:2.5rem auto 0; background:#f7f8fc; border-radius:14px; padding:1.5rem 1.25rem; }
+.value-card { display:flex; flex-direction:column; }
+.agencies-tabs { display:flex; gap:0.5rem; justify-content:center; margin-bottom:2rem; flex-wrap:wrap; }
+.agencies-tab-btn { padding:0.625rem 1.25rem; border-radius:100px; border:1px solid rgba(0,37,59,0.15); background:#fff; color:#42474e; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.agencies-tab-btn:hover { background:#e7eeff; }
+.agencies-tab-btn.active { background:#006875; border-color:#006875; color:#fff; }
+.agencies-tab-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+[data-agencies-tab-panel][hidden] { display:none; }
+</style>
+
+<script>
+  const agenciesTabWrap = document.querySelector('.agencies-tabs');
+  if (agenciesTabWrap) {
+    const btns = agenciesTabWrap.querySelectorAll('.agencies-tab-btn');
+    const panels = document.querySelectorAll('[data-agencies-tab-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-agencies-tab');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-agencies-tab-panel') !== key; });
+      });
+    });
+  }
+</script>

@@ -1,0 +1,441 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../../components/ProcessSteps.astro";
+import StatStrip from "../../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "هل أتمتة الذكاء الاصطناعي للشركات الكبيرة فقط؟", answer: "لا. الفرق الأصغر غالباً ترى العائد أسرع، لأنه لا يوجد من تفوّض له العمل اليدوي عندما يتراكم. شركة بعشرة أشخاص تؤتمت حفنة من سير العمل الأساسي تستطيع تحرير ما يعادل توظيفاً بدوام كامل دون إضافة موظفين. النطاق والسعر يتناسبان مع حجم المشروع، لا حجم شركتكم." },
+  { question: "كيف نعرف أي العمليات نؤتمت أولاً؟", answer: "ابدؤوا بما يستهلك أكثر الساعات أو يسبب أكثر الأخطاء حالياً: فرز البريد الوارد، إدخال الفواتير، متابعة العملاء المحتملين، وكتابة التقارير هي المرشحون المعتادون. مكالمة اكتشاف قصيرة كافية لتحديد أفضل ٢-٣ فرص لديكم وترتيبها حسب الوقت المتوقع توفيره مقابل جهد البناء." },
+  { question: "ما الجدول الزمني الواقعي لعائد الاستثمار؟", answer: "سير العمل البسيط، مثل توجيه البريد الإلكتروني الآلي أو تسجيل العملاء المحتملين، غالباً يُظهر توفيراً ملموساً في الوقت خلال الأسابيع الأولى من الإطلاق. المشاريع الأكبر متعددة الأنظمة تستغرق وقتاً أطول للبناء لكن عادة تسترد تكلفتها خلال بضعة أشهر بمجرد تشغيلها، لأن التوفير يتراكم كل أسبوع تبقى فيه الأتمتة عاملة." },
+  { question: "هل نحتاج موظفين تقنيين داخليين لصيانتها؟", answer: "لا. نتولى البناء، التكامل، و٩٠ يوماً من المراقبة بعد الإطلاق. لا تحتاجون مطوراً داخلياً لإبقائها عاملة. إذا أردتم إجراء تعديلات صغيرة بأنفسكم لاحقاً، نوثّق الأتمتة بوضوح كافٍ ليفهمها عضو فريق غير تقني." },
+  { question: "هل ستستبدل الأتمتة وظائف في فريقنا؟", answer: "في معظم المشاركات، لا. الهدف إزالة الأجزاء المتكررة من وظيفة، مثل إدخال البيانات أو التوجيه اليدوي، فيقضي من يؤديها وقته في الأحكام، العلاقات، والعمل الذي يحتاج فعلياً بشراً. معظم الأعمال تعيد توظيف ذلك الوقت المُحرَّر بدلاً من إلغاء الدور." },
+  { question: "كم تكلف أتمتة الذكاء الاصطناعي عادة لعمل بحجمنا؟", answer: "تتناسب مع عدد سير العمل والأنظمة المعنية، لا سعر ثابت حسب حجم الشركة. سير عمل واحد محدد جيداً يكلف أقل من مشروع يلمس عدة أنظمة بعدة نقاط قرار. الطريقة الوحيدة للحصول على رقم صادق مكالمة اكتشاف حيث يُحدَّد نطاق سير العمل الفعلي، كونوا متشككين من أي شخص يعرض سعراً قبل رؤيتها." },
+  { question: "هل نستطيع أتمتة سير عمل واحد الآن وإضافة المزيد لاحقاً؟", answer: "نعم، وعادة هذا النهج الأفضل. البدء بسير عمل واحد محصور يتيح لكم رؤية الأتمتة تعمل على بيانات حقيقية قبل الالتزام بميزانية لطرح أكبر. معظم المشاركات مُنظَّمة بهذه الطريقة: إثبات سير العمل الأول، ثم التوسع للتالي بمجرد أن يعمل ويُراقَب." },
+  { question: "ما أكبر سبب لفشل مشاريع الأتمتة؟", answer: "عادة نطاق غير واضح، لا التقنية. المشروع الذي يبدأ دون تعريف مكتوب لأي سير عمل، أي أنظمة، وكيف يبدو 'الإنجاز' يميل للانحراف، تفويت المشكلة الفعلية، أو التوقف. الجزء التقني نادراً ما يكون الصعب؛ الاتفاق على ماذا يُبنى بالضبط هو الصعب." },
+  { question: "هل يجب أن نؤتمت كل شيء دفعة واحدة أم نعمل عبر مراحل؟", answer: "مراحل، دائماً تقريباً. أتمتة سير عمل واحد، مراقبته يعمل على بيانات حقيقية لبضعة أسابيع، ثم الانتقال للتالي يعطيكم نقطة مرجعية عاملة ويتيح لكم رصد المشاكل بينما لا تزال المخاطر صغيرة. الأعمال التي تحاول أتمتة كل شيء في طرح واحد تميل لأصعب وقت في عزل ما يعمل فعلياً." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_automation_business')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+const processSteps = [
+  { icon: "search", step: "الخطوة ١", title: "تدقيق العملية", description: "ننظر إلى أين يذهب وقت فريقكم فعلياً ونرتب فرص الأتمتة حسب العائد المتوقع." },
+  { icon: "edit", step: "الخطوة ٢", title: "التصميم والتخطيط", description: "نصمم منطق الأتمتة ونحصل على موافقتكم على النطاق والتكلفة قبل بدء أي عمل بناء." },
+  { icon: "build", step: "الخطوة ٣", title: "البناء والاختبار", description: "نبني مقابل بياناتكم الحقيقية ونختبرها في بيئة تجريبية حتى تصمد تحت الاستخدام العادي." },
+  { icon: "rocket_launch", step: "الخطوة ٤", title: "الإطلاق والمراقبة", description: "تُطلَق الأتمتة. نراقبها لمدة ٩٠ يوماً ونتوسع لسير العمل التالي بمجرد إثباتها." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'أتمتة الذكاء الاصطناعي للأعمال',
+    url: 'https://lenooai.com/ar/services/ai-automation/business',
+    description: 'كيف تستخدم الشركات الإماراتية أتمتة الذكاء الاصطناعي لتقليل العمل اليدوي عبر المبيعات والعمليات والمالية والدعم، مع أمثلة سير عمل حقيقية وإرشادات عائد استثمار.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'أتمتة الذكاء الاصطناعي للأعمال: محددة النطاق ومُسعَّرة بعد مكالمة اكتشاف مجانية.' },
+    serviceType: 'AI Automation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'أتمتة الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'الأعمال', item: 'https://lenooai.com/ar/services/ai-automation/business' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="أتمتة الذكاء الاصطناعي للأعمال | Lenoo AI"
+  description="كيف تستخدم الشركات الإماراتية أتمتة الذكاء الاصطناعي لتقليل العمل اليدوي عبر المبيعات والعمليات والدعم، مع أمثلة سير عمل حقيقية."
+  canonicalPath="/ar/services/ai-automation/business"
+  enPath="/services/ai-automation/business"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">أتمتة الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>الأعمال</div>
+    <h1>أتمتة الذكاء الاصطناعي <span class="gradient-text">للأعمال</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      العمل اليدوي يكلف عملاً أكثر مما يبدو على الورق: ساعات في إدخال البيانات، متابعات متأخرة، وأخطاء يجب إصلاحها لاحقاً. إليكم أين تُثمر أتمتة الذكاء الاصطناعي فعلياً عبر المبيعات والعمليات والمالية والدعم، وكيف تجدون نقطة بدايتكم.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">محدد النطاق لميزانيتكم بعد مكالمة اكتشاف مجانية</span>
+      <span class="tchip">ضمان استرداد إذا لم تكونوا راضين</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_ai_automation_business_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#by-function" class="btn-outline">شاهدوا أين تبدؤون ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1400&q=80&auto=format&fit=crop" alt="فريق عمل يراجع بيانات العمليات وسير العمل" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 30%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "٤٠٪", caption: "من مهام العمل في معظم الشركات قابلة للأتمتة بالذكاء الاصطناعي المتاح حالياً، وفقاً لبحث McKinsey." },
+      { value: "٩٠ يوماً", caption: "مراقبة بعد الإطلاق مشمولة في كل مشروع، فلا ينكسر شيء بصمت" },
+      { value: "١٠٠٪", caption: "ضمان استرداد إذا لم تكونوا راضين عما نقدمه" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY IT MATTERS -->
+<section class="section" aria-labelledby="why-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="why-heading" style="margin-bottom:1.5rem;">لماذا تهم أتمتة الذكاء الاصطناعي للأعمال</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        الحجة لصالح أتمتة الذكاء الاصطناعي تعود لثلاثة أمور: الوقت، الدقة، وعدد الموظفين. كل ساعة يقضيها فريق في إدخال بيانات، متابعة يدوية، أو نسخ ولصق بين أنظمة هي ساعة لا تُقضى في المبيعات، الخدمة، أو عمل يحتاج فعلياً حكماً. العمليات اليدوية أيضاً تحمل أخطاء أكثر من الآلية، لأن الإرهاق وعدم الاتساق يتسللان عبر يوم طويل.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        جانب عدد الموظفين يهم أكثر مع نمو العمل. دون أتمتة، طلبات أكثر، عملاء محتملون أكثر، أو تذاكر دعم أكثر عادة تعني توظيف المزيد من الأشخاص لمعالجتها. مع الأتمتة الصحيحة، الحجم يستطيع النمو دون أن ينمو كل وظيفة بنفس المعدل. تلك الحجة المالية الحقيقية: ليست استبدال الناس، بل السماح للعمل بالتوسع دون أن يتوسع العمل اليدوي معه بنفس الوتيرة.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        طريقة بسيطة للتفكير في تكلفة العمل اليدوي هي ضرب الساعات المُنفَقة بما تساويه فعلياً للعمل. ساعة يقضيها مندوب مبيعات في إدخال بيانات هي ساعة لا يقضيها في مكالمات تتحول لإيرادات. ساعة يقضيها فريق مالية في تسوية جداول بيانات يدوياً هي ساعة تؤخر الأرقام التي ينتظرها الجميع. لا شيء من هذا يظهر كبند في ميزانية، وهذا بالضبط سبب ميله للتجاهل حتى يجمعه أحدهم فعلياً. الأتمتة لا تُزيل الحاجة للحكم، الإشراف، أو العلاقات. تُزيل الأجزاء من الوظيفة التي لم تكن تستخدم أياً من ذلك أصلاً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ROI BY BUSINESS SIZE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="roi-size-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="roi-size-heading">كيف يختلف عائد استثمار الأتمتة حسب حجم العمل</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">فترة استرداد التكلفة ليست نفسها لفريق بخمسة أشخاص وشركة بمئتين. إليكم كيف تسير الأمور عادة بأحجام مختلفة.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">groups</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">فريق صغير</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">الفرق الصغيرة غالباً ترى أسرع استرداد للتكلفة، لأنه لا يوجد من تُسلَّم له الأعمال الفائضة. عندما يكون من يتعامل مع العملاء المحتملين، الفواتير، أو تذاكر الدعم مثقلاً أصلاً، أتمتة حتى سير عمل واحد تُزيل ساعات من شخص يغطي عدة أدوار في آن واحد، غالباً خلال الشهر أو الشهرين الأولين من الإطلاق.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">apartment</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">عملية متوسطة الحجم</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">الأعمال متوسطة الحجم عادة لديها سير عمل أكثر يستحق الأتمتة، لكن أيضاً أنظمة أكثر موجودة أصلاً: نظام CRM، أداة مالية منفصلة، مكتب دعم. الاسترداد هنا يميل للحدوث من ربط تلك الأنظمة، لأن مزامنة البيانات بين CRM وأداة مالية تُزيل عمل تسوية كان سيحتاج منسّقاً مخصصاً مع نمو العمل.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">domain</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">عملية أكبر</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">بهذا الحجم، الحجة تتحول من "توفير الوقت" إلى "تجنب التوظيف". الحجم، عملاء محتملون أكثر، معاملات أكثر، تذاكر دعم أكثر، ينمو سواء نما عدد الموظفين معه أم لا. فترة الاسترداد غالباً أطول، لأن التكاملات تميل للتعقيد أكثر، لكن التوفير الإجمالي يتراكم عبر قاعدة أكبر بكثير من العمل المتكرر.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STRATEGY MEETING IMAGE BAND -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1758873268998-2f77c2d38862?w=1400&q=80&auto=format&fit=crop" alt="أعضاء فريق يناقشون خطة على لوح ورقي أثناء اجتماع استراتيجي" loading="lazy" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 25%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.35) 0%,transparent 55%);"></div>
+</div>
+
+<!-- BUILD VS BUY VS AGENCY -->
+<section class="section" aria-labelledby="build-buy-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-buy-heading">ابنوها بأنفسكم، اشتروا أداة جاهزة، أو وظّفوا وكالة</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">توجد ثلاثة مسارات حقيقية لأتمتة سير عمل. لكل منها مفاضلة حقيقية. إليكم كيف تفكرون في أيها يناسب.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">engineering</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">ابنوها بأنفسكم</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">استخدام الموظفين الحاليين، ربما شخص مرتاح مع أدوات بلا كود، لبناء الأتمتة داخلياً. هذا يكلف الأقل نقداً لكن الأكثر وقتاً، ويعتمد على بقاء ذلك الشخص في الشركة وامتلاكه للسعة لصيانة ما يبنيه. يعمل جيداً لسير عمل واحد وبسيط بمحفز واحد وإجراء واحد، ويميل للانهيار بمجرد تدخل عدة أنظمة وحالات حدية.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">اشتروا أداة جاهزة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">الدفع مقابل أداة مبنية مسبقاً تتعامل مع عمل محدد واحد: تطبيق فرز صندوق وارد، أداة مسح فواتير، إضافة تسجيل عملاء محتملين. عادة الأسرع للتشغيل والأرخص شهرياً، لكنها تناسب فقط إذا طابق سير عملكم ما بُنيت له الأداة، وتعلقون بخارطة طريق المزود وتغييرات تسعيره.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">handshake</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وظّفوا وكالة أتمتة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">الدفع لفريق ليحدد نطاق ويبني ويدعم أتمتة مصممة خصيصاً لكيفية عمل عملكم فعلياً، عبر أياً كانت الأنظمة التي تستخدمونها أصلاً. يكلف أكثر مقدماً من اشتراك، لكنه يناسب حالات لا تستطيعها أداة عامة: سير عمل متعدد الأنظمة، قواعد خاصة بالعمل، أو عملية لا تطابق أي منتج جاهز.</p>
+      </div>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:2rem auto 0; text-align:center;">
+      معظم الأعمال تنتهي باستخدام مزيج: أداة جاهزة لشيء قياسي، وبناء مخصص لما هو خاص بكيفية عملها. لا توجد نقطة بداية خاطئة. الخطأ الرئيسي هو الاختيار بناءً على الأرخص اليوم بدلاً من ما سيستمر بالعمل بعد سنة. يساعد أيضاً السؤال عما يحدث مع تغيّر العمل. الأداة المبنية داخلياً من موظف واحد تحتاج بقاء ذلك الشخص لتحديثها. اشتراك SaaS يحتاج استمرار المزود بدعم الميزة المحددة التي تعتمدون عليها. الأتمتة المبنية من وكالة يجب أن تأتي بتوثيق وفترة دعم فلا تغادر المعرفة مع شخص واحد. زنوا الاعتمادية المستمرة، لا سعر البطاقة فقط، قبل القرار.
+    </p>
+  </div>
+</section>
+
+<!-- BY FUNCTION -->
+<section id="by-function" class="section" style="background:#f0f3ff;" aria-labelledby="function-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="function-heading">ماذا يُؤتمت، حسب وظيفة العمل</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">كل عمل مختلف، لكن معظم فرص الأتمتة تقع في إحدى هذه الفئات الأربع.</p>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">trending_up</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">المبيعات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">تسجيل، توجيه، وتسلسلات متابعة عملاء محتملين تُطلَق لحظة وصول عميل محتمل، بدلاً من انتظار فحص أحدهم لتقديم نموذج.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>النتيجة النموذجية:</strong> استجابة أولى أسرع وعملاء محتملون أقل يبردون قبل أن يتواصل أحد.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">settings</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">العمليات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">مزامنة بيانات عبر الأنظمة، معالجة طلبات، وسير عمل موافقات تتحرك بنفسها بدلاً من الجلوس في بريد أحدهم.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>النتيجة النموذجية:</strong> ساعات أقل في تحديث نفس المعلومات في ثلاثة أماكن مختلفة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">calculate</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">المالية والإدارة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">استخراج فواتير، موافقات مصاريف، وتسوية تقرأ المستندات وترحّل البيانات دون إدخال يدوي.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>النتيجة النموذجية:</strong> أخطاء إدخال بيانات أقل وإغلاق نهاية شهر أسرع.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">support_agent</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">دعم العملاء</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">فرز التذاكر، ردود مُسوَّدة، وتوجيه تصعيد فتُجاب الأسئلة الشائعة بسرعة ولا يصل للشخص إلا الأصعب.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>النتيجة النموذجية:</strong> أوقات استجابة أقصر دون إضافة موظفي دعم.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SALES & OPS VS SUPPORT APPLICATIONS -->
+<section id="business-applications" class="section" aria-labelledby="business-applications-heading">
+  <div class="container">
+    <div class="split-grid" style="margin-bottom:3rem;">
+      <div>
+        <h2 id="business-applications-heading" style="margin-bottom:1.5rem;">ماذا يأتي بعد الجولة الأولى من الأتمتة</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+          التقسيم أعلاه يغطي سير العمل الذي تؤتمته معظم الأعمال أولاً. بمجرد أن تعمل تلك، عادة تتبعها موجة ثانية من أتمتة أقل وضوحاً، على جانب المبيعات والعمليات وعلى جانب الدعم. بدّلوا بينهما لرؤية كيف تبدو تلك الموجة الثانية عادة.
+        </p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1573164574572-cb89e39749b4?w=800&q=80&auto=format&fit=crop" alt="أعضاء فريق يتعاونون على حواسيب محمولة حول طاولة اجتماعات مشتركة" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+    <div class="business-tabs" role="tablist" aria-label="فئات تطبيق الأتمتة">
+      <button type="button" id="business-tab-salesops" class="business-tab-btn active" data-business-tab="salesops" role="tab" aria-selected="true" aria-controls="business-panel-salesops">المبيعات والعمليات</button>
+      <button type="button" id="business-tab-support" class="business-tab-btn" data-business-tab="support" role="tab" aria-selected="false" aria-controls="business-panel-support">الدعم</button>
+    </div>
+    <div class="bento-grid bento-grid-3" id="business-panel-salesops" data-business-tab-panel="salesops" role="tabpanel" aria-labelledby="business-tab-salesops">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">request_quote</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">صياغة عروض الأسعار والمقترحات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">عرض سعر أو مقترح يصيغ نفسه من سجل CRM بمجرد وصول صفقة للمرحلة الصحيحة، ساحباً البنود والتسعير بدلاً من أن يبنيه مندوب من الصفر كل مرة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">celebration</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">تسلسل إعداد العملاء</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">إغلاق صفقة يُطلق خطوات الإعداد الصحيحة لذلك العميل تحديداً تلقائياً، بدلاً من أن يتذكر أحدهم أي رسائل ترحيب ومهام إعداد تنطبق.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">local_shipping</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">متابعة الموردين والمزودين</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">أوامر الشراء تخرج وتأكيدات التسليم تُلاحَق تلقائياً، فتظهر شحنة متأخرة بنفسها بدلاً من بعد سؤال عميل أين هي.</p>
+      </div>
+    </div>
+    <div class="bento-grid bento-grid-3" id="business-panel-support" data-business-tab-panel="support" role="tabpanel" aria-labelledby="business-tab-support" hidden>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">travel_explore</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">إجابات ذاتية الخدمة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">سؤال عميل يُجاب من محتوى مساعدتكم الموجود قبل حتى إنشاء تذكرة، فيمتلئ الطابور فقط بما يحتاج فعلياً شخصاً.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">favorite</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">تعليم مخاطر فقدان العملاء</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">نمط من تذاكر محبَطة أو انخفاض مفاجئ في استخدام المنتج يُعلِّم حساباً لمكالمة متابعة، قبل أن يظهر كإلغاء.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">rate_review</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">متابعة الحل</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">إغلاق تذكرة يُطلق فحص رضا قصيراً، ودرجة منخفضة أو مشكلة أُعيد فتحها تُوجَّه لشخص تلقائياً بدلاً من المرور دون ملاحظة بصمت.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHERE TO START -->
+<section class="section" aria-labelledby="start-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="start-heading">أين تبدؤون: انتصارات سريعة مقابل بناءات أكبر</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">ليست كل أتمتة يجب أن تكون مشروعاً كبيراً. معظم الأعمال تحصل على أفضل عائد بالبدء صغيراً والتوسع بمجرد أن يثبت سير العمل الأول نفسه.</p>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">انتصارات سريعة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">أتمتة سير عمل واحد بمحفز واضح ونظام واحد للربط: فرز البريد الوارد، توجيه عملاء محتملين، أو تقرير كان يُبنى يدوياً. عادة تعمل خلال بضعة أسابيع ومكان جيد لإثبات قيمة الأتمتة قبل الالتزام ببناء أكبر.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">apartment</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">بناءات أكبر</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">مشاريع متعددة الأنظمة تلمس نظام CRM وERP وأدوات الدعم معاً، أو أتمتة بعدة نقاط قرار واستثناءات للتعامل معها. تستغرق وقتاً أطول لتحديد نطاقها وبنائها لكن تميل لتقديم أكبر توفير إجمالي في الوقت بمجرد تشغيلها.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AUDIT WALKTHROUGH -->
+<section class="section" aria-labelledby="audit-heading">
+  <div class="container">
+    <div style="max-width:760px; margin:0 auto;">
+      <div class="section-header">
+        <h2 id="audit-heading">كيف تدققون سير عملكم الخاص لمرشحي الأتمتة</h2>
+        <p style="color:#42474e; font-size:1.0625rem;">لا تحتاجون مساعدة خارجية لبدء تضييق أين ستُثمر الأتمتة. تدقيق داخلي قصير يوصلكم لمعظم الطريق قبل أن تتحدثوا لوكالة إطلاقاً.</p>
+      </div>
+      <div class="tools-strip" style="text-align:right;">
+        <ol style="list-style:none; counter-reset:audit-step; margin:0; padding:0; display:flex; flex-direction:column; gap:1.25rem;">
+          <li style="display:flex; gap:0.875rem; align-items:flex-start; counter-increment:audit-step;"><span style="flex-shrink:0; width:26px; height:26px; border-radius:50%; background:#006875; color:#fff; font-size:0.8125rem; font-weight:700; display:flex; align-items:center; justify-content:center; margin-top:2px;">١</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>اسردوا كل مهمة يؤديها فريقكم أكثر من مرة أسبوعياً وتتبع نفس الخطوات كل مرة.</strong> أي شيء متكرر مرشح. أي شيء يتطلب حكماً حقيقياً كل مرة عادة ليس كذلك.</span></li>
+          <li style="display:flex; gap:0.875rem; align-items:flex-start; counter-increment:audit-step;"><span style="flex-shrink:0; width:26px; height:26px; border-radius:50%; background:#006875; color:#fff; font-size:0.8125rem; font-weight:700; display:flex; align-items:center; justify-content:center; margin-top:2px;">٢</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>وقّتوها، حتى بشكل تقريبي.</strong> اسألوا من يؤدي المهمة كم تستغرق لكل مرة وكم مرة تحدث، ثم اضربوهما لرقم ساعات أسبوعي. ذلك الرقم هو ما تحاولون فعلياً استعادته.</span></li>
+          <li style="display:flex; gap:0.875rem; align-items:flex-start; counter-increment:audit-step;"><span style="flex-shrink:0; width:26px; height:26px; border-radius:50%; background:#006875; color:#fff; font-size:0.8125rem; font-weight:700; display:flex; align-items:center; justify-content:center; margin-top:2px;">٣</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>لاحظوا أين تحدث الأخطاء.</strong> المهام بمعدل خطأ مرتفع، مثل إدخال البيانات اليدوي أو النسخ بين الأنظمة، تميل لحمل تكلفة خفية أكبر مما يوحي به الوقت وحده، لأن أحدهم يجب أن يلتقط الخطأ ويصلحه لاحقاً.</span></li>
+          <li style="display:flex; gap:0.875rem; align-items:flex-start; counter-increment:audit-step;"><span style="flex-shrink:0; width:26px; height:26px; border-radius:50%; background:#006875; color:#fff; font-size:0.8125rem; font-weight:700; display:flex; align-items:center; justify-content:center; margin-top:2px;">٤</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>تحققوا من كم نظاماً تلمسه المهمة.</strong> المهمة التي تعيش كلياً داخل أداة واحدة عادة بناء أسرع وأرخص من واحدة تتطلب سحب بيانات من ثلاثة أماكن مختلفة.</span></li>
+          <li style="display:flex; gap:0.875rem; align-items:flex-start; counter-increment:audit-step;"><span style="flex-shrink:0; width:26px; height:26px; border-radius:50%; background:#006875; color:#fff; font-size:0.8125rem; font-weight:700; display:flex; align-items:center; justify-content:center; margin-top:2px;">٥</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>رتّبوا حسب الساعات الموفَّرة مقابل مدى انحصار سير العمل.</strong> أفضل مشروع أول عادة هو الذي يحمل ساعات حقيقية على المحك ويلمس أقل الأنظمة، ليس بالضرورة أكبر مشكلة في قائمتكم.</span></li>
+          <li style="display:flex; gap:0.875rem; align-items:flex-start; counter-increment:audit-step;"><span style="flex-shrink:0; width:26px; height:26px; border-radius:50%; background:#006875; color:#fff; font-size:0.8125rem; font-weight:700; display:flex; align-items:center; justify-content:center; margin-top:2px;">٦</span><span style="color:#42474e; font-size:0.9375rem; line-height:1.7;"><strong>أحضروا قائمتكم القصيرة لمكالمة اكتشاف.</strong> لا تحتاجون تحديد نطاقها بشكل مثالي. قائمة تقريبية من المرشحين كافية لوكالة لتخبركم أيها انتصارات سريعة وأيها بناءات أكبر.</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- APPLIES TO YOUR INDUSTRY -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="industry-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="industry-heading">شاهدوا كيف ينطبق هذا على قطاعكم</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">الوظائف أعلاه تبدو مختلفة قليلاً حسب ما يفعله عملكم. مثالان:</p>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">calculate</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">مكاتب المحاسبة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">أتمتة معالجة الفواتير، التسوية، والتقارير مبنية لفرق المالية وممارسات مسك الدفاتر.</p>
+        <a href="/ar/services/ai-automation/accounting" class="learn-link">شاهدوا كيف ينطبق هذا على المحاسبة <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">home_work</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكالات العقارات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">أتمتة متابعة العملاء المحتملين، مزامنة الإعلانات، وسير عمل المستندات مبنية للوكالات وشركات الوساطة.</p>
+        <a href="/ar/services/ai-automation/real-estate" class="learn-link">شاهدوا كيف ينطبق هذا على العقارات <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:2rem auto 0; text-align:center;">
+      غير متأكدين أين يقع عملكم؟ ابدؤوا في <a href="/ar/services/ai-automation">صفحة مركز أتمتة الذكاء الاصطناعي لدينا</a> للصورة الكاملة لما نبنيه، أو احجزوا مكالمة اكتشاف وسنرسمها معاً.
+    </p>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">كيف نوصلكم من التدقيق لأتمتة فعالة</h2>
+    </div>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">غير متأكدين أي سير عمل تؤتمتون أولاً؟ سنساعدكم في إيجاده في مكالمة مجانية.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_automation_business_mid" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لإيجاد أسرع استرداد تكلفة لعملكم؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجزوا مكالمة اكتشاف مجانية مع فريقنا في دبي. سنحدد أفضل ٣ فرص أتمتة لديكم ونقدّر التوفير في الوقت والتكلفة.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_automation_business_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+.business-tabs { display:flex; gap:0.5rem; justify-content:center; margin-bottom:2rem; flex-wrap:wrap; }
+.business-tab-btn { padding:0.625rem 1.25rem; border-radius:100px; border:1px solid rgba(0,37,59,0.15); background:#fff; color:#42474e; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.business-tab-btn:hover { background:#f0f3ff; }
+.business-tab-btn.active { background:#006875; border-color:#006875; color:#fff; }
+.business-tab-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+[data-business-tab-panel][hidden] { display:none; }
+</style>
+
+<script>
+  const businessTabWrap = document.querySelector('.business-tabs');
+  if (businessTabWrap) {
+    const btns = businessTabWrap.querySelectorAll('.business-tab-btn');
+    const panels = document.querySelectorAll('[data-business-tab-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-business-tab');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-business-tab-panel') !== key; });
+      });
+    });
+  }
+</script>

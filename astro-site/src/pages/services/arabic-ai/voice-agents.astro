@@ -1,0 +1,259 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "Does a bilingual voice agent actually sound natural, or is it obviously an AI?", answer: "Current voice models are far more natural than the IVR systems most people picture when they hear 'phone bot,' and the language switch itself doesn't sound robotic the way it would have a few years ago. It's not indistinguishable from a bilingual human agent on every call, and we won't claim it is. What it does reliably is hold a structured conversation, a booking, a status check, a routine question, and switch languages mid-call without breaking the flow." },
+  { question: "What happens if the caller's Arabic is a dialect the agent wasn't tested against?", answer: "The agent falls back to a clarifying question rather than guessing, and if it can't follow the call confidently, it hands off to a person with a summary of what's already been said. We scope and test against the dialects your actual callers use, mainly Emirati and wider Gulf Arabic for a UAE business, and set the escalation threshold conservatively rather than pushing a call through when confidence is low." },
+  { question: "Can it handle a caller who switches from Arabic to English partway through, like on a real call?", answer: "Yes, that's one of the core scenarios we test before any bilingual voice agent goes live. A caller starting in Arabic and dropping into English for a brand name, an address, or a frustrated aside is normal call behavior in the UAE, and the agent is built to track the active language per turn rather than locking to whatever language opened the call." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'arabic_ai_voice_agents')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'Bilingual Arabic-English AI Voice Agents',
+    url: 'https://lenooai.com/services/arabic-ai/voice-agents',
+    description: 'Bilingual AI voice agents for UAE businesses that handle callers switching between Arabic and English mid-sentence, with real-time language detection and human fallback.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'Bilingual voice agent development, scoped and quoted after a discovery call based on call volume and scenario complexity.' },
+    serviceType: 'AI Voice Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://lenooai.com/services' },
+      { '@type': 'ListItem', position: 3, name: 'Arabic AI', item: 'https://lenooai.com/services/arabic-ai' },
+      { '@type': 'ListItem', position: 4, name: 'Voice Agents', item: 'https://lenooai.com/services/arabic-ai/voice-agents' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="Bilingual Voice Agents: Arabic-English Callers Mid-Sentence | Lenoo AI"
+  description="Arabic-English AI voice agents for UAE businesses: how we handle callers who switch languages mid-sentence, with real-time detection and human fallback."
+  canonicalPath="/services/arabic-ai/voice-agents"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services" style="color:inherit;text-decoration:none;opacity:0.65;">Services</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/arabic-ai" style="color:inherit;text-decoration:none;opacity:0.65;">Arabic AI</a><span style="opacity:0.4;padding:0 4px;"> / </span>Voice Agents</div>
+    <h1>Bilingual Voice Agents: Callers Who<br>Switch Between <span class="gradient-text">Arabic and English</span> Mid-Sentence</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:660px; margin:1.5rem auto 2rem; line-height:1.8;">Real UAE phone calls don't stay in one language. A caller opens in Arabic, switches to English for a brand name, then drops back into Arabic for the rest of the sentence. Here's how we build voice agents that follow that switch without missing a beat.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="arabic_ai_voice_hero" class="btn-primary">Hear a Bilingual Voice Agent Handle a Real Call</button>
+      <a href="#how-it-works" class="btn-outline">See How It Works ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1400&q=80&auto=format&fit=crop" alt="Call centre agent on a headset handling a bilingual customer call in the UAE" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- THE MID-SENTENCE SWITCH PROBLEM -->
+<section class="section" aria-labelledby="problem-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="problem-heading" style="margin-bottom:1.5rem;">The Mid-Sentence Switch Problem</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Phone calls in the UAE routinely cross languages within a single sentence.</strong> A caller might say "أبغى أحجز appointment يوم الخميس" (I want to book an appointment on Thursday), carrying an English word inside an Arabic sentence the same way it would come out in natural speech. Most voice systems are built around the assumption that a call runs in one language from start to finish, detected once at the beginning and locked in.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>When that assumption breaks, the call breaks with it.</strong> A voice agent that locked onto "Arabic" at the first word either fails to recognize the English fragment, mishears it as noise, or produces a nonsensical transcription that the reasoning layer behind it can't act on. The caller repeats themselves, the agent still misunderstands, and the call ends in a transfer to a human anyway, except now the caller is frustrated before a person even picks up.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Text has an advantage here that voice doesn't.</strong> A chatbot can re-read a mixed-language message as many times as it needs to before responding. A voice agent has to parse speech, in real time, as it's spoken, with no pause button and no chance to ask "what did you mean" more than once or twice before the call starts feeling broken. That's what makes the mid-sentence switch a harder problem for voice than for text, and why it needs to be tested specifically, not assumed to work because the underlying model "supports" both languages.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80&auto=format&fit=crop" alt="Person on a phone call in an office setting" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW BILINGUAL VOICE AGENTS ACTUALLY HANDLE IT -->
+<section id="how-it-works" class="section" style="background:#e7eeff;" aria-labelledby="how-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="how-heading">How Bilingual Voice Agents Actually Handle It</h2>
+      <p>Four things a voice agent needs to get right to follow a switching conversation without losing the caller.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">graphic_eq</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Real-time language detection</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Rather than detecting language once at the start of the call, the agent tracks it continuously, word by word, so a switch mid-sentence gets picked up as it happens rather than confusing the transcription of everything that follows.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Language is tracked per phrase, not fixed for the whole call</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">hearing</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Accent and dialect handling</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Callers speak Arabic with the Gulf accent and rhythm they actually use, not the neutral pronunciation of a news broadcast. We scope and test the agent against Emirati and wider Gulf accent patterns specifically, since a model tuned only on Egyptian or Levantine speech will mishear common Khaleeji pronunciations.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Tested against Gulf accent and speech patterns, not generic Arabic</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">tune</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Tone matching</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">A calm, routine booking call and a call from a stressed patient or a frustrated tenant need different pacing and tone. The agent picks up on cues in how the caller is speaking, urgency, formality, frustration, and adjusts pace and word choice rather than delivering every response in the same flat script.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Response tone adjusts to how the caller is actually speaking</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">support_agent</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Fallback to human</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">When the agent's confidence in what it heard drops, whether from a dialect it wasn't tested against, background noise, or a genuinely complex request, it transfers to a person with a summary of the call so far, instead of guessing and risking a wrong booking or a wrong answer.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Escalates on low confidence rather than pushing through uncertain</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHERE THIS MATTERS MOST -->
+<section class="section" aria-labelledby="where-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="where-heading">Where This Matters Most</h2>
+      <p>Any UAE business fielding a high volume of phone calls sees this problem. Three places it shows up hardest.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">headset_mic</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Call centres</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">High call volume means a bilingual voice agent has to handle the full range of accents and language mixes your customer base actually uses, consistently, call after call, without the quality dropping off during peak hours the way a stretched human team's can.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">medical_services</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Clinics</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">A patient booking an appointment often switches into English for a symptom, a medication name, or an insurance term mid-sentence. Getting that switch wrong risks a booking error, which matters more in a clinic setting than almost anywhere else.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">home_work</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Real estate</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Property inquiry calls mix Arabic conversation with English building names, area names, and pricing figures constantly. A voice agent that can't follow the switch loses the lead the moment it asks the caller to repeat themselves.</p>
+        <a href="/industries/real-estate/" style="color:#006875; font-weight:600; font-size:0.875rem;">See AI for real estate →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT TO TEST BEFORE GOING LIVE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="test-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="test-heading">What to Test Before Going Live</h2>
+      <p>A bilingual voice agent should never go live on real calls until it's been run through scenarios designed to break it, not just the easy ones.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Real call recordings, not scripted demos</h3>
+        <ul class="journey-list">
+          <li>Test against actual call recordings or transcripts where available, not a clean written script</li>
+          <li>Include genuine mid-sentence switches, not just calls that open in one fixed language</li>
+          <li>Add background noise and overlapping speech, since real calls rarely happen in silence</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Deliberately difficult scenarios</h3>
+        <ul class="journey-list">
+          <li>A caller who changes their mind or their request mid-call</li>
+          <li>Heavy Gulf accent paired with fast, casual speech</li>
+          <li>A request the agent genuinely shouldn't handle, to confirm it escalates instead of guessing</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">A native-speaker review before launch</h3>
+        <ul class="journey-list">
+          <li>A native Gulf Arabic speaker listens to test call recordings, not just reads a transcript</li>
+          <li>Tone, pacing, and word choice get reviewed alongside raw accuracy</li>
+          <li>A limited live rollout with close monitoring before opening the agent to full call volume</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Curious what a bilingual voice agent actually sounds like on a real call? We'll play you a recording before you commit to anything.</p>
+    <button onclick="openModal(this)" data-source="arabic_ai_voice_mid" class="btn-primary">Hear a Bilingual Voice Agent Handle a Real Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions About Bilingual Voice Agents</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Hear a Bilingual Voice Agent Handle a Real Call</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll walk you through a real bilingual call, including the mid-sentence switch, so you can judge the quality yourself before committing to anything.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="arabic_ai_voice_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Hear a Real Bilingual Call</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+.num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+.apps-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+@media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } }
+
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+.journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+.journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>

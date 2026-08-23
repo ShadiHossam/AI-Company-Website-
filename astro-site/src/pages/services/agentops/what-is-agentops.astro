@@ -1,0 +1,260 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Do we need AgentOps from day one, or can it wait until we scale?", answer: "You need at least basic monitoring and logging from the day the agent talks to a real customer, not after it scales. The failures that hurt most, a bad answer, a broken integration, a cost spike, tend to happen early, while volume is low and nobody is watching closely yet because everyone is focused on the launch itself. Full AgentOps, drift detection, structured incident response, a monthly improvement cycle, can be phased in as usage grows, but 'we'll add monitoring later' is exactly how silent failures go unnoticed for weeks in businesses that meant to get to it eventually." },
+  { question: "What does AgentOps actually cost on top of building the agent?", answer: "It depends on how many agents you're running and how much traffic they handle, but it's ongoing, not a one-time fee, because the work itself is ongoing: checking logs, reviewing flagged conversations, tracking cost per interaction, updating the agent whenever something in your business changes. Most teams fold it into a maintenance retainer rather than paying for it as a separate line item, which is usually simpler to budget for than a variable monitoring bill. We'll give you a specific number once we know what you're running and how much traffic it handles." },
+  { question: "Can our own team run AgentOps instead of outsourcing it?", answer: "Yes, if you have someone with the time and the technical background to read logs, interpret evaluation results, and act on what they find, which in practice usually means a developer or a technically fluent operations lead, not just whoever manages the agent's content day to day. Many UAE SMEs start by outsourcing this because they don't have that person available yet, then bring it in-house later once they've hired someone who can own it properly and has the bandwidth to actually do it." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "AgentOps Explained: Everything That Happens After Your Agent Goes Live",
+    "url": "https://lenooai.com/services/agentops/what-is-agentops",
+    "description": "AgentOps is the ongoing work of monitoring, evaluating, and fixing an AI agent after launch. What it covers, who should own it, and what happens without it.",
+    "author": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "publisher": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://lenooai.com/services" },
+      { "@type": "ListItem", "position": 3, "name": "AgentOps", "item": "https://lenooai.com/services/agentops" },
+      { "@type": "ListItem", "position": 4, "name": "What is AgentOps", "item": "https://lenooai.com/services/agentops/what-is-agentops" }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems.map((f) => ({
+      "@type": "Question",
+      "name": f.question,
+      "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+    }))
+  }
+];
+---
+
+<BaseLayout
+  title="AgentOps Explained: What Happens After Your Agent Goes Live | Lenoo AI"
+  description="AgentOps is what keeps an AI agent reliable after launch: monitoring, drift detection, cost tracking, and incident response. Here's what it covers."
+  canonicalPath="/services/agentops/what-is-agentops"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><span style="opacity:0.65;">Services</span><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/agentops" style="color:inherit;text-decoration:none;opacity:0.65;">AgentOps</a><span style="opacity:0.4;padding:0 4px;"> / </span>What is AgentOps</div>
+    <h1>AgentOps: <span class="gradient-text">What Happens After Your Agent Goes Live</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Launch day gets all the attention. AgentOps is the unglamorous work that happens after it: watching what the agent actually does, catching it when it drifts, tracking what it's costing you, and fixing it before your customers notice something's off.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="agentops_explainer_hero" class="btn-primary">Book a Free AgentOps Audit</button>
+      <a href="/services/agentops" class="btn-outline">See How Our AgentOps Stack Works →</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1600&q=80&auto=format&fit=crop" alt="Dashboard screens showing live monitoring data" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 50%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "Day 1", caption: "is when most teams stop watching the agent closely, and when problems start going unnoticed" },
+      { value: "24/7", caption: "is when your agent is actually running, whether or not anyone is checking on it" },
+      { value: "0", caption: "conversations reviewed is the default for most agents once the launch excitement wears off" },
+    ]} />
+  </div>
+</div>
+
+<!-- INTRO -->
+<section class="section" aria-labelledby="intro-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="intro-heading" style="margin-bottom:1.5rem;">AgentOps in one sentence, and why launch day isn't the finish line</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>AgentOps is the discipline of keeping an AI agent reliable after it goes live:</strong> watching what it does, measuring whether it's still doing it well, tracking what it costs, and fixing it when something breaks. It's the operational half of building an agent, and it's the half most teams skip.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">The reason launch day feels like the finish line is that it looks like one. The demo works, the client signs off, the agent goes live, and everyone moves on to the next project. But an agent in production is not a static piece of software you ship once and leave alone. The model behind it can change without you asking for that change. The data it's working against, your product catalog, your pricing, your policies, changes on its own schedule, not the agent's. Your business changes: new products, new promotions, new edge cases nobody thought to test for during the build. An agent that was accurate on day one can quietly become wrong by week six, and nothing about the interface will tell you that's happening.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">Nobody notices this happening in real time, which is exactly the problem. A broken web page throws an error a developer can see in a log. A broken agent keeps talking, confidently, in full sentences, to your customers, and there's no red banner announcing that its answers have started drifting from correct. The first sign something's wrong is usually a complaint, a refund request, or a deal that quietly went to a competitor, not a system alert landing in someone's inbox.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">This is the gap AgentOps is built to close. It's not a single dashboard or a single tool you buy once. It's an ongoing habit of checking, measuring, and adjusting, built into how the agent is run rather than treated as a favor someone does when they remember to. Teams that treat it as optional tend to find out the hard way, usually from a customer, exactly why it wasn't.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">Think of it the same way you'd think about a physical location. Opening a shop isn't the end of the work, it's the start of a different kind of work: someone still has to check the till, restock the shelves, and notice when foot traffic changes. An AI agent needs the same kind of ongoing attention, just applied to conversations, costs, and accuracy instead of inventory.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=800&q=80&auto=format&fit=crop" alt="Team reviewing system performance data on a laptop" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT AGENTOPS COVERS -->
+<section id="what-agentops-covers" class="section" style="background:#e7eeff;" aria-labelledby="covers-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="covers-heading">What AgentOps actually covers</h2>
+      <p>Five ongoing jobs, not a single tool you install once and forget about. Each one answers a question you'll eventually need answered, usually at an inconvenient moment: is it working, is it still working, and what's it costing you to find out.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">monitoring</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Monitoring &amp; Logging</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Every conversation, tool call, and handoff gets logged, so when something goes wrong you can see exactly what the agent said, what it tried to do, and why, instead of reconstructing the story from a customer's angry screenshot. This is also the raw material every other part of AgentOps runs on. Without logs, there's nothing to evaluate and nothing to debug.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">query_stats</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Evaluation &amp; Drift Detection</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">A regular check of real conversations against known-good answers, so you catch the point where accuracy starts sliding while it's still a small problem, not after it's shown up in three weeks of one-star reviews. Drift is rarely dramatic. It's a slow erosion that only shows up if someone is actually looking for it.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">payments</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Cost Tracking</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Token spend, API calls, and cost per conversation tracked over time, so a bloated prompt or a tool-calling loop that runs longer than it needs to shows up as a specific, traceable number, not a vague surprise on next month's bill that nobody can explain.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">report</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Incident Response</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">A defined process for when the agent gives a wrong answer, loses its connection to a system it depends on, or gets stuck repeating itself: who gets alerted, how fast, what the fallback is while it's being fixed, and who has the authority to take the agent offline if it needs to come down.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">autorenew</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Continuous Improvement Loop</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">The questions the agent got wrong this month become next month's prompt updates and knowledge base fixes, on a defined cadence rather than whenever someone happens to notice a problem. Without a real loop closing this, the same category of mistake repeats indefinitely and every fix is a one-off.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">We build the monitoring in from the start, not as an afterthought once something has already gone wrong.</p>
+      <button onclick="openModal(this)" data-source="agentops_explainer_mid" class="btn-primary">Book a Free AgentOps Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- AGENTOPS VS MLOPS VS DEVOPS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="compare-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="compare-heading">AgentOps vs. MLOps vs. DevOps</h2>
+      <p>They sound related because they are, and teams new to this often assume one discipline covers all three. In practice, each one is watching a different thing for a different kind of failure, and having one in place says nothing about whether the other two are covered.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">DevOps</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Keeps your application infrastructure running: servers up, deployments smooth, code shipped without breaking production. It's concerned with whether the system is <em>online</em>. A DevOps setup can report "all green," every server healthy, every deployment clean, while the AI agent running on top of that infrastructure is giving customers wrong answers all day. Uptime and correctness are different problems, and DevOps was built to solve the first one.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">MLOps</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Manages the lifecycle of a trained machine learning model: versioning datasets, retraining on new data, running deployment pipelines that push a new model version into production. It's built around the assumption that you're training your own model on your own data, which describes very little of what a typical business AI agent actually is. Most agents today sit on top of a foundation model the business doesn't train or own.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">AgentOps</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Watches the <em>behavior</em> of an agent built on top of a foundation model: what it says, what actions it takes, what it costs per interaction, and whether it's still doing its job correctly as your business and the underlying model both change around it, often on schedules you don't control. It's the layer most AI projects are missing entirely, because it doesn't fit neatly into either of the other two disciplines.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT HAPPENS WITHOUT IT -->
+<section class="section" aria-labelledby="without-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="without-heading">What happens without it</h2>
+      <p>Silent failures, cost creep, and drift: three ways an unmonitored agent quietly gets worse, none of which announce themselves loudly enough for anyone to catch by accident.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">visibility_off</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Silent Failures</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">A knowledge base article changes, an integration's API gets updated on the other end, or a prompt edit meant to fix one thing quietly breaks another. Without logging, none of this shows up anywhere for anyone to see. Teams we talk to usually find out an agent has been giving a wrong answer for weeks only when a customer finally complains loudly enough, or when someone happens to test a scenario the agent used to handle fine and notices it doesn't anymore. By then, it's not one customer who got the wrong answer. It's every customer who asked that question for however long the failure went unnoticed.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">trending_up</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Cost Creep</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Without per-conversation cost tracking, a prompt that got slightly bloated over successive small edits, or a loop where the agent calls a tool more times than it strictly needs to, just shows up as a gradually rising API bill that nobody connects to a specific, fixable cause. It's rarely one dramatic spike that triggers an alarm. It's a slow, unexplained climb that's easy to write off as normal growth until someone finally does the math and realizes the cost per conversation has doubled without anyone deciding that should happen.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">show_chart</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Drift</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">The underlying model provider pushes an update, your product catalog changes, or the mix of questions customers actually ask shifts with the season or a new promotion. The agent doesn't announce that it's now facing a different set of questions than it was tuned to handle well. It just starts getting more of them wrong, gradually enough that no single day looks alarming, and by the time someone notices a pattern, it's been happening for a while. Regular evaluation is the only reliable way to catch drift before it becomes visible to customers.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHO OWNS THIS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="owns-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="owns-heading">Who owns this in a UAE SME</h2>
+      <p>Two workable models, and most businesses this size don't have a real third option yet, since a dedicated AgentOps hire is hard to justify until an agent is handling enough volume to need one.</p>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">groups</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Internal Team</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Works if you already have someone technical enough to read logs, run evaluations, and edit prompts without breaking something else, and who has actual time carved out for it every week, not just theoretical ownership on an org chart. Most SMEs we work with don't have this person yet when they launch their first agent, because the role didn't exist before the agent did. Some grow into it deliberately, once the agent has proven its value and the volume justifies a dedicated hire watching it full time.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">handshake</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Outsourced</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">The team that built the agent keeps watching it under a maintenance retainer, which is what most UAE SMEs choose in year one. It removes the "who has time for this" problem entirely, since it's someone's actual job rather than a task squeezed between other responsibilities. It also means the people diagnosing an issue already know the system inside out, instead of a new internal hire spending weeks learning an agent they didn't build before they can fix anything in it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW LENOO APPROACHES IT -->
+<section class="section" aria-labelledby="approach-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto; text-align:center;">
+      <h2 id="approach-heading" style="margin-bottom:1.25rem;">How Lenoo AI approaches it</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">Every agent we build goes live with logging and monitoring already switched on, not bolted on after the fact once something has already gone wrong. From there it moves into our AgentOps stack: the same monitoring, evaluation, cost tracking, and reporting system we run for every client we support, built around a monthly report that shows what the agent handled, what it cost per conversation, what it got wrong, and what we changed because of it. You get evidence the agent is working, not just a promise that it is.</p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">This isn't a separate product bolted onto the build. It's part of the same relationship: the people who designed the agent's logic are the same people reading its logs a month later, which means fixes come from someone who already understands why the agent was built the way it was, not a support ticket routed to whoever's available that day.</p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.5rem;">We'd rather you see the mechanics before you commit to anything. The stack page walks through what we actually watch, how alert thresholds get set, and what a real sample report contains, so you can judge whether it's worth paying for before you ever get on a call with us.</p>
+      <a href="/services/agentops" class="btn-outline" style="border-color:#006875; color:#006875;">See How Our AgentOps Stack Works →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AgentOps</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free AgentOps Audit</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">See how our AgentOps stack works</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll show you exactly what we monitor, how we catch problems before your customers do, and what a monthly report actually looks like once it lands in your inbox. No obligation, and no pressure to sign anything on the call, just a straight walkthrough of the stack.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="agentops_explainer_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book a Free AgentOps Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+.apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+@media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } }
+</style>

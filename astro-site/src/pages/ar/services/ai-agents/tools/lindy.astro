@@ -1,0 +1,256 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../../lib/supabase";
+import FaqAccordion from "../../../../../components/FaqAccordion.astro";
+
+const h1 = 'وكلاء ذكاء اصطناعي مبنيون على Lindy';
+const metaTitle = 'وكلاء ذكاء اصطناعي مبنيون على Lindy | Lenoo AI';
+const metaDescription = 'تبني Lenoo AI وكلاء ذكاء اصطناعي على Lindy للشركات الإماراتية: أداة بناء وكلاء بمكتبة تكامل أصلي واسعة جداً عبر البريد الإلكتروني والتقويم وCRM وSlack.';
+const heroSubtext = "Lindy أداة بناء وكلاء ذكاء اصطناعي بميزة لا تملكها معظم المنصات: مكتبة واسعة جداً من التكاملات الأصلية، أكثر من ٤٠٠٠ تطبيق، مدمجة. نستخدمها عندما تكون منظومتكم معظمها أدوات SaaS سائدة يتصل بها Lindy أصلاً، فيصبح البناء إعداداً في الغالب، لا عمل تكامل مخصص.";
+
+const useCases = [
+  { title: 'وكيل نقل ملاحظات الاجتماعات لـ CRM', description: 'ينضم لمكالمة، يأخذ ملاحظات منظمة، يستخرج بنود الإجراء والخطوات التالية، ويكتب الملخص مباشرة في سجل CRM الصحيح، فيغادر المندوب المكالمة والمتابعة مسجَّلة أصلاً بدلاً من كتابتها بعد ساعة.' },
+  { title: 'وكيل فرز التوظيف', description: 'يقرأ الطلبات الواردة مقابل معايير الوظيفة، يسجّل كل واحد، ويصيغ ملخصاً قصيراً لماذا تصنّف حيث تصنّف، فيراجع مدير التوظيف قائمة مختصرة مع تبرير مرفق بدلاً من مجلد سير ذاتية غير مرتبة.' },
+  { title: 'وكيل إعداد العملاء الجدد', description: 'يرسل التسلسل الصحيح لرسائل إعداد بعد تسجيل عميل جديد، يتحقق من إتمام كل خطوة فعلياً، وينبّه العميل أو عضو فريق عندما يتعثر شيء، فلا يعتمد الإعداد على تذكر أحدهم المتابعة.' },
+  { title: 'وكيل تنسيق التقويم', description: 'يقرأ التوفر عبر تقاويم الجميع، يقترح أوقات اجتماع تناسب فعلياً، ويتولى تبادل التأكيد لموعد، فيتوقف جدولة مكالمة مع خمسة أشخاص عن تكليف خمس سلاسل بريد إلكتروني منفصلة.' },
+  { title: 'وكيل تذكير التجديد', description: 'يتتبع مواعيد انتهاء العقود أو الاشتراكات الموجودة أصلاً في نظام CRM لديكم، يصيغ رسالة تواصل تجديد قبل الموعد النهائي، ويُعلِّم على الحسابات التي صمتت، فلا يفوت تجديد أبداً فقط لأن أحداً لم يفحص التاريخ.' },
+];
+
+const faqFallback = [
+  { question: 'ماذا لو احتجنا تكاملاً لا يملكه Lindy؟', answer: "مكتبة Lindy تغطي معظم أدوات SaaS السائدة، لكن ليس كل شيء، خاصة الأنظمة الداخلية أو المبنية مخصصاً. إذا كانت تلك حالتكم، Lindy غالباً لا يزال يستطيع الوصول لنظام عبر موصل API أو webhook، وإذا كان المنطق المطلوب أعقد من ذلك، سنخبركم بصدق ونوجهكم لـ n8n أو Pipedream بدلاً من ذلك، وكلاهما يتعامل مع التكاملات المخصصة بشكل أكثر مباشرة." },
+  { question: 'كيف يعمل تسعير Lindy؟', answer: "يُسعّر Lindy باشتراك مرتبط بالاستخدام، عموماً عدد المهام أو تشغيلات الوكيل شهرياً. نحدد نطاق سير عملكم مقابل الحجم المتوقع أثناء الاكتشاف، فتعرفون تقريباً أي مستوى ستحطون فيه قبل الالتزام، بدلاً من اكتشافه بعد أن يتعامل الوكيل بالفعل مع حركة حقيقية." },
+  { question: 'أين تعيش بياناتنا فعلياً؟', answer: "البيانات التي يعالجها الوكيل تتدفق عبر بنية Lindy السحابية التحتية وأياً كانت أدواتكم المتصلة التي يقرأ منها أو يكتب إليها. إذا كان متطلب إقامة بيانات حقيقي يستبعد منصة سحابية مُدارة لعملكم، فذلك يشير لخيار الاستضافة الذاتية في n8n بدلاً من ذلك، وهو سؤال نحسمه صراحة أثناء الاكتشاف لا بافتراضه." },
+  { question: 'كيف تبدو الصيانة بمجرد أن يعمل الوكيل؟', answer: "نراقب الوكيل عن كثب خلال الأسابيع الأولى لرصد أي شيء يحتاج تعديلاً مقابل مدخلات حقيقية، ثم ننتقل لعقد صيانة أخف يغطي التحديثات، الخطوات الجديدة، والإصلاحات إذا غيّر تطبيق متصل واجهة API الخاصة به بطريقة تؤثر على الوكيل." },
+  { question: 'هل يستطيع وكيل Lindy واحد التعامل مع أكثر من مهمة؟', answer: "يمكن منحه قدرات متعددة، لكننا عموماً نبني وكلاء ضيقي النطاق يؤدون عملاً واحداً جيداً بدلاً من وكيل واحد يحاول فعل كل شيء. إذا احتاج عملكم عدة سير عمل متمايزة مؤتمتة، فذلك عادة يعني عدة وكلاء مخصصين يعملون جنباً إلى جنب، وهو أكثر موثوقية من وكيل عام واحد يوازن مهام غير مترابطة." },
+  { question: 'كم يستغرق بناء Lindy النموذجي؟', answer: "لأن معظم الموصلات موجودة أصلاً في مكتبة Lindy، وكيل سير عمل واحد عادة ينتقل من الاكتشاف للإطلاق خلال أسبوع إلى ثلاثة أسابيع، حسب كم نظاماً يلمسه وكم اختباراً تحتاجه الحالات الحدية قبل أن نثق به مقابل بيانات حية." },
+];
+
+let faqItems = faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_agents_tools_lindy')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: h1,
+    url: 'https://lenooai.com/ar/services/ai-agents/tools/lindy',
+    description: metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع وكلاء Lindy: التسعير حسب تعقيد سير العمل وعدد التكاملات. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر.' },
+    serviceType: 'Lindy AI Agent Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'وكلاء الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'الأدوات', item: 'https://lenooai.com/ar/services/ai-agents/tools' },
+      { '@type': 'ListItem', position: 4, name: 'Lindy', item: 'https://lenooai.com/ar/services/ai-agents/tools/lindy' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonicalPath="/ar/services/ai-agents/tools/lindy"
+  enPath="/services/ai-agents/tools/lindy"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">وكلاء الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents/tools" style="color:inherit;text-decoration:none;opacity:0.65;">الأدوات</a><span style="opacity:0.4;padding:0 4px;"> / </span>Lindy</div>
+    <div class="tool-logo-hero"><img src="https://cdn.simpleicons.org/lindy/6C5CE7" alt="شعار Lindy" width="56" height="56" loading="eager" onerror="this.parentElement.style.display='none'" /></div>
+    <h1>{h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ar_ai_agents_tools_lindy_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#use-cases" class="btn-outline">شاهدوا ما نبنيه ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- WHAT IS LINDY -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">ما هو Lindy؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Lindy أداة بناء وكلاء ذكاء اصطناعي، وميزتها المحددة هي الاتساع: مكتبة تكامل أصلي تغطي آلاف التطبيقات، من البريد الإلكتروني والتقويم إلى أنظمة CRM وجداول البيانات وأدوات تواصل الفريق. حيث تجبركم بعض منصات الوكلاء على بناء موصل مخصص لكل نظام تريدون من الوكيل لمسه، مكتبة Lindy تعني أن الاتصال بـ Gmail أو Google Calendar أو HubSpot أو Slack أو Salesforce عادة موجود أصلاً، جاهز للإعداد لا للبناء من الصفر.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        ذلك الاتساع يغيّر ما يتضمنه المشروع فعلياً. بدلاً من إنفاق وقت البناء على عمل API مخصص، معظم الجهد يذهب لتحديد ما يجب أن يقرره الوكيل وكيف يجب أن يتصرف داخل أدوات يستطيع الوصول إليها أصلاً. لعمل يشغّل منظومة SaaS قياسية بشكل معقول، تلك المفاضلة تظهر مباشرة في سرعة وصول الوكيل لحالة عاملة.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW LENOO USES LINDY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="how-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="how-heading" style="margin-bottom:1.5rem;">كيف تستخدم Lenoo AI منصة Lindy لبناءات الوكلاء الإماراتية</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        ننفذ ونُعِدّ وكلاء Lindy لعملكم؛ لا نبيع Lindy نفسها. لأن الكثير من قيمة المنصة يعيش في تكاملاتها الموجودة أصلاً، عملية الاكتشاف لدينا لمشروع Lindy تبدأ مختلفة عمّا ستكون عليه لـ n8n أو بناء مخصص: نجرد كل أداة يحتاج الوكيل لمسها ونتحقق منها مقابل مكتبة Lindy قبل تصميم أي شيء.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        حيث تكون أداة مغطاة أصلاً، الإعداد سريع. حيث لا يكون شيء في منظومتكم في المكتبة، عادة نظام داخلي أو شيء مبني مخصصاً، نُقيِّم ما إذا كان Lindy لا يزال يستطيع الوصول إليه عبر موصل API أو webhook، أو ما إذا كان سير العمل يناسب أكثر منصة مبنية لعمل التكامل المخصص من الأساس. الصراحة حول ذلك من البداية تتجنب اكتشافه في منتصف البناء.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO THIS FITS -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">هل Lindy مناسب لكم؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Lindy يناسب الأعمال التي تشغّل منظومة SaaS سائدة بشكل معقول، بريد إلكتروني عبر Gmail أو Outlook، نظام CRM قياسي، Slack للتواصل الداخلي، أداة تقويم يعرفها معظم الناس، حيث تأتي قيمة الوكيل من التنسيق عبر تلك الأدوات لا الوصول لشيء غير معتاد. إذا كانت أدواتكم اليومية من النوع الذي يتكامل معه أي مزود تقريباً أصلاً، Lindy عادة يُطلق وكيلاً بأقل عمل مخصص.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        يناسب أقل عندما يعتمد سير العمل على نظام داخلي أو مبني مخصصاً دون واجهة API عامة، عندما تستبعد قواعد إقامة البيانات منصة سحابية مُدارة، أو عندما يحتاج المنطق خطوة كود لا يغطيها أي خيار إعداد. تلك المواقف تشير لـ n8n أو Pipedream بدلاً من ذلك، وإذا كان نظام CRM لديكم تحديداً هو Salesforce، Agentforce يستحق مقارنة مباشرة لأنه يشغّل الوكيل داخل بيانات تملكونها أصلاً هناك. طريقة سريعة لمعرفة أي معسكر أنتم فيه: اسردوا الأدوات التي يحتاج الوكيل لمسها، وتحققوا كم منها منتجات SaaS شائعة ومعروفة مقابل شيء مبني داخلياً. معظمها من النوع الأول عادة يعني Lindy. مزيج يميل للأنظمة الداخلية عادة يعني منصة قادرة على الكود بدلاً من ذلك.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">كيف يبدو مشروع Lindy نموذجي معنا</h2>
+      <ol class="journey-list" style="gap:1rem;">
+        <li><strong style="color:#00253b;">الاكتشاف.</strong> نجرد كل أداة يحتاج الوكيل لمسها ونتحقق من كل واحدة مقابل مكتبة تكامل Lindy قبل تصميم أي شيء.</li>
+        <li><strong style="color:#00253b;">التصميم.</strong> نرسم بالضبط ما يجب أن يقرأه الوكيل، يقرره، ويفعله داخل كل أداة متصلة، ونُعلِّم على أي شيء خارج مكتبة Lindy الأصلية مبكراً.</li>
+        <li><strong style="color:#00253b;">البناء والاختبار.</strong> نُعِدّ التكاملات، نحدد منطق قرار الوكيل، ونختبره مقابل سيناريوهات حقيقية مسحوبة من سير عملكم الفعلي، لا أمثلة عامة.</li>
+        <li><strong style="color:#00253b;">الإطلاق والمراقبة.</strong> ننشر الوكيل، نوثّق ما يفعله وأين، ونراقب مخرجاته خلال الأسابيع الأولى فيُلتقط أي انحراف بسرعة.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">Lindy مقابل البدائل</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        <a href="/ar/services/ai-agents/tools/gumloop">Gumloop</a> يضع تركيزاً أكبر على الوضوح البصري للمنطق نفسه، وهذا يهم أكثر عندما يريد فريقكم تعديل سير العمل مباشرة بدلاً من الاعتماد فقط على تغطية تكامل واسعة. <a href="/ar/services/ai-agents/tools/pipedream">Pipedream</a> و<a href="/ar/services/ai-agents/tools/n8n-ai-agent">n8n</a> كلاهما يجعل كل خطوة كوداً حقيقياً، فيتقدمان لحظة أن يحتاج سير عمل منطقاً مخصصاً أو يصل لنظام دون موصل جاهز، بتكلفة عمل إعداد أكثر. <a href="/ar/services/ai-agents/tools/salesforce-agentforce">Salesforce Agentforce</a> ليس مقارنة فعلياً بقدر ما هو نقطة بداية مختلفة: منطقي فقط إذا كان Salesforce نظام CRM الرسمي لديكم أصلاً. نوصي بـ Lindy تحديداً عندما تكون منظومتكم معظمها أدوات SaaS سائدة والقيمة الرئيسية للمشروع هي التنسيق عبرها بسرعة، لا عندما يحتاج سير العمل تكاملاً مخصصاً عميقاً أو استضافة ذاتية.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- RELIABILITY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="reliability-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="reliability-heading" style="margin-bottom:1.5rem;">الحفاظ على موثوقية وكيل Lindy بعد الإطلاق</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        تغطية التكامل الواسعة تعني أن وكيل Lindy عادة يلمس عدة أنظمة لديكم في آن واحد، فنبني تسجيلاً يتتبع ليس فقط ما قرره الوكيل بل من أي أداة قرأ وإلى أيها كتب في كل خطوة. هذا يجعل من الممكن تتبع نتيجة غير متوقعة لاتصال محدد بدلاً من معاملة الوكيل كله كعملية غامضة واحدة. لأن موصلات Lindy تعتمد على واجهات API للأدوات المتصلة بها، جزء من الصيانة المستمرة هو مراقبة متى يغيّر تطبيق متصل شيئاً من طرفه، لأن ذلك أكثر مصدر شائع لوكيل كان موثوقاً يتصرف فجأة بشكل مختلف. عقدنا يغطي بالضبط ذلك النوع من المراقبة والإصلاح عند الحاجة، وللوكلاء التي تلمس أنظمة موجهة للعملاء، نتحقق أيضاً دورياً أن القرارات المتخذة لا تزال تطابق ما يريده فريقكم فعلياً، لا فقط أن الاتصالات لا تزال تعمل تقنياً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="use-cases" class="section" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">ما نبنيه بـ Lindy</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">مشاريع وكلاء Lindy شائعة للعملاء الإماراتيين، من متابعة الاجتماعات للتوظيف. كل بناء يبدأ من الأدوات التي تستخدمونها أصلاً، لا قالب عام.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {useCases.map((uc) => (
+        <div class="value-card">
+          <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">تشغّلون منظومة SaaS قياسية وتريدون وكيلاً ينسّق عبرها؟ أخبرونا بما يجب أن يفعله، وسنبنيه على Lindy.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_agents_tools_lindy_mid" class="btn-primary">احجزوا استشارة Lindy مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لبناء وكيلكم على Lindy؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">أخبرونا بما تريدون تنسيقه عبر أدواتكم. سنصمم ونبني الوكيل على Lindy، ثم نُريكم بالضبط كيف يعمل قبل إطلاقه.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_agents_tools_lindy_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.tool-logo-hero { width:64px; height:64px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; }
+.value-card { display:flex; flex-direction:column; }
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.journey-list li { position:relative; padding-right:1.75rem; color:#42474e; font-size:1.0625rem; line-height:1.85; }
+.journey-list li::before { content:''; position:absolute; right:0; top:0.6em; width:9px; height:9px; border-radius:50%; background:#00e3fd; }
+</style>

@@ -1,0 +1,246 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../../components/ProcessSteps.astro";
+import StatStrip from "../../../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "ما مدى دقة الذكاء الاصطناعي في مقارنة عروض من موردين متعددين؟", answer: "استخراج السعر، الكمية، مدة التسليم، والشروط من عرض مورد مهمة استخراج بيانات محددة جيداً، ويتعامل معها الذكاء الاصطناعي بموثوقية بمجرد ضبطه على الصيغة التي يرسلها موردوكم فعلياً، سواء كانت PDF، جدول بيانات بالبريد الإلكتروني، أو استجابة بوابة RFQ منظمة. حيث تختلف العروض فعلياً في النطاق، لا السعر فقط، لا يزال أحد فريقكم يتخذ القرار النهائي، لأن تلك المقارنة تحتاج فهم عملكم، لا مطابقة أرقام على صفحة فقط." },
+  { question: "هل بيانات عقودنا ومورّدينا آمنة؟", answer: "نعم. الأتمتة تتصل بنظام المشتريات أو ERP لديكم عبر نفس ضوابط الوصول التي تملكونها أصلاً، ولا نخزّن بيانات العقود خارج الأنظمة التي تستخدمونها أصلاً. الوصول محدد النطاق لما يحتاجه كل سير عمل فقط. إذا كان عملكم يتعامل مع بيانات موردين تحت شروط سرية محددة، نستطيع توقيع اتفاقية سرية قبل أي مكالمة اكتشاف." },
+  { question: "هل تتكاملون مع نظام ERP أو منصة المشتريات التي نستخدمها أصلاً؟", answer: "نعم. معظم عمل أتمتة المشتريات لدينا يتصل بأنظمة ERP مثل SAP أو Oracle، إلى جانب منصات مشتريات مخصصة، عبر واجهات API الخاصة بها. إذا كان فريقكم يدير المشتريات من جداول بيانات وبريد إلكتروني اليوم، لا نزال نستطيع بناء الأتمتة حول ذلك ومساعدتكم في التحرك نحو نظام أكثر تنظيماً إذا كان ذلك منطقياً لحجمكم." },
+  { question: "هل يستطيع هذا استبدال فريق مشترياتنا؟", answer: "لا. الأتمتة تتعامل مع الأجزاء المتكررة: مقارنة العروض حسب المعايير التي تحددونها، توجيه أوامر الشراء للموافقة، تعليم تجديدات العقود. التفاوض مع الموردين، تقرير أي علاقة مورد تستحق الأولوية، واتخاذ قرار الترسية النهائي على عقد معتبر تبقى مع فريقكم. ذلك الحكم بالضبط ما وُجدت وظيفة المشتريات لأجله." },
+  { question: "كم يستغرق تشغيل سير عمل مشتريات؟", answer: "سير عمل واحد، مقارنة RFQ أو مطابقة أمر شراء بمفردها، عادة ينتقل من التدقيق للتشغيل خلال أسبوعين إلى أربعة أسابيع. المشاريع التي تلمس عدة أنظمة، مثل ربط مقارنة العروض بتوجيه موافقة ERP، تستغرق أطول. نعطي جدولاً زمنياً محدداً بعد مكالمة الاكتشاف، بمجرد معرفتنا حجم موردينكم الفعلي ومنظومة أدواتكم." },
+];
+
+const processSteps = [
+  { icon: "search", step: "الخطوة ١", title: "تدقيق المشتريات", description: "نرسم كيف تنتقل طلبات عروض الأسعار وأوامر الشراء والعقود حالياً عبر فريقكم ونحدد أين يكلف العمل اليدوي أكثر وقت." },
+  { icon: "edit", step: "الخطوة ٢", title: "التصميم والتخطيط", description: "نصمم الأتمتة حول نظام ERP أو منصة المشتريات الحاليين، ونحصل على الموافقة قبل بناء أي شيء." },
+  { icon: "build", step: "الخطوة ٣", title: "البناء والاختبار", description: "نبني الأتمتة ونختبرها مقابل طلبات عروض وأوامر شراء وعقود حقيقية حتى يطابق المُخرَج ما يتوقعه فريقكم." },
+  { icon: "rocket_launch", step: "الخطوة ٤", title: "الإطلاق والمراقبة", description: "تُطلَق الأتمتة جنباً إلى جنب مع عمليتكم الحالية. نراقبها لمدة ٩٠ يوماً ونعدّلها مع تطور قاعدة موردينكم." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'الذكاء الاصطناعي للمشتريات وإدارة الموردين',
+    url: 'https://lenooai.com/ar/services/ai-automation/procurement',
+    description: 'أتمتة الذكاء الاصطناعي لفرق المشتريات الإماراتية: مقارنة طلبات عروض الأسعار، تواصل الموردين، مطابقة أوامر الشراء وتوجيه الموافقة، مراجعة العقود وتنبيهات التجديد، وتحليلات الإنفاق.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع أتمتة ذكاء اصطناعي لفرق المشتريات: التسعير حسب تعقيد سير العمل والنطاق. احجزوا تدقيق أتمتة مشتريات مجاني للحصول على عرض سعر.' },
+    serviceType: 'AI Automation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'أتمتة الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'المشتريات', item: 'https://lenooai.com/ar/services/ai-automation/procurement' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="الذكاء الاصطناعي للمشتريات وإدارة الموردين | Lenoo AI"
+  description="أتمتة الذكاء الاصطناعي لفرق المشتريات الإماراتية: مقارنة عروض الأسعار، تواصل الموردين، مطابقة أوامر الشراء، تنبيهات تجديد العقود، وتحليلات الإنفاق."
+  canonicalPath="/ar/services/ai-automation/procurement"
+  enPath="/services/ai-automation/procurement"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">أتمتة الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>المشتريات</div>
+    <h1>الذكاء الاصطناعي <span class="gradient-text">للمشتريات وإدارة الموردين</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      المشتريات تعمل على المستندات: طلبات عروض أسعار، عروض، أوامر شراء، عقود، فواتير. نبني أتمتة تقرأ وتنقل تلك المستندات لكم، متصلة بنظام ERP أو منصة المشتريات التي يستخدمها فريقكم أصلاً، فيقضي المشترون وقتهم في التفاوض بدلاً من تنسيق جداول البيانات.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">مراقبة بعد الإطلاق مشمولة في كل مشروع</span>
+      <span class="tchip">ضمان استرداد إذا لم تكونوا راضين عما نقدمه</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_ai_automation_procurement_hero" class="btn-primary">احجزوا تدقيق أتمتة مشتريات مجاني</button>
+      <a href="#procurement-systems" class="btn-outline">شاهدوا ما نؤتمته ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1400&q=80&auto=format&fit=crop" alt="فريق مشتريات يراجع مستندات موردين وأوامر شراء" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "٤٠٪", caption: "من مهام العمل في معظم وظائف المشتريات قابلة للأتمتة بالذكاء الاصطناعي المتاح حالياً. مقارنة العروض ومطابقة أوامر الشراء عادة في المقدمة." },
+      { value: "٩٠ يوماً", caption: "مراقبة بعد الإطلاق مشمولة في كل مشروع" },
+      { value: "١٠٠٪", caption: "ضمان استرداد إذا لم تكونوا راضين عما نقدمه" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY PROCUREMENT IS AUTOMATION-READY -->
+<section class="section" aria-labelledby="doc-heavy-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="doc-heavy-heading" style="margin-bottom:1.5rem;">لماذا المشتريات وظيفة كثيفة المستندات وجاهزة للأتمتة</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">كل خطوة تقريباً من دورة مشتريات تنتج أو تستهلك مستنداً. طلب عرض سعر يخرج وتعود العروض بصيغ مختلفة. أمر شراء يُرفَع ويحتاج مطابقة مع عرض وبند ميزانية. عقد يُوقَّع ويحتاج تتبع شروطه الرئيسية طوال عمر العلاقة. لا شيء من ذلك عمل حكم بالطريقة التي يكونها التفاوض مع مورد. إنه قراءة، مقارنة، وتوجيه، بنفس الطريقة لكل معاملة.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">هذا بالضبط ملف العمل الذي تتعامل معه أتمتة الذكاء الاصطناعي جيداً. مقارنة عروض عبر خمسة موردين تتبع نفس المنطق في كل مرة: استخراج السعر، الكمية، مدة التسليم، والشروط، ثم وضعها جنباً إلى جنب مقابل المعايير التي يستخدمها فريقكم أصلاً. مطابقة أمر شراء مع عرض إما تتطابق أو لا. موعد تجديد عقد إما يقع ضمن الستين يوماً القادمة أو لا. القواعد واضحة أصلاً. ما يفتقده عادة هو الوقت لتطبيقها باستمرار عند الحجم.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">فرق المشتريات التي نتحدث معها تصف باستمرار نفس عنق الزجاجة: ليس نقصاً في موردين جيدين أو مفاوضين جيدين، بل مشترون يقضون ساعات أسبوعياً يعيدون تنسيق عروض في ورقة مقارنة أو يلاحقون أمر شراء عبر سلسلة موافقة. ذلك الجزء الذي تُزيله الأتمتة، فيحصل عمل التفاوض وعلاقة الموردين، الجزء الذي يحتاج فعلياً شخصاً، على الاهتمام الذي يستحقه.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&q=80&auto=format&fit=crop" alt="محترف مشتريات يقارن عروض ومستندات موردين على مكتب" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI SYSTEMS -->
+<section id="procurement-systems" class="section" style="background:#e7eeff;" aria-labelledby="systems-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="systems-heading">أنظمة ذكاء اصطناعي للمشتريات</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">مبنية فوق نظام ERP أو منصة المشتريات التي يستخدمها فريقكم أصلاً. كل مشروع يشمل مراقبة بعد الإطلاق.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">compare_arrows</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">مقارنة طلبات عروض الأسعار والعروض</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">الذكاء الاصطناعي يقرأ العروض الواردة بأي صيغة تصل بها ويضعها جنباً إلى جنب من حيث السعر، الكمية، مدة التسليم، والشروط، فيقارن المشترون بمعايير متساوية بدلاً من إعادة تنسيق جداول بيانات.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> مشترٍ كان يقضي عصراً كاملاً يبني ورقة مقارنة من خمسة عروض موردين الآن يجدها جاهزة قبل وصول آخر عرض حتى.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">forum</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">أتمتة تواصل الموردين</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">طلبات عروض الأسعار تخرج لقائمة موردينكم المعتمدين تلقائياً، تذكيرات المتابعة تلاحق العروض التي لم تصل، وتأكيدات تخرج بمجرد وضع طلب.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> فريق كان يلاحق العروض برسائل متابعة فردية الآن يجد التذكيرات تخرج تلقائياً لمن لم يرد.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">rule</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">مطابقة أوامر الشراء وتوجيه الموافقة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">أوامر الشراء تُطابَق مع العرض الأصلي وبند الميزانية تلقائياً، وتُوجَّه للمعتمِد الصحيح بناءً على المبلغ والقسم دون أن يلاحق أحد توقيعاً.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> أمر شراء كان يجلس في بريد أحدهم لثلاثة أيام الآن يُوجَّه للمعتمِد الصحيح لحظة رفعه.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">gavel</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">مراجعة العقود وتنبيهات التجديد</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">الذكاء الاصطناعي يستخرج الشروط الرئيسية، التسعير، ومواعيد التجديد من عقود الموردين ويُعلِّم على التجديدات القادمة قبل إغلاق النافذة بوقت كافٍ، فلا يُجدَّد عقد تلقائياً دون ملاحظة أبداً.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> عقد مورد كان يُجدَّد تلقائياً بصمت لسنتين الآن يُعلَّم عليه قبل ستين يوماً من موعد تجديده، في كل مرة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">query_stats</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">تحليلات الإنفاق</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">الإنفاق عبر الموردين والفئات يُجمَّع في عرض حي يستطيع فريقكم التصرف عليه، يُظهر أين يتركز الحجم وأين قد يستحق التفاوض إعادته.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> قائد مشتريات كان يبني تقرير إنفاق ربع سنوي يدوياً الآن يفحص لوحة تحكم تتحدث مع رفع أوامر شراء جديدة.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">مشمول بضمان استرداد كامل ١٠٠٪</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">كل سير عمل محدد النطاق حول نظام ERP أو منصة المشتريات التي يستخدمها فريقكم أصلاً، مع ٩٠ يوماً من المراقبة بعد الإطلاق مشمولة.</p>
+      <button onclick="openModal(this)" data-source="ar_ai_automation_procurement_mid" class="btn-primary">احجزوا تدقيق أتمتة مشتريات مجاني</button>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATION -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="integration-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="integration-heading" style="margin-bottom:1.5rem;">التكامل مع أنظمة ERP ومنصات المشتريات</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">معظم عمل أتمتة المشتريات لدينا يتصل بأياً كان ما يدير عملكم مشترياته من خلاله أصلاً، عادة نظام ERP للمنظمات الأكبر، أو منصة مشتريات مخصصة للفرق التي تدير علاقات الموردين كوظيفة مستقلة. الأتمتة تقرأ وتكتب عبر نفس الوصول الذي يملكه مشتروكم أصلاً، فتبقى أوامر الشراء والعروض وسجلات العقود داخل نظام السجل بدلاً من التبعثر عبر جداول بيانات.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">إذا كان فريقكم يدير المشتريات حالياً من البريد الإلكتروني وجداول البيانات، هذه أيضاً نقطة بداية عملية. نبني الأتمتة حول الأدوات التي تستخدمونها فعلياً اليوم ونستطيع المساعدة في تحديد نطاق مسار نحو نظام أكثر تنظيماً إذا برر حجمكم ذلك. في كلتا الحالتين، نصمم التكامل أثناء مكالمة الاكتشاف بمجرد معرفتنا بالضبط ما يشغّله فريقكم.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1611746869696-d09bce200020?w=800&q=80&auto=format&fit=crop" alt="محترف مشتريات يراجع تحليلات إنفاق على شاشة حاسوب محمول" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">من تدقيق المشتريات لأتمتة فعالة</h2>
+    </div>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">أخبرونا أي جزء من دورة مشترياتكم يستهلك أكثر وقت مشتريكم.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_automation_procurement_mid2" class="btn-primary">احجزوا مكالمة أتمتة مشتريات</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- CROSS-LINK -->
+<section class="section-sm" aria-labelledby="related-heading">
+  <div class="container">
+    <div style="max-width:720px; margin:0 auto; text-align:center;">
+      <h2 id="related-heading" style="font-size:1.375rem; margin-bottom:1rem;">تبحثون عن أتمتة عبر عملكم بأكمله؟</h2>
+      <p style="color:#42474e; font-size:1rem; line-height:1.8;">
+        راجعوا <a href="/ar/services/ai-automation">مركز أتمتة الذكاء الاصطناعي لدينا</a> للنطاق الكامل لسير العمل الذي نؤتمته عبر المالية والعمليات والمبيعات، لا المشتريات فقط.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">تدقيق أتمتة مشتريات مجاني</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لإخراج مشتريكم من جداول البيانات؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجزوا تدقيق أتمتة مشتريات مجاني مع فريقنا في دبي. سنحدد سير العمل الذي يكلف فريقكم أكثر وقت ونقدّر التوفير.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_automation_procurement_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا تدقيق أتمتة مشتريات مجاني</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>

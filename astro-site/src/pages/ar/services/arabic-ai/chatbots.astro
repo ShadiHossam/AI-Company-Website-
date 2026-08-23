@@ -1,0 +1,284 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "كيف تختبرون جودة روبوت المحادثة العربي قبل الإطلاق، لا فقط بعد بدء الشكاوى؟", answer: "نُشغّل الروبوت عبر مجموعة اختبار مكتوبة من أنماط رسائل حقيقية قبل أن يتحدث مع عميل أبداً: عبارات لهجة، أرابيزي، جمل متبادلة اللغة، وبضع رسائل فوضوية أو غامضة عمداً. متحدث خليجي أصلي يراجع النصوص للنبرة والصحة، لا فقط فحص نجاح/فشل آلي. أي شيء يبدو متيبساً، خاطئاً، أو بنبرة غير مناسبة يُصلَح قبل الإطلاق، ونجري جولة مراجعة ثانية بعد أي تغيير في الأوامر أو النموذج." },
+  { question: "هل يستطيع روبوت المحادثة فهم عميل يخلط العربية والإنجليزية في نفس الرسالة؟", answer: "هذا بالضبط ما نبني ونختبر من أجله. التبديل اللغوي، جملة عربية تحمل كلمة أو عبارة إنجليزية في المنتصف، حديث يومي عادي في الإمارات، وروبوت لا يستطيع تحليله إما سيتجاهل الجزء الإنجليزي أو يعيد خطأ. نختبر هذا صراحةً بدلاً من افتراض أن نموذجاً عام الغرض يتعامل معه من الصندوق." },
+  { question: "هل سيبدو الروبوت نفسه لكل عميل، أم يضبط نبرته؟", answer: "يضبطها. استفسار رسمي لأول مرة ومحادثة WhatsApp مستمرة وغير رسمية تستدعيان سجلَّين مختلفين من العربية، ونضع قواعد نبرة فيطابق الروبوت العميل بدلاً من استخدام صوت ثابت واحد للجميع. إخطاء هذا أحد الأسباب الأكثر شيوعاً لجعل روبوت عربي دقيق من ناحية أخرى لا يزال يشعر بأنه غير مناسب لعميل إماراتي." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_arabic_ai_chatbots')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'تطوير روبوتات محادثة عربية بالذكاء الاصطناعي',
+    url: 'https://lenooai.com/ar/services/arabic-ai/chatbots',
+    description: 'روبوتات محادثة عربية بالذكاء الاصطناعي مبنية ومُختبَرة للهجة الخليجية، الأرابيزي، والتبديل اللغوي في منتصف المحادثة، لا العربية الفصحى فقط.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'تطوير روبوتات محادثة عربية ومراجعات محادثة عربية، محددة النطاق ومُسعَّرة بعد مكالمة اكتشاف.' },
+    serviceType: 'AI Chatbot Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'الخدمات', item: 'https://lenooai.com/ar/services' },
+      { '@type': 'ListItem', position: 3, name: 'الذكاء الاصطناعي العربي', item: 'https://lenooai.com/ar/services/arabic-ai' },
+      { '@type': 'ListItem', position: 4, name: 'روبوتات المحادثة', item: 'https://lenooai.com/ar/services/arabic-ai/chatbots' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="بناء روبوتات محادثة عربية بالذكاء الاصطناعي تعمل فعلياً | Lenoo AI"
+  description="تطوير روبوتات محادثة عربية بالذكاء الاصطناعي للإمارات: كيف نتعامل مع اللهجة الخليجية، الأرابيزي، والتبديل اللغوي في منتصف المحادثة، باختبار حقيقي قبل الإطلاق."
+  canonicalPath="/ar/services/arabic-ai/chatbots"
+  enPath="/services/arabic-ai/chatbots"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services" style="color:inherit;text-decoration:none;opacity:0.65;">الخدمات</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/arabic-ai" style="color:inherit;text-decoration:none;opacity:0.65;">الذكاء الاصطناعي العربي</a><span style="opacity:0.4;padding:0 4px;"> / </span>روبوتات المحادثة</div>
+    <h1>بناء روبوتات محادثة عربية بالذكاء الاصطناعي<br>تعمل <span class="gradient-text">فعلياً</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:660px; margin:1.5rem auto 2rem; line-height:1.8;">اللهجات، الأرابيزي، والتبديل اللغوي في منتصف المحادثة بالضبط حيث تنكسر معظم روبوتات المحادثة "المُفعَّلة بالعربية". إليكم كيف نبني، نُوجّه، ونختبر روبوتات تصمد في محادثات خليجية حقيقية، لا مجرد سيناريو عرض توضيحي مترجم.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_arabic_ai_chatbots_hero" class="btn-primary">احصلوا على مراجعة روبوت محادثة عربي مجانية</button>
+      <a href="#dialect-arabizi" class="btn-outline">شاهدوا كيف نتعامل معه ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=1400&q=80&auto=format&fit=crop" alt="موظف دعم عملاء يراجع محادثة روبوت محادثة عربي على WhatsApp على شاشة" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHY MOST ARABIC CHATBOTS FAIL -->
+<section class="section" aria-labelledby="why-fail-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="why-fail-heading" style="margin-bottom:1.5rem;">لماذا تفشل معظم "روبوتات المحادثة العربية" في أول رسالة</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>أول رسالة يرسلها عميل نادراً ما تكون جملة نظيفة ورسمية.</strong> إنها نص WhatsApp سريع، غالباً بالأرابيزي أو اللهجة، أحياناً باختصار كتابي، أحياناً بكلمة إنجليزية مُدرَجة لأنها الكلمة التي يستخدمها العميل فعلياً لذلك المنتج أو الخدمة. روبوت محادثة مضبوط فقط على نص فصحى رسمي إما يسيء قراءة الرسالة كلياً أو يرد بنبرة متيبسة جداً تشير، فوراً، أن هذا لم يُبنَ لكيفية حديث العميل فعلياً.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>ذلك الانطباع الأول مكلف.</strong> بمجرد أن يقرر عميل أن الروبوت "لا يفهم العربية"، معظمهم يتحولون للإنجليزية، يتخلون عن المحادثة، أو ينتظرون إنساناً، ولا شيء من ذلك النتيجة التي بُني الروبوت لمنعها. ولأن الفشل يبدو كتراجع هادئ وطبيعي بدلاً من خطأ مرئي، من السهل ألا يلاحظ عمل أبداً كم من حركة العملاء الناطقين بالعربية يخسرها الروبوت فعلياً.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>الإصلاح ليس نموذجاً أكبر أو أحدث.</strong> كل نموذج رئيسي يتعامل مع قواعد العربية بشكل صحيح. ما يكسر أول رسالة أضيق: عدم التعرف على الأرابيزي كعربية، عدم توقع كلمة إنجليزية في منتصف الجملة، وعدم ضبط النبرة لتطابق كيف فتح العميل المحادثة. تلك مشاكل توجيه واختبار، وقابلة للإصلاح بغض النظر عن أي نموذج أساسي تستخدمونه.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&q=80&auto=format&fit=crop" alt="شاشة هاتف ذكي تعرض محادثة رسائل عميل" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HANDLING DIALECT AND ARABIZI -->
+<section id="dialect-arabizi" class="section" style="background:#e7eeff;" aria-labelledby="dialect-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="dialect-heading">التعامل مع اللهجة والأرابيزي</h2>
+      <p>ثلاثة أشياء محددة يحتاج روبوت محادثة إتقانها قبل أن يستطيع خوض محادثة خليجية طبيعية.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">record_voice_over</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">التدريب/التوجيه للعربية الخليجية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">نعطي النموذج أمثلة صريحة على مفردات وصياغة خليجية، لا تعليمة عامة "أجب بالعربية". التعليمة العامة تفترض الفصحى افتراضياً، لأنها العربية الأكثر أماناً و"صحة" التي رآها النموذج أكثر. نُوجّه للهجة تحديداً، بعبارات وتعبيرات نموذجية شائعة في المحادثة الإماراتية.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">أمثلة لهجة صريحة، لا تعليمة لغوية بسطر واحد</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">keyboard</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">اكتشاف والرد على الأرابيزي</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">نبني معالجة صريحة للعربية بحروف لاتينية، بما فيها الأرقام كحروف، فرسالة مثل "wain el order" تُقرَأ كعربية، لا تُعامَل كإنجليزية مكسورة. يستطيع الروبوت بعدها اختيار الرد بحروف عربية، أرابيزي، أو إنجليزية حسب ما يناسب القناة ونمط العميل نفسه.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">مُختبَر مقابل أنماط أرابيزي حقيقية، لا مفترَض أنه يعمل تلقائياً</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">swap_horiz</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">التبديل في منتصف المحادثة دون انكسار</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">قد يفتح عميل بالإنجليزية، يتحول للعربية عندما يشعر بالإحباط، ثم يُدرِج اسم علامة تجارية أو منتج إنجليزي. نبني حالة المحادثة لتتبع اللغة لكل دور بدلاً من قفل الخيط كله على أياً كانت اللغة التي استخدمتها الرسالة الأولى، فلا يربك تبديل رد الروبوت التالي.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">اللغة مُتتبَّعة لكل رسالة، لا ثابتة للمحادثة كاملة</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTING METHODOLOGY -->
+<section class="section" aria-labelledby="testing-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="testing-heading">منهجية الاختبار</h2>
+      <p>كيف نراجع جودة المحادثات العربية قبل أن يتحدث روبوت مع عميل حقيقي أبداً.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">١</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">بناء مجموعة اختبار واقعية</h3>
+        <ul class="journey-list">
+          <li>سحب عينات رسائل عربية حقيقية من قنواتكم الحالية حيث متاحة</li>
+          <li>إضافة حالات فوضوية عمداً: أرابيزي، عامية، تبديل لغوي في منتصف الجملة، أخطاء كتابية</li>
+          <li>تضمين بضع حالات حدية مقصودة لكسر الروبوت، لا فقط الحالات السهلة</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">٢</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">تشغيلها ومراجعتها كمتحدث أصلي، لا سيناريو</h3>
+        <ul class="journey-list">
+          <li>متحدث خليجي أصلي يقرأ نصوصاً كاملة، لا إجابات معزولة فقط</li>
+          <li>نتحقق من النبرة والطبيعية، لا فقط هل الإجابة صحيحة واقعياً</li>
+          <li>أي شيء يبدو متيبساً، مترجماً بشكل خاطئ، أو بسجل غير مناسب يُعلَّم للإصلاح</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">٣</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">الإصلاح، إعادة الاختبار، والمراقبة بعد الإطلاق</h3>
+        <ul class="journey-list">
+          <li>تعديل التوجيه أو الأمثلة لأي شيء فشل، ثم إعادة تشغيل نفس مجموعة الاختبار</li>
+          <li>مراجعة عينة من المحادثات الحقيقية في الأسابيع الأولى بعد الإطلاق</li>
+          <li>إعادة الاختبار بعد أي تغيير في النموذج أو التوجيه، لأن جودة العربية يمكن أن تتغير مع أي منهما</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REAL EXAMPLES: BEFORE AND AFTER -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="examples-heading">
+  <div class="container" style="max-width:900px;">
+    <div class="section-header">
+      <h2 id="examples-heading">أمثلة حقيقية: قبل وبعد</h2>
+      <p>مثالان توضيحيان لنفس رسالة العميل، مُعالَجة من روبوت عام مقابل روبوت مضبوط ومُختبَر للعربية الخليجية.</p>
+    </div>
+
+    <div class="ba-example">
+      <p class="ba-label">مثال ١: سؤال منتج بالأرابيزي</p>
+      <p class="ba-customer">العميل: "hal el item mawjood bel abyad wala bas el aswad?"</p>
+      <div class="ba-row">
+        <div class="ba-card ba-before">
+          <p class="ba-tag ba-tag-before">قبل</p>
+          <p class="ba-text" style="direction:ltr; text-align:left;">"Sorry, I didn't understand your message. Could you please try again in English or Arabic?"</p>
+          <p class="ba-note">الروبوت لا يتعرف على الأرابيزي كعربية إطلاقاً، فيطلب من العميل تكرار سؤال طرحه أصلاً بوضوح، باللغة التي يكتب بها عادة.</p>
+        </div>
+        <div class="ba-card ba-after">
+          <p class="ba-tag ba-tag-after">بعد</p>
+          <p class="ba-text">"متوفر باللونين الأبيض والأسود حالياً. تبيني أرسل لك الصور؟"</p>
+          <p class="ba-note">يقرأ الروبوت رسالة الأرابيزي مباشرة ويجيب بشكل طبيعي، دون إجبار تبديل الحروف.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ba-example">
+      <p class="ba-label">مثال ٢: شكوى تبدّل اللغة في منتصف الرسالة</p>
+      <p class="ba-customer">العميل: "الطلب وصل ناقص، missing item وحدة من الاغراض اللي طلبتها"</p>
+      <div class="ba-row">
+        <div class="ba-card ba-before">
+          <p class="ba-tag ba-tag-before">قبل</p>
+          <p class="ba-text">"عذراً، لم أفهم. الرجاء التواصل مع فريق خدمة العملاء."</p>
+          <p class="ba-note">الجزء الإنجليزي في منتصف الجملة يربك التحليل، وشكوى فعلية تُحوَّل بعيداً بدلاً من حلها، وهي أسوأ نتيجة ممكنة لعميل محبَط.</p>
+        </div>
+        <div class="ba-card ba-after">
+          <p class="ba-tag ba-tag-after">بعد</p>
+          <p class="ba-text">"آسفين على الإزعاج! ممكن تقولي شنو الغرض الناقص بالضبط عشان أرسله لك اليوم؟"</p>
+          <p class="ba-note">يحلل الروبوت الجملة مختلطة اللغة بشكل صحيح، يفهم أنها شكوى عن غرض ناقص، وينتقل مباشرة لحلها.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">غير متأكدين كيف يتعامل روبوتكم الحالي فعلياً مع العربية؟ سنُشغّله مقابل أنماط رسائل خليجية حقيقية ونريكم بالضبط أين ينكسر.</p>
+    <button onclick="openModal(this)" data-source="ar_arabic_ai_chatbots_mid" class="btn-primary">احصلوا على مراجعة روبوت محادثة عربي مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">أسئلة حول روبوتات المحادثة العربية</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">مراجعة مجانية</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">احصلوا على مراجعة روبوت محادثة عربي مجانية</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">سنختبر روبوتكم الحالي، أو نحدد نطاق روبوت جديد، مقابل عربية خليجية حقيقية، أرابيزي، وتبديل لغوي، ونريكم بالضبط ماذا يحتاج التغيير.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+      <span class="cta-trust-badge">✓ دون التزام</span>
+      <span class="cta-trust-badge">✓ ضمان استرداد</span>
+    </div>
+    <button onclick="openModal(this)" data-source="ar_arabic_ai_chatbots_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احصلوا على مراجعة روبوت محادثة عربي مجانية</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+  </div>
+</div>
+
+</ArBaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+.num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+.apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+@media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } }
+
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+.journey-list li { position:relative; padding-right:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+.journey-list li::before { content:''; position:absolute; right:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+
+.ba-example { margin-bottom:3rem; }
+.ba-example:last-child { margin-bottom:0; }
+.ba-label { font-weight:700; color:#006875; font-size:0.8125rem; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.5rem; }
+.ba-customer { color:#00253b; font-weight:600; font-size:0.9375rem; margin-bottom:1rem; padding:0.75rem 1rem; background:#fff; border-radius:12px; }
+.ba-row { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+.ba-card { border-radius:16px; padding:1.25rem 1.5rem; }
+.ba-before { background:#fdf3f3; border:1px solid rgba(186,26,26,0.15); }
+.ba-after { background:#f0fbf9; border:1px solid rgba(0,150,110,0.18); }
+.ba-tag { font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; margin-bottom:0.625rem; }
+.ba-tag-before { color:#ba1a1a; }
+.ba-tag-after { color:#00785a; }
+.ba-text { font-size:1rem; color:#00253b; margin-bottom:0.625rem; line-height:1.8; direction:rtl; text-align:right; }
+.ba-note { font-size:0.8125rem; color:#42474e; line-height:1.65; }
+@media(max-width:800px) { .ba-row { grid-template-columns:1fr; } }
+</style>

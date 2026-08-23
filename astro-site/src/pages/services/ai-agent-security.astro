@@ -1,0 +1,262 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Can an agent be jailbroken through a channel like WhatsApp?", answer: "Yes, if it isn't built to resist it. Any channel where a user can type free-form text to an agent, WhatsApp, website chat, or voice, is a potential path for prompt injection or social engineering attempts. The channel itself isn't the vulnerability, the agent's lack of input filtering, scoped permissions, and output checks is. A well-built agent treats every incoming message as untrusted input regardless of which channel it arrived through." },
+  { question: "What data can an AI agent actually leak?", answer: "Whatever it has access to through its tool calls and connected systems: customer records, order history, internal documents, or anything else it can query. This is why scoped tool permissions matter so much, an agent that can only read the specific data it needs for its task simply cannot leak what it was never given access to, even if an attacker successfully tricks it into trying." },
+  { question: "Who's liable when an AI agent makes a costly mistake?", answer: "Legally, this is still an evolving area, and liability generally traces back to the business deploying the agent, not the underlying AI model provider. That's exactly why human-in-the-loop review for high-risk actions (refunds, contract commitments, anything irreversible) isn't optional caution, it's the control that keeps a mistake from becoming a business-critical incident before a person ever sees it." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Agent Security",
+    "url": "https://lenooai.com/services/ai-agent-security",
+    "description": "AI agent security for UAE businesses: guardrails against prompt injection, data exfiltration, and excessive agency, plus red teaming before launch.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Agent Security Review"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://lenooai.com/services" },
+      { "@type": "ListItem", "position": 3, "name": "AI Agent Security", "item": "https://lenooai.com/services/ai-agent-security" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Agent Security: Guardrails, Prompt Injection & Red Teaming | Lenoo AI"
+  description="AI agent security for UAE businesses: the real threats, guardrails that actually work, red teaming before launch, and a pre-launch security checklist."
+  canonicalPath="/services/ai-agent-security"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services" style="color:inherit;text-decoration:none;opacity:0.65;">Services</a><span style="opacity:0.4;padding:0 4px;"> / </span>AI Agent Security</div>
+    <h1>AI Agent Security<br><span class="gradient-text">Guardrails, Prompt Injection, and Red Teaming</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:680px; margin:1.5rem auto 2rem; line-height:1.8;">An agent that can act on your behalf is also a new attack surface. Here's what actually threatens a business AI deployment, the guardrails that hold up under real attempts to break them, and how to test your own agent before a customer, or an attacker, does.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai-agent-security_hero" class="btn-primary">Get a Free Agent Security Review</button>
+      <a href="#threats" class="btn-outline">See the Real Threats ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=1600&q=80&auto=format&fit=crop" alt="Security engineer reviewing system logs on multiple monitors" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "5", caption: "distinct attack categories every business-facing agent needs a defense for" },
+      { value: "4", caption: "guardrail types that hold up under real red-team testing" },
+      { value: "0", caption: "irreversible actions an agent should take without human review" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY DIFFERENT -->
+<section class="section" aria-labelledby="different-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="different-heading" style="margin-bottom:1.5rem;">Why Agent Security Is Different From App Security</h2>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Autonomy = a new attack surface</h3>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">A traditional web application does exactly what its code says, no more. An AI agent reasons about what to do next based on the conversation and the tools available to it, which means its behavior isn't fully specified in advance the way a normal application's is. That flexibility is the entire point of building an agent, and it's also exactly what makes it a different kind of security problem.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">A traditional app has a fixed set of inputs and outputs a security review can enumerate. An agent that can call tools, query databases, and take multi-step actions based on natural language instructions has a much larger space of things it might be convinced to do, including things nobody explicitly programmed it to do. Securing an agent means securing what it's allowed to do, not just what it's told to do, because those two things can diverge under the right kind of pressure from a user or a piece of malicious content it reads.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&q=80&auto=format&fit=crop" alt="Abstract network security visualization on a screen" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THE REAL THREATS -->
+<section id="threats" class="section" style="background:#e7eeff;" aria-labelledby="threats-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="threats-heading">The Real Threats</h2>
+      <p>Five categories of risk that come up in almost every serious agent deployment, business-facing or internal.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">warning</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Prompt Injection</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">A user, or content the agent reads (a webpage, a document, an email), contains hidden instructions designed to override the agent's actual task. A support agent reading a customer's message could be manipulated into ignoring its instructions entirely if that message contains a crafted injection attempt.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">upload</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Data Exfiltration via Tool Calls</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">An agent with broad tool access can be manipulated into retrieving and revealing data it shouldn't, another customer's order, internal pricing, staff records, simply by being asked the right way, if nothing is stopping it from calling the tool that fetches that data.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">psychology_alt</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Jailbreaking / Social Engineering</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">A determined user tries roleplay scenarios, false authority claims ("I'm the system administrator"), or persistent reframing to get the agent to act outside its intended scope. These attempts are common enough that any customer-facing agent should be tested against them before launch, not after a public incident.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">gpp_maybe</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Excessive Agency</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">The agent has more permission than its actual task requires, so a mistake or manipulation has a much bigger blast radius than it should. An agent that only needs to check order status shouldn't also be able to issue refunds, even if refunds happen to run through the same underlying system.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">layers</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">RAG / Data Poisoning</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">If the agent pulls answers from a knowledge base, whoever can influence what's in that knowledge base can influence what the agent says or does, whether that's a bad actor planting content, or simply outdated, incorrect internal documents nobody's cleaned up.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Every agent we build is scoped, tested against these exact threat categories, and reviewed before it ever talks to a real customer.</p>
+      <button onclick="openModal(this)" data-source="ai-agent-security_mid" class="btn-primary">Get a Free Agent Security Review</button>
+    </div>
+  </div>
+</section>
+
+<!-- GUARDRAILS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="guardrails-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="guardrails-heading">Guardrails That Actually Work</h2>
+      <p>Not a list of best practices for a slide deck. Controls that hold up under a real attempt to break them.</p>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Input/output filtering</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Checks on what goes into the agent (screening for known injection patterns) and what comes out of it (blocking responses that leak system instructions or sensitive data), as an independent layer the agent itself can't reason its way around.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Scoped tool permissions</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">The single most effective control available. An agent given only the exact tools and data access its task requires cannot leak or misuse what it was never granted in the first place, regardless of how it's manipulated.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Human-in-the-loop for high-risk actions</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Refunds above a threshold, contract commitments, account deletions, anything irreversible or costly gets a human confirmation step before it executes, no matter how confident the agent's reasoning looked.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Rate limiting & anomaly detection</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Caps on how many actions an agent can take per user per period, and monitoring for unusual patterns (a sudden spike in a specific tool call, repeated failed attempts at the same request), so an attack in progress gets noticed fast.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RED TEAMING -->
+<section class="section" aria-labelledby="redteam-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="redteam-heading" style="margin-bottom:1.5rem;">Red Teaming Your Own Agent Before Launch</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Red teaming means deliberately trying to break your own agent before a customer or an attacker does it for you. That means testing prompt injection attempts through every input channel it accepts, trying to get it to reveal its system instructions, attempting to make it perform an action outside its defined scope, and testing whether it can be talked into ignoring its own guardrails through persistence or clever framing.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        This isn't a one-time exercise before launch and then forgotten. Every meaningful change to an agent's instructions, tools, or knowledge base is a reason to re-run at least a core set of these tests, because a fix in one area can quietly reopen a gap in another. Treat it the way a serious engineering team treats regression testing: routine, not exceptional.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- CUSTOMER-FACING VS INTERNAL -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="profiles-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="profiles-heading">Customer-Facing vs. Internal Agents</h2>
+      <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0;text-align:center;">Different risk profiles, different controls</h3>
+    </div>
+    <div class="bento-grid bento-grid-2" style="max-width:900px; margin:0 auto;">
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Customer-facing agents</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Exposed to anyone who can start a conversation, including bad actors with no relationship to your business and no accountability. These need the strictest input filtering, the tightest tool scoping, and the most conservative human-in-the-loop thresholds, because the attack surface is effectively the entire internet.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Internal agents</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Used only by your own staff, which reduces the risk of anonymous external attack but does not eliminate it. Internal agents still need scoped permissions (not every employee should be able to ask the agent to pull every record) and guardrails against an employee accidentally, or deliberately, misusing broad access.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- UAE COMPLIANCE -->
+<section class="section" aria-labelledby="compliance-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="compliance-heading" style="margin-bottom:1.5rem;">Where This Meets UAE Compliance</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Agent security and regulatory compliance overlap more than most businesses expect. An agent that can be manipulated into revealing customer data isn't just a security failure, it's very likely a PDPL breach. An agent handling healthcare or financial information carries sector-specific obligations on top of general data protection rules. Security controls (scoped access, audit logs, human review of sensitive actions) are frequently the same controls a compliance review will ask for. For the full picture of what AI deployments need to satisfy under UAE regulation, see <a href="/services/ai-compliance-uae" style="color:#006875; font-weight:600;">AI compliance in the UAE</a>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- CHECKLIST -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="checklist-heading">
+  <div class="container" style="max-width:840px;">
+    <div class="section-header">
+      <h2 id="checklist-heading">A Pre-Launch Security Checklist</h2>
+    </div>
+    <ul style="color:#42474e; font-size:1.0625rem; line-height:1.9; padding-left:1.25rem; margin:0;">
+      <li style="margin-bottom:0.75rem;">Has the agent's tool access been scoped to exactly what its task requires, nothing broader?</li>
+      <li style="margin-bottom:0.75rem;">Has it been tested against prompt injection attempts through every channel it accepts input from?</li>
+      <li style="margin-bottom:0.75rem;">Are high-risk or irreversible actions (refunds, deletions, commitments) routed through human review?</li>
+      <li style="margin-bottom:0.75rem;">Is there input and output filtering that operates independently of the agent's own reasoning?</li>
+      <li style="margin-bottom:0.75rem;">Is there rate limiting and anomaly monitoring on the agent's actions?</li>
+      <li style="margin-bottom:0.75rem;">If it uses a knowledge base, is that content controlled and reviewed, not open to arbitrary edits?</li>
+      <li>Has someone actually tried to jailbreak it, with real attempts, not just a checklist review?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions About AI Agent Security</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Security Review</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Get a Free Agent Security Review</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll test your existing agent, or review your plans for one, against the threat categories on this page and tell you exactly where the gaps are. No obligation.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="ai-agent-security_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Get a Free Agent Security Review</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+</style>

@@ -1,0 +1,376 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../../lib/supabase";
+import FaqAccordion from "../../../../../components/FaqAccordion.astro";
+
+const h1 = 'مستشارو تكامل Workato في الإمارات';
+const metaTitle = 'مستشارو تكامل Workato في الإمارات | Lenoo AI';
+const metaDescription = 'تنفذ Lenoo AI وصفات تكامل Workato المؤسسية للأعمال الإماراتية التي تحتاج أتمتة محكومة ومعتمدة من تقنية المعلومات عبر أقسام عديدة.';
+const heroSubtext = 'يجلس Workato بين بساطة بلا كود وحوكمة المؤسسات. نصمم وصفات تثق بها تقنية المعلومات وتستطيع فرق الأعمال استخدامها فعلياً.';
+
+const useCases = [
+  { title: 'وصفات محكومة عبر الأقسام', description: 'تحتفظ تقنية المعلومات بالإشراف والموافقة على ما يُؤتمَت، بينما لا تزال الأقسام الفردية تحصل على بناء وصفات ذاتي الخدمة ضمن حواجز.' },
+  { title: 'تكامل الأنظمة المؤسسية', description: 'ربط أنظمة CRM وERP والموارد البشرية والمالية بوصفات مبنية حسب معايير Workato للأمان والامتثال المؤسسية.' },
+  { title: 'توحيد الأتمتة', description: 'نساعد المؤسسات التي لديها أتمتة متناثرة عبر خمس أدوات مختلفة على توحيدها في مثيل Workato محكوم واحد.' },
+];
+
+const faqFallback = [
+  { question: 'هل Workato فقط للمؤسسات الكبيرة؟', answer: 'مُسعَّر ومبني تحديداً لحالات استخدام السوق المتوسط والمؤسسي، حيث تهم الحوكمة والإشراف المركزي أكثر من البساطة الخام. للفرق الأصغر، Zapier أو Make عادة ملاءمة تكلفة أفضل، ونقول ذلك مباشرة أثناء تحديد النطاق.' },
+  { question: 'هل يستطيع Workato استبدال أدوات أتمتة متعددة حالية؟', answer: 'نعم، هذا أحد أكثر المشاريع شيوعاً التي نديرها: توحيد أتمتة متناثرة عبر Zapier وMake ونصوص مخصصة في مثيل Workato محكوم واحد بضوابط وصول صحيحة.' },
+  { question: 'كيف يعمل نموذج حوكمة Workato فعلياً يومياً؟', answer: 'تحدد تقنية المعلومات أي فئات بيانات واتصالات تتطلب مراجعة، وتبني فرق الأقسام ضمن تلك الحدود باستخدام نفس محرر الوصفات البصري. أي شيء يلمس فئة بيانات أو نظاماً مقيّداً يمر عبر خطوة موافقة قبل أن يصبح حياً، فيحدث الإشراف دون توجيه كل طلب أتمتة عبر طابور مركزي.' },
+];
+
+let faqItems = faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_automation_tools_workato')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: h1,
+    url: 'https://lenooai.com/ar/services/ai-automation/tools/workato',
+    description: metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع أتمتة مؤسسية: التسعير حسب النطاق، الأنظمة المتورطة، ومتطلبات الحوكمة. احجزوا استشارة للحصول على عرض سعر.' },
+    serviceType: 'Workato',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'أتمتة الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'الأدوات', item: 'https://lenooai.com/ar/services/ai-automation/tools' },
+      { '@type': 'ListItem', position: 4, name: 'Workato', item: 'https://lenooai.com/ar/services/ai-automation/tools/workato' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonicalPath="/ar/services/ai-automation/tools/workato"
+  enPath="/services/ai-automation/tools/workato"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;" aria-label="مسار التصفح">
+      <a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      <a href="/ar/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">أتمتة الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      <a href="/ar/services/ai-automation/tools" style="color:inherit;text-decoration:none;opacity:0.65;">الأدوات</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      Workato
+    </div>
+    <div style="margin-bottom:1.5rem;">
+      <img src="https://cdn.simpleicons.org/workato/5A2D81" alt="شعار Workato" width="56" height="56" loading="eager" fetchpriority="high" style="background:#fff;border-radius:16px;padding:10px;box-shadow:0 8px 24px rgba(0,59,92,0.18);" onerror="this.style.display='none'" />
+    </div>
+    <h1>{h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ar_ai_automation_tools_workato_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#what-we-build" class="btn-outline">شاهدوا ما نبنيه ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1610563166150-b34df4f3bcd6?w=1400&q=80&auto=format&fit=crop" alt="لقطة مقرّبة لكود تطبيق على شاشة، يمثل المنطق الخلفي وراء وصفة تكامل مؤسسية محكومة" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHAT IS -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">ما هو Workato؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Workato منصة تكامل وأتمتة مؤسسية مبنية حول سير عمل محكوم قائم على الوصفات، موضوعة للمنظمات التي تحتاج سهولة الأتمتة بلا كود لكن مع ضوابط الوصول، مسارات التدقيق، وإشراف تقنية المعلومات الذي تتطلبه البيئات المؤسسية.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        المنصة مبنية حول فكرة أن كلاً من تقنية المعلومات وفرق الأعمال الفردية يحتاج دوراً في الأتمتة: تضع تقنية المعلومات حواجز حول أي بيانات تستطيع الانتقال إلى أين ومن يستطيع نشر وصفة للإنتاج، بينما لا تزال فرق الأقسام تحصل على منشئ بصري بلا كود لإنشاء أتمتتها الخاصة ضمن تلك الحدود. تلك طبقة الحوكمة هي ما يفصل Workato عن أداة ذاتية الخدمة كلياً مثل Zapier، وهي أيضاً سبب ظهور Workato بمجرد أن تتجاوز منظمة الأتمتة العشوائية المنتشرة عبر الأقسام دون إشراف.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATION ANGLE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="angle-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="angle-heading" style="margin-bottom:1.5rem;">كيف تستخدم Lenoo AI منصة Workato لأتمتة المؤسسات الإماراتية</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        نحن شريك تنفيذ Workato: نصمم ونبني الوصفات لعملكم، لا نبيع تراخيص Workato. يكسب Workato مكانه عندما تتجاوز منظمة استخدام Zapier أو Make العشوائي عبر الأقسام وتحتاج حوكمة مركزية على من يستطيع بناء وتغيير الأتمتة، دون فقدان سرعة منشئ بلا كود.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        تعاوناتنا عادة تبدأ بالعمل مع فريق تقنية المعلومات أو المنصة لديكم لتحديد نموذج الحوكمة: من يستطيع النشر، أي فئات بيانات تتطلب موافقة، وكيف تُراجَع التغييرات قبل أن تصبح حية. من هناك نبني الوصفات لتطابق أياً كانت معايير التكامل التي تملكها مؤسستكم أصلاً، ونسلّم توثيقاً فيستطيع فريقكم الداخلي صيانة وتوسيع ما نبنيه بدلاً من الاعتماد علينا لكل تغيير صغير.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FREE VS PAID -->
+<section class="section" aria-labelledby="workato-pricing-heading">
+  <div class="container" style="max-width:800px;">
+    <h2 id="workato-pricing-heading" style="text-align:center; margin-bottom:1.5rem;">تجربة Workato المجانية مقابل المدفوع</h2>
+    <div class="workato-toggle" role="tablist" aria-label="مستوى التسعير">
+      <button type="button" id="workato-tier-free" class="workato-toggle-btn active" data-workato-tier="free" role="tab" aria-selected="true" aria-controls="workato-panel-free">تجربة مجانية</button>
+      <button type="button" id="workato-tier-paid" class="workato-toggle-btn" data-workato-tier="paid" role="tab" aria-selected="false" aria-controls="workato-panel-paid">مدفوع (مؤسسي)</button>
+    </div>
+    <div class="card" id="workato-panel-free" data-workato-tier-panel="free" role="tabpanel" aria-labelledby="workato-tier-free">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">لا يقدّم Workato مستوى مجاني ذاتي الخدمة بالطريقة التي يقدّمها Zapier أو Make. المتاح تجربة، تُرتَّب عبر محادثة مبيعات لا نموذج تسجيل، تعطي فريقكم وقتاً عملياً مع منشئ الوصفات ونظرة على كيفية عمل ضوابط الحوكمة قبل الالتزام بعقد. طريقة حقيقية لتقييم المنصة، لكن دون خيار مجاني مصغّر لتشغيل أتمتة محكومة على المدى الطويل، وهذا متسق مع تموضع Workato لحالات استخدام السوق المتوسط والمؤسسي بدلاً من المستخدمين الأفراد أو الفرق الصغيرة.</p>
+    </div>
+    <div class="card" id="workato-panel-paid" data-workato-tier-panel="paid" role="tabpanel" aria-labelledby="workato-tier-paid" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">يُسعَّر Workato عبر مبيعات مباشرة بدلاً من مستويات ذاتية الخدمة منشورة، بعقود تتصاعد عادة من عشرات آلاف الدولارات سنوياً عند المستوى الأولي إلى ستة أرقام للبرامج الأكبر، بناءً على حجم المهام، عدد الموصلات، واحتياجات الدعم. تلك التكلفة تشتري طبقة الحوكمة التي تدور حولها هذه الصفحة: سير عمل موافقة، مسارات تدقيق، ووصول قائم على الأدوار لمن يستطيع نشر وصفة، لا مجرد أداة تكامل عارية. نساعدكم على تحديد أي مستوى يحتاجه فعلياً حجم أتمتتكم ومتطلبات حوكمتكم قبل التوقيع، لأن نموذج تسعير بقيادة المبيعات يترك مجالاً للشراء الزائد دون إجراء ذلك التحديد أولاً.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO IT'S FOR -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">هل Workato مناسب لمؤسستكم؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        يناسب Workato مؤسسات السوق المتوسط والمؤسسات الإماراتية الكبيرة التي تحتاج حوكمة مركزية على الأتمتة عبر أقسام متعددة، دون إبطاء كل فريق لطابور بناء واحد مقتصر على تقنية المعلومات.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ENGAGEMENT PHASES -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="engagement-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="engagement-heading" style="margin-bottom:1.5rem;">كيف يبدو تعاون Workato مؤسسي نموذجي</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.75rem;">
+        تتمحور تعاونات Workato حول سؤال واحد قبل بناء أي شيء آخر: من مسموح له نشر أتمتة للإنتاج، وماذا يحدث عندما يحاول أحد نقل فئة بيانات تعتبرها المؤسسة حساسة. كل شيء آخر في التعاون يتبع كيفية الإجابة عن ذلك السؤال.
+      </p>
+      <div style="display:flex; flex-direction:column; gap:1.5rem;">
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">١. الاكتشاف ومراجعة الأتمتة</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">نبدأ بفهرسة ما هو موجود أصلاً: Zaps، سيناريوهات Make، والنصوص الفردية التي بنتها الأقسام بنفسها بمرور الوقت. معظم المؤسسات التي تتواصل من أجل Workato لديها أصلاً أتمتة منتشرة عبر خمس أو ست أدوات مختلفة دون شخص واحد مسؤول عن كل ذلك.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">٢. وصفة تجريبية</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">نبني الوصفة الأولى مقابل عملية حقيقية ومحددة النطاق، عادة واحدة تشمل أصلاً نظاماً تشعر تقنية المعلومات بالراحة تجاه عرضه، لإثبات معايير الاتصال وقواعد التعامل مع البيانات قبل توسيع النمط لأي مكان آخر.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">٣. تحديد نموذج الحوكمة</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">هذه المرحلة تفصل Workato عن أداة ذاتية الخدمة كلياً. نعمل مع فريق تقنية المعلومات أو المنصة لديكم لتحديد من يستطيع نشر وصفة، أي فئات بيانات تتطلب موافقة قبل أن تستطيع الانتقال، وكيف تُراجَع تغيير قبل أن يصل للإنتاج. إخطاء هذا يجعل Workato مجرد نسخة أغلى من نفس الانتشار الذي كان مقصوداً إصلاحه.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">٤. طرح مرحلي عبر الأقسام</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">مع الاتفاق على نموذج الحوكمة، نوسّع وصول بناء الوصفات لفرق الأقسام الفردية ضمن تلك الحواجز، فيستطيع فريق المالية أو الموارد البشرية بناء أتمتته الخاصة دون توجيه كل طلب عبر طابور تقنية معلومات مركزي.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">٥. الإدارة المستمرة</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">نسلّم توثيقاً فيستطيع فريقكم الداخلي صيانة وتوسيع ما بنيناه، ونقدّم عقود مستمرة لأي شيء يحتاج متخصصاً: تحديث وصفة عندما يغيّر نظام متصل واجهة API الخاصة به، أو مراجعة فئة بيانات جديدة تحتاج قراراً حوكمياً.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">Workato مقابل Boomi</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        يجلس كل من Workato و<a href="/ar/services/ai-automation/tools/boomi">Boomi</a> في فئة التكامل المؤسسي، لكنهما يحلان مشاكل مختلفة. Workato مبني حول أتمتة محكومة قائمة على الوصفات للمنظمات التي تجاوزت الانتشار العشوائي بلا كود وتحتاج إشراف تقنية معلومات دون فقدان سرعة الخدمة الذاتية التي اعتادتها فرق الأقسام. Boomi مبني حول اتصال هجين، يربط ERP محلي أو قاعدة بيانات قديمة بأدوات سحابية حديثة عبر وقت تشغيل Atom المحلي الخاص به. إذا كانت مشكلتكم انتشار أتمتة عبر الأقسام ونقص حوكمة، Workato الملاءمة الأفضل. إذا كانت مشكلتكم نظاماً قديماً يحتاج التحدث للسحابة دون تعريضه مباشرة للإنترنت، Boomi مبني تحديداً لذلك. بعض المؤسسات تنتهي بتشغيل كليهما، لأجزاء مختلفة من العمل، وسنقول ذلك مباشرة إذا كان هذا ما تستدعيه حالتكم.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- UAE CONTEXT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="uae-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="uae-heading" style="margin-bottom:1.5rem;">أين يناسب Workato في المنظمات الإماراتية</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        يميل Workato للظهور بمجرد أن ينمو عمل إماراتي من السوق المتوسط أو المؤسسي متجاوزاً النقطة التي تصبح فيها حفنة من Zaps بناها من كان لديه وقت قابلة للإدارة، وتريد تقنية المعلومات رأياً فيما يُؤتمَت دون أن تصبح عنق الزجاجة لكل طلب. هذا شائع في المنظمات ذات وحدات أعمال متعددة تشغّل كل منها أدواتها الخاصة، حيث يحتاج نفس سجل العميل أو المالي الانتقال بين خمسة أو ستة أنظمة ولا يريد أحد أن يعيش ذلك المنطق في Zap غير مملوك يفهمه شخص واحد فقط.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SCOPING -->
+<section class="section" aria-labelledby="scoping-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="scoping-heading" style="margin-bottom:1.5rem;">كيف نحدد نطاق مشروع Workato</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        يُسعَّر تعاون Workato حول متغيرين أكثر من معظم مشاريع التكامل: كم نظاماً وقسماً تحتاج الأتمتة أن تمتد إليه، وكم عمل تصميم حوكمة مطلوب قبل أن تشعر تقنية المعلومات لديكم بالراحة تجاه ترك فرق الأقسام تبني وصفاتها الخاصة. منظمة توحّد حفنة من الأتمتة الحالية على Workato بنموذج حوكمة مباشر يمكن أن تتحرك بسرعة نسبية. منظمة تحدد الحوكمة من الصفر عبر أقسام عديدة، كل منها بمخاوف حساسية بيانات خاصة، تستغرق وقتاً أطول مقدماً لكنها تميل للتحرك أسرع على كل وصفة بعد وضع ذلك الأساس. نحدد نطاق عمل تحديد الحوكمة منفصلاً عن عمل بناء الوصفات، لأنهما فعلياً نوعان مختلفان من الجهد.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PITFALLS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="pitfalls-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="pitfalls-heading" style="margin-bottom:1.5rem;">أين تخطئ طروحات Workato عادة</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        نمط الفشل الأكثر شيوعاً الذي نراه مع Workato هو نموذج حوكمة موجود على الورق لا في الممارسة: سياسة تقول إن تصنيف بيانات معين يتطلب موافقة، لكن لا أحد يفحص فعلياً وصفة جديدة مقابلها قبل أن تصبح حية، فيعود الانتشار الذي كانت المنصة مقصودة لإصلاحه بصمت في قالب محكوم. المشكلة الشائعة الأخرى هي معاملة نموذج الحوكمة كقرار لمرة واحدة بدلاً من شيء يُراجَع مع إضافة أنظمة وأنواع بيانات جديدة. نبني نقاط مراجعة داخل الطرح نفسه، لا فقط الإعداد الأولي، فيبقى نموذج الحوكمة حقيقياً بدلاً من أن يصبح مستنداً لا يستشيره أحد.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- VS NO-CODE -->
+<section class="section" aria-labelledby="vsnocode-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vsnocode-heading" style="margin-bottom:1.5rem;">Workato مقابل أدوات الأتمتة بلا كود</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        الخط بين Workato وأداة مثل Zapier أو Make ليس فعلياً عن القدرة. كلاهما يربط تطبيقات وينقل بيانات. إنه عن من مسموح له بناء ماذا. Zapier وMake ذاتيا الخدمة: أي شخص لديه حساب يستطيع نشر أتمتة تلمس بيانات إنتاج دون مراجعة. يضيف Workato طبقة حوكمة فوق نفس نوع البناء القائم على الوصفات، فلا يزال القسم يستطيع التحرك بسرعة، لكن تغيير يلمس بيانات حساسة يمر عبر موافقة أولاً. إذا كانت منظمتكم لديها حفنة من الأتمتة ودون مشكلة إشراف حقيقية بعد، Zapier أو Make المسار الأرخص والأسرع، وسنقول ذلك. يكسب Workato تكلفته بمجرد أن يصبح نقص الإشراف ذاك خطراً حقيقياً لا افتراضياً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="what-we-build" class="section" aria-labelledby="usecases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="usecases-heading">ما نبنيه بـ Workato</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">تعاونات تمثيلية، محددة النطاق فردياً بناءً على أنظمتكم وعملياتكم.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {useCases.map((uc) => (
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- DATA HANDLING AND COMPLIANCE -->
+<section class="section" aria-labelledby="security-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="security-heading" style="margin-bottom:1.5rem;">التعامل مع البيانات والامتثال في وصفات Workato</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        لأن Workato يجلس في مركز تدفقات بيانات المؤسسة، غالباً يلمس بيانات الموارد البشرية والمالية والعملاء في نفس الوصفة، نبني كل تكامل مع وضع قواعد تصنيف بياناتكم في الاعتبار من البداية. ذلك يعني تحديد أي الحقول حساسة قبل تصميم الوصفة، تطبيق تشفير أو إخفاء على مستوى الحقل حيث تتطلبه سياستكم، والتأكد أن مسار التدقيق الذي يولّده Workato أصلياً يُراجَع فعلياً، لا فقط يُفعَّل ويُنسى.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        للمؤسسات الإماراتية العاملة تحت تنظيم خاص بقطاعها، المصرفية، التأمين، أو الرعاية الصحية من بينها، نوثّق أيضاً تدفق بيانات الوصفة من طرف لطرف: ماذا يدخل، ماذا يتحول، ماذا يغادر، وإلى أين. ذلك التوثيق عادة ما تطلبه فعلياً مراجعة الامتثال، وامتلاكه جاهزاً من اليوم الأول يتجنب بقاء الوصفة في طابور موافقة لأسابيع بعد اكتمالها تقنياً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">أتمتة منتشرة عبر أقسام دون إشراف؟ لنتحدث عن إصلاح ذلك.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_automation_tools_workato_mid" class="btn-primary">احجزوا استشارة أتمتة مؤسسية</button>
+  </div>
+</section>
+
+<!-- GETTING STARTED -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="getting-started-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="getting-started-heading" style="margin-bottom:1.5rem;">البدء مع Workato</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        الخطوة الأولى في أي تعاون Workato هي الاتفاق على نموذج الحوكمة قبل بناء وصفة واحدة: من يستطيع النشر للإنتاج، أي فئات بيانات تحتاج موافقة، وكيف تُراجَع التغييرات. تخطي تلك الخطوة يميل لأن يعني إعادة بناء نموذج الوصول لاحقاً بمجرد أن تكون المنصة مستخدَمة أصلاً عبر أقسام عديدة، وهو أكثر إخلالاً من تسويته مقدماً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        بمجرد الاتفاق على ذلك، نبني عادة وصفة أو اثنتين من طرف لطرف كنمط مرجعي، بمشاركة أياً كان فريق القسم الذي سيملك في النهاية ذلك النوع من الأتمتة، فيرون بالضبط كيف تنتقل وصفة من مسودة إلى معتمَدة إلى حية قبل أن يُطلَب منهم بناء وصفتهم الخاصة ضمن الحواجز التي وضعتها تقنية المعلومات.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">استشارة أتمتة مؤسسية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لتشغيل Workato لمؤسستكم؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجزوا استشارة مع فريقنا في دبي. سنحدد نطاق التكامل، الأنظمة المتورطة، والحوكمة التي يحتاجها مشروعكم.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ تحديد نطاق مؤسسي</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_automation_tools_workato_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا استشارة أتمتة مؤسسية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+.workato-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+.workato-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.workato-toggle-btn.active { background:#006875; color:#fff; }
+.workato-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const workatoToggleWrap = document.querySelector('.workato-toggle');
+  if (workatoToggleWrap) {
+    const workatoBtns = workatoToggleWrap.querySelectorAll('.workato-toggle-btn');
+    const workatoPanels = document.querySelectorAll('[data-workato-tier-panel]');
+    workatoBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-workato-tier');
+        workatoBtns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        workatoPanels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-workato-tier-panel') !== key; });
+      });
+    });
+  }
+</script>

@@ -1,0 +1,324 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "هل البرمجة الحدسية غير آمنة أصلاً؟", answer: "لا، لكن البرمجة الحدسية غير المراجعة غالباً كذلك. الخطر ليس الذكاء الاصطناعي نفسه، إنه شحن كود مولَّد بالذكاء الاصطناعي بنفس الطريقة التي كنتم ستشحنون بها كوداً فهمتموه واختبرتموه بالكامل، عندما لم تفعلوا أياً منهما. الإصلاح ليس تجنب أدوات الذكاء الاصطناعي، إنه إضافة خطوة المراجعة والاختبار التي تملكها أصلاً أي قاعدة كود احترافية." },
+  { question: "كيف تمنعون هذه المخاطر في بناء احترافي؟", answer: "كل سطر نشحنه يمر عبر مراجعة مهندس أول قبل دمجه، مجموعات اختبار آلية تغطي المنطق المهم، ومراجعة أمنية على أي شيء يلمس المصادقة، المدفوعات، أو بيانات المستخدم. الذكاء الاصطناعي يكتب المسودة الأولى أسرع؛ لا يزال شخص يوافق على ما يُشحَن فعلياً." },
+  { question: "ماذا يجب أن أتحقق منه قبل شحن كود مولَّد بالذكاء الاصطناعي بنفسي؟", answer: "كحد أدنى: ابحثوا عن مفاتيح API أو بيانات اعتماد مكتوبة مباشرة قبل ارتكاب أي شيء، تحققوا أن مدخلات المستخدم تُتحقَّق منها على الخادم (لا فقط في الواجهة)، أكّدوا أن المصادقة تمنع فعلياً الوصول غير المخوّل باختبارها مباشرة، وشغّلوا الكود عبر شخص بخبرة أمنية حقيقية إذا كان سيتعامل مع بيانات مستخدم حقيقية." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_vibe_coding_risks')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+---
+
+<ArBaseLayout
+  title="مخاطر البرمجة الحدسية وقائمة تحقق الأمان | Lenoo AI"
+  description="المخاطر الأمنية الحقيقية وحدود البرمجة الحدسية، مشروحة بصدق، بالإضافة لقائمة تحقق عملية قبل شحن كود مولَّد بالذكاء الاصطناعي."
+  canonicalPath="/ar/services/vibe-coding/risks-and-limitations"
+  enPath="/services/vibe-coding/risks-and-limitations"
+  ogImage="/assets/og-services.jpg"
+  ldJson={[faqLdJson]}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services" style="color:inherit;text-decoration:none;opacity:0.65;">الخدمات</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/vibe-coding" style="color:inherit;text-decoration:none;opacity:0.65;">البرمجة الحدسية</a><span style="opacity:0.4;padding:0 4px;"> / </span>المخاطر والحدود</div>
+    <h1>مخاطر البرمجة الحدسية، <span class="gradient-text">مشروحة بصدق.</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      الكود المولَّد بالذكاء الاصطناعي ليس خطيراً تلقائياً، لكن شحنه دون مراجعة يمكن أن يكون كذلك. إليكم ما يسوء فعلياً، لماذا، وماذا تتحققون منه قبل أن يصبح أي شيء مولَّد بالذكاء الاصطناعي حياً.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_vibe_risks_hero" class="btn-primary">ناقشوا مشروعكم</button>
+      <a href="#checklist" class="btn-outline">شاهدوا قائمة التحقق ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1743090661053-3d1feb2beab7?w=1400&h=260&q=80&auto=format&fit=crop" alt="لقطة مقرّبة لكود على شاشة أثناء مراجعة كود" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- HONEST FRAMING -->
+<section class="section" aria-labelledby="honest-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="honest-heading" style="margin-bottom:1.5rem;">الخطر ليس الذكاء الاصطناعي. إنه ما يحدث بعده.</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+          كل قصة رعب عن البرمجة الحدسية تتبع نفس النمط: ولّد أحدهم كوداً بالذكاء الاصطناعي، بدا أنه يعمل، وشُحِن دون أن يتحقق أحد هل تعامل فعلياً مع الحالات المهمة، مدخل سيء، وصول غير مخوّل، استعلام قاعدة بيانات لم يكن يُفترَض أن يكون عاماً. تلك ليست مشكلة جديدة اخترعها الذكاء الاصطناعي. إنها نفس المشكلة التي تحدث كلما شُحِن كود دون مراجعة، مولَّداً بالذكاء الاصطناعي أم لا. ما تغيّر هو أن الذكاء الاصطناعي يجعل توليد كمية كبيرة من الكود بسرعة أرخص وأسرع، ما يجعل أيضاً تخطي خطوة المراجعة أرخص وأسرع إذا لم يصرّ أحد عليها.
+        </p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+          لا شيء من هذا يعني أن الكود المولَّد بالذكاء الاصطناعي أسوأ أصلاً. في كثير من الحالات يتبع أنماطاً أكثر اتساقاً من كود كتبه مطور متعب تحت ضغط موعد نهائي. الخطر تحديداً في معاملة "عمل دون خطأ" كدليل على أنه آمن، وهو ليس كذلك.
+        </p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+          هناك أيضاً تأثير حجم يستحق ذكره صراحة. مطور واحد يكتب كوداً يدوياً يستطيع إنتاج قدر محدود منه في يوم، ما يحدّ طبيعياً كم خطر غير مراجَع يدخل قاعدة كود دفعة واحدة. يزيل الذكاء الاصطناعي ذلك الحد الطبيعي للسرعة. فريق كان يولّد حفنة من الأنماط الخطرة أسبوعياً يستطيع الآن توليدها في بعد ظهر واحد، إذا لم يتحقق أحد. الإصلاح ليس إبطاء الذكاء الاصطناعي، إنه التأكد أن خطوة التحقق تتوسع لتطابق الوتيرة الجديدة للمُخرَج.
+        </p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1753450711825-b58801aee254?w=800&h=600&q=80&auto=format&fit=crop" alt="مطور يصحح كوداً، ينظر بتركيز لشاشة مليئة بالكود" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT ACTUALLY GOES WRONG -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="wrong-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="wrong-heading">ما يسوء فعلياً</h2>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div class="card risks-card" data-risks-expand>
+        <button type="button" class="risks-card-toggle" aria-expanded="false" aria-controls="risks-panel-1" id="risks-toggle-1">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">key_off</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">أسرار مكشوفة</h3>
+          </div>
+          <span class="risks-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="risks-card-panel" id="risks-panel-1" role="region" aria-labelledby="risks-toggle-1" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">مفاتيح API، بيانات اعتماد قاعدة بيانات، أو رموز مكتوبة مباشرة داخل الكود الذي ولّده الذكاء الاصطناعي، ثم مُرسَلة لمستودع عام، أحد أشيع الحوادث الحقيقية. يحدث لأن الذكاء الاصطناعي ليس لديه طريقة لمعرفة أي القيم أسرار ما لم يخبره المطور، وماسحات آلية على منصات مثل GitHub غالباً تجد هذه خلال دقائق من دفع عام، وهذا بالضبط مدى سرعة إساءة استخدام مفتاح مسرَّب.</p>
+        </div>
+      </div>
+      <div class="card risks-card" data-risks-expand>
+        <button type="button" class="risks-card-toggle" aria-expanded="false" aria-controls="risks-panel-2" id="risks-toggle-2">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">gpp_bad</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">ثغرات الحقن</h3>
+          </div>
+          <span class="risks-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="risks-card-panel" id="risks-panel-2" role="region" aria-labelledby="risks-toggle-2" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">استعلامات أو أوامر قاعدة بيانات مبنية مباشرة من مدخل المستخدم دون تعقيم. يستطيع الذكاء الاصطناعي كتابة نسخة آمنة أو غير آمنة من نفس الاستعلام حسب كيفية صياغة الطلب، ولن يعلّم بالضرورة على الفرق ما لم يُطلَب منه، لأن كلا النسختين تبدوان صحيحتين بنفس القدر لشيء لا يتحقق تحديداً من هذا النمط.</p>
+        </div>
+      </div>
+      <div class="card risks-card" data-risks-expand>
+        <button type="button" class="risks-card-toggle" aria-expanded="false" aria-controls="risks-panel-3" id="risks-toggle-3">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">lock_open</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">تحكم وصول مكسور</h3>
+          </div>
+          <span class="risks-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="risks-card-panel" id="risks-panel-3" role="region" aria-labelledby="risks-toggle-3" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">واجهة تخفي زراً عن مستخدمين دون صلاحية، بينما الطلب الأساسي لا يزال يعمل إذا استُدعِيَ مباشرة. تبدو آمنة في المتصفح وليست كذلك. هذا النمط الأكثر شيوعاً وحده وراء قصص "تطبيق مبني بالذكاء الاصطناعي سرّب بيانات مستخدمين"، لأنه غير مرئي أثناء الاستخدام العادي ويظهر فقط عندما يحاول أحدهم عمداً تجاوز الواجهة.</p>
+        </div>
+      </div>
+      <div class="card risks-card" data-risks-expand>
+        <button type="button" class="risks-card-toggle" aria-expanded="false" aria-controls="risks-panel-4" id="risks-toggle-4">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">layers</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">دين تقني صامت</h3>
+          </div>
+          <span class="risks-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="risks-card-panel" id="risks-panel-4" role="region" aria-labelledby="risks-toggle-4" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">كود عامل مُهيكَل بطريقة لا يستطيع أحد، بما فيهم من "كتبه"، صيانتها بسهولة بعد ستة أشهر. يُحسِّن الذكاء الاصطناعي لإجابة عاملة للسؤال الفوري، لا بالضرورة لقاعدة كود تبقى صحية مع نموها، فتكلفة هذا غالباً لا تظهر حتى يحاول أحدهم إضافة ميزة ولا يستطيع معرفة لماذا ينكسر كل شيء.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HORROR STORY PATTERN -->
+<section class="section" aria-labelledby="pattern-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="pattern-heading" style="text-align:right; margin-bottom:1.5rem;">النمط وراء معظم قصص الرعب</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      انزعوا التفاصيل ومعظم قصص "كارثة البرمجة الحدسية" المشارَكة علناً تتبع نفس الخطوات الثلاث. أولاً، يبني أحدهم شيئاً بسرعة ويعمل في كل سيناريو اختبره شخصياً. ثانياً، يُشحَن، غالباً لمستخدمين حقيقيين، دون أن يراجعه أحد خارج الباني. ثالثاً، يختبر شخص آخر، مستخدم فضولي، باحث أمني، مهاجم، سيناريو لم يفكر الباني أبداً بتجربته، ويجد الفجوة.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      لاحظوا أن لا شيء من الخطوات الثلاث تتطلب أن يكون الذكاء الاصطناعي قد "ارتكب خطأ" بأي معنى غير عادي. الخطوتان الأولى والثانية بالضبط كيف يعمل كثير من المشاريع الشرعية سريعة الحركة. الخطوة الثالثة ما توجد مراجعة كود أو مراجعة أمنية لالتقاطه قبل حدوثه علناً بدلاً من اختبار مضبوط. القصص ليست دليلاً أن الكود المولَّد بالذكاء الاصطناعي خطير بشكل فريد. إنها دليل على ما يحدث كلما تخطّت المراجعة، بحجم وسرعة يجعلهما مُخرَج ذكاء اصطناعي غير مراجَع سهل الوصول إليهما حديثاً.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      ما يجعل هذه القصص تنتشر يستحق ذكره بصدق أيضاً: أكثر إثارة للكتابة عنها من العدد الأكبر بكثير من المشاريع المدعومة بالذكاء الاصطناعي التي شُحِنت بأمان لأن أحدهم راجعها بشكل صحيح. اختراق درامي يصنع عنواناً. إطلاق ممل ومراجَع جيداً لا يفعل. تأثير الانتقاء ذلك يجعل الخطر يشعر بأنه أكبر وأعم مما هو فعلياً، دون أن يجعل الدرس الأساسي، راجعوا مُخرَجكم، أقل صحة.
+    </p>
+  </div>
+</section>
+
+<!-- WHO'S MOST AT RISK -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="atrisk-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="atrisk-heading">من الأكثر عرضة للخطر فعلياً</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">ملف الخطر يتغيّر حسب من يبني وماذا على المحك.</p>
+    </div>
+    <div class="builds-grid">
+      <div class="card">
+        <h3>مؤسسون منفردون غير تقنيين</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">أعلى تعرّض، لأنه غالباً لا يوجد أحد آخر في الحلقة لالتقاط خطأ قبل أن يصادفه مستخدمون حقيقيون. ليس سبباً لتجنب البناء، سبب للحصول على مجموعة عيون ثانية قبل الإطلاق.</p>
+      </div>
+      <div class="card">
+        <h3>فرق صغيرة تتحرك بسرعة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">تعرّض معتدل. مطور ثانٍ يراجع التغييرات يلتقط الكثير، لكن ضغط السرعة غالباً يعني تخطي المراجعة بالضبط عندما تهم أكثر، قبل موعد نهائي مباشرة.</p>
+      </div>
+      <div class="card">
+        <h3>شركات راسخة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">تعرّض أقل إذا طُبِّقت عمليات مراجعة الكود والأمان الحالية على الكود المولَّد بالذكاء الاصطناعي بنفس طريقة تطبيقها على كل شيء آخر. يرتفع الخطر بحدة حيثما تُلغَى تلك العملية للكود المكتوب بالذكاء الاصطناعي تحديداً.</p>
+      </div>
+      <div class="card">
+        <h3>أي شخص يتعامل مع مدفوعات أو بيانات صحية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">أعلى مخاطر بغض النظر عن حجم الفريق. خطأ هنا ليس محرجاً فقط، يمكن أن يكون خطيراً مالياً أو قانونياً، وهذا بالضبط لماذا المراجعة ليست اختيارية في هذه الفئات.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHECKLIST -->
+<section id="checklist" class="section" aria-labelledby="checklist-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="checklist-heading" style="text-align:right; margin-bottom:1.5rem;">قائمة تحقق عملية قبل الشحن</h2>
+    <ul style="color:#42474e; font-size:1rem; line-height:2; padding-right:1.25rem;">
+      <li><strong>ابحثوا في قاعدة الكود عن أسرار مكتوبة مباشرة</strong> (مفاتيح API، كلمات مرور، رموز) قبل أي ارتكاب، وأكّدوا عدم وجود أي منها في تاريخ التحكم بالإصدارات أيضاً.</li>
+      <li><strong>أكّدوا أن التحقق يحدث على الخادم</strong>، لا في الواجهة فقط. يستطيع المستخدم تجاوز أي شيء يعيش فقط في المتصفح.</li>
+      <li><strong>اختبروا تحكم الوصول بمحاولة كسره فعلياً</strong>: سجّلوا الدخول كمستخدم بصلاحية أدنى وحاولوا الإجراء الأعلى صلاحية مباشرة، لا فقط عبر الواجهة المرئية.</li>
+      <li><strong>تحققوا من تحديد المعدل</strong> على أي شيء عام الوجهة، خاصة تسجيل الدخول وأي نموذج يلمس واجهة API خارجية تدفعون مقابلها.</li>
+      <li><strong>اقرؤوا الكود الذي يتعامل مع المال، المصادقة، أو البيانات الشخصية</strong> سطراً بسطر، حتى لو تصفحتم كل شيء آخر سريعاً. هذه الفئات الثلاث حيث تكلف الأخطاء أكثر.</li>
+      <li><strong>شغّلوه عبر شخص بخبرة أمنية حقيقية</strong> قبل أن يتعامل مع بيانات مستخدم حقيقية، حتى مراجعة خارجية واحدة تلتقط أنماطاً لن يتعرف عليها باني لأول مرة.</li>
+      <li><strong>تحققوا ماذا يحدث عندما يفشل شيء.</strong> دفعة تنتهي مهلتها، رفع بنوع ملف خاطئ، اتصال شبكة ينقطع، أكّدوا أن التطبيق يفشل بأمان بدلاً من طريقة تُفسِد بيانات أو تمنح وصولاً غير مقصود.</li>
+      <li><strong>احتفظوا بسجل لما تغيّر ولماذا.</strong> حتى سجل تغييرات بسيط يجعل من الأسهل بكثير رصد متى غيّر تعديل جديد مولَّد بالذكاء الاصطناعي بصمت شيئاً غير مرتبط بما طُلب.</li>
+      <li><strong>ضعوا تذكيراً لمراجعة هذه القائمة عند كل ميزة رئيسية</strong>، لا مرة واحدة فقط عند الإطلاق. قاعدة كود كانت آمنة في الإصدار الأول لا تبقى آمنة تلقائياً مع إضافة ميزات جديدة فوقها.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- WHEN NOT TO -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="not-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="not-heading" style="text-align:right; margin-bottom:1.5rem;">متى لا تكون البرمجة الحدسية النهج الصحيح</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      البرمجة الحدسية غير المُشرَف عليها وغير المفحوصة ملاءمة سيئة لأي شيء يتعامل مع مدفوعات، معلومات صحية، مستندات قانونية، أو تحكم وصول لأنظمة حساسة، بالضبط الحالات التي يسبب فيها خطأ هادئ ضرراً حقيقياً. أيضاً ملاءمة سيئة لقواعد كود كبيرة وطويلة العمر دون أحد يراجع البنية بمرور الوقت، لأن السرعة دون إشراف تتراكم لفوضى أسرع من التطوير اليدوي. لا شيء من هذا يعني أن الذكاء الاصطناعي ليس له مكان في هذه المشاريع. يعني أن طبقة المراجعة والاختبار تصبح غير قابلة للتفاوض بدلاً من اختيارية.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      قاعدة عامة مفيدة: كلما كان اكتشاف خطأ بعد وقوعه أكثر تكلفة، مالياً، ثقةً، بيانات شخصية لأحدهم تُكشَف، كلما كان تخطي المراجعة أقل ملاءمة، بغض النظر عن مدى جودة أداء العرض التوضيحي. هذا ليس بياناً عن الذكاء الاصطناعي. إنها نفس القاعدة التي انطبقت على البرمجيات المكتوبة يدوياً قبل أدوات ترميز الذكاء الاصطناعي بوقت طويل؛ الذكاء الاصطناعي فقط جعل نسيانها أسهل.
+    </p>
+  </div>
+</section>
+
+<!-- BRIDGE / MID CTA -->
+<section class="section" aria-labelledby="next-step-heading">
+  <div class="container" style="max-width:820px; text-align:center;">
+    <h2 id="next-step-heading" style="margin-bottom:1rem;">هذا بالضبط لماذا نراجع كل سطر</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      كل خطر أعلاه مشكلة مراجعة، لا مشكلة ذكاء اصطناعي. لهذا تقرن عمليتنا التطوير المُسرَّع بالذكاء الاصطناعي بمراجعة مهندس أول، اختبار آلي، ومراجعة أمنية على أي شيء يلمس المصادقة، المدفوعات، أو بيانات المستخدم، في كل مشروع، كل مرة.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:2rem;">
+      تحصلون على سرعة البرمجة الحدسية دون تخطي الخطوة التي تمنع هذه القصص بالضبط، ودون الحاجة لأن تصبحوا خبراء أمن بأنفسكم لمعرفة أنها عولجت.
+    </p>
+    <button onclick="openModal(this)" data-source="ar_vibe_risks_mid" class="btn-primary">ناقشوا مشروعكم</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">تريدونه مبنياً بشكل صحيح من المرة الأولى؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">أخبرونا ماذا تبنون. سنعطيكم جدولاً زمنياً وتقدير تكلفة، مجاناً، دون التزام.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_vibe_risks_final" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">ناقشوا مشروعكم</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "name": "مخاطر وحدود البرمجة الحدسية",
+      "url": "https://lenooai.com/ar/services/vibe-coding/risks-and-limitations",
+      "description": "المخاطر الأمنية الحقيقية وحدود البرمجة الحدسية، مشروحة بصدق، بالإضافة لقائمة تحقق عملية قبل شحن كود مولَّد بالذكاء الاصطناعي.",
+      "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+      "areaServed": "United Arab Emirates",
+      "serviceType": "Software Development"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
+        { "@type": "ListItem", "position": 2, "name": "الخدمات", "item": "https://lenooai.com/ar/services" },
+        { "@type": "ListItem", "position": 3, "name": "البرمجة الحدسية", "item": "https://lenooai.com/ar/services/vibe-coding" },
+        { "@type": "ListItem", "position": 4, "name": "المخاطر والحدود", "item": "https://lenooai.com/ar/services/vibe-coding/risks-and-limitations" }
+      ]
+    }
+  ]
+}
+</script>
+
+</ArBaseLayout>
+
+<style>
+.builds-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+@media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+.risks-card-toggle { display:flex; justify-content:space-between; align-items:center; width:100%; background:none; border:none; cursor:pointer; text-align:right; padding:0; gap:1rem; }
+.risks-card-toggle h3 { margin:0; }
+.risks-card-icon { font-size:1.25rem; color:#006875; transition:transform 0.2s; flex-shrink:0; }
+.risks-card-toggle[aria-expanded="true"] .risks-card-icon { transform:rotate(45deg); }
+.risks-card-toggle:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+.risks-card-panel { margin-top:0.75rem; }
+</style>
+
+<script>
+  document.querySelectorAll('[data-risks-expand]').forEach((card) => {
+    const btn = card.querySelector('.risks-card-toggle');
+    const panel = card.querySelector('.risks-card-panel');
+    btn?.addEventListener('click', () => {
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!expanded));
+      if (panel) (panel as HTMLElement).hidden = expanded;
+    });
+  });
+</script>

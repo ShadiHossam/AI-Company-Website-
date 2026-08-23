@@ -1,0 +1,270 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "أي أداة ترميز بالذكاء الاصطناعي مجانية فعلياً؟", answer: "معظم الأدوات أدناه لديها مستوى مجاني حقيقي، لا مجرد تجربة. Claude Code وGitHub Copilot وCursor كلها تقدّم استخداماً مجانياً بحدود يومية أو شهرية؛ Replit وBolt تتيحان بناء وتشغيل مشاريع صغيرة دون تكلفة. المستوى المجاني عادة يكفي للتعلّم عليه أو اختبار فكرة. ينفد بسرعة بمجرد العمل على شيء بحركة حقيقية أو قاعدة كود كبيرة." },
+  { question: "هل أستطيع بناء شيء حقيقي بهذه الأدوات فقط؟", answer: "تستطيعون بناء نموذج أولي عامل، وأحياناً تطبيق إنتاجي صغير، كلياً بهذه الأدوات. ما لا تستبدله هو حكم مهندس خبير: اختيار البنية الصحيحة للتوسع، التقاط فجوة أمنية قبل الشحن، أو معرفة متى سيسبب اختصار مشاكل بعد ستة أشهر. لمشروع شخصي أو اختبار، نادراً ما يكون هذا مشكلة. لشيء يعتمد عليه عملكم، عادة يصبح كذلك." },
+  { question: "ما الفخ في المستويات المجانية؟", answer: "حدود المعدل، سقوف نافذة السياق، ونماذج أبطأ هي المقايضات المعتادة. بعض الأدوات تحدد كم طلباً تحصلون عليه يومياً؛ أخرى تحوّلكم بصمت لنموذج أضعف بمجرد وصولكم لسقف استخدام. لا شيء من هذا مخفي أو غير عادل، فقط يستحق معرفته قبل التخطيط لمشروع حقيقي حول حساب مجاني." },
+  { question: "هل يجب أن أستخدم أداة واحدة أم أتنقل بين عدة أدوات؟", answer: "التنقل طبيعي، وغالباً النهج الأفضل. كثيرون يستخدمون أداة بناء تطبيقات للحصول على مسودة بصرية أولى، ثم ينتقلون لأداة مدمجة في بيئة التطوير أو قائمة على المحادثة لإضافة منطق حقيقي وربط قاعدة بيانات. كل فئة تتخصص في جزء مختلف من المهمة، فالاعتماد على واحدة لكل شيء عادة يعني مصارعة الأداة بدلاً من المشكلة." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_vibe_coding_tools')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+---
+
+<ArBaseLayout
+  title="أفضل أدوات ترميز بالذكاء الاصطناعي للبرمجة الحدسية (٢٠٢٦) | Lenoo AI"
+  description="تفصيل مصنّف لأفضل أدوات ترميز مجانية ومدفوعة بالذكاء الاصطناعي للبرمجة الحدسية في ٢٠٢٦، ما تجيده كل واحدة، وكيف تختارون الصحيحة."
+  canonicalPath="/ar/services/vibe-coding/tools"
+  enPath="/services/vibe-coding/tools"
+  ogImage="/assets/og-services.jpg"
+  ldJson={[faqLdJson]}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services" style="color:inherit;text-decoration:none;opacity:0.65;">الخدمات</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/vibe-coding" style="color:inherit;text-decoration:none;opacity:0.65;">البرمجة الحدسية</a><span style="opacity:0.4;padding:0 4px;"> / </span>الأدوات</div>
+    <h1>أفضل أدوات الذكاء الاصطناعي <span class="gradient-text">للبرمجة الحدسية.</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      عشرات أدوات الترميز بالذكاء الاصطناعي تدّعي الآن كتابة تطبيقكم لكم. بعضها مبني للتوجيه القائم على المحادثة، بعضها يعيش داخل بيئة التطوير لديكم، وبعضها يتخطى الإعداد كلياً. إليكم ما تجيده كل فئة فعلياً.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_vibe_tools_hero" class="btn-primary">ناقشوا مشروعكم</button>
+      <a href="#tool-roundup" class="btn-outline">شاهدوا الأدوات ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?w=1400&q=80&auto=format&fit=crop" alt="مطور يقارن أدوات ترميز بالذكاء الاصطناعي على شاشة حاسوب محمول" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- INTRO -->
+<section class="section" aria-labelledby="intro-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="intro-heading" style="text-align:right; margin-bottom:1.5rem;">ثلاثة أنواع من أدوات ترميز الذكاء الاصطناعي</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      "أداة ترميز بالذكاء الاصطناعي" تغطي ثلاثة منتجات مختلفة فعلياً، والخلط بينها السبب الأكثر شيوعاً لاختيار الناس الأداة الخاطئة. الأدوات القائمة على المحادثة تعمل عبر حوار: تصفون ما تريدونه، وتقرأ الأداة، تكتب، وتشغّل كوداً عبر مشروعكم بأكمله بنفسها. الأدوات المدمجة في بيئة التطوير تجلس داخل محرر تستخدمونه أصلاً، تقترح وتُكمِل الكود أثناء الكتابة أو حسب توجيهكم في لوحة جانبية. أدوات بناء التطبيقات تتخطى المحرر كلياً، تولّد تطبيقاً عاملاً ومنشوراً من وصف مكتوب دون أي إعداد محلي إطلاقاً.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      لا شيء من هذه "الأفضل" موضوعياً. الصحيحة تعتمد على هل تبرمجون أصلاً، كم تحكم تريدونه في النتيجة، وهل تبنون شيئاً لتتعلموا منه، تختبروا فكرة، أو تشغّلوا منتجاً حقيقياً. مطور يريد رؤية كاملة لكل ملف سيحصل على قيمة أكبر من أداة قائمة على المحادثة أو مدمجة ببيئة التطوير، لأن كلتيهما تسلّمان كوداً مصدرياً قابلاً للقراءة تستطيعون نقله، فحصه، وتنسيقه بأنفسكم. شخص يريد رؤية نتيجة عاملة خلال العشر دقائق القادمة، دون فتح طرفية، سيصل أبعد أسرع بأداة بناء تطبيقات.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      يستحق أيضاً معرفة أن هذه الفئات تتداخل أكثر كل عام. الأدوات القائمة على المحادثة تكتسب متصفحات ملفات بأسلوب بيئة التطوير، أدوات بيئة التطوير تكتسب وكلاء متعددي الخطوات أكثر استقلالية، وأدوات بناء التطبيقات تعرض المزيد من الكود الأساسي للأشخاص الذين يريدون نقله لمكان آخر. لا تعاملوا الفئة كتسمية دائمة. عاملوها كوصف لأين بدأت الأداة وما لا تزال تجيده أفضل اليوم.
+    </p>
+  </div>
+</section>
+
+<!-- TOOL ROUNDUP -->
+<section id="tool-roundup" class="section" style="background:#f0f3ff;" aria-labelledby="roundup-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="roundup-heading">جولة على أدوات الترميز بالذكاء الاصطناعي</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">تصفحوا كل فئة أدناه، أو انتقلوا مباشرة للتي تناسب كيف تريدون العمل.</p>
+    </div>
+    <div class="vibe-tabs" role="tablist" aria-label="فئات الأدوات">
+      <button type="button" id="vibe-tab-chat" class="vibe-tab-btn active" data-vibe-tab="chat" role="tab" aria-selected="true" aria-controls="vibe-panel-chat">قائمة على المحادثة</button>
+      <button type="button" id="vibe-tab-ide" class="vibe-tab-btn" data-vibe-tab="ide" role="tab" aria-selected="false" aria-controls="vibe-panel-ide">مدمجة ببيئة التطوير</button>
+      <button type="button" id="vibe-tab-appbuilder" class="vibe-tab-btn" data-vibe-tab="appbuilder" role="tab" aria-selected="false" aria-controls="vibe-panel-appbuilder">بناء تطبيقات</button>
+    </div>
+
+    <div id="vibe-panel-chat" data-vibe-tab-panel="chat" role="tabpanel" aria-labelledby="vibe-tab-chat">
+      <p style="color:#42474e; font-size:1.0625rem; margin-bottom:1.5rem;">تصفون المهمة بلغة بسيطة؛ تقرأ الأداة قاعدة كودكم، تُجري التغيير، وتستطيع تشغيله واختباره.</p>
+      <img src="https://images.unsplash.com/photo-1763568258239-d3b5c95019af?w=700&q=80&auto=format&fit=crop" alt="مطور يكتب على حاسوب محمول مع مساعد ترميز بالذكاء الاصطناعي قائم على المحادثة" loading="lazy" width="700" height="467" style="width:100%; max-width:700px; height:auto; border-radius:16px; margin-bottom:1.5rem; display:block;" />
+      <div class="bento-grid bento-grid-2">
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem;">Claude Code</h3>
+          <p style="color:#42474e; font-size:0.9rem; line-height:1.75; margin-bottom:0.75rem;">وكيل سطر أوامر يقرأ مشروعكم بأكمله، يعدّل الملفات مباشرة، يشغّل مجموعة اختباراتكم، ويرتكب التغييرات عندما توافقون. الأقوى للمطورين الذين يريدون وكيلاً يتصرف كمهندس مبتدئ حذر لا صندوق إكمال تلقائي. يخطط تغييرات متعددة الخطوات عبر عشرات الملفات، يشرح ماذا سيفعل قبل فعله، ويمكن مقاطعته أو تصحيحه في منتصف المهمة لا مراجعته فقط بعد الحدث.</p>
+          <p style="color:#72787e; font-size:0.8125rem;"><strong>المستوى المجاني:</strong> استخدام يومي محدود على حساب مجاني، حدود أعلى على خطط مدفوعة. <strong>الأنسب لـ:</strong> أشخاص مرتاحين مع طرفية يريدون تغييرات عميقة ومتعددة الملفات.</p>
+        </div>
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem;">وكلاء ChatGPT/Codex</h3>
+          <p style="color:#42474e; font-size:0.9rem; line-height:1.75; margin-bottom:0.75rem;">مساعدو ترميز حواريون يستطيعون توليد ملفات كاملة، شرح كود غير مألوف، وبشكل متزايد تشغيل وتعديل كود في بيئة متصلة. واجهة محادثة مألوفة، مفيدة حتى للنصوص لمرة واحدة. لأن الواجهة تعمل أيضاً كمساعد عام الغرض، طريقة سهلة للتنقل بين "اشرح هذا المفهوم" و"الآن اكتبه" دون تبديل الأدوات.</p>
+          <p style="color:#72787e; font-size:0.8125rem;"><strong>المستوى المجاني:</strong> وصول محادثة أساسي مجاني، ميزات وكيل الترميز عادة محصورة بالمستويات المدفوعة. <strong>الأنسب لـ:</strong> نصوص سريعة، التعلّم، وشرح كود لم تكتبوه.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="vibe-panel-ide" data-vibe-tab-panel="ide" role="tabpanel" aria-labelledby="vibe-tab-ide" hidden>
+      <p style="color:#42474e; font-size:1.0625rem; margin-bottom:1.5rem;">تعيش هذه داخل محرر، تقترح كوداً أثناء الكتابة أو تعمل من لوحة جانبية توجهونها.</p>
+      <img src="https://images.unsplash.com/photo-1579397256979-cc326aefe273?w=700&q=80&auto=format&fit=crop" alt="لقطة مقرّبة لشاشة محرر كود بكود مُلوَّن نحوياً" loading="lazy" width="700" height="467" style="width:100%; max-width:700px; height:auto; border-radius:16px; margin-bottom:1.5rem; display:block;" />
+      <div class="bento-grid bento-grid-2">
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem;">Cursor</h3>
+          <p style="color:#42474e; font-size:0.9rem; line-height:1.75; margin-bottom:0.75rem;">محرر كود مبني حول الذكاء الاصطناعي من الأساس، باقتراحات تعديل مضمّنة ولوحة محادثة تستطيع رؤية قاعدة كودكم بأكملها دفعة واحدة. شائع لدى المطورين الذين يريدون مساعدة ذكاء اصطناعي دون مغادرة تخطيط محرر مألوف. تدفق الإكمال بالضغط على تاب يبقي يدي المطور قريبتين من الكتابة العادية، وهذا جزء من سبب أصبح خياراً افتراضياً للأشخاص المنتقلين من محرر تقليدي بدلاً من البدء من نافذة محادثة.</p>
+          <p style="color:#72787e; font-size:0.8125rem;"><strong>المستوى المجاني:</strong> طلبات مجانية محدودة شهرياً، ثم اشتراك مدفوع. <strong>الأنسب لـ:</strong> مطورين يفكرون أصلاً بمفهوم ملفات ومجلدات.</p>
+        </div>
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem;">GitHub Copilot وWindsurf</h3>
+          <p style="color:#42474e; font-size:0.9rem; line-height:1.75; margin-bottom:0.75rem;">يتصل Copilot بمحررات مثل VS Code بإكمالات مضمّنة ومحادثة. Windsurf محرر كامل بوضع وكيلي مشابه. كلاهما يستهدف مطورين يريدون الذكاء الاصطناعي منسوجاً في سير عمل موجود بدلاً من أداة منفصلة للتبديل إليها. ميزة Copilot الانتشار، مثبتة أصلاً عبر حصة كبيرة من الفرق المحترفة، فغالباً مسار المقاومة الأقل حيث توجد أصلاً سياسات وترخيص لدى شركة.</p>
+          <p style="color:#72787e; font-size:0.8125rem;"><strong>المستوى المجاني:</strong> يقدّم Copilot خطة مجانية محدودة (خصوصاً للطلاب ومشرفي المصادر المفتوحة)؛ لدى Windsurf مستوى مجاني بسقف. <strong>الأنسب لـ:</strong> فرق توحّد على محرر واحد.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="vibe-panel-appbuilder" data-vibe-tab-panel="appbuilder" role="tabpanel" aria-labelledby="vibe-tab-appbuilder" hidden>
+      <p style="color:#42474e; font-size:1.0625rem; margin-bottom:1.5rem;">دون إعداد محلي. صفوا تطبيقاً في صندوق نص واحصلوا على نتيجة عاملة، غالباً منشورة أصلاً.</p>
+      <img src="https://images.unsplash.com/photo-1634084462412-b54873c0a56d?w=700&h=467&q=80&auto=format&fit=crop" alt="نافذة متصفح حاسوب محمول تعرض أداة بناء موقع وتطبيق بلا كود بمعاينة بصرية حية" loading="lazy" width="700" height="467" style="width:100%; max-width:700px; height:auto; border-radius:16px; margin-bottom:1.5rem; display:block;" />
+      <div class="bento-grid bento-grid-2">
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem;">Replit وBolt</h3>
+          <p style="color:#42474e; font-size:0.9rem; line-height:1.75; margin-bottom:0.75rem;">بيئات قائمة على المتصفح حيث تصفون تطبيقاً وتشاهدونه يُبنى، يُشغَّل، ويُستضاف، كلها في نفس التبويب. نقطة بداية جيدة لشخص دون بيئة تطوير مُعدَّة إطلاقاً. كلاهما أيضاً يتيحان الاستمرار بالعمل بعد التوليد الأول، تحسين التطبيق عبر وصف إضافي بدلاً من معاملة المُخرَج الأول كنهائي.</p>
+          <p style="color:#72787e; font-size:0.8125rem;"><strong>المستوى المجاني:</strong> كلاهما يقدّم استخداماً مجانياً بحدود حوسبة وتخزين. <strong>الأنسب لـ:</strong> مشاريع أولى، نماذج أولية بأسلوب الهاكاثون، غير مطورين يختبرون فكرة.</p>
+        </div>
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem;">v0 وLovable</h3>
+          <p style="color:#42474e; font-size:0.9rem; line-height:1.75; margin-bottom:0.75rem;">مركّزان على توليد واجهات ويب مصقولة وواجهات أمامية كاملة من وصف، مع ميل v0 لمخرجات على مستوى المكوّن وLovable لتطبيقات كاملة ومتصلة. مسار أسرع لشيء يبدو مكتملاً، بتحكم أقل في بنية الكود الأساسية. كلاهما خيار قوي تحديداً عندما يكون الهدف "اجعل هذا يبدو حقيقياً" بدلاً من "اجعل هذا سليماً تقنياً تحت الغطاء".</p>
+          <p style="color:#72787e; font-size:0.8125rem;"><strong>المستوى المجاني:</strong> توليدات مجانية محدودة، ثم تسعير حسب الاستخدام أو اشتراك. <strong>الأنسب لـ:</strong> مؤسسين يحتاجون نموذجاً أولياً بصرياً لعرضه على مستثمرين أو مستخدمين أوائل.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REALISTIC WORKFLOW -->
+<section class="section" aria-labelledby="workflow-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="workflow-heading" style="text-align:right; margin-bottom:1.5rem;">سير عمل واقعي بهذه الأدوات</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      معظم من يحصلون على نتائج جيدة لا يحبسون أنفسهم بأداة واحدة. نمط شائع: رسم الفكرة والحصول على مسودة بصرية أولى بأداة بناء تطبيقات مثل v0 أو Lovable، لأن رؤية شيء ملموس بسرعة تجعل القرارات التالية أسهل من وصف تطبيق بشكل مجرد. بمجرد صحة الشكل، نقل المشروع لأداة مدمجة ببيئة تطوير مثل Cursor أو وكيل قائم على المحادثة مثل Claude Code لإضافة منطق حقيقي، ربط قاعدة بيانات، والتعامل مع الأجزاء التي تحتاج حكماً هندسياً فعلياً لا صقلاً بصرياً.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      هذا التبديل يهم لأن الأدوات تتخصص فعلياً. أداة بناء تطبيقات مُحسَّنة لـ"يبدو مكتملاً بسرعة" غير مُحسَّنة لـ"يتعامل مع الحالات الحدية بشكل صحيح"، والعكس صحيح. توقع أن تكون أداة واحدة رائعة في كليهما هو من أين يأتي كثير من الإحباط مع هذه المنتجات. معاملتها كمراحل نفس المشروع، بدلاً من خيارات متنافسة، عادة يعطي نتيجة أفضل من اختيار واحدة وإجبار كل مهمة عبرها.
+    </p>
+  </div>
+</section>
+
+<!-- HOW TO CHOOSE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="choose-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="choose-heading" style="text-align:right; margin-bottom:1.5rem;">كيف تختارون</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      ابدؤوا بثلاثة أسئلة. أولاً، هل تعرفون البرمجة أصلاً؟ إذا لا، أداة بناء تطبيقات تصلكم أبعد باحتكاك أقل من وكيل محادثة يتوقع منكم مراجعة مُخرَجه بأنفسكم. ثانياً، كم تحكم تحتاجونه في النتيجة؟ الأدوات القائمة على المحادثة والمدمجة ببيئة التطوير تعطيكم الكود المصدري الفعلي للفحص، التغيير، والنقل لمكان آخر؛ بعض أدوات بناء التطبيقات تبقي المزيد من ذلك تحت الغطاء. ثالثاً، ماذا يحدث بعد أن تعمل النسخة الأولى؟ إذا كانت الإجابة "لا شيء، كان هذا فقط اختباراً"، أي من هذه الأدوات كافٍ. إذا كانت الإجابة "مستخدمون حقيقيون، بيانات حقيقية، صيانة مستمرة"، ذلك مشروع مختلف بمتطلبات مختلفة.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      الميزانية تهم أيضاً، لكن ليس بالطريقة التي يتوقعها الناس. المستوى المجاني لتقريباً أي أداة هنا كافٍ للإجابة "هل تعمل هذه الفكرة أصلاً". حيث تصبح التكلفة عاملاً حقيقياً هو بمجرد أن يصبح مشروع كبيراً بما يكفي ليصطدم بحدود المعدل بانتظام، عندها يتوقف السؤال أن يكون "أي أداة أرخص" ويصبح "هل لا تزال هذه أرخص طريقة لبناء هذا إطلاقاً"، لأن اشتراك يستمر بالاصطدام بسقفه غالباً إشارة أن المشروع تجاوز أداة الفعل بنفسك كلياً.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      افتراضي معقول: استخدموا أداة قائمة على المحادثة أو بناء تطبيقات لاختبار الفكرة بشكل رخيص وسريع. بمجرد التحقق من صحة الفكرة وحاجتها لتصبح شيئاً يُعتمَد عليه، تلك النقطة حيث تكون الأدوات المجانية أنجزت مهمتها ويتولى بناء احترافي.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      شيء آخر يستحق التقرير مقدماً: هل تخططون للاستمرار بالعمل على هذا بأنفسكم على المدى الطويل، أم من المحتمل تسليمه لشخص آخر في النهاية، شريك مؤسس، مطور مُوظَّف، فريق. إذا كان هناك أي احتمال لذلك، فضّلوا أداة تعطيكم كوداً مصدرياً قابلاً للقراءة والتصدير على أداة تبقي التنفيذ مخفياً في معظمه. فك تشابك مشروع من أداة لم تكن مقصودة أبداً لأن يقرأ مُخرَجها أحد آخر مشكلة أصعب بكثير لحلها لاحقاً من اختيار أداة أقل بريقاً قليلاً الآن.
+    </p>
+    <div style="text-align:center; margin-top:2.5rem;">
+      <button onclick="openModal(this)" data-source="ar_vibe_tools_mid" class="btn-primary">ناقشوا مشروعكم</button>
+      <p style="font-size:0.875rem; margin-top:0.75rem; color:#94a3b8;">تجاوزتم المستوى المجاني، أو تحتاجونه جاهزاً للإنتاج؟ نبنيه.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لبناء النسخة الحقيقية؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">أخبرونا ماذا صنعتم كنموذج أولي، أو ماذا تريدون بناءه. سنعطيكم جدولاً زمنياً وتقدير تكلفة، مجاناً، دون التزام.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_vibe_tools_final" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">ناقشوا مشروعكم</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "name": "دليل أدوات ترميز الذكاء الاصطناعي",
+      "url": "https://lenooai.com/ar/services/vibe-coding/tools",
+      "description": "تفصيل مصنّف لأفضل أدوات ترميز مجانية ومدفوعة بالذكاء الاصطناعي للبرمجة الحدسية، ما تجيده كل واحدة، وكيف تختارون الصحيحة.",
+      "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+      "areaServed": "United Arab Emirates",
+      "serviceType": "Software Development"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
+        { "@type": "ListItem", "position": 2, "name": "الخدمات", "item": "https://lenooai.com/ar/services" },
+        { "@type": "ListItem", "position": 3, "name": "البرمجة الحدسية", "item": "https://lenooai.com/ar/services/vibe-coding" },
+        { "@type": "ListItem", "position": 4, "name": "الأدوات", "item": "https://lenooai.com/ar/services/vibe-coding/tools" }
+      ]
+    }
+  ]
+}
+</script>
+
+</ArBaseLayout>
+
+<style>
+.vibe-tabs { display:flex; gap:0.5rem; justify-content:center; margin-bottom:2rem; flex-wrap:wrap; }
+.vibe-tab-btn { padding:0.625rem 1.25rem; border-radius:100px; border:1px solid rgba(0,37,59,0.15); background:#fff; color:#42474e; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.vibe-tab-btn:hover { background:#e7eeff; }
+.vibe-tab-btn.active { background:#006875; border-color:#006875; color:#fff; }
+.vibe-tab-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const tabWrap = document.querySelector('.vibe-tabs');
+  if (tabWrap) {
+    const btns = tabWrap.querySelectorAll('.vibe-tab-btn');
+    const panels = document.querySelectorAll('[data-vibe-tab-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-vibe-tab');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-vibe-tab-panel') !== key; });
+      });
+    });
+  }
+</script>

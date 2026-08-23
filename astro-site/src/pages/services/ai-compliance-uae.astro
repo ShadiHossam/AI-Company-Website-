@@ -1,0 +1,287 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Does an AI chatbot's conversation history count as personal data under PDPL?", answer: "If it contains anything that identifies a person, name, phone number, Emirates ID, health details, financial information, or even a combination of details that could identify someone indirectly, yes. Most business chatbot logs qualify the moment a customer gives their name or number to book something. That means the same PDPL obligations that apply to a CRM record apply to a chat transcript: lawful basis to collect it, a defined retention period, and the ability to act on a data subject's request to see or delete it." },
+  { question: "Can we use a US-hosted AI model like GPT or Claude and stay compliant?", answer: "Generally yes, but the cross-border transfer has to be handled correctly rather than ignored. PDPL requires either that the destination country provides an adequate level of protection or that appropriate safeguards are in place, standard contractual clauses or equivalent, and that the transfer is disclosed in what you tell data subjects about how their data is used. This is a solvable requirement, not a reason to avoid capable models, but it needs to actually be addressed in your setup, not assumed away." },
+  { question: "What kind of deployment actually needs a formal DPIA (Data Protection Impact Assessment)?", answer: "As a rule of thumb: anything processing sensitive categories of data (health, biometric, financial) at scale, anything making automated decisions that materially affect a person (credit decisions, eligibility screening), or anything monitoring individuals systematically. A basic FAQ chatbot on a retail website usually doesn't need one. An AI system triaging patient intake for a clinic almost certainly does. When in doubt, treat it as a question for your legal counsel rather than a guess." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "UAE AI Compliance Advisory",
+    "url": "https://lenooai.com/services/ai-compliance-uae",
+    "description": "PDPL, data residency, and sector-specific compliance guidance for AI deployments in the UAE, covering consent, cross-border transfer, DIFC/ADGM, and healthcare/finance rules.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Compliance Advisory"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://lenooai.com/services" },
+      { "@type": "ListItem", "position": 3, "name": "AI Compliance UAE", "item": "https://lenooai.com/services/ai-compliance-uae" }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems.map((f) => ({
+      "@type": "Question",
+      "name": f.question,
+      "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+    }))
+  }
+];
+---
+
+<BaseLayout
+  title="UAE AI Compliance: PDPL, Data Residency & Deployment Rules | Lenoo AI"
+  description="What PDPL, data residency, and sector regulators actually require of an AI deployment in the UAE. Consent, cross-border transfer, DIFC/ADGM, and a pre-launch checklist."
+  canonicalPath="/services/ai-compliance-uae"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services" style="color:inherit;text-decoration:none;opacity:0.65;">Services</a><span style="opacity:0.4;padding:0 4px;"> / </span>AI Compliance UAE</div>
+    <h1>UAE AI Compliance: <span class="gradient-text">PDPL, Data Residency &amp; the Rules That Actually Apply</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Every AI deployment that touches customer data in the UAE runs into PDPL, and some run into sector-specific rules on top of it. Here's what actually applies, in plain language, before you launch something you'd have to unwind later.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_compliance_hero" class="btn-primary">Get a Compliance Review</button>
+      <a href="#checklist" class="btn-outline">See the Pre-Launch Checklist ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1600&q=80&auto=format&fit=crop" alt="Dubai skyline representing UAE regulatory environment" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 55%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "1", caption: "federal data protection law (PDPL) that applies across the UAE mainland" },
+      { value: "2", caption: "financial free zones (DIFC, ADGM) that run their own separate data protection regimes" },
+      { value: "3+", caption: "sectors, healthcare, finance, government-adjacent work, with additional rules on top" },
+    ]} />
+  </div>
+</div>
+
+<!-- INTRO / LANDSCAPE -->
+<section class="section" aria-labelledby="landscape-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="landscape-heading" style="margin-bottom:1.5rem;">The UAE regulatory landscape for AI</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>There's no single "AI law" in the UAE yet, but there doesn't need to be one for most of what applies to you today.</strong> If your agent collects, stores, or processes anything that identifies a customer, name, phone number, Emirates ID, purchase history, health details, it's already governed by the UAE's Personal Data Protection Law (PDPL), Federal Decree-Law No. 45 of 2021, the same way a CRM or a booking system would be. The AI layer doesn't get a pass just because a model is doing the processing instead of a person.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">On top of PDPL, some sectors carry their own additional rules, healthcare data through DHA in Dubai and DoH in Abu Dhabi, financial services through the Central Bank of the UAE, and anything touching government processes through whichever authority owns that process. These sit alongside PDPL, not instead of it.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">Then there's a wrinkle specific to the UAE: DIFC and ADGM, Dubai and Abu Dhabi's financial free zones, are common-law jurisdictions with their own separate data protection regimes, not simply "the UAE law with a different logo." A business operating out of one of these free zones is often governed by DIFC or ADGM data protection rules for its operations inside the zone, with PDPL applying to activity outside it. Getting this distinction wrong is one of the more common compliance mistakes we see.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80&auto=format&fit=crop" alt="Modern office building representing UAE financial free zones" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PDPL ESSENTIALS -->
+<section id="pdpl-essentials" class="section" style="background:#e7eeff;" aria-labelledby="pdpl-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="pdpl-heading">PDPL essentials for AI deployments</h2>
+      <p>Four things that apply directly to how an AI agent collects and uses customer data.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">verified_user</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Consent &amp; Lawful Basis</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">You need a lawful basis to process someone's data, most commonly consent or the fact that processing is necessary to deliver the service they asked for. An agent collecting a phone number to confirm a booking usually clears this. An agent quietly using that same number to build a marketing profile without saying so does not.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">manage_accounts</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Data Subject Rights</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Customers have the right to ask what data you hold about them, request a correction, or request deletion. If your agent's conversation history lives in a system you can't easily search and delete from, you can't honor this request when it comes, which is itself a compliance gap.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">public</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Cross-Border Transfer Rules</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Sending customer data to a model or server hosted outside the UAE, which most global AI providers do by default, is a cross-border transfer. PDPL allows this, but it needs to be handled properly: adequate protection at the destination or appropriate contractual safeguards, and disclosed in what you tell customers about how their data is used.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">report_problem</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Breach Notification</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">If personal data processed by your agent is exposed, through a leaked API key, a misconfigured database, or a compromised integration, there are notification obligations. Knowing who's responsible for this before it happens matters more than knowing it after.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">We build data handling into the architecture from day one, not as a document written after the fact.</p>
+      <button onclick="openModal(this)" data-source="ai_compliance_mid" class="btn-primary">Get a Compliance Review</button>
+    </div>
+  </div>
+</section>
+
+<!-- DATA RESIDENCY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="residency-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="residency-heading">Data residency: where your AI's data actually lives</h2>
+      <p>Most businesses can't answer this question about their own AI agent, and it's usually the first thing worth checking.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Where the conversation logs sit</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Chat platforms, WhatsApp business tooling, and helpdesk software often store conversation history on servers outside the UAE by default. That's not automatically a problem, but you need to know it's happening to handle it correctly.</p>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Where the model itself runs</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Foundation model providers process the actual conversation on infrastructure that's usually outside the UAE. This is the cross-border transfer that needs to be disclosed and, where required, safeguarded contractually.</p>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Where your business records live</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">CRM entries, booking records, and anything the agent writes back into your own systems should sit wherever your existing data governance says it should, which for regulated sectors often means UAE-based hosting specifically.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTOR-SPECIFIC RULES -->
+<section class="section" aria-labelledby="sector-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="sector-heading">Sector-specific rules</h2>
+      <p>PDPL is the floor. Some sectors have to clear a higher bar on top of it.</p>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Healthcare (DHA/DoH)</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Patient data, and even the fact that someone is a patient at all, carries specific handling requirements under Dubai Health Authority and Department of Health rules. An AI agent triaging symptoms or handling insurance approvals needs to work within those, not just PDPL generally.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Finance (CBUAE)</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Financial data and anything resembling a lending or eligibility decision falls under Central Bank of the UAE oversight in addition to PDPL. Automated decisions that affect someone's access to credit or financial products carry extra scrutiny.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Government-adjacent work</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">If your AI system touches a process connected to a government service, licensing, permits, official records, the owning authority typically has its own requirements around data handling and system access that sit above general PDPL rules.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">When in doubt, ask first</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">If you're not sure whether a sector rule applies to what you're building, that's a question for your legal counsel or the relevant regulator before launch, not something to guess at and fix later if someone flags it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FREE ZONE DIFFERENCES -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="freezone-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="freezone-heading">Free zone differences</h2>
+      <p>DIFC and ADGM aren't just tax and licensing zones, they run entirely separate data protection regimes.</p>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">DIFC Data Protection Law</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">The Dubai International Financial Centre operates its own data protection law, closer in structure to GDPR than PDPL is. A business licensed and operating inside DIFC generally follows DIFC's regime for that activity, with its own registration requirements and its own regulator (the DIFC Commissioner of Data Protection), separate from mainland PDPL enforcement.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">ADGM Data Protection Regulations</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Abu Dhabi Global Market runs a comparable, separate regime for entities operating within it. If your business is licensed in ADGM, that's typically the framework governing your data handling for that entity's activity, again distinct from mainland PDPL.</p>
+      </div>
+    </div>
+    <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-top:1.5rem; max-width:760px;">The practical takeaway: which regime actually applies to your AI deployment depends on where the entity processing the data is licensed and where the activity happens, not just on where your office happens to be. This is worth confirming with your legal counsel rather than assuming, especially for businesses operating both inside and outside a free zone.</p>
+  </div>
+</section>
+
+<!-- CHECKLIST -->
+<section id="checklist" class="section" style="background:#f0f3ff;" aria-labelledby="checklist-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="checklist-heading">A compliance checklist before you deploy an agent</h2>
+    </div>
+    <div class="research-panel">
+      <ul class="journey-list" style="gap:1rem;">
+        <li>Confirm which regime applies: mainland PDPL, DIFC, or ADGM, based on where your entity is licensed.</li>
+        <li>Identify what personal data the agent will actually collect, including anything gathered indirectly through conversation.</li>
+        <li>Confirm your lawful basis for collecting it and that customers are told how it's used.</li>
+        <li>Know where the data physically sits: the chat platform, the model provider, and your own systems.</li>
+        <li>Have a documented process for cross-border transfer if the model or platform is hosted outside the UAE.</li>
+        <li>Have a working process to find, correct, or delete a specific person's data on request.</li>
+        <li>Check whether any sector-specific rules apply (healthcare, finance, government-adjacent work).</li>
+        <li>Decide whether the deployment needs a formal DPIA, and if unsure, ask legal counsel rather than skip it.</li>
+        <li>Have a breach notification process and a named owner for it before, not after, an incident.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT HAPPENS IF WRONG -->
+<section class="section" aria-labelledby="wrong-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto; text-align:center;">
+      <h2 id="wrong-heading" style="margin-bottom:1.25rem;">What happens if you get it wrong</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">PDPL gives regulators the power to investigate and penalize non-compliant data handling, and the exposure is worse for a business that never thought about it than for one that made a reasonable, documented attempt and got a detail wrong. Beyond the regulatory risk, there's a customer-trust cost that's easy to underestimate: a data-handling mistake involving an AI agent tends to get noticed and shared, and unwinding an agent that's already been collecting data incorrectly for months is a lot more work than building it correctly from the start.</p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">This isn't a reason to avoid AI. It's a reason to build the compliance thinking into the deployment from the beginning, the same way you'd think about it for any other system that touches customer data, instead of treating it as a document to produce after the fact if someone asks.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about UAE AI compliance</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+    <p style="color:#7c8a99; font-size:0.8125rem; margin-top:1.5rem; text-align:center;">This page is general information about UAE data protection as it relates to AI deployments, not legal advice. Work with your legal counsel for a formal compliance opinion specific to your business.</p>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Compliance Review</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Get a Compliance Review of Your Planned Deployment</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Tell us what you're planning to build and what data it will touch. We'll flag what applies to your specific setup before you build anything, not after.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="ai_compliance_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Get a Compliance Review</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+.num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+.research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; }
+.apps-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+.eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+@media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.journey-list li { position:relative; padding-left:1.75rem; color:#42474e; font-size:0.9375rem; line-height:1.7; }
+.journey-list li::before { content:''; position:absolute; left:0; top:0.55em; width:9px; height:9px; border-radius:50%; background:#00e3fd; }
+</style>

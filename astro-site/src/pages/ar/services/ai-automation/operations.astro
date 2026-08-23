@@ -1,0 +1,270 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../../components/ProcessSteps.astro";
+import StatStrip from "../../../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "كم يستغرق مشروع أتمتة عمليات ليسترد تكلفته؟", answer: "معظم مشاريع سير العمل الواحد، معالجة مستندات أو توجيه تذاكر بمفردها، تسترد تكلفتها خلال بضعة أشهر بمجرد احتساب الساعات المُحرَّرة كل أسبوع. مشاريع سير العمل المتعدد التي تلمس عدة أنظمة تستغرق أطول للاسترداد الكامل لكن تميل للتراكم، لأن نفس الأتمتة الأساسية غالباً تدعم أكثر من سير عمل واحد. نعطيكم تقديراً واقعياً للاسترداد بعد تدقيق العمليات، بناءً على حجمكم الفعلي." },
+  { question: "هل نحتاج توظيف عمليات مخصصاً لتشغيل هذا بمجرد إطلاقه؟", answer: "لا. الأتمتة مبنية للعمل داخل الأدوات التي يستخدمها فريقكم أصلاً، فلا تحتاج متخصصاً يراقبها يومياً. يجب أن يمتلكها أحد في فريقكم بمعنى مراجعة الاستثناءات المُعلَّمة ومعرفة من يتصل به إذا بدا شيء خاطئاً، لكن ذلك جزء بسيط من الوقت الذي كانت تستغرقه العملية اليدوية، لا دور جديد بدوام كامل." },
+  { question: "ماذا لو كانت عملياتنا غير متسقة عبر الأقسام؟", answer: "هذا شائع، وهو فعلياً جزء مما يُصمَّم تدقيق العمليات لأجله. نرسم كيف يتعامل كل قسم حالياً مع سير عمل معين، سواء كان استقبال مستندات، جدولة، أو إدارة موردين، وإما نُوحِّد على النسخة التي تعمل أفضل أو نبني قواعد منفصلة لكل قسم حيث الفرق ضروري فعلياً. الأتمتة تكشف عدم الاتساق الموجود أصلاً؛ لا تتطلب إصلاحه أولاً." },
+  { question: "هل تستطيع الأتمتة التعامل مع الاستثناءات، أم يجب أن يتبع كل شيء قاعدة ثابتة؟", answer: "الأتمتة تعمل على قواعد، لكن القواعد تشمل ماذا يُفعَل عندما لا يطابق شيء النمط العادي. فاتورة بحقل ناقص، طلب لا يطابق أي فئة موجودة، مستند لا يستطيع النظام قراءته بنظافة، كلها تُوجَّه لشخص بدلاً من إجبارها عبر النظام. الهدف ليس إجبار كل حالة عبر الأتمتة تلقائياً. إنه توجيه الاستثناءات الحقيقية فقط لبشري، لا التسعين بالمئة الروتينية." },
+  { question: "كم يُخِلّ الطرح بالعمليات اليومية؟", answer: "نبني ونختبر الأتمتة مقابل مستندات، تذاكر، أو طلبات حقيقية قبل إطلاقها، وتعمل جنباً إلى جنب مع عمليتكم الحالية بدلاً من استبدالها بين عشية وضحاها. معظم الفرق لا تلاحظ اضطراباً لأن العملية اليدوية لا تزال موجودة كبديل خلال الأسابيع الأولى، بينما نراقب الأتمتة ونضبطها بناءً على ما يمر فعلياً." },
+];
+
+const processSteps = [
+  { icon: "search", step: "الخطوة ١", title: "تدقيق العمليات", description: "نرسم كيف تنتقل المستندات والتذاكر والطلبات حالياً عبر مكتبكم الخلفي ونحدد أين يكلف العمل اليدوي أكثر وقت." },
+  { icon: "edit", step: "الخطوة ٢", title: "التصميم والتخطيط", description: "نصمم الأتمتة حول نظام ERP وHRMS ومحركاتكم المشتركة الحالية، ونحصل على الموافقة قبل بناء أي شيء." },
+  { icon: "build", step: "الخطوة ٣", title: "البناء والاختبار", description: "نبني الأتمتة ونختبرها مقابل مستندات وطلبات حقيقية حتى يطابق المُخرَج ما يتوقعه فريقكم." },
+  { icon: "rocket_launch", step: "الخطوة ٤", title: "الإطلاق والمراقبة", description: "تُطلَق الأتمتة جنباً إلى جنب مع عمليتكم الحالية. نراقبها لمدة ٩٠ يوماً ونعدّلها مع تطور عمليتكم." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'الذكاء الاصطناعي للعمليات والإدارة',
+    url: 'https://lenooai.com/ar/services/ai-automation/operations',
+    description: 'أتمتة المكتب الخلفي لفرق العمليات والإدارة الإماراتية: معالجة المستندات، الجدولة، تذاكر داخلية، تقارير، إعداد وإنهاء خدمة الموظفين، وإدارة الموردين.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع أتمتة ذكاء اصطناعي لفرق العمليات والإدارة: التسعير حسب تعقيد سير العمل والنطاق. احجزوا تدقيق عمليات مجاني للحصول على عرض سعر.' },
+    serviceType: 'AI Automation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'أتمتة الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'العمليات', item: 'https://lenooai.com/ar/services/ai-automation/operations' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="الذكاء الاصطناعي للعمليات والإدارة: دليل أتمتة المكتب الخلفي | Lenoo AI"
+  description="أتمتة المكتب الخلفي لفرق العمليات الإماراتية: معالجة المستندات، الجدولة، التذاكر، التقارير، الإعداد، وإدارة الموردين. مبنية للشركات النامية."
+  canonicalPath="/ar/services/ai-automation/operations"
+  enPath="/services/ai-automation/operations"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">أتمتة الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>العمليات</div>
+    <h1>الذكاء الاصطناعي <span class="gradient-text">للعمليات والإدارة</span>: دليل أتمتة المكتب الخلفي</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      كل شركة نامية تنتهي بنفس ضريبة المكتب الخلفي: مستندات تُعالَج، طلبات تُوجَّه، جداول تُوازَن، أوراق إعداد تُلاحَق. نبني أتمتة حول نظام ERP وHRMS ومحركاتكم المشتركة التي يستخدمها فريقكم أصلاً، فيعمل ذلك العمل بنفسه بدلاً من استهلاك أسبوع فريق عملياتكم.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">مراقبة بعد الإطلاق مشمولة في كل مشروع</span>
+      <span class="tchip">ضمان استرداد إذا لم تكونوا راضين عما نقدمه</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_ai_automation_operations_hero" class="btn-primary">احجزوا تدقيق عمليات مجاني</button>
+      <a href="#ops-systems" class="btn-outline">شاهدوا ما نؤتمته ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1400&q=80&auto=format&fit=crop" alt="عضو فريق عمليات يدير مستندات وسير عمل على مكتب" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "٤٠٪", caption: "من مهام العمل في معظم وظائف المكتب الخلفي قابلة للأتمتة بالذكاء الاصطناعي المتاح حالياً. معالجة المستندات والجدولة عادة في المقدمة." },
+      { value: "٩٠ يوماً", caption: "مراقبة بعد الإطلاق مشمولة في كل مشروع" },
+      { value: "١٠٠٪", caption: "ضمان استرداد إذا لم تكونوا راضين عما نقدمه" },
+    ]} />
+  </div>
+</div>
+
+<!-- THE BACK-OFFICE TAX -->
+<section class="section" aria-labelledby="tax-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="tax-heading" style="margin-bottom:1.5rem;">ضريبة المكتب الخلفي التي تدفعها كل شركة نامية</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">لا أحد يخطط لبناء شركة يقضي فيها ثلاثة أشخاص نصف أسبوعهم في العمل الإداري. يحدث تدريجياً: موظف جديد يحتاج أوراق إعداد، عميل يرسل عقداً يحتاج أرشفة، فاتورة مورد تحتاج توجيه موافقة، طلب داخلي يحتاج أحداً يتتبعه. فردياً، لا شيء منها يبدو مشكلة حقيقية. مجتمعةً عبر فريق من عشرين أو خمسين شخصاً، إنها ضريبة صامتة على وقت كل قسم.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">النمط متشابه تقريباً دائماً بغض النظر عن القطاع: المعلومات تحتاج الانتقال من مكان لآخر، الفحص، والأرشفة أو التصرف عليها، وحالياً شخص هو من ينقلها. هذه ليست مشكلة مهارات. إنها مشكلة سباكة، والسباكة بالضبط ما تجيده الأتمتة.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">الشركات التي نتحدث معها باستمرار تقلل من تقدير كم من هذه الضريبة تدفعها حتى يرسمها أحدهم فعلياً، لأن كل مهمة فردية تبدو صغيرة في اللحظة. تدقيق العمليات أدناه مبني تحديداً لجعل ذلك الإجمالي مرئياً قبل الالتزام بإصلاح أي منه.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&q=80&auto=format&fit=crop" alt="عضو فريق ينظم مستندات وملفات في إعداد مكتبي" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI SYSTEMS FOR OPS -->
+<section id="ops-systems" class="section" style="background:#e7eeff;" aria-labelledby="systems-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="systems-heading">أنظمة ذكاء اصطناعي للعمليات</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">مبنية فوق الأدوات التي يستخدمها فريق عملياتكم وإدارتكم أصلاً. كل مشروع يشمل مراقبة بعد الإطلاق.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">description</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">معالجة المستندات وإدخال البيانات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">الذكاء الاصطناعي يقرأ النماذج والعقود والمراسلات الواردة، يستخرج الحقول ذات الصلة، ويدخلها في النظام الصحيح، دون إعادة كتابة يدوية.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> فريق عمليات كان يقضي ساعات أسبوعياً يعيد كتابة تقديمات نماذج في نظامه الآن يجد تلك البيانات تظهر تلقائياً، مفحوصة ومؤرشفة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">event_available</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">الجدولة وتخصيص الموارد</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">الاجتماعات، المناوبات، والموارد المشتركة تُحجَز مباشرة مقابل التوفر الفعلي، بتعليم التعارضات تلقائياً بدلاً من اكتشافها بعد الحقيقة.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> فريق كان يحجز غرفة اجتماعات مشتركة مرتين كل أسبوعين الآن يجد الحجوزات مُتحقَّق منها مقابل تقاويم حية قبل تأكيدها.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">support_agent</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">التذاكر الداخلية ومكتب المساعدة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">الطلبات الداخلية تُصنَّف، تُوجَّه للشخص الصحيح، وتُتابَع تلقائياً، بتصعيد إذا بقيت تذكرة دون لمس تجاوز عتبة يحددها فريقكم.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> طلبات تقنية المعلومات والمرافق التي كانت تصل كرسائل بريد إلكتروني متفرقة الآن تحط كتذاكر متتبَّعة، مُوجَّهة للطابور الصحيح بنفسها.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bar_chart</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">التقارير ولوحات التحكم</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">التقارير التشغيلية المتكررة، عدد الموظفين، إنفاق الموردين، حجم التذاكر، تُجمَّع وتُسلَّم حسب جدول، مسحوبة مباشرة من أنظمتكم المصدر.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> تقرير عمليات أسبوعي كان يستغرق نصف يوم لتجميعه يدوياً الآن يحط في بريد مدير العمليات كل صباح اثنين.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">badge</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">سير عمل الإعداد وإنهاء الخدمة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">أوراق الموظف الجديد، طلبات وصول الأنظمة، وتجهيز المعدات تُطلَق تلقائياً لحظة انضمام أحدهم، وتُعكَس بنظافة لحظة مغادرته.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> موظف جديد كان ينتظر ثلاثة أيام لوصول الأنظمة الآن يجد كل حساب مُجهَّزاً قبل بدء صباحه الأول.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">handshake</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">إدارة الموردين والعقود</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">عقود الموردين تُتتبَّع لمواعيد التجديد والشروط الرئيسية تلقائياً، بتنبيهات قبل إغلاق نافذة تجديد بدلاً من بعد فواتها فعلياً.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> عقد مورد كان يُجدَّد تلقائياً دون ملاحظة لسنتين الآن يُعلَّم عليه قبل ستين يوماً من موعد تجديده، في كل مرة.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">مشمول بضمان استرداد كامل ١٠٠٪</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">كل سير عمل محدد النطاق حول الأدوات التي يستخدمها فريق عملياتكم أصلاً، مع ٩٠ يوماً من المراقبة بعد الإطلاق مشمولة.</p>
+      <button onclick="openModal(this)" data-source="ar_ai_automation_operations_mid" class="btn-primary">احجزوا تدقيق عمليات مجاني</button>
+    </div>
+  </div>
+</section>
+
+<!-- WHERE TO START -->
+<section class="section" aria-labelledby="start-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="start-heading" style="margin-bottom:1.5rem;">أين تبدؤون: تدقيق العمليات</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        معظم قادة العمليات يعرفون أن شيئاً بطيء لكنهم لم يرسموا بالضبط أين تذهب الساعات. التدقيق موجود لإصلاح ذلك قبل بناء أي شيء. نجلس مع فريق عملياتكم، نمر عبر كل سير عمل متكرر، استقبال مستندات، جدولة، تذاكر، إعداد، تتبع موردين، ونلاحظ كيف يحدث فعلياً اليوم: أي أنظمة يلمس، من معني، وأين يميل للتعثر.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        المُخرَج ليس توصية عامة بـ"أتمتة كل شيء". إنه قائمة مرتبة من سير العمل المحدد الذي يكلف فريقكم أكثر وقت، مع تقدير واقعي لما ستوفره أتمتة كل منه وتقريباً ما سيتطلبه بناؤه. بعض سير العمل يتضح أنه يستحق الأتمتة فوراً. آخرون يتضح أنهم غير منتظمين جداً أو يحتاجون حكماً كثيراً ليستحقوا الآن، ونقول ذلك مباشرة بدلاً من عرض مشروع أكبر مما تبرره المشكلة.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        معظم الفرق تبدأ بسير عمل واحد أو اثنين، ترى توفير الوقت يظهر خلال أسابيع، وتعود للتالي بمجرد إثباته. هذا نهج مقصود: أسهل الوثوق بالأتمتة للعملية التالية بمجرد رؤية الأولى تعمل بموثوقية.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS IT PLUGS INTO -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="tools-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="tools-heading" style="margin-bottom:1.5rem;">الأدوات التي تتصل بها</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">الأتمتة تقرأ من وتكتب على الأنظمة التي يشغّلها فريق عملياتكم يومياً أصلاً. هذا عادة يعني نظام <strong>ERP</strong> لديكم، لأي شيء يلمس بيانات المالية أو المشتريات أو المخزون؛ <strong>HRMS</strong> لديكم، للإعداد وإنهاء الخدمة وسجلات الموظفين؛ و<strong>المحركات المشتركة</strong>، المجلدات، ومخازن المستندات حيث تعيش العقود والنماذج والمراسلات فعلياً.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">لا شيء يعمل في نظام موازٍ يجب على فريقكم فحصه منفصلاً. إذا احتاج سير عمل نقل بيانات بين اثنين من هذه الأنظمة، الأتمتة تتولى ذلك النقل مباشرة، فيظهر تغيير في مكان واحد في الآخر دون أن ينسخه أحد يدوياً.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1611746869696-d09bce200020?w=800&q=80&auto=format&fit=crop" alt="عضو فريق يراجع لوحة تحكم وتقارير العمليات على حاسوب محمول" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">من تدقيق العمليات لأتمتة فعالة</h2>
+    </div>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" style="background:#f0f3ff;" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">أخبرونا أي مهمة مكتب خلفي متكررة تستهلك أكثر وقت فريقكم.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_automation_operations_mid2" class="btn-primary">احجزوا مكالمة أتمتة عمليات</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- CROSS-LINK -->
+<section class="section-sm" aria-labelledby="related-heading">
+  <div class="container">
+    <div style="max-width:720px; margin:0 auto; text-align:center;">
+      <h2 id="related-heading" style="font-size:1.375rem; margin-bottom:1rem;">تبحثون عن أتمتة عبر عملكم بأكمله؟</h2>
+      <p style="color:#42474e; font-size:1rem; line-height:1.8;">
+        راجعوا <a href="/ar/services/ai-automation">مركز أتمتة الذكاء الاصطناعي لدينا</a> للنطاق الكامل لسير العمل الذي نؤتمته عبر المبيعات والمالية والإدارة، لا عمليات المكتب الخلفي فقط.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">تدقيق عمليات مجاني</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لمعرفة ما يستهلك فعلياً أسبوع فريقكم؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجزوا تدقيق عمليات مجاني مع فريقنا في دبي. سنرسم سير عمل مكتبكم الخلفي ونحدد التي تستحق الأتمتة أولاً.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_automation_operations_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا تدقيق عمليات مجاني</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>

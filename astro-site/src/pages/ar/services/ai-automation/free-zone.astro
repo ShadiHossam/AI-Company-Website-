@@ -1,0 +1,269 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../../components/ProcessSteps.astro";
+import StatStrip from "../../../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "هل تختلف الأتمتة حسب أي منطقة حرة نحن مرخّصون فيها؟", answer: "سير العمل الأساسي، تواصل العملاء، الفوترة، تتبع الامتثال، التقارير، متشابه عبر المناطق الحرة، لكن القواعد المحددة ووتيرة التجديد تختلف. ترخيص تجاري في DMCC يُجدَّد بدورة وأوراق مختلفة عن ترخيص مستودعات JAFZA أو ترخيص خدمات مالية في DIFC. نبني تتبع الامتثال حول متطلبات جهة منطقتكم الحرة المحددة، لا قالب عام." },
+  { question: "ماذا يحدث إذا توسعنا للبر الرئيسي الإماراتي إلى جانب كياننا في المنطقة الحرة؟", answer: "هذا شائع مع نمو شركات المناطق الحرة، ويضيف طبقة تعقيد تستحق التخطيط لها: الكيانات في البر الرئيسي والمنطقة الحرة تُفرَض عليها ضرائب وتُفوتَر بشكل مختلف، ومعاملة ضريبة القيمة المضافة على المعاملات بينهما قد تختلف عن معاملة قياسية بين منطقتين حرتين أو منطقة حرة وتصدير. نبني أتمتة الفوترة لتطبيق المعاملة الصحيحة بناءً على أي كيان وأي طرف مقابل معني، فلا يقرر فريقكم منطق ضريبة القيمة المضافة يدوياً على كل فاتورة." },
+  { question: "هل يستطيع هذا التعامل مع التقارير عبر عدة كيانات مناطق حرة تحت مجموعة واحدة؟", answer: "نعم. إذا كانت لمجموعتكم كيانات عبر أكثر من منطقة حرة، أو مزيج من كيانات منطقة حرة وبر رئيسي، نبني أتمتة التقارير لتوحيد على مستوى المجموعة مع إبقاء دفاتر وتتبع امتثال كل كيان منفصلاً. هذا هيكل شائع للشركات القابضة والمجموعات متعددة العلامات العاملة في الإمارات." },
+  { question: "هل تحتاج شركات المناطق الحرة معالجة ضريبة قيمة مضافة مختلفة عن أعمال البر الرئيسي؟", answer: "في بعض الحالات، نعم. بعض المناطق الحرة تُعامَل كمناطق محددة لأغراض ضريبة القيمة المضافة، مما يؤثر على كيفية فرض الضريبة على المعاملات، خاصة للبضائع المتحركة داخل وخارج المنطقة. لا نقدّم استشارة ضريبية، لكننا نبني أتمتة الفوترة والتقارير لتطبيق معاملة ضريبة القيمة المضافة التي أكد محاسبكم أو مستشاركم الضريبي أنها تنطبق على منطقتكم الحرة ونوع معاملتكم المحددين." },
+  { question: "كيف يعمل تتبع تجديد الترخيص فعلياً؟", answer: "نسحب مواعيد انتهاء رخصتكم، تأشيراتكم، وتصاريحكم في سير عمل تتبع واحد ونحدد تنبيهات قبل كل موعد نهائي بوقت كافٍ، عادة ستين وثلاثين يوماً قبله، فلا يفوت شيء في الأسبوع الأخير. للشركات التي تدير عدة تراخيص أو كيانات، هذا يستبدل جدول بيانات يجب على أحدهم تذكر فحصه بنظام يُظهر ما يقترب استحقاقه بنفسه." },
+];
+
+const processSteps = [
+  { icon: "search", step: "الخطوة ١", title: "تدقيق سير عمل المنطقة الحرة", description: "نرسم كيف يعمل تواصل العملاء وتتبع الامتثال والفوترة حالياً عبر كيانكم أو كياناتكم ونحدد أين يكلف العمل اليدوي أكثر وقت." },
+  { icon: "edit", step: "الخطوة ٢", title: "التصميم والتخطيط", description: "نصمم الأتمتة حول متطلبات جهة منطقتكم الحرة وأدواتكم الحالية، ونحصل على الموافقة قبل بناء أي شيء." },
+  { icon: "build", step: "الخطوة ٣", title: "البناء والاختبار", description: "نبني الأتمتة ونختبرها مقابل استفسارات عملاء وفواتير ومواعيد تجديد حقيقية حتى يطابق المُخرَج ما يتوقعه فريقكم." },
+  { icon: "rocket_launch", step: "الخطوة ٤", title: "الإطلاق والمراقبة", description: "تُطلَق الأتمتة جنباً إلى جنب مع عمليتكم الحالية. نراقبها لمدة ٩٠ يوماً ونعدّلها مع تطور عملكم." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'أتمتة الذكاء الاصطناعي لشركات المناطق الحرة الإماراتية',
+    url: 'https://lenooai.com/ar/services/ai-automation/free-zone',
+    description: 'أتمتة الذكاء الاصطناعي لشركات المناطق الحرة الإماراتية: تواصل العملاء والعملاء المحتملين، تجديد الترخيص وتتبع الامتثال، الفوترة ومعالجة ضريبة القيمة المضافة، والتقارير متعددة الكيانات.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع أتمتة ذكاء اصطناعي لشركات المناطق الحرة الإماراتية: التسعير حسب تعقيد سير العمل والنطاق. احجزوا تدقيق أتمتة مجاني للحصول على عرض سعر.' },
+    serviceType: 'AI Automation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'أتمتة الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'المنطقة الحرة', item: 'https://lenooai.com/ar/services/ai-automation/free-zone' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="أتمتة الذكاء الاصطناعي لشركات المناطق الحرة الإماراتية | Lenoo AI"
+  description="أتمتة الذكاء الاصطناعي لشركات المناطق الحرة الإماراتية: تواصل العملاء، تتبع تجديد الترخيص، الفوترة ومعالجة ضريبة القيمة المضافة، والتقارير متعددة الكيانات."
+  canonicalPath="/ar/services/ai-automation/free-zone"
+  enPath="/services/ai-automation/free-zone"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">أتمتة الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>المنطقة الحرة</div>
+    <h1>أتمتة الذكاء الاصطناعي <span class="gradient-text">لشركات المناطق الحرة الإماراتية</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      شركات المناطق الحرة تعمل بفرق محدودة بالتصميم، مما يعني أن فريق المكتب الخلفي الصغير الموجود عادة مشدود عبر تواصل العملاء، تجديدات التراخيص، الفوترة، والتقارير في آن واحد. نبني أتمتة حول نقاط الضغط تلك المحددة، مضبوطة لمتطلبات جهة منطقتكم الحرة.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">مراقبة بعد الإطلاق مشمولة في كل مشروع</span>
+      <span class="tchip">ضمان استرداد إذا لم تكونوا راضين عما نقدمه</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_ai_automation_freezone_hero" class="btn-primary">احجزوا تدقيق أتمتة مجاني</button>
+      <a href="#freezone-roi" class="btn-outline">شاهدوا أين العائد ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1400&q=80&auto=format&fit=crop" alt="أفق منطقة أعمال دبي، موطن شركات المناطق الحرة الإماراتية" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 55%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "٤٠٪", caption: "من مهام العمل في معظم المكاتب الخلفية المحدودة قابلة للأتمتة بالذكاء الاصطناعي المتاح حالياً. تتبع الامتثال والفوترة عادة في المقدمة." },
+      { value: "٩٠ يوماً", caption: "مراقبة بعد الإطلاق مشمولة في كل مشروع" },
+      { value: "١٠٠٪", caption: "ضمان استرداد إذا لم تكونوا راضين عما نقدمه" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHAT'S DIFFERENT -->
+<section class="section" aria-labelledby="different-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="different-heading" style="margin-bottom:1.5rem;">ما المختلف فعلياً في أعمال المناطق الحرة</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>الترخيص يقع في مركز كل شيء.</strong> نشاط شركة المنطقة الحرة، فوترتها، وحتى توظيفها مرتبط بما يسمح به ترخيصها، وذلك الترخيص يحتاج تجديداً حسب جدول ثابت بمجموعة مستندات خاصة به. فوات نافذة تجديد ليس اضطراباً مجرداً، يمكن أن يؤثر على التأشيرات، الأعمال المصرفية، والقدرة على الاستمرار بالتداول دون انقطاع.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>تركيز التجارة يشكّل سير العمل.</strong> كثير من شركات المناطق الحرة مُؤسَّسة تحديداً للتجارة عبر الحدود، إعادة التصدير، أو خط خدمة مهني ضيق، مما يعني أن الفوترة ومعاملة ضريبة القيمة المضافة غالباً تحتاج التمييز بين معاملات المنطقة الحرة، معاملات البر الرئيسي، والصادرات، كل بقواعد مختلفة. إعداد فوترة عام مبني لشركة برية قياسية يفوّت ذلك التمييز كلياً.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>الفرق محدودة بالتصميم.</strong> هياكل المناطق الحرة شائعة تحديداً لأنها تسمح لفريق صغير بإدارة عملية حقيقية، شخص أو اثنان غالباً يغطيان المبيعات والامتثال والمالية في آن واحد. هذا فعّال حتى يزداد موسم التجديد أو حجم الفوترة، وعندها يصبح نفس الفريق الصغير عنق الزجاجة لكل شيء.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&q=80&auto=format&fit=crop" alt="صاحب عمل صغير يدير مستندات وتراخيص امتثال على مكتب" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHERE THE ROI IS -->
+<section id="freezone-roi" class="section" style="background:#e7eeff;" aria-labelledby="roi-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="roi-heading">أين تحصل شركات المناطق الحرة على أسرع عائد استثمار</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">مبنية حول نقاط الضغط المحددة التي يشعر بها فريق منطقة حرة محدود أولاً. كل مشروع يشمل مراقبة بعد الإطلاق.</p>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">forum</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">تواصل العملاء والعملاء المحتملين</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">الاستفسارات تُجاب وتُؤهَّل تلقائياً عبر واتساب والبريد الإلكتروني وموقعكم، فلا تفقد وظيفة مبيعات بشخصين عملاء محتملين أثناء التعامل مع كل شيء آخر على طاولتهم.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> شركة تجارية كانت ترد على الاستفسارات كلما توفرت لحظة فراغ لأحدهم الآن يُقَرّ بكل عميل محتمل خلال دقائق، في أي وقت من اليوم.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">event_repeat</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">تجديد الترخيص وتتبع الامتثال</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">مواعيد انتهاء الترخيص والتأشيرة والتصريح تُتتبَّع في مكان واحد بتنبيهات قبل كل موعد نهائي بوقت كافٍ، بدلاً من العيش في ذاكرة أحدهم أو جدول بيانات لا يفحصه أحد حتى يصبح عاجلاً.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> شركة جدّدت رخصتها التجارية قبل ثلاثة أيام من انتهائها، مرتين، الآن تُعلَّم عليها قبل ستين يوماً، كل دورة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">receipt_long</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">الفوترة وضريبة القيمة المضافة (قواعد البر الرئيسي مقابل المنطقة الحرة)</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">الفواتير تطبق معاملة ضريبة القيمة المضافة الصحيحة تلقائياً بناءً على ما إذا كان الطرف المقابل داخل المنطقة الحرة، على البر الرئيسي، أو خارج الإمارات، فلا يقرر فريقكم المنطق الضريبي يدوياً على كل فاتورة.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> شركة تُفوتِر عملاء منطقة حرة وبر رئيسي معاً كانت تتحقق مزدوجاً من معاملة ضريبة القيمة المضافة يدوياً على كل فاتورة. الآن تُطبَّق باستمرار حسب القاعدة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">account_tree</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">تقارير متعددة الكيانات/الاختصاصات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">للمجموعات التي تدير أكثر من كيان، سواء عبر مناطق حرة أو بين منطقة حرة وبر رئيسي، التقارير تتوحد تلقائياً على مستوى المجموعة مع إبقاء دفاتر كل كيان منفصلة.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> مجموعة بكيانات في منطقتين حرتين مختلفتين كانت تبني تقريراً مجمَّعاً يدوياً كل ربع. الآن يُجمَّع بنفسه.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">مشمول بضمان استرداد كامل ١٠٠٪</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">كل سير عمل محدد النطاق حول جهة منطقتكم الحرة المحددة وهيكل كيانكم، مع ٩٠ يوماً من المراقبة بعد الإطلاق مشمولة.</p>
+      <button onclick="openModal(this)" data-source="ar_ai_automation_freezone_mid" class="btn-primary">احجزوا تدقيق أتمتة مجاني</button>
+    </div>
+  </div>
+</section>
+
+<!-- COMPLIANCE CONSIDERATIONS -->
+<section class="section" aria-labelledby="compliance-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="compliance-heading" style="margin-bottom:1.5rem;">اعتبارات امتثال خاصة بالمناطق الحرة</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        لسنا خدمة استشارات قانونية أو ضريبية، وأتمتة الامتثال التي نبنيها لا تستبدل متطلبات جهة منطقتكم الحرة الخاصة أو اعتماد محاسبكم. ما تفعله هو التأكد من أن المواعيد النهائية والوثائق التي عملكم مسؤول عنها أصلاً لا تفوت لأن فريقاً صغيراً انشغل بشيء آخر.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        كل جهة منطقة حرة تحدد وتيرة تجديدها، متطلبات مستنداتها، وقيود نشاطها الخاصة، وتلك القواعد تختلف فعلياً من منطقة لأخرى ومن متطلبات البر الرئيسي. نبني سير عمل التتبع حول القواعد المحددة التي تنطبق على رخصتكم، لا قالب عام، ونحدّثه إذا تغيّر نشاطكم أو نوع رخصتكم.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        ضريبة القيمة المضافة هي المجال الآخر الذي يحتاج عناية. بعض المناطق الحرة تُعامَل كمناطق محددة لأغراض ضريبة القيمة المضافة، مما يغيّر كيفية فرض الضريبة على معاملات معينة، خاصة حركة البضائع داخل وخارج المنطقة. أياً كانت المعاملة التي يؤكد محاسبكم أو مستشاركم الضريبي أنها تنطبق على حالتكم المحددة، نبني أتمتة الفوترة لتطبيقها باستمرار، بدلاً من ترك إعادة تقريرها يدوياً على كل معاملة.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- COMMON SETUPS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="setups-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="setups-heading">إعدادات شائعة عملنا معها</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">أعمال المناطق الحرة تميل للوقوع في حفنة من الأنماط المعروفة، كل بأولويات أتمتته الخاصة.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">local_shipping</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">التجارة والسلع (بأسلوب DMCC)</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">الشركات المرخَّصة لنشاط التجارة والسلع، نوع الإعداد الشائع في مناطق مثل DMCC، عادة تتعامل مع أحجام عالية من فواتير الموردين والعملاء عبر عملات متعددة. الأولوية عادة أتمتة الفوترة بمعالجة ضريبة قيمة مضافة عبر الحدود صحيحة ودعم متعدد العملات، إلى جانب تتبع امتثال لدورة تجديد الرخصة التجارية المحددة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">warehouse</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">اللوجستيات والمستودعات (بأسلوب JAFZA)</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">الشركات التي تدير عمليات لوجستيات، توزيع، أو مستودعات، نوع النشاط الشائع في مناطق مثل JAFZA، تميل لإعطاء الأولوية لمعالجة مستندات الشحن والجمارك، إدارة البائعين والموردين، وتقارير تتبع حركة المخزون إلى جانب البيانات المالية.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">account_balance</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">الخدمات المالية والمهنية (بأسلوب DIFC)</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">الشركات التي تقدم خدمات مالية، قانونية، أو مهنية، نوع النشاط الشائع في مناطق مثل DIFC، عادة تُعطي الأولوية لتواصل العملاء وأتمتة الإعداد، إلى جانب تتبع امتثال يأخذ في الحسبان التقارير التنظيمية الإضافية التي غالباً تحملها هذه الأنشطة فوق متطلبات المنطقة الحرة القياسية.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">من تدقيق سير العمل لأتمتة فعالة</h2>
+    </div>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" style="background:#f0f3ff;" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">أخبرونا أي مهمة مكتب خلفي تستهلك أكثر وقت فريقكم الصغير.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_automation_freezone_mid2" class="btn-primary">احجزوا مكالمة أتمتة منطقة حرة</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- CROSS-LINK -->
+<section class="section-sm" aria-labelledby="related-heading">
+  <div class="container">
+    <div style="max-width:720px; margin:0 auto; text-align:center;">
+      <h2 id="related-heading" style="font-size:1.375rem; margin-bottom:1rem;">تبحثون عن أتمتة عبر عملكم بأكمله؟</h2>
+      <p style="color:#42474e; font-size:1rem; line-height:1.8;">
+        راجعوا <a href="/ar/services/ai-automation">مركز أتمتة الذكاء الاصطناعي لدينا</a> للنطاق الكامل لسير العمل الذي نؤتمته عبر المبيعات والمالية والعمليات، لا امتثال المنطقة الحرة المحدد فقط.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">تدقيق أتمتة مجاني</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون للتوقف عن ملاحقة التجديدات والفواتير يدوياً؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجزوا تدقيق أتمتة مجاني لشركة منطقتكم الحرة. سنحدد سير العمل الذي يكلف فريقكم أكثر وقت ونقدّر التوفير.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_automation_freezone_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا تدقيق أتمتة مجاني</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>

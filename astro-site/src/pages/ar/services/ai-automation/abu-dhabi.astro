@@ -1,0 +1,404 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../../components/ProcessSteps.astro";
+import StatStrip from "../../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "هل لديكم مكتب في أبوظبي؟", answer: "لا، مقرنا في الخليج التجاري، دبي. نخدم شركات أبوظبي عن بُعد افتراضياً ونحضر حضورياً لجلسات الاكتشاف أو المحطات الرئيسية عندما يكون ذلك مفيداً، وهو لمعظم مشاريع الأتمتة نادراً أكثر من مرة أو مرتين. أبوظبي تبعد أقل من ساعتين، فالزيارة الحضورية ليست مستبعدة أبداً." },
+  { question: "هل تعملون مع جهات إماراتية متصلة بالحكومة أو منظمة؟", answer: "نعم، ضمن حدود معقولة. بنينا أتمتة لشركات تعمل تحت متطلبات امتثال قطاعية محددة. سنخبركم مسبقاً إذا كان طلب يقع خارج ما نستطيع دعمه، لكن معظم أتمتة سير العمل، معالجة المستندات، وعمل تكامل الأنظمة لا يتطلب تصريحاً خاصاً." },
+  { question: "كيف تتعاملون مع الامتثال وحماية البيانات لمؤسسات أبوظبي؟", answer: "نصمم الأتمتة لتعمل ضمن قانون حماية البيانات الشخصية الإماراتي (PDPL). هذا يعني رسم أين تنتقل البيانات قبل بناء أي شيء، إبقاء البيانات الحساسة داخل أنظمة تتحكمون بها أصلاً حيث ممكن، وتجنب توجيه بيانات شخصية عبر أدوات لا تلبي متطلبات التعامل مع البيانات الإماراتية." },
+  { question: "هل التسليم عن بُعد جيد فعلياً كوجود فريق محلي؟", answer: "لمعظم عمل الأتمتة، نعم. البناء نفسه يحدث بنفس الطريقة سواء كنا حضوريين أم لا: نصمم سير العمل، نحصل على موافقتكم، نبنيه مقابل أنظمتكم الحقيقية، ونختبره قبل إطلاقه. ما يتغير هو كيف ندير مكالمات الاكتشاف والمتابعة، ونحن مرنون في ذلك بناءً على ما يناسب فريقكم." },
+  { question: "هل تتعاملون مع متطلبات إقامة البيانات لمنظمات أبوظبي المنظمة؟", answer: "حيث ينطبق متطلب إقامة بيانات محدد، بيانات يجب أن تبقى على بنية تحتية موجودة فعلياً في الإمارات مثلاً، نبني الأتمتة حول بنية تحتية تلبي ذلك بدلاً من معاملته كفكرة لاحقة. هذا يظهر أكثر مع العملاء المتصلين بالحكومة والقطاع المالي، ونعالجه أثناء جلسة الاكتشاف قبل بدء أي تصميم سير عمل." },
+  { question: "هل تستطيعون العمل ضمن عملية مشتريات رسمية؟", answer: "نعم. نستطيع العمل ببيانات عمل محددة النطاق، محطات ثابتة، والتوثيق الذي تتطلبه عادة المنظمات الأكبر والمتصلة بالحكومة قبل إدخال مزود. أخبرونا بمتطلبات مشترياتكم أثناء المكالمة الأولى وسنبني المشاركة حولها بدلاً من مطالبتكم بالتكيف مع عملية غير رسمية." },
+  { question: "ماذا يحدث إذا احتاجت منظمتنا مراجعة أمنية أو مراجعة مزود قبل التعاقد معكم؟", answer: "نكمل استبيانات الأمن ووثائق العناية الواجبة للمزود كجزء من الإدخال عند الحاجة. يضيف وقتاً لبداية المشروع، لا للبناء نفسه، ونأخذ ذلك بعين الاعتبار في الجدول الزمني الذي نعطيكم إياه مسبقاً بدلاً من معاملته كتأخير مفاجئ." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_automation_abu_dhabi')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+const processSteps = [
+  { icon: "search", step: "الخطوة ١", title: "مكالمة اكتشاف", description: "نرسم سير عملكم الحالي عبر مكالمة فيديو، أو حضورياً إذا فضّلتم اللقاء شخصياً، ونحدد الأتمتة التي تستحق البناء أولاً." },
+  { icon: "edit", step: "الخطوة ٢", title: "التصميم والتخطيط", description: "نصمم منطق الأتمتة، نرسم أي متطلبات امتثال، ونحصل على موافقتكم قبل البناء." },
+  { icon: "build", step: "الخطوة ٣", title: "البناء والاختبار", description: "نبني الأتمتة ونختبرها مقابل بياناتكم الحقيقية قبل أن تلمس سير عمل فعلياً." },
+  { icon: "rocket_launch", step: "الخطوة ٤", title: "الإطلاق والمراقبة", description: "تُطلَق الأتمتة. نراقبها لمدة ٩٠ يوماً ونصلح أي شيء يحتاج إصلاحاً." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'أتمتة الذكاء الاصطناعي في أبوظبي',
+    url: 'https://lenooai.com/ar/services/ai-automation/abu-dhabi',
+    description: 'خدمات أتمتة الذكاء الاصطناعي لشركات أبوظبي: أتمتة العمليات، تكامل الأنظمة، ونشر متوافق مع PDPL.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'Abu Dhabi, United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع أتمتة ذكاء اصطناعي لشركات أبوظبي: التسعير حسب تعقيد سير العمل والنطاق. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر.' },
+    serviceType: 'AI Automation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'أتمتة الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'أبوظبي', item: 'https://lenooai.com/ar/services/ai-automation/abu-dhabi' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="أتمتة الذكاء الاصطناعي في أبوظبي | Lenoo AI"
+  description="خدمات أتمتة الذكاء الاصطناعي لشركات أبوظبي: أتمتة العمليات، تكامل الأنظمة، ونشر متوافق مع PDPL."
+  canonicalPath="/ar/services/ai-automation/abu-dhabi"
+  enPath="/services/ai-automation/abu-dhabi"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">أتمتة الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>أبوظبي</div>
+    <h1>أتمتة الذكاء الاصطناعي في <span class="gradient-text">أبوظبي</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      Lenoo AI فريق أتمتة مقره دبي يخدم شركات أبوظبي، عن بُعد افتراضياً وحضورياً عندما يكون منطقياً. نصمم ونبني أتمتة تربط الأدوات التي تشغّلونها أصلاً، تتعامل مع متطلبات حماية بيانات PDPL منذ البداية، وتُزيل العمل اليدوي من سير العمل الذي يكرره فريقكم كل يوم.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">تعامل مع البيانات مراعٍ لـ PDPL مبني في كل مشروع</span>
+      <span class="tchip">ضمان استرداد إذا لم تكونوا راضين عما نقدمه</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_ai_automation_abu_dhabi_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#what-we-automate" class="btn-outline">شاهدوا ما نؤتمته ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1400&q=80&auto=format&fit=crop" alt="أتمتة سير عمل بالذكاء الاصطناعي لعمل في أبوظبي" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 30%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "٤٠٪", caption: "من مهام العمل في معظم شركات الإمارات قابلة للأتمتة بالذكاء الاصطناعي المتاح حالياً. معظمها لم يبدأ بعد." },
+      { value: "٩٠ يوماً", caption: "مراقبة ما بعد الإطلاق مشمولة في كل مشروع" },
+      { value: "١٠٠٪", caption: "ضمان استرداد إذا لم تكونوا راضين عما نقدمه" },
+    ]} />
+  </div>
+</div>
+
+<!-- EXPLAINER -->
+<section class="section" aria-labelledby="explain-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="explain-heading" style="margin-bottom:1.5rem;">أتمتة الذكاء الاصطناعي لشركات أبوظبي، مُسلَّمة عن بُعد أو حضورياً</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        لا نملك مبنى في أبوظبي، ولن نتظاهر بعكس ذلك. ما لدينا فريق مقره دبي يبني الأتمتة بنفس الطريقة لعملاء أبوظبي كأي شخص آخر: رسم سير العمل، تصميمه، بناؤه مقابل أنظمتكم الحقيقية، اختباره، ودعمه بعد الإطلاق. معظم ذلك يحدث عبر مكالمة فيديو. إذا وصل مشروع لنقطة تستحق فيها الجلسة في غرفة واحدة القيادة، نقود.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        أبوظبي لديها تركيز أثقل من جهات متصلة بالحكومة ومنظمة من معظم الإمارات، فالتعامل مع البيانات يهم أكثر هنا، لا أقل. نبني مع وضع قانون حماية البيانات الشخصية الإماراتي (PDPL) في الاعتبار منذ البداية: رسم أين تنتقل البيانات، إبقاء المعلومات الحساسة داخل أنظمة تتحكمون بها أصلاً حيث ممكن، وتعليم أي شيء يحتاج نظرة أقرب قبل أن نلمسه. للشرح الكامل لماهية أتمتة الذكاء الاصطناعي وكيف تقارن بأدوات قائمة على القواعد مثل Zapier، راجعوا <a href="/ar/services/ai-automation">صفحة أتمتة الذكاء الاصطناعي الرئيسية</a>.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        العملاء الذين نعمل معهم هنا عادة مزيج من بضعة أنواع: شركات طاقة وصناعية بطبقات موافقة داخلية مبنية في كل شيء، جهات شبه حكومية ومرتبطة بالسيادة بمتطلبات مزودين ومشتريات رسمية، وعدد متنامٍ من شركات الخدمات المهنية والاستشارية التي تخدم تلك المنظومة نفسها وترث توقعاتها حول التوثيق والتعامل مع البيانات. كل من هذه يجلب نقطة بداية مختلفة للأتمتة، لكن العمل الأساسي واحد: رسم سير العمل، التصميم حول القيود التي تنطبق فعلياً على منظمتكم، وبناء شيء يصمد أمام مراجعة داخلية بدلاً من شيء يبدو جيداً في عرض توضيحي فقط.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ABU DHABI SKYLINE BAND -->
+<div style="position:relative; overflow:hidden; height:260px; margin:0 0 -1px;">
+  <img src="https://images.unsplash.com/photo-1613835579153-9bfe32e50da6?w=1400&q=80&auto=format&fit=crop" alt="أفق أبوظبي عند الغروب، مع أبراج الاتحاد والكورنيش" loading="lazy" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 30%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.35) 0%,transparent 55%);"></div>
+</div>
+
+<!-- WHAT WE AUTOMATE -->
+<section id="what-we-automate" class="section" style="background:#f0f3ff;" aria-labelledby="automate-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="automate-heading">أتمتة الذكاء الاصطناعي التي نبنيها لشركات أبوظبي</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">فئات شائعة، لا قائمة شاملة. كلها مبنية على أدواتكم الحالية ومدعومة بعد الإطلاق.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">description</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">معالجة المستندات والفواتير</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">العقود، الفواتير، والنماذج تُعالَج تلقائياً. الذكاء الاصطناعي يستخرج البيانات، يتحقق منها، ويرحّلها لأنظمتكم.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> فريق عمليات توقف عن إدخال فواتير الموردين يدوياً؛ الذكاء الاصطناعي الآن يطابق كل واحدة مع أمر شراء ويرحّلها مباشرة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">task_alt</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">سير عمل الموافقات والامتثال</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">موافقات متعددة الخطوات تنتقل من التقديم للاعتماد تلقائياً، بتذكيرات وتصعيدات ومسار تدقيق مبني فيها.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> موافقات المصاريف التي كانت تجلس في بريد أحدهم لأسبوع الآن تُوجَّه، تذكّر، وتصعّد بنفسها.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">sync_alt</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">مزامنة بيانات عبر الأنظمة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">أبقوا نظام CRM وERP وأدوات التواصل متزامنة تلقائياً، دون أن ينسخ أحد بيانات بين المنصات يدوياً.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> فريق كان يحدّث ثلاثة أنظمة منفصلة يدوياً بعد كل صفقة الآن يحدّث واحداً، والباقي يتزامن بنفسه.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">mail</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">أتمتة البريد الإلكتروني والمراسلات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">الذكاء الاصطناعي يقرأ، يصنّف، ويوجّه المراسلات الواردة، يصيغ ردوداً، ويصعّد أي شيء يحتاج حكم شخص قبل وصوله لصندوق وارد.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> صندوق امتثال مشترك كان يستهلك معظم صباح فريق لفرزه يومياً الآن يُرتَّب ويُصاغ تلقائياً، مع استثناءات حقيقية فقط للمراجعة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">route</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">توجيه العملاء المحتملين والاستفسارات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">الاستفسارات الواردة تُسجَّل، تُسنَد للشخص الصحيح، وتُتابَع تلقائياً، سواء وصلت عبر نموذج، بريد إلكتروني، أو إحالة.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> فريق مبيعات مؤسسي انتقل من متوسط استجابة اليوم التالي لأقل من ١٥ دقيقة، دون إضافة موظفين.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bar_chart</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">تقارير آلية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">تقارير الحالة، ملخصات الامتثال، ولوحات الأداء تُجمَّع وتُرسَل حسب جدول بنفسها، دون أن يسحب أحد الأرقام يدوياً.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> فريق إدارة يحصل على ملخص عمليات مجمّع كل صباح اثنين بدلاً من ملاحقة ثلاثة رؤساء أقسام لتحديثات.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MANUAL VS AI AUTOMATION TOGGLE -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="abudhabi-toggle-heading">
+  <div class="container" style="max-width:800px;">
+    <div class="section-header">
+      <h2 id="abudhabi-toggle-heading">عملية يدوية مقابل الأتمتة بالذكاء الاصطناعي</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">ما يتغير في سير العمل أعلاه بمجرد أن يتولى الذكاء الاصطناعي الجولة الأولى المتكررة.</p>
+    </div>
+    <div class="abudhabi-toggle" role="tablist" aria-label="مقارنة العمليات">
+      <button type="button" id="abudhabi-tier-manual" class="abudhabi-toggle-btn active" data-abudhabi-tier="manual" role="tab" aria-selected="true" aria-controls="abudhabi-panel-manual">عملية يدوية</button>
+      <button type="button" id="abudhabi-tier-ai" class="abudhabi-toggle-btn" data-abudhabi-tier="ai" role="tab" aria-selected="false" aria-controls="abudhabi-panel-ai">مع الأتمتة بالذكاء الاصطناعي</button>
+    </div>
+    <div class="card" id="abudhabi-panel-manual" data-abudhabi-tier-panel="manual" role="tabpanel" aria-labelledby="abudhabi-tier-manual">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">الفواتير تُدخَل يدوياً وتُطابَق مع أوامر الشراء واحدة تلو الأخرى. الموافقات تجلس في بريد أحدهم حتى يُلاحَظ، والتذكيرات أو التصعيدات تعتمد على تذكّر أحدهم المتابعة. البيانات تُنسَخ بين CRM وERP وأنظمة أخرى يدوياً، والمراسلات يجب أن تُقرأ، تُرتَّب، وتُجاب من شخص قبل تجميع التقارير بسحب الأرقام من كل نظام منفصلاً.</p>
+    </div>
+    <div class="card" id="abudhabi-panel-ai" data-abudhabi-tier-panel="ai" role="tabpanel" aria-labelledby="abudhabi-tier-ai" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">الذكاء الاصطناعي يستخرج ويطابق بيانات الفواتير تلقائياً، يوجّه الموافقات بتذكيرات وتصعيدات مبنية فيها، ويبقي أنظمتكم متزامنة دون أن ينسخ أحد بيانات يدوياً. المراسلات الواردة تُقرأ، تُصنَّف، وتُوجَّه بنفسها، مع استثناءات حقيقية فقط لشخص، والتقارير تُجمَّع وتُرسَل حسب جدول بدلاً من تجميعها يدوياً. وقت الموظفين ينتقل من إدخال البيانات المتكرر للقرارات التي تحتاج حكماً فعلياً.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WORKING WITH YOUR TEAM -->
+<section class="section" aria-labelledby="abudhabi-team-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="abudhabi-team-heading" style="margin-bottom:1.5rem;">قرارات الأتمتة لا تزال تبدأ بالناس</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">قبل بناء أي شيء، نجلس مع من يملك سير العمل فعلياً، لا فقط من طلب المشروع، لفهم أين تتعطل العملية الحالية وما يجب أن يصمد الإصلاح أمامه داخلياً. تلك المحادثة تشكّل البناء أكثر بكثير من أي قالب.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1758518731706-be5d5230e5a5?w=800&q=80&auto=format&fit=crop" alt="اجتماع فريق عمل حول طاولة في مكتب حديث" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ENTERPRISE & GOVERNMENT-ADJACENT CONSIDERATIONS -->
+<section class="section" aria-labelledby="enterprise-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="enterprise-heading">ما يطلبه منا عملاء المؤسسات والجهات المتصلة بالحكومة</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">أبوظبي لديها حصة أعلى من المنظمات الأكبر والمنظمة والمتصلة بالحكومة من معظم المدن التي نعمل فيها. هذه الاعتبارات التي تظهر الأكثر مع ذلك النوع من العملاء.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">fact_check</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">مسارات التدقيق</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">كل قرار آلي وتغيير بيانات يُسجَّل، فتستطيعون إظهار بالضبط ماذا حدث ومتى إذا رُوجِعَ سير عمل داخلياً أو خارجياً.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">admin_panel_settings</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وصول قائم على الأدوار</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">الأتمتة تحترم من يُسمح له برؤية أو الموافقة على ماذا، مطابقة ضوابط الوصول التي تفرضها منظمتكم داخلياً أصلاً.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">verified_user</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">مراجعة أمن المزود</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">نكمل استبيانات الأمن ووثائق العناية الواجبة التي تتطلبها المنظمات الأكبر والمتصلة بالحكومة قبل إدخال مزود.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">dns</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">خيارات إقامة البيانات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">حيث يحتاج سير عمل بقاء البيانات على بنية تحتية موجودة فعلياً في الإمارات، نبني حول ذلك المتطلب بدلاً من إعداد افتراضي.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">rule</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">ضبط التغيير</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">لا شيء يتغير في سير عمل فعلي دون خطوة موافقة موثقة، بما يتماشى مع كيفية توقع المنظمات المنظمة إدارة تغييرات المزودين.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">description</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">مشاركة مناسبة للمشتريات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">نستطيع العمل ضمن عمليات مشتريات رسمية، بما يشمل بيانات عمل محددة النطاق ومحطات ثابتة، لا مشاركات غير رسمية فقط.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PDPL & DATA RESIDENCY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="pdpl-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="pdpl-heading" style="margin-bottom:1rem;">PDPL وإقامة البيانات، بمصطلحات عملية</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">أبوظبي لديها تركيز أثقل من الجهات المتصلة بالحكومة والمالية والمنظمة من معظم الإمارات، مما يعني أن أسئلة التعامل مع البيانات تظهر مبكراً في كل مشروع نحدد نطاقه هنا تقريباً. قانون حماية البيانات الشخصية الاتحادي يضع الحد الأدنى: يحكم كيفية جمع البيانات الشخصية ومعالجتها وتخزينها عبر الإمارات، وأي أتمتة تلمس بيانات عملاء أو موظفين تحتاج العمل ضمن تلك القواعد.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">عملياً، هذا يعني أننا نرسم بالضبط أي بيانات يلمسها سير عمل قبل بنائه: ماذا تُعتبر بيانات شخصية، أين تعيش حالياً، وأين ستنقلها الأتمتة. حيث ممكن، نُبقي تلك البيانات داخل أنظمة تتحكمون بها أصلاً، نظام CRM أو منصة المحاسبة لديكم، بدلاً من توجيهها عبر أداة طرف ثالث تضيف مكاناً آخر لها لتعيش فيه.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">إذا كان لمنظمتكم متطلب إقامة بيانات محدد، بيانات يجب أن تبقى على خوادم موجودة فعلياً في الإمارات مثلاً، نبني الأتمتة حول بنية تحتية تلبي ذلك المتطلب بدلاً من معاملته كفكرة لاحقة. الجهات المتصلة بالحكومة في أبوظبي تسأل عن هذا أكثر من أي نوع عميل آخر نعمل معه، وهو سؤال عادل لطرحه قبل بدء المشروع، لا بعده.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80&auto=format&fit=crop" alt="مراجعة توثيق الامتثال والتعامل مع البيانات" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CROSS-LINKS -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="more-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="more-heading">المزيد من موارد أتمتة الذكاء الاصطناعي</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">apps</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">أتمتة الذكاء الاصطناعي، نظرة شاملة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">ما هي أتمتة الذكاء الاصطناعي، كيف تختلف عن Zapier وMake، والنطاق الكامل لسير العمل الذي نبنيه عبر الإمارات.</p>
+        <a href="/ar/services/ai-automation" class="learn-link">اعرفوا المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">location_city</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">أتمتة الذكاء الاصطناعي في دبي</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">تنفيذ محلي ومكالمات اكتشاف حضورية من فريقنا في الخليج التجاري، دبي.</p>
+        <a href="/ar/services/ai-automation/dubai" class="learn-link">اعرفوا المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">من الاكتشاف إلى أتمتة فعالة</h2>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:0 auto 2.5rem;">
+      معظم مشاريع أبوظبي تسير بجدول زمني مماثل لعملنا في دبي: أسبوعان إلى أربعة أسابيع من المكالمة الأولى لأتمتة فعالة، أحياناً أطول إذا أضافت مراجعة امتثال أو أمن خطوة في البداية. مكالمة الاكتشاف عادة تحدث عبر فيديو، رغم أننا سنقود للقاء حضوري عندما يكون مفيداً، خاصة للمشاركات الأكبر أو المنظمة حيث يريد أصحاب المصلحة اللقاء قبل الالتزام بأي شيء. التصميم والموافقة يحدثان قبل أن يلمس أي شيء أنظمتكم الفعلية، والإصدار الأول دائماً يُختبَر مقابل بيانات حقيقية، لا بيانات عينة، قبل أن يقترب من الإنتاج.
+    </p>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- FIRST 90 DAYS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="ninety-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="ninety-heading" style="margin-bottom:1.5rem;">ما تتوقعونه في أول ٩٠ يوماً بعد الإطلاق</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        الأسبوعان الأولان بعد إطلاق أتمتة هما الأكثر أهمية. البيانات الحقيقية تتصرف بشكل مختلف عن بيانات الاختبار، بغض النظر عن شمولية الاختبار، وأول حالة حدية لم تكن في مجموعة العينة عادة تظهر خلال تلك النافذة. نراقب سير العمل عن كثب، ليس فقط للأعطال الصريحة بل لعدم تطابقات أصغر، مثل صيغة مستند لم نرها من قبل أو مسار موافقة لم يطابق ما رسمته جلسة الاكتشاف.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        بحلول الأسبوع الرابع، معظم سير العمل استقر في نمط ثابت والاستثناءات تتباطأ. تلك عادة عندما نتحقق مرة أخرى، عبر فيديو أو حضورياً إذا استحق المشروع، ونرى ما عالجته الأتمتة فعلياً: كم وقتاً وفّرت، أين لا تزال توجّه أشياء لشخص، وهل يتصرف مسار تدقيق موثق بالطريقة التي تحتاجها منظمتكم.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        بحلول اليوم ٩٠، يجب أن يعمل سير العمل بإشراف أدنى، وتنتهي فترة المراقبة بعد الإطلاق. إذا أرادت منظمتكم صيانة مستمرة بعد ذلك، فحوصات منتظمة، تحديثات مع تغيّر أنظمتكم، أو تحديد نطاق سير العمل التالي، نقدّم عقوداً مبنية حول ذلك. للعملاء المتصلين بالحكومة بدورات مراجعة رسمية، نستطيع توقيت تلك المتابعات لتطابق جدول تقاريركم الداخلي بدلاً من تاريخ عشوائي.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">عن بُعد أو حضورياً، نستطيع البدء بتحديد نطاق أتمتة أبوظبي لديكم هذا الأسبوع.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_automation_abu_dhabi_mid" class="btn-primary">احجزوا مكالمة اكتشاف أبوظبي</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لأتمتة أكبر مضيعات وقتكم؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجزوا مكالمة اكتشاف مجانية. سنحدد أفضل ٣ فرص أتمتة لديكم ونقدّر التوفير في الوقت والتكلفة، أياً كان مكانكم في أبوظبي.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_automation_abu_dhabi_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+.abudhabi-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+.abudhabi-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.abudhabi-toggle-btn.active { background:#006875; color:#fff; }
+.abudhabi-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const abudhabiToggleWrap = document.querySelector('.abudhabi-toggle');
+  if (abudhabiToggleWrap) {
+    const btns = abudhabiToggleWrap.querySelectorAll('.abudhabi-toggle-btn');
+    const panels = document.querySelectorAll('[data-abudhabi-tier-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-abudhabi-tier');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-abudhabi-tier-panel') !== key; });
+      });
+    });
+  }
+</script>

@@ -1,0 +1,376 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../../lib/supabase";
+import FaqAccordion from "../../../../../components/FaqAccordion.astro";
+
+const h1 = 'تنفيذ Automation Anywhere في الإمارات';
+const metaTitle = 'تنفيذ Automation Anywhere في الإمارات | Lenoo AI';
+const metaDescription = 'تنفذ Lenoo AI روبوتات Automation Anywhere RPA للمؤسسات الإماراتية الموحّدة أصلاً على المنصة، أو التي تقيّمها مقابل UiPath.';
+const heroSubtext = 'Automation Anywhere بديل أصيل السحابة لـ UiPath، مبني للمؤسسات التي تريد RPA مُسلَّمة ومُدارة عبر السحابة من اليوم الأول.';
+
+const useCases = [
+  { title: 'نشر روبوتات أصيل السحابة', description: 'تُبنى الروبوتات، تُنشَر، وتُدار مركزياً عبر Automation 360، دون حاجة لبنية تحتية محلية لتشغيلها.' },
+  { title: 'توحيد العمليات عبر الأقسام', description: 'نساعد المؤسسات على طرح أتمتة متسقة ومحكومة عبر أقسام متعددة باستخدام إطار روبوت مشترك.' },
+  { title: 'نقل UiPath مقابل Automation Anywhere', description: 'للأعمال التي تبدّل المنصات، نعيد بناء منطق الأتمتة الحالي في Automation Anywhere ونتحقق منه مقابل الأصلي قبل التحويل.' },
+];
+
+const faqFallback = [
+  { question: 'هل نختار Automation Anywhere أم UiPath؟', answer: 'كلاهما منصة RPA مؤسسية قادرة؛ الخيار الصحيح عادة يعود لبنيتكم التحتية الحالية، علاقات الترخيص، وهل تريدون نشراً أصيل السحابة أو أولوية محلية. نعطي مقارنة صادقة خاصة ببيئتكم أثناء مكالمة الاكتشاف بدلاً من الترويج لمنصة واحدة.' },
+  { question: 'هل تستطيعون نقل روبوتات UiPath الحالية لدينا إلى Automation Anywhere؟', answer: 'نعم. نعيد بناء منطق الأتمتة أصلياً في Automation Anywhere، نختبره مقابل سلوك الروبوت الأصلي، وندير التحويل فلا ينكسر شيء في منتصف العملية.' },
+  { question: 'هل يعمل Automation Anywhere جيداً لعمليات إماراتية متعددة المكاتب؟', answer: 'بنيته أصيلة السحابة ومُدارة مركزياً تميل لملاءمة الطرح متعدد المكاتب جيداً، لأن الروبوتات تُنشَر وتُراقَب من وحدة تحكم واحدة بدلاً من الحاجة لبنية تحتية محلية منفصلة في كل موقع.' },
+];
+
+let faqItems = faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_automation_tools_automation_anywhere')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: h1,
+    url: 'https://lenooai.com/ar/services/ai-automation/tools/automation-anywhere',
+    description: metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع أتمتة مؤسسية: التسعير حسب النطاق، الأنظمة المتورطة، ومتطلبات الحوكمة. احجزوا استشارة للحصول على عرض سعر.' },
+    serviceType: 'Automation Anywhere',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'أتمتة الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'الأدوات', item: 'https://lenooai.com/ar/services/ai-automation/tools' },
+      { '@type': 'ListItem', position: 4, name: 'Automation Anywhere', item: 'https://lenooai.com/ar/services/ai-automation/tools/automation-anywhere' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonicalPath="/ar/services/ai-automation/tools/automation-anywhere"
+  enPath="/services/ai-automation/tools/automation-anywhere"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;" aria-label="مسار التصفح">
+      <a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      <a href="/ar/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">أتمتة الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      <a href="/ar/services/ai-automation/tools" style="color:inherit;text-decoration:none;opacity:0.65;">الأدوات</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      Automation Anywhere
+    </div>
+    <div style="margin-bottom:1.5rem;">
+      <img src="https://cdn.simpleicons.org/automationanywhere/D22630" alt="شعار Automation Anywhere" width="56" height="56" loading="eager" fetchpriority="high" style="background:#fff;border-radius:16px;padding:10px;box-shadow:0 8px 24px rgba(0,59,92,0.18);" onerror="this.style.display='none'" />
+    </div>
+    <h1>{h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ar_ai_automation_tools_automation_anywhere_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#what-we-build" class="btn-outline">شاهدوا ما نبنيه ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1686061593213-98dad7c599b9?w=1400&q=80&auto=format&fit=crop" alt="لقطة مقرّبة للوحة تحكم أتمتة على شاشة تعرض رسوماً بيانية للنشاط ومقاييس العمليات" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 45%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHAT IS -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">ما هو Automation Anywhere؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        Automation Anywhere منصة RPA مؤسسية، موضوعة كبديل أصيل السحابة لـ UiPath، ببنية Bot Store وAutomation 360 مبنية لروبوتات مُدارة مركزياً ومنشورة عبر السحابة بدلاً من نشر أولوية محلية.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        التصميم أصيل السحابة يعني أن الروبوتات تُبنى، تُنسَّق، وتُراقَب من وحدة تحكم ويب مركزية بدلاً من حاجة غرفة تحكم مثبتة محلياً، ما يميل لتبسيط الطرح عبر مكاتب أو أقسام متعددة مقارنة ببُنى RPA الأقدم أولوية المحلي. Bot Store الخاص به أيضاً يشحن بمكتبة مكوّنات أتمتة جاهزة للمهام المؤسسية الشائعة، ما يمكن أن يقصّر وقت البناء للعمليات القياسية كاستخراج الفواتير أو ترحيل البيانات، رغم أن معظم الطروحات الحقيقية لا تزال تحتاج منطقاً مخصصاً فوقها.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATION ANGLE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="angle-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="angle-heading" style="margin-bottom:1.5rem;">كيف تستخدم Lenoo AI منصة Automation Anywhere لأتمتة المؤسسات الإماراتية</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        نحن شريك تنفيذ للمؤسسات الموحّدة أصلاً على Automation Anywhere، أو التي تقيّمها وجهاً لوجه مقابل UiPath. دورنا تصميم منطق الروبوت، دمجه مع أنظمتكم الحالية، وصيانته بعد الإطلاق، لا نبيع تراخيص Automation Anywhere.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        للعملاء الموجودين أصلاً على Automation Anywhere، ندخل ضمن أياً كان نموذج الحوكمة الذي وضعته تقنية المعلومات أصلاً، نبني روبوتات تتبع اصطلاحات التسمية الحالية، ضوابط الوصول، وعمليات إدارة التغيير بدلاً من إدخال معاييرنا الخاصة. للعملاء الذين لا يزالون يقررون بين المنصات، نجري تقييماً قصيراً مقابل متطلبات عمليتكم الفعلية، لأن الإجابة الصحيحة تعتمد أكثر على بنيتكم التحتية الحالية ومجموعة مهارات فريقكم من أي ادعاء عام حول أي المنصات أفضل.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FREE VS PAID -->
+<section class="section" aria-labelledby="aa-pricing-heading">
+  <div class="container" style="max-width:800px;">
+    <h2 id="aa-pricing-heading" style="text-align:center; margin-bottom:1.5rem;">Automation Anywhere مجاني مقابل مدفوع</h2>
+    <div class="aa-toggle" role="tablist" aria-label="مستوى التسعير">
+      <button type="button" id="aa-tier-free" class="aa-toggle-btn active" data-aa-tier="free" role="tab" aria-selected="true" aria-controls="aa-panel-free">مجاني (النسخة المجتمعية)</button>
+      <button type="button" id="aa-tier-paid" class="aa-toggle-btn" data-aa-tier="paid" role="tab" aria-selected="false" aria-controls="aa-panel-paid">مدفوع (Automation 360)</button>
+    </div>
+    <div class="card" id="aa-panel-free" data-aa-tier-panel="free" role="tabpanel" aria-labelledby="aa-tier-free">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">النسخة المجتمعية من Automation Anywhere تمنح الأفراد، الطلاب، والفرق الصغيرة وصولاً مجانياً لمنصة Automation 360 السحابية: Bot Creator لبناء الروبوتات، Bot Store للمكوّنات الجاهزة، ودعم المجتمع. مستخدم واحد فقط، بتنفيذ روبوت مراقَب فقط، ولا تشمل ضوابط الوصول القائمة على الأدوار أو تسجيل التدقيق التي تتطلبها مراجعة حوكمة مؤسسية، لذا نعاملها كمكان لبناء نموذج أولي وتقييم المنصة، لا حيث ينتهي روبوت مؤسسي إنتاجي.</p>
+    </div>
+    <div class="card" id="aa-panel-paid" data-aa-tier-panel="paid" role="tabpanel" aria-labelledby="aa-tier-paid" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Automation 360 المدفوعة (من Cloud Starter إلى Enterprise) تضيف ما يحتاجه فعلياً طرح متعدد الأقسام: مستخدمون متعددون، تنفيذ روبوت غير مراقَب يعمل دون أن يشاهده أحد، ضوابط وصول قائمة على الأدوار، ومسار التدقيق الذي سيطلبه فريق الامتثال لديكم قبل أن يلمس روبوت الإنتاج. التسعير يتصاعد حسب كم روبوتاً تشغّلونه وهل مراقَبة أو غير مراقَبة، ولا ينشر Automation Anywhere أسعاراً دقيقة، لذا نحصل على عرض سعر مقابل نطاقكم الفعلي بدلاً من تخمين رقم.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO IT'S FOR -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">هل Automation Anywhere مناسب لمؤسستكم؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        يناسب Automation Anywhere المؤسسات الإماراتية التي تريد RPA مُدارة مركزياً عبر السحابة من البداية، أو المؤسسات الموحّدة أصلاً على المنصة والتي تحتاج شريك تنفيذ لا موزّع تراخيص.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ENGAGEMENT PHASES -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="engagement-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="engagement-heading" style="margin-bottom:1.5rem;">كيف يبدو تعاون Automation Anywhere مؤسسي نموذجي</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.75rem;">
+        يتبع تعاون Automation Anywhere مساراً مشابهاً لأي برنامج RPA مؤسسي: اكتشاف، تجربة، حوكمة، ثم طرح. البنية أصيلة السحابة تغيّر كيف تعمل بعض تلك المراحل فعلياً.
+      </p>
+      <div style="display:flex; flex-direction:column; gap:1.5rem;">
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">١. اكتشاف الأنظمة القديمة وتقييم العملية</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">نبدأ بنفس الطريقة التي نبدأ بها مع أي منصة RPA: رسم التطبيقات القديمة والخطوات اليدوية التي تلمسها العملية المستهدفة فعلياً، لأن روبوتات Automation Anywhere لا تزال تتفاعل مع نفس الواجهات القديمة التي تتفاعل معها روبوتات UiPath. الفرق يظهر لاحقاً، في كيفية نشر الروبوت وإدارته، لا في كيفية اكتشافه.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">٢. تجربة على عملية واحدة</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">نبني الروبوت الأول داخل Automation 360 مقابل عملية واحدة، نختبره مقابل بيانات حقيقية قبل أن يقترب من الإنتاج. لأن Automation 360 يعمل من وحدة تحكم سحابية مركزية، التجربة مرئية لأصحاب المصلحة من اليوم الأول بدلاً من أن تعيش على جهاز مطور واحد.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">٣. مراجعة الحوكمة والأمان</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">يمر الروبوت بعدها بمراجعة حوكمة وأمان: ضوابط وصول، مسارات تدقيق، وإدارة تغيير، مطابقة لأياً كانت المعايير التي يشغّلها فريق تقنية المعلومات لديكم أصلاً. للمؤسسات ذات أولوية سحابية أصلاً، هذه المراجعة تميل للتحرك أسرع مع Automation Anywhere من منصة أولوية محلية، لأن طبقة التحكم مركزية أصلاً.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">٤. طرح مرحلي عبر الأقسام</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">من هناك نطرح الأتمتة لأقسام إضافية باستخدام نفس إطار الروبوت المشترك، فيتبع كل روبوت جديد نفس اصطلاحات التسمية، قواعد الوصول، وإعداد المراقبة كالأول. وحدة التحكم المُدارة مركزياً لـ Automation Anywhere هي ما يجعل طرحاً متعدد المكاتب أسهل إدارة فعلياً من مجموعة تركيبات محلية منفصلة.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">٥. الإدارة المستمرة</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">بعد الإطلاق، نراقب أداء الروبوت وتغييرات واجهة التطبيقات من نفس وحدة التحكم المركزية المستخدمة لنشرها، ونصون مكوّنات Bot Store والمنطق المخصص معاً كنظام واحد بدلاً من رقعة من نصوص مُصانة فردياً.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">Automation Anywhere مقابل UiPath</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        المنصتان تتداخلان أكثر مما تختلفان. ميزة Automation Anywhere بنية أصيلة السحابة مبنية للإدارة المركزية من اليوم الأول: دون غرفة تحكم محلية لتركيبها، دون Orchestrator محلي لصيانته، ما يميل لتسهيل إدارة الطرح متعدد المكاتب والأقسام. ميزة <a href="/ar/services/ai-automation/tools/uipath">UiPath</a> قاعدة مُثبَّتة أكبر، نموذج نشر محلي أكثر نضجاً، وقاعدة أعمق من المطورين والشركاء المعتمدين. إذا أرادت مؤسستكم RPA مُدارة مركزياً عبر السحابة ببنية تحتية محلية أدنى، Automation Anywhere عادة نقطة البداية الأفضل. إذا كنتم تشغّلون أصلاً بكثافة محلياً، أو فريقكم لديه أصلاً خبرة UiPath، البقاء مع UiPath غالباً يكلف أقل من التبديل. ننفّذ كليهما ونستطيع إجراء تقييم قصير مقابل بيئتكم الفعلية قبل الالتزام بأي طريق.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- UAE CONTEXT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="uae-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="uae-heading" style="margin-bottom:1.5rem;">أين يناسب Automation Anywhere في الإمارات</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        يميل Automation Anywhere للظهور في وضعين في السوق الإماراتي: مؤسسات تقيّم منصات RPA لأول مرة وتريد نقطة بداية أصيلة السحابة بدلاً من بنية تحتية محلية لتركيبها وصيانتها، وعمليات متعددة المكاتب، مجموعات التجزئة، شركات اللوجستيات، ومنظمات الخدمة ذات الفروع المتعددة، التي تحتاج روبوتات مُنشَرة ومُراقَبة باتساق عبر المواقع من وحدة تحكم واحدة. أقل شيوعاً في بيئات المصرفية المحلية الأكثر امتثالاً، حيث لا يزال سجل UiPath الأطول يحمل ثقلاً أكبر، رغم أن تلك الفجوة تقلّصت مع نضوج قدرات Automation Anywhere الخاصة بالحوكمة والتدقيق. ذلك المزيج من التجزئة متعددة الفروع، اللوجستيات، وأعمال الخدمة أيضاً حيث تميل مكوّنات Bot Store الجاهزة لتوفير أكبر وقت، لأن كثيراً من تلك العمليات قريبة بما يكفي من القوالب الموجودة فيبدأ البناء من شيء لا من لوحة فارغة.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SCOPING -->
+<section class="section" aria-labelledby="scoping-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="scoping-heading" style="margin-bottom:1.5rem;">كيف نحدد نطاق مشروع Automation Anywhere</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        ما يقود التكلفة والجدول الزمني لمشروع Automation Anywhere مشابه إلى حد كبير لأي تعاون RPA: عدد العمليات المتورطة، كم من منطق الأتمتة الحالي يحتاج إعادة بناء والتحقق منه إذا كنتم تنقلون من منصة أخرى، وكم مراجعة حوكمة تريد مؤسستكم قبل أن يصبح روبوت حياً. لأن Automation 360 مُدار مركزياً، تركيب المنصة نفسها يميل للتحرك أسرع من بديل أولوية محلية، ما يحوّل أحياناً مزيداً من الجدول الزمني للمشروع نحو عمل تصميم واختبار الروبوت الفعلي بدلاً من إعداد البنية التحتية. نحدد نطاق الروبوت الأول وخطة تقريبية للبرنامج بأكمله معاً، فتعرفون كيف يبدو الطرح الكامل حتى لو بدأتم بعملية واحدة.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PITFALLS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="pitfalls-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="pitfalls-heading" style="margin-bottom:1.5rem;">أين تخطئ برامج Automation Anywhere عادة</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        نمط الفشل الأكثر شيوعاً الذي نراه في برامج Automation Anywhere ليس المنصة، بل النطاق. الفرق التي تحاول أتمتة عبء عمل قسم بأكمله في الإصدار الأول عادة تنتهي بروبوت هش لا يثق به أحد، بدلاً من روبوت أصغر يعمل بموثوقية كل يوم. المشكلة الثانية الأكثر شيوعاً هي تخطي مراجعة الحوكمة لأن وحدة التحكم السحابية تجعل نشر روبوت والمضي قدماً سهلاً. ذلك الاختصار يميل للظهور لاحقاً كفجوة ضوابط وصول أو تغيير غير متتبَّع لا يستطيع أحد شرحه أثناء تدقيق. نبني المراجعة والنطاق الأول الأضيق من البداية، حتى عندما يكون العميل متحمساً للتحرك أسرع.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- VS NO-CODE -->
+<section class="section" aria-labelledby="vsnocode-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vsnocode-heading" style="margin-bottom:1.5rem;">Automation Anywhere مقابل أدوات الأتمتة بلا كود</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        تسأل المؤسسات أحياناً لماذا تحتاج منصة RPA إطلاقاً بينما أدوات مثل Zapier وMake وn8n تستطيع أصلاً ربط نظامين خلال بعد ظهر واحد. الإجابة هي ما بُنيت كل أداة لتلمسه. منصات بلا كود تتصل عبر واجهات API، ما يعني أنها تعمل فقط عندما يعرض التطبيق على الطرف الآخر واحدة. روبوتات Automation Anywhere تتفاعل مع واجهة التطبيق مباشرة، تضغط وتكتب بنفس الطريقة التي يفعلها إنسان، وهذا ما يجعل أتمتة نظام قديم لم يكن لديه واجهة API أبداً ولن يكون ممكنة. إذا كانت عمليتكم لديها أصلاً وصول API على كلا الطرفين، أداة بلا كود دائماً تقريباً أسرع وأرخص للبناء. تكسب RPA تكلفتها تحديداً حيث لا يوجد ذلك الوصول.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="what-we-build" class="section" aria-labelledby="usecases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="usecases-heading">ما نبنيه بـ Automation Anywhere</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">تعاونات تمثيلية، محددة النطاق فردياً بناءً على أنظمتكم وعملياتكم.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {useCases.map((uc) => (
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- SECURITY AND GOVERNANCE -->
+<section class="section" aria-labelledby="security-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="security-heading" style="margin-bottom:1.5rem;">الأمان والحوكمة لطروحات Automation Anywhere</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        طروحات RPA المؤسسية تحيا أو تموت على الحوكمة، وبنية Automation Anywhere المُدارة مركزياً مبنية مع وضع ذلك في الاعتبار. كل روبوت نبنيه يعمل تحت ضوابط وصول قائمة على الأدوار، فقط المستخدمون المخوّلون يستطيعون إطلاق، تعديل، أو عرض الأتمتة، وكل تشغيل يُسجَّل بمسار تدقيق موقّت زمنياً يستطيع فريق الامتثال أو التدقيق الداخلي لديكم سحبه عند الطلب. للمؤسسات الإماراتية في المصرفية، التأمين، أو القطاعات شبه الحكومية، ذلك المسار غالباً العامل الحاسم في هل يُعتمَد روبوت للإنتاج إطلاقاً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        نصمم الروبوتات مع وضع عملية مراجعة الأمان الحالية لديكم في الاعتبار من مكالمة الاكتشاف الأولى بدلاً من معاملتها كعقبة أخيرة، لأن إضافة تسجيل تدقيق أو ضوابط وصول بأثر رجعي بعد بناء روبوت عادة يعني إعادة بناء أجزاء منه. ذلك يشمل توثيق بالضبط أي بيانات يلمسها كل روبوت، أين تُخزَّن مؤقتاً أثناء تشغيل، وكيف تُدار بيانات الاعتماد، فيمتلك فريق الأمان لديكم ما يحتاجه للموافقة دون تبادل طويل.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">تزنون Automation Anywhere مقابل UiPath؟ سنشرح لكم المقايضات لحالتكم.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_automation_tools_automation_anywhere_mid" class="btn-primary">احجزوا استشارة أتمتة مؤسسية</button>
+  </div>
+</section>
+
+<!-- GETTING STARTED -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="getting-started-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="getting-started-heading" style="margin-bottom:1.5rem;">البدء مع Automation Anywhere</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        معظم تعاونات Automation Anywhere تبدأ بتجربة قصيرة على عملية واحدة بدلاً من طرح كامل على مستوى قسم، لأن إثبات أن الروبوت يعمل بموثوقية مقابل بيانات حقيقية يبني الثقة الداخلية اللازمة لتوسيعه. نختار عملية التجربة معاً أثناء الاكتشاف، عادة تلك ذات القواعد الأوضح والحجم الأعلى، فيكون الفوز سريعاً ومرئياً لمن يحتاج اعتماد المرحلة التالية.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        بمجرد أن يصبح روبوت التجربة حياً ومستقراً، نوثّق بالضبط كيف بُني ولماذا، فتوسيع نفس النمط للعملية التالية، أو تسليم الصيانة لفريقكم الداخلي لاحقاً، لا يتطلب البدء من صفحة فارغة. ذلك التوثيق، لا الروبوت وحده، جزء مما نعتبره المُخرَج.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">استشارة أتمتة مؤسسية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لتشغيل Automation Anywhere لمؤسستكم؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجزوا استشارة مع فريقنا في دبي. سنحدد نطاق التكامل، الأنظمة المتورطة، والحوكمة التي يحتاجها مشروعكم.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ تحديد نطاق مؤسسي</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_automation_tools_automation_anywhere_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا استشارة أتمتة مؤسسية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+.aa-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+.aa-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.aa-toggle-btn.active { background:#006875; color:#fff; }
+.aa-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const aaToggleWrap = document.querySelector('.aa-toggle');
+  if (aaToggleWrap) {
+    const aaBtns = aaToggleWrap.querySelectorAll('.aa-toggle-btn');
+    const aaPanels = document.querySelectorAll('[data-aa-tier-panel]');
+    aaBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-aa-tier');
+        aaBtns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        aaPanels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-aa-tier-panel') !== key; });
+      });
+    });
+  }
+</script>

@@ -1,0 +1,259 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "هل يستبدل هذا فريق الدعم لدينا؟", answer: "لا. الوكيل يتعامل مع التذاكر عالية الحجم والمتكررة، حالة الطلب، الإرجاعات البسيطة، الأسئلة الشائعة، فيقضي فريقكم وقته على التذاكر التي تحتاج فعلياً شخصاً: الشكاوى، الحالات الحدية، وأي شيء يتطلب حكماً أو تعاطفاً لا يستطيع نص جامد تزييفه. نحدد نطاق التقسيم أثناء الاكتشاف بناءً على حجم تذاكركم الفعلي، لا افتراض عام." },
+  { question: "أي منصات مكتب مساعدة تدعمونها؟", answer: "Zendesk وIntercom وFreshdesk هي الثلاث التي نعمل معها الأكثر، لأنها تغطي الغالبية العظمى من منظومات الدعم الإماراتية التي نراها. إذا كنتم على شيء آخر، أخبرونا أثناء الاكتشاف؛ معظم منصات مكتب المساعدة الحديثة تعرض واجهة API يستطيع وكيل القراءة منها والكتابة إليها." },
+  { question: "كيف تُحافَظ على صوت العلامة التجارية ونبرتها؟", answer: "ندرّب أسلوب رد الوكيل على أمثلة حقيقية من كيفية كتابة فريقكم للعملاء فعلياً، لا نبرة خدمة عملاء عامة. قبل الإطلاق، نراجع دفعة من الردود المُسوَّدة مقابل معيار فريقكم الخاص ونعدّل حتى تقرأ كعلامتكم التجارية، لا كرد آلي واضح." },
+  { question: "ماذا يحدث عندما تحتاج تذكرة بشرياً؟", answer: "يصعّد الوكيل مع سياق مرفق: ماذا سأل العميل، ماذا تحقق منه الوكيل أصلاً، ولماذا يوجّه التذكرة لشخص، فلا يبدأ فريقكم من الصفر. نحدد محفزات التصعيد أثناء الاكتشاف، المشاعر، فئة التذكرة، قيمة الحساب، أياً كانت الإشارات المهمة لعملكم." },
+  { question: "هل يستطيع فعلياً معالجة استرداد أو تحديث طلب؟", answer: "نعم، ضمن حد محدد. نضع قواعد صريحة لما يستطيع الوكيل الموافقة عليه مباشرة، إرجاع مباشر ضمن السياسة مثلاً، وما يحتاج شخصاً للتأكيد أولاً، عادة أي شيء فوق عتبة قيمة أو خارج السياسة القياسية. الوكيل لا يحصل على صلاحية عامة؛ يحصل على نطاق محدد ومُراجَع." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_agents_customer_support')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'وكلاء الذكاء الاصطناعي لدعم العملاء',
+    url: 'https://lenooai.com/ar/services/ai-agents/customer-support',
+    description: 'وكلاء ذكاء اصطناعي لدعم العملاء: أتمتة المستوى الأول والثاني متكاملة مع Zendesk أو Intercom أو Freshdesk، بتصعيد واضح لبشري.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع وكلاء ذكاء اصطناعي لدعم العملاء: التسعير حسب حجم التذاكر ونطاق التكامل. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر.' },
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'وكلاء الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'دعم العملاء', item: 'https://lenooai.com/ar/services/ai-agents/customer-support' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="وكلاء الذكاء الاصطناعي لدعم العملاء | Lenoo AI"
+  description="وكلاء ذكاء اصطناعي لدعم العملاء: أتمتة المستوى الأول والثاني متكاملة مع Zendesk أو Intercom أو Freshdesk، بتصعيد واضح لبشري."
+  canonicalPath="/ar/services/ai-agents/customer-support"
+  enPath="/services/ai-agents/customer-support"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">وكلاء الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>دعم العملاء</div>
+    <h1>وكلاء ذكاء اصطناعي <span class="gradient-text">لدعم العملاء</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      وكيل يتعامل مع دعم المستوى الأول والثاني باستقلالية، يتحقق من حالة الطلب، يعالج استردادات مباشرة، ويجيب عن الأسئلة الشائعة، ثم يصعّد لشخص لحظة أن تحتاج تذكرة حكماً.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_ai_agents_customer-support_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#integrations" class="btn-outline">شاهدوا التكاملات ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- TIER 1/2 -->
+<section class="section" aria-labelledby="tiers-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="tiers-heading" style="margin-bottom:1.5rem;">كيف يبدو دعم المستوى الأول والثاني فعلياً بعد الأتمتة</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        معظم طوابير الدعم يسيطر عليها عدد صغير من الأسئلة المتكررة: أين طلبي، هل يمكنني تغييره الآن، كيف أرجعه، ما سياسة الاسترداد لديكم. الوكيل يقرأ التذكرة الواردة، يتحقق من النظام المعني، حالة الطلب، تفاصيل الحساب، قواعد السياسة، ويجيب مباشرة عندما تكون الحالة قياسية، ليلاً أو نهاراً، دون انتظار العميل لساعات العمل.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        للإرجاع المباشر ضمن السياسة، أو فحص حالة طلب، يتصرف الوكيل بنفسه ضمن حد نحدده أثناء الإعداد. لأي شيء أقل قياسية، شكوى، طلب استثناء من السياسة، عميل غاضب بوضوح، يصعّد بدلاً من التخمين، مع السياق الكامل مرفقاً فيلتقطه فريقكم دون أن يطلب من العميل تكرار نفسه.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATIONS -->
+<section id="integrations" class="section" style="background:#f0f3ff;" aria-labelledby="integrations-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="integrations-heading">تكاملات محددة</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">نتصل مباشرة بمنصة مكتب المساعدة التي تشغّلونها أصلاً، لا أداة منفصلة يجب أن يتعلمها فريقكم.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">support_agent</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Zendesk</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">المنصة الأكثر شيوعاً التي نتكامل معها. الوكيل يقرأ التذاكر الواردة، يصيغ أو يرسل الردود، ويحدّث حالة التذكرة والوسوم مباشرة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">chat</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Intercom</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">الوكيل يتعامل مع المحادثات الواردة في الوقت الفعلي، بنفس منطق التصعيد كالدعم القائم على التذاكر، مُكيَّفاً لسير الدردشة الحية في Intercom.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">confirmation_number</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Freshdesk</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">دعم دورة حياة التذكرة كاملة: الوكيل يصنّف، يرد، ويوجّه ضمن سير عمل Freshdesk وقواعد اتفاقية مستوى الخدمة لديكم الحالية.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ESCALATION -->
+<section class="section" aria-labelledby="escalation-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="escalation-heading" style="margin-bottom:1.5rem;">متى يحوّل الوكيل لشخص</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        نحدد محفزات تصعيد خاصة بعملكم أثناء الاكتشاف: فئة التذكرة، المشاعر المرصودة، قيمة الحساب، أو أي شيء خارج سياسة موثقة. عندما يُطلق أحد تلك المحفزات، يوجّه الوكيل التذكرة لفريقكم بملخص لما تحقق منه أصلاً ولماذا يصعّد، فيلتقطها شخص بسياق، لا تذكرة فارغة. هذا ليس حلاً بديلاً لفشل الوكيل؛ إنه جزء مصمم من النظام، مهمة الوكيل هي التعامل مع الحالات الروتينية جيداً وإدراك بسرعة متى لا تكون الحالة روتينية.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 24/7 -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="coverage-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="coverage-heading" style="margin-bottom:1.5rem;">تغطية لا تتوقف عند السادسة مساءً</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        أسئلة العملاء لا تصل بجدول، لكن معظم فرق الدعم مأهولة فقط خلال ساعات العمل. الوكيل يتعامل مع الحجم الروتيني حول الساعة، فيحصل عميل يسأل عن طلبه في الثانية صباحاً على إجابة بدلاً من موقع في الطابور، بينما يركز فريقكم ساعات عمله على التذاكر التي تحتاج فعلياً انتباه شخص.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">كيف يبدو مشروع وكيل دعم نموذجي</h2>
+      <ol class="journey-list" style="gap:1rem;">
+        <li><strong style="color:#00253b;">الاكتشاف.</strong> نسحب عينة من التذاكر الحديثة ونصنفها حسب الحجم والتعقيد، فنحدد نطاق الوكيل مقابل مزيج تذاكركم الفعلي، لا افتراض عام عن شكل تذاكر الدعم.</li>
+        <li><strong style="color:#00253b;">التصميم.</strong> نربط الوكيل بمنصة مكتب المساعدة لديكم، نحدد بالضبط أي إجراءات يستطيع اتخاذها بنفسه، إغلاق تذكرة روتينية، معالجة إرجاع قياسي، وأي محفزات تصعيد ترسل تذكرة لشخص بدلاً من ذلك.</li>
+        <li><strong style="color:#00253b;">البناء والاختبار.</strong> نبني الوكيل ونختبر ردوده مقابل تذاكر تاريخية حقيقية، نتحقق من الدقة، النبرة، وما إذا كانت قرارات تصعيده تطابق ما كان أفضل موظف دعم لديكم سيقرره.</li>
+        <li><strong style="color:#00253b;">الإطلاق والمراقبة.</strong> ننشر الوكيل جنباً إلى جنب مع فريقكم الحالي، ونراجع عينة من تذاكره المُعالَجة عن كثب خلال الأسابيع الأولى لرصد أي شيء يحتاج تعديلاً قبل توسيع الحجم الذي يتعامل معه.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- MEASURING IMPACT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="impact-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="impact-heading" style="margin-bottom:1.5rem;">كيف تعرفون أنه يعمل فعلياً</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        نتتبع نفس المقاييس التي يهتم بها فريق دعمكم أصلاً: زمن الاستجابة، معدل الحل على التذاكر التي يتعامل معها الوكيل، وكم مرة احتاجت تذكرة مُصعَّدة العودة للوكيل لمزيد من المعلومات مقابل معالجتها بنظافة من شخص. إذا كان معدل حل الوكيل للتذاكر الروتينية مرتفعاً والتصعيدات تصل بسياق مفيد، فهو يعمل. إذا كانت التصعيدات غامضة أو يؤجل الوكيل حالات روتينية يجب أن يستطيع إغلاقها، فهذه إشارة لضبط نطاقه، لا علامة على فشل النهج كاملاً. نراجع هذه الأرقام معكم خلال نافذة المراقبة بعد الإطلاق، لا فقط عند نقطة التسليم.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT CUSTOMERS ACTUALLY EXPERIENCE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="experience-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="experience-heading" style="margin-bottom:1.5rem;">ما يختبره العميل فعلياً</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        لسؤال روتيني، الفرق هو السرعة: بدلاً من الانتظار في طابور لبشري ليلتقط تذكرة، يحصل العميل على إجابة صحيحة خلال دقائق، في أي وقت من اليوم. نصمم ردود الوكيل لتقرأ كرد دعم حقيقي، لا قالب رسالة نموذجية، تُشير لطلب أو حساب العميل المحدد بدلاً من إقرار عام.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        لأي شيء يُصعَّد، الهدف هو ألا يشعر العميل بالتحويل إطلاقاً. ملخص الوكيل يعطي الموظف البشري سياقاً كاملاً، فلا يُطلَب من العميل تكرار رقم طلبه وشرح المشكلة مرة أخرى من الصفر. تجربة دعم تجعل العميل يعيد شرح نفسه بعد التصعيد أسوأ من عدم الأتمتة إطلاقاً، ونصمم تدفق التصعيد تحديداً لتجنب ذلك.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- COST -->
+<section class="section" aria-labelledby="cost-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="cost-heading" style="margin-bottom:1.5rem;">ما الذي يحدد التكلفة</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        حجم التذاكر يهم أقل من تنوعها. طابور دعم يسيطر عليه نوع أو نوعان من الأسئلة المتكررة بناء محصور وأسرع من طابور بذيل طويل من فئات مشاكل مختلفة، لأن كل فئة يتعامل معها الوكيل بثقة تحتاج اختبارها الخاص مقابل تذاكر تاريخية حقيقية قبل أن نثق بها في الإنتاج.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        المحرك الفعلي الآخر هو مقدار صلاحية الإجراء التي يحصل عليها الوكيل: وكيل يجيب فقط عن الأسئلة أبسط من وكيل مخوَّل لمعالجة استردادات أو تعديل طلبات، لأن صلاحية الإجراء تعني تصميم ضوابط حماية أكثر واختبار حالات حدية أكثر حيث لقرار خاطئ تكلفة حقيقية. نحدد نطاق العاملين أثناء الاكتشاف ونعرض سعراً مقابل مزيج تذاكركم الفعلي، لا معدل عام لكل مقعد. نشر مكتب مساعدة واحد بنطاق تذاكر ضيق عادة الأسرع للإطلاق؛ إعداد متعدد القنوات يمتد عبر Zendesk وواتساب والبريد الإلكتروني بصلاحية إجراء أوسع يستغرق وقتاً أطول للاختبار بشكل صحيح، وسنخبركم بصدق أيهما يحتاجه عملكم فعلياً قبل عرض سعر لأي منهما.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">أخبرونا أي مكتب مساعدة تشغّلونه وأكثر نوع تذكرة شيوعاً. سنُريكم ما سيتعامل معه وكيل.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_agents_customer-support_mid" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لتفريغ طابور دعمكم؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">أخبرونا بما يُغرق طابوركم. سنصمم وكيلاً يتعامل معه ونُريكم بالضبط كيف يقرر قبل أن نبني.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_agents_customer-support_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.journey-list li { position:relative; padding-right:1.75rem; color:#42474e; font-size:1.0625rem; line-height:1.85; }
+.journey-list li::before { content:''; position:absolute; right:0; top:0.6em; width:9px; height:9px; border-radius:50%; background:#00e3fd; }
+</style>

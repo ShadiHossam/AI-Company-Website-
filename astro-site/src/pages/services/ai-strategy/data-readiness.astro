@@ -1,0 +1,246 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "We don't have a CRM, everything is in WhatsApp and spreadsheets. Can we still do AI?", answer: "Yes, but that's exactly what a readiness audit needs to catch first. WhatsApp chat history and spreadsheets can be usable data sources, but they need to be structured and accessible before an AI system can reliably use them. In practice, this often means the first phase of a project is getting your data into a shape AI can work with, not building the AI system itself. Skipping that step is the most common reason AI projects underperform." },
+  { question: "How long does a data readiness audit take?", answer: "For most small and mid-sized UAE businesses, a readiness audit takes one to two weeks: reviewing where your data lives, how complete and accessible it is, who owns it, and whether you have enough of it for the use case you're considering. Larger organizations with more systems and departments take longer, since there's simply more to map." },
+  { question: "What if the audit finds our data isn't ready? Do we still have to pay for the AI project?", answer: "No, that's the point of running the audit first. If your data isn't ready, you'll know exactly what needs to be fixed, and how long that takes, before committing budget to a build. Some businesses fix the gaps themselves; others ask us to handle the data cleanup as a separate, smaller phase before any AI system gets built." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_strategy_data_readiness')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: 'Is Your Data Ready for AI? The Readiness Audit to Run Before You Spend a Dirham',
+    url: 'https://lenooai.com/services/ai-strategy/data-readiness',
+    description: 'A practical data readiness audit for UAE SMEs considering AI: where your data lives, quality and completeness, access and structure, governance, and volume.',
+    author: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    publisher: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://lenooai.com/services' },
+      { '@type': 'ListItem', position: 3, name: 'AI Strategy', item: 'https://lenooai.com/services/ai-strategy' },
+      { '@type': 'ListItem', position: 4, name: 'Data Readiness', item: 'https://lenooai.com/services/ai-strategy/data-readiness' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="Is Your Data Ready for AI? Readiness Audit for UAE SMEs | Lenoo AI"
+  description="Data readiness for AI: the audit UAE SMEs should run before spending on any AI project. Where your data lives, quality, structure, governance, and volume."
+  canonicalPath="/services/ai-strategy/data-readiness"
+  ogImage="/assets/og-ai-strategy.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services" style="color:inherit;text-decoration:none;opacity:0.65;">Services</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-strategy" style="color:inherit;text-decoration:none;opacity:0.65;">AI Strategy</a><span style="opacity:0.4;padding:0 4px;"> / </span>Data Readiness</div>
+    <h1>Is Your Data Ready for AI?<br>The Readiness Audit to Run <span class="gradient-text">Before You Spend a Dirham</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:660px; margin:1.5rem auto 2rem; line-height:1.8;">Most AI projects that underdeliver don't fail because of the model. They fail because the data behind them was never actually ready. Here's the audit to run first, and the gaps we see most often in UAE SMEs.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="data_readiness_hero" class="btn-primary">Run a Free Data Readiness Audit</button>
+      <a href="#the-audit" class="btn-outline">See the Audit ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1400&q=80&auto=format&fit=crop" alt="Business owner reviewing spreadsheets and data on a laptop before an AI project" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHY MOST AI PROJECTS FAIL BEFORE THEY START -->
+<section class="section" aria-labelledby="why-fail-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="why-fail-heading" style="margin-bottom:1.5rem;">Why Most AI Projects Fail Before They Start</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Bad data, not bad models.</strong> When an AI project underperforms, the instinct is usually to blame the model: it's not smart enough, it's not the right tool, maybe a competitor's tool would have worked better. In our experience scoping AI projects, the actual cause is almost always upstream of the model. The AI was asked to do something with data that was incomplete, scattered across five different places, inconsistently formatted, or simply too thin to learn a reliable pattern from.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">A lead-scoring model trained on six months of inconsistent CRM entries will produce unreliable scores, no matter how capable the underlying model is. A customer support AI built on old, contradictory documentation will confidently give customers wrong answers. A chatbot answering from a product catalog that's half out of date will quote prices and availability that are simply wrong. None of these are model problems. They're data problems wearing a model-shaped disguise.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">This matters most before you spend anything. A readiness audit run before a build starts costs a fraction of what it costs to discover the same gap three months into a project, after budget, time, and internal credibility have already gone into something that was never going to work reliably on the data it was given.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80&auto=format&fit=crop" alt="Messy spreadsheets and scattered files representing disorganized business data" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THE READINESS AUDIT -->
+<section id="the-audit" class="section" style="background:#e7eeff;" aria-labelledby="audit-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="audit-heading">The Readiness Audit</h2>
+      <p>Five questions we work through with every business before recommending what to build, in this order.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">travel_explore</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Where your data lives today</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Most businesses can't answer this cleanly on the first try. Customer data in a CRM, but also in WhatsApp threads, email inboxes, spreadsheets someone built two years ago, and a POS system that doesn't talk to any of it. We map every source before touching anything else.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Usually more scattered than the business realizes going in</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">fact_check</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Data quality &amp; completeness</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Fields that are technically filled in but wrong, missing, or duplicated. A CRM with three entries for the same customer under slightly different names. Order records with no timestamps. We check whether the data actually says what it claims to say.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Completeness matters as much as raw volume</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">api</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Access &amp; structure</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Whether an AI system can actually reach the data matters as much as whether the data is good. Data behind an API is easy to connect. Data in a spreadsheet is workable with some setup. Data on paper in a filing cabinet needs to be digitized before it's usable at all.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">APIs vs. spreadsheets vs. paper: each needs a different plan</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">gavel</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Governance &amp; ownership</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Who's actually allowed to use this data, and for what. Customer data has privacy obligations attached to it regardless of how it's stored. We identify who owns each data source internally and what permissions and consent already cover before an AI system starts using it.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Ownership questions are easier to answer before launch than after</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">database</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Volume: do you have enough</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Some AI use cases need very little historical data to work well: a chatbot answering from a product catalog needs the catalog, not years of history. A predictive model trying to score leads needs enough past examples to learn a real pattern from. We match the use case to what your data volume can actually support.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">The right amount of data depends entirely on the use case</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">A readiness audit tells you what to fix before you spend on a build, not after.</p>
+      <button onclick="openModal(this)" data-source="data_readiness_mid" class="btn-primary">Run a Free Data Readiness Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- COMMON READINESS GAPS IN UAE SMEs -->
+<section class="section" aria-labelledby="gaps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="gaps-heading">Common Readiness Gaps in UAE SMEs</h2>
+      <p>Three patterns we run into repeatedly when auditing small and mid-sized UAE businesses.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">chat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">WhatsApp chat history</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">A huge amount of real customer interaction in the UAE happens over WhatsApp: order confirmations, price negotiations, complaints, follow-ups. It's genuinely useful data, but it's unstructured and locked inside individual chat threads, often on a personal or shared team phone rather than a system that can export it cleanly.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">contacts</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">No CRM</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Customer and lead information split across a salesperson's phone contacts, a shared spreadsheet, and whoever happens to remember a particular deal. Without a single system of record, an AI system has no consistent place to read from or write updates back to.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Paper records</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Invoices, contracts, and intake forms still kept on paper or as scanned images rather than searchable text. This is common in businesses that have been operating for years before digital tools became standard, and it's a real blocker until the records are digitized and made machine-readable.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT TO FIX BEFORE YOU BUILD ANYTHING -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="fix-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="fix-heading" style="margin-bottom:1.5rem;">What to Fix Before You Build Anything</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">Fixing every data gap perfectly before starting an AI project isn't realistic, and it isn't necessary. What matters is fixing the gaps that would actually break the specific system you're planning to build. If you're building a chatbot to answer from your product catalog, the catalog needs to be accurate and complete; your five-year-old sales spreadsheet doesn't need to be touched yet.</p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">The sequence that works best: identify the one or two data sources the planned AI system actually depends on, fix those specifically (consolidating duplicates, filling in missing fields, getting the data into an accessible format), and leave everything else for later phases as the project expands. Trying to clean every system in the business before starting anything usually turns into a project that never actually starts.</p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">Ownership is worth settling early too. Someone in the business needs to be responsible for keeping the data an AI system depends on accurate going forward, whether that's updating the product catalog when prices change or logging new leads consistently in the CRM. An AI system built on good data at launch will degrade if nobody owns keeping that data current.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT "GOOD ENOUGH" ACTUALLY LOOKS LIKE -->
+<section class="section" aria-labelledby="good-enough-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="good-enough-heading" style="margin-bottom:1.5rem;">What "Good Enough" Actually Looks Like</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">"Good enough" isn't the same standard for every AI use case, and it's rarely "perfect." A chatbot answering FAQ-style questions from a product catalog is workable once the catalog is accurate, complete, and in one place, even if your historical sales data is still a mess. A lead-scoring model needs a meaningfully larger and cleaner base of historical examples, since it's learning a pattern rather than looking up a fact.</p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">The honest version of "good enough" is: the data covers the specific decisions or answers the AI system needs to produce, it's accessible in a format the system can actually read, and someone is responsible for keeping it that way after launch. That's a lower bar than most businesses assume going in, and it's exactly what a readiness audit is meant to establish clearly, rather than leaving it as a guess until something goes wrong after launch.</p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Not sure if your data is ready for the AI project you're considering? We'll tell you honestly, before you spend anything on a build.</p>
+    <button onclick="openModal(this)" data-source="data_readiness_pre_faq" class="btn-primary">Run a Free Data Readiness Audit</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions About Data Readiness</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Run a Free Data Readiness Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll review where your data lives, how ready it is, and what to fix first, before you spend anything on a build that depends on it.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="data_readiness_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Run a Free Data Readiness Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+.apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+@media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } }
+</style>

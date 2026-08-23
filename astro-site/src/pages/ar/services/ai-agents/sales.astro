@@ -1,0 +1,270 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "هل يعمل هذا مع نظام CRM لدينا؟", answer: "نعم، لأي نظام CRM يعرض واجهة API حديثة، وهو ما يغطي الغالبية العظمى من المنصات التي تشغّلها فرق المبيعات الإماراتية: HubSpot وSalesforce وZoho وPipedrive وغيرها. الوكيل يقرأ ويكتب على نظام CRM لديكم مباشرة، فيرى المندوبون سجلات محدَّثة دون أداة منفصلة للفحص." },
+  { question: "هل يستطيع الوكيل التعامل مع محادثات مبيعات عبر واتساب؟", answer: "نعم، وهذا أحد الطلبات الأكثر شيوعاً التي نتلقاها. حصة كبيرة من محادثات المبيعات الإماراتية تحدث عبر واتساب لا البريد الإلكتروني، والوكيل يقرأ ويصيغ عبر تلك القناة بنفس طريقة البريد الإلكتروني، متحققاً من سياق نظام CRM قبل الرد." },
+  { question: "هل يراجع شخص التواصل قبل إرساله؟", answer: "هذا قرار تتخذونه لكل سير عمل، لا شيء نلجأ إليه افتراضياً بصمت. بعض العملاء يريدون مراجعة كل بريد إلكتروني أو رسالة مُسوَّدة قبل الإرسال، خاصة في البداية؛ آخرون ينتقلون للإرسال المستقل الكامل بمجرد ثقتهم بمخرجات الوكيل لمهمة معينة. نحدد ذلك أثناء الاكتشاف ونستطيع تعديل عتبة المراجعة مع تنامي الثقة." },
+  { question: "كيف يختلف هذا عن تدريب المبيعات بالذكاء الاصطناعي الذي تقدمونه؟", answer: "هذه الصفحة هي Lenoo تبني وكيلاً يقوم بعمل المبيعات لفريقكم، يصيغ التواصل، يبحث عن العملاء المحتملين، يحدّث نظام CRM. خدمة التدريب على الذكاء الاصطناعي لدينا تُعلِّم فريق مبيعاتكم استخدام أدوات الذكاء الاصطناعي بأنفسهم. مشكلتان مختلفتان: واحدة تستبدل العمل اليدوي بوكيل، والأخرى تبني مهارة في موظفيكم. بعض العملاء يستخدمون كليهما." },
+  { question: "هل يستطيع الوكيل العمل عبر عدة قنوات مبيعات في آن واحد؟", answer: "نعم. معظم فرق المبيعات الإماراتية تعمل عبر البريد الإلكتروني وواتساب ونظام CRM معاً، ونبني الوكيل ليقرأ ويتصرف عبر أياً كانت القنوات التي يستخدمها فريقكم فعلياً بدلاً من افتراض أن البريد الإلكتروني هو الوحيد المهم. نؤكد مزيج قنواتكم الفعلي أثناء الاكتشاف قبل تحديد نطاق البناء." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_agents_sales')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'وكلاء الذكاء الاصطناعي للمبيعات والتسويق',
+    url: 'https://lenooai.com/ar/services/ai-agents/sales',
+    description: 'وكلاء ذكاء اصطناعي لفرق المبيعات والتسويق: بحث العملاء المحتملين، تواصل مخصص، تسلسل متابعة، وتحديثات CRM، مبنية لمنظومتكم الحالية.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع وكلاء ذكاء اصطناعي للمبيعات والتسويق: التسعير حسب تعقيد القرار والنطاق. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر.' },
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'وكلاء الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'المبيعات والتسويق', item: 'https://lenooai.com/ar/services/ai-agents/sales' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="وكلاء الذكاء الاصطناعي للمبيعات والتسويق | Lenoo AI"
+  description="وكلاء ذكاء اصطناعي لفرق المبيعات والتسويق: بحث العملاء المحتملين، تواصل مخصص، تسلسل متابعة، وتحديثات CRM، مبنية لمنظومتكم الحالية."
+  canonicalPath="/ar/services/ai-agents/sales"
+  enPath="/services/ai-agents/sales"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">وكلاء الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>المبيعات والتسويق</div>
+    <h1>وكلاء ذكاء اصطناعي <span class="gradient-text">للمبيعات والتسويق</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      وكيل يبحث عن العملاء المحتملين، يصيغ التواصل بصوتكم، يتابع دون أن يُطلَب منه، ويبقي نظام CRM محدَّثاً، فيقضي مندوبوكم وقتهم في المحادثات، لا الأعمال الإدارية.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_ai_agents_sales_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#use-cases" class="btn-outline">شاهدوا ما نبنيه ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- SALES USE CASES -->
+<section id="use-cases" class="section" aria-labelledby="sales-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="sales-heading">وكلاء المبيعات</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">يتولون البحث والأعمال الإدارية التي تستهلك يوم المندوب، فيقضيه بالبيع بدلاً من ذلك.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">manage_search</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء بحث العملاء المحتملين</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يجمع معلومات عامة عن عميل محتمل أو شركة، يتحقق من النشاط الأخير، ويعيد ملخصاً منظماً يقرؤه مندوب خلال أقل من دقيقة قبل مكالمة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء التواصل المخصص</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يصيغ تواصلاً يُشير لشيء محدد لكل عميل محتمل، بنبرة تطابق كيف يكتب فريقكم فعلياً، جاهزاً ليراجعه المندوب ويرسله.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">schedule_send</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء تسلسل المتابعة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يتتبع من لم يرد ويصيغ المتابعة التالية في الفترة الصحيحة، فلا يصمت عميل محتمل أبداً فقط لأن أحداً لم يتذكر الفحص.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">update</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء تحديث CRM</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يسجّل ملاحظات المكالمة، يحدّث مرحلة الصفقة بناءً على المحادثة، ويبقي خط الأنابيب دقيقاً دون أن يملأ مندوب حقولاً بعد كل مكالمة.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARKETING USE CASES -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="marketing-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="marketing-heading">وكلاء التسويق</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">تحويل عمل واحد لكل صيغة يحتاج الوصول بها، دون إعادة عمله يدوياً كل مرة.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">campaign</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء توليد نسخ الحملات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يأخذ رسالة حملة أساسية ويولّد نسخاً مضبوطة لكل قناة وقطاع جمهور، جاهزة للمراجعة بدلاً من كتابتها من الصفر كل مرة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">content_copy</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء إعادة توظيف المحتوى</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يحوّل قطعة طويلة الشكل لصيغ أقصر، منشورات سوشيال ميديا، نسخة بريد إلكتروني، ملخص، مطابقاً قواعد النبرة والطول لكل قناة.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DISTINCT FROM TRAINING NOTE -->
+<section class="section" aria-labelledby="distinct-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        <strong>تمييز سريع يستحق التوضيح:</strong> هذه الصفحة هي Lenoo تبني وكيلاً يقوم بعمل المبيعات والتسويق لفريقكم. إذا كان ما تريدونه فعلياً هو أن يتعلم موظفوكم استخدام أدوات الذكاء الاصطناعي بأنفسهم، فتلك خدمة مختلفة، راجعوا صفحة <a href="/ar/services/ai-training">التدريب على الذكاء الاصطناعي</a> بدلاً من ذلك. بعض العملاء يستخدمون كليهما: وكيل يتعامل مع الحجم المتكرر، وتدريب فيستفيد الفريق أكثر من الذكاء الاصطناعي مباشرة.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">كيف يبدو مشروع وكيل مبيعات أو تسويق نموذجي</h2>
+      <ol class="journey-list" style="gap:1rem;">
+        <li><strong style="color:#00253b;">الاكتشاف.</strong> نرسم عملية مبيعاتكم أو تسويقكم الفعلية من البداية للنهاية: من أين تأتي العملاء المحتملون، ماذا يفعل بهم مندوب اليوم، وأي تلك الخطوات متكررة بما يكفي لتسليمها لوكيل دون فقدان اللمسة الشخصية التي تجعل التواصل ناجحاً.</li>
+        <li><strong style="color:#00253b;">التصميم.</strong> نربط الوكيل بنظام CRM وأي أدوات أخرى يحتاجها، نحدد بالضبط أي نبرة وصوت يجب أن يكتب بهما، ونضبط عتبة المراجعة، هل يوافق مندوب على كل مسودة، أم يرسل الوكيل الروتينية بنفسه بمجرد كسب تلك الثقة.</li>
+        <li><strong style="color:#00253b;">البناء والاختبار.</strong> نبني الوكيل ونختبره مقابل عملاء محتملين حقيقيين وبيانات CRM حقيقية من خط أنابيبكم، نتحقق من أن التواصل المُسوَّد يبدو فعلياً كفريقكم وأن تحديثات CRM تحط في الحقول الصحيحة.</li>
+        <li><strong style="color:#00253b;">الإطلاق والمراقبة.</strong> ننشر الوكيل، ونراقب مخرجاته خلال الأسابيع الأولى تحديداً، نتحقق من بقاء المسودات ضمن هوية العلامة التجارية وبقاء بيانات CRM دقيقة أثناء تعامله مع حجم حقيقي.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- WHY REPS TRUST IT -->
+<section class="section" aria-labelledby="trust-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="trust-heading" style="margin-bottom:1.5rem;">جعل المندوبين يثقون فعلياً بمخرجات الوكيل</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        وكيل المبيعات يستحق وجوده فقط إذا استخدم المندوبون فعلياً ما ينتجه بدلاً من إعادة كتابة كل شيء من الصفر. تلك الثقة تُبنى تدريجياً، لا تُفترَض من اليوم الأول. في البداية، كل بريد إلكتروني مُسوَّد أو تحديث CRM يمر بخطوة مراجعة، فيرى المندوبون بالضبط ما ينتجه الوكيل ويستطيعون تصحيح أي شيء يخطئ. مع استمرار مسودات الوكيل بالصحة وبقاء تحديثات CRM دقيقة، ننقل المزيد من الحالات الروتينية للإرسال التلقائي، مع تركيز المندوبين وقت مراجعتهم على الحسابات الأعلى مخاطرة حيث تهم القراءة الشخصية أكثر. هذا الطرح المرحلي، بدلاً من قلب مفتاح للاستقلالية الكاملة من اليوم الأول، عادة ما يحدد ما إذا كان فريق مبيعات يتبنى وكيلاً فعلياً أو يتوقف عن استخدامه بصمت.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SCALE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="scale-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="scale-heading" style="margin-bottom:1.5rem;">التعامل مع حجم لم يستطع فريق التعامل معه يدوياً</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        القيمة العملية تظهر بأوضح صورة عند الحجم. اطلبوا من مندوب البحث وتخصيص تواصل لـ٢٠٠ عميل محتمل، وسيستهلك أسبوعاً، إن حدث أصلاً، لأن البحث أول شيء يُتخطى عندما يكون المندوب مشغولاً. الوكيل يبحث ويصيغ كل الـ٢٠٠ في الوقت الذي يستغرقه مراجعة واحد، فيصبح التخصيص الذي يحرك معدلات الرد فعلياً، الإشارة لشيء محدد للعميل المحتمل، ممارسة قياسية بدلاً من شيء محجوز لحفنة من الحسابات عالية الأولوية.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        هذا ليس استبدال المندوبين بالأتمتة. إنه أن يقضي المندوب وقته في المكالمات والعلاقات التي تحتاج شخصاً، بينما يحدث البحث وعمل المسودة الأولى الذي كان يستهلك صباحهم قبل أن يفتحوا بريدهم الوارد.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- UAE SALES CONTEXT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="uae-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="uae-heading" style="margin-bottom:1.5rem;">تواصل المبيعات في الإمارات تحديداً</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        وكيل مبيعات مبني لفريق إماراتي يحتاج التعامل مع أنماط لا تظهر في دليل عام. واتساب ليست قناة ثانوية هنا، غالباً هي الأساسية، وحصة كبيرة من محادثات تحريك الصفقات تحدث هناك لا في سلاسل بريد إلكتروني يلتقطها نظام CRM طبيعياً. الوكيل الذي يصيغ رسائل بريد إلكتروني فقط يفوّت معظم المحادثة الفعلية؛ الوكيل المبني للقراءة والصياغة عبر واتساب إلى جانب البريد الإلكتروني يلتقط الصورة كاملة.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        التواصل الثنائي اللغة عامل حقيقي آخر. قائمة عملاء محتملين تمزج بين متحدثي الإنجليزية والعربية، شائعة عبر معظم القطاعات الإماراتية، تعني أن الوكيل يحتاج الصياغة بشكل مناسب بأي لغة حسب العميل المحتمل، لا اللجوء افتراضياً للإنجليزية على أمل أن تنجح. نحدد ذلك صراحة أثناء الاكتشاف بدلاً من افتراض أن بناءً بلغة واحدة يغطي السوق الذي تبيعون فيه فعلياً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- COST -->
+<section class="section" aria-labelledby="cost-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="cost-heading" style="margin-bottom:1.5rem;">ما الذي يحدد التكلفة</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        حجم خط الأنابيب وتعقيد CRM يهمان أكثر من عدد الموظفين. وكيل يبحث ويصيغ تواصلاً لخط أنابيب مباشر في نظام CRM واحد بناء محصور؛ وكيل ينسّق عبر عدة مصادر عملاء محتملين، بمتطلب ثنائي اللغة، ونظام CRM بحقول مخصصة بشدة يكلف أكثر، لأن كل من ذلك يضيف عمل تكامل واختبار. نحدد نطاق التكلفة مقابل خط أنابيبكم ومنظومتكم الفعليين أثناء الاكتشاف، لا معدل ثابت لكل مندوب يتجاهل مدى تعقيد عملية مبيعاتكم فعلياً. وكيل أحادي الوظيفة، صياغة التواصل فقط مثلاً، أسرع وأرخص طريقة لرؤية قيمة حقيقية قبل قرار توسيعه لسير عمل مبيعات أكمل يغطي البحث والمتابعة وتحديثات CRM معاً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">أخبرونا بما يستهلك وقت مندوبيكم إدارياً، وسنُريكم ما سيتعامل معه وكيل.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_agents_sales_mid" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لإعادة وقت مندوبيكم لهم؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">أخبرونا كيف يبدو سير عمل مبيعاتكم فعلياً. سنصمم وكيلاً يتعامل مع الأعمال الإدارية ونُريكم بالضبط كيف يعمل قبل أن نبني.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_agents_sales_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.journey-list li { position:relative; padding-right:1.75rem; color:#42474e; font-size:1.0625rem; line-height:1.85; }
+.journey-list li::before { content:''; position:absolute; right:0; top:0.6em; width:9px; height:9px; border-radius:50%; background:#00e3fd; }
+</style>

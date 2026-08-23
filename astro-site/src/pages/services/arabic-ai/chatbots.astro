@@ -1,0 +1,284 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "How do you test Arabic chatbot quality before launch, not just after complaints start?", answer: "We run the bot through a written test set of real message patterns before it ever talks to a customer: dialect phrases, Arabizi, code-switched sentences, and a few deliberately messy or ambiguous messages. A native Gulf Arabic speaker reviews the transcripts for tone and correctness, not just an automated pass/fail check. Anything that reads stiff, wrong, or off-tone gets fixed before launch, and we run a second review pass after any prompt or model change." },
+  { question: "Can the chatbot understand a customer who mixes Arabic and English in the same message?", answer: "That's specifically what we build and test for. Code-switching, an Arabic sentence carrying an English word or phrase in the middle, is normal daily speech in the UAE, and a chatbot that can't parse it will either ignore the English fragment or return an error. We test this explicitly rather than assuming a general-purpose model handles it out of the box." },
+  { question: "Will the bot sound the same to every customer, or does it adjust tone?", answer: "It adjusts. A first-time formal inquiry and an ongoing casual WhatsApp thread call for different registers of Arabic, and we set tone rules so the bot matches the customer rather than using one fixed voice for everyone. Getting this wrong is one of the more common reasons an otherwise accurate Arabic bot still feels off to a UAE customer." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'arabic_ai_chatbots')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'Arabic AI Chatbot Development',
+    url: 'https://lenooai.com/services/arabic-ai/chatbots',
+    description: 'Arabic AI chatbots built and tested for Khaleeji dialect, Arabizi, and mid-conversation code-switching, not just Modern Standard Arabic.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'Arabic chatbot development and Arabic conversation audits, scoped and quoted after a discovery call.' },
+    serviceType: 'AI Chatbot Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://lenooai.com/services' },
+      { '@type': 'ListItem', position: 3, name: 'Arabic AI', item: 'https://lenooai.com/services/arabic-ai' },
+      { '@type': 'ListItem', position: 4, name: 'Chatbots', item: 'https://lenooai.com/services/arabic-ai/chatbots' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="Building Arabic AI Chatbots That Actually Work | Lenoo AI"
+  description="Arabic AI chatbot development for the UAE: how we handle Gulf dialect, Arabizi, and mid-conversation code-switching, with real testing before launch."
+  canonicalPath="/services/arabic-ai/chatbots"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services" style="color:inherit;text-decoration:none;opacity:0.65;">Services</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/arabic-ai" style="color:inherit;text-decoration:none;opacity:0.65;">Arabic AI</a><span style="opacity:0.4;padding:0 4px;"> / </span>Chatbots</div>
+    <h1>Building Arabic AI Chatbots<br>That Actually <span class="gradient-text">Work</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:660px; margin:1.5rem auto 2rem; line-height:1.8;">Dialects, Arabizi, and mid-conversation code-switching are exactly where most "Arabic-enabled" chatbots break. Here's how we build, prompt, and test bots that hold up in real Gulf Arabic conversations, not just a translated demo script.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="arabic_ai_chatbots_hero" class="btn-primary">Get a Free Arabic Chatbot Audit</button>
+      <a href="#dialect-arabizi" class="btn-outline">See How We Handle It ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=1400&q=80&auto=format&fit=crop" alt="Customer support agent reviewing an Arabic WhatsApp chatbot conversation on a screen" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHY MOST ARABIC CHATBOTS FAIL -->
+<section class="section" aria-labelledby="why-fail-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="why-fail-heading" style="margin-bottom:1.5rem;">Why Most "Arabic Chatbots" Fail in the First Message</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>The first message a customer sends is rarely a clean, formal sentence.</strong> It's a quick WhatsApp text, often in Arabizi or dialect, sometimes with a spelling shortcut, sometimes with an English word dropped in because that's the word the customer actually uses for that product or service. A chatbot tuned only on formal MSA text either misreads the message entirely or responds in a tone so stiff it signals, immediately, that this isn't built for how the customer actually talks.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>That first impression is expensive.</strong> Once a customer decides the bot "doesn't understand Arabic," most switch to English, abandon the conversation, or wait for a human, none of which is the outcome the bot was built to prevent. And because the failure looks like a normal, quiet drop-off rather than a visible error, it's easy for a business to never notice how much of its Arabic-speaking traffic the bot is actually losing.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>The fix isn't a bigger or newer model.</strong> Every major model handles Arabic grammar correctly. What breaks the first message is narrower: not recognizing Arabizi as Arabic, not expecting an English word mid-sentence, and not adjusting tone to match how the customer opened the conversation. Those are prompting and testing problems, and they're fixable regardless of which underlying model you use.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&q=80&auto=format&fit=crop" alt="Smartphone screen showing a customer messaging conversation" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HANDLING DIALECT AND ARABIZI -->
+<section id="dialect-arabizi" class="section" style="background:#e7eeff;" aria-labelledby="dialect-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="dialect-heading">Handling Dialect and Arabizi</h2>
+      <p>Three specific things a chatbot needs to get right before it can hold a natural Gulf Arabic conversation.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">record_voice_over</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Training/prompting for Khaleeji Arabic</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">We give the model explicit examples of Khaleeji vocabulary and phrasing, not a generic "respond in Arabic" instruction. A generic instruction defaults to MSA, since that's the safest, most "correct" Arabic the model has seen most of. We prompt for the dialect specifically, with example phrases and expressions common in UAE conversation.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Explicit dialect examples, not a one-line language instruction</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">keyboard</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Detecting and responding to Arabizi</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">We build explicit handling for Latin-script Arabic, numbers-as-letters included, so a message like "wain el order" is read as Arabic, not treated as broken English. The bot can then choose to reply in Arabic script, Arabizi, or English depending on what fits the channel and the customer's own pattern.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Tested against real Arabizi patterns, not assumed to work automatically</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">swap_horiz</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Switching mid-conversation without breaking</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">A customer might open in English, switch to Arabic when they get frustrated, then drop in an English brand or product name. We build the conversation state to track language per turn rather than locking the whole thread to whatever language the first message used, so a switch doesn't confuse the bot's next reply.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Language tracked per message, not fixed for the whole conversation</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTING METHODOLOGY -->
+<section class="section" aria-labelledby="testing-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="testing-heading">Testing Methodology</h2>
+      <p>How we QA Arabic conversations before a bot ever talks to a real customer.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Build a realistic test set</h3>
+        <ul class="journey-list">
+          <li>Pull real Arabic message samples from your existing channels where available</li>
+          <li>Add deliberately messy cases: Arabizi, slang, mid-sentence code-switching, typos</li>
+          <li>Include a few edge cases meant to break the bot, not just the easy ones</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Run it and review as a native speaker, not a script</h3>
+        <ul class="journey-list">
+          <li>A native Gulf Arabic speaker reads full transcripts, not just isolated answers</li>
+          <li>We check tone and naturalness, not only whether the answer is factually correct</li>
+          <li>Anything that reads stiff, mistranslated, or off-register gets flagged for a fix</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Fix, retest, and monitor after launch</h3>
+        <ul class="journey-list">
+          <li>Adjust prompting or examples for anything that failed, then rerun the same test set</li>
+          <li>Review a sample of real conversations in the first weeks after launch</li>
+          <li>Re-test after any model or prompt change, since Arabic quality can shift with either</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REAL EXAMPLES: BEFORE AND AFTER -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="examples-heading">
+  <div class="container" style="max-width:900px;">
+    <div class="section-header">
+      <h2 id="examples-heading">Real Examples: Before and After</h2>
+      <p>Two illustrative examples of the same customer message, handled by a generic bot versus one tuned and tested for Gulf Arabic.</p>
+    </div>
+
+    <div class="ba-example">
+      <p class="ba-label">Example 1: Product question in Arabizi</p>
+      <p class="ba-customer">Customer: "hal el item mawjood bel abyad wala bas el aswad?"</p>
+      <div class="ba-row">
+        <div class="ba-card ba-before">
+          <p class="ba-tag ba-tag-before">Before</p>
+          <p class="ba-text">"Sorry, I didn't understand your message. Could you please try again in English or Arabic?"</p>
+          <p class="ba-note">The bot doesn't recognize Arabizi as Arabic at all, so it asks the customer to repeat a question they've already asked clearly, in the language they normally text in.</p>
+        </div>
+        <div class="ba-card ba-after">
+          <p class="ba-tag ba-tag-after">After</p>
+          <p class="ba-text">"متوفر باللونين الأبيض والأسود حالياً. تبيني أرسل لك الصور؟"</p>
+          <p class="ba-note">("It's currently available in both white and black. Want me to send you the photos?") The bot reads the Arabizi message directly and answers naturally, without forcing a script switch.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ba-example">
+      <p class="ba-label">Example 2: A complaint that switches language mid-message</p>
+      <p class="ba-customer">Customer: "الطلب وصل ناقص، missing item وحدة من الاغراض اللي طلبتها"</p>
+      <div class="ba-row">
+        <div class="ba-card ba-before">
+          <p class="ba-tag ba-tag-before">Before</p>
+          <p class="ba-text">"عذراً، لم أفهم. الرجاء التواصل مع فريق خدمة العملاء."</p>
+          <p class="ba-note">("Sorry, I didn't understand. Please contact the customer service team.") The English fragment mid-sentence confuses parsing, and an actual complaint gets deflected instead of resolved, which is the worst possible outcome for a frustrated customer.</p>
+        </div>
+        <div class="ba-card ba-after">
+          <p class="ba-tag ba-tag-after">After</p>
+          <p class="ba-text">"آسفين على الإزعاج! ممكن تقولي شنو الغرض الناقص بالضبط عشان أرسله لك اليوم؟"</p>
+          <p class="ba-note">("Sorry for the trouble! Can you tell me exactly which item is missing so I can send it to you today?") The bot correctly parses the mixed-language sentence, understands it's a complaint about a missing item, and moves straight to resolving it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Not sure how your current chatbot actually handles Arabic? We'll run it against real Gulf Arabic message patterns and show you exactly where it breaks.</p>
+    <button onclick="openModal(this)" data-source="arabic_ai_chatbots_mid" class="btn-primary">Get a Free Arabic Chatbot Audit</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions About Arabic Chatbots</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Audit</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Get a Free Arabic Chatbot Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll test your current bot, or scope a new one, against real Khaleeji Arabic, Arabizi, and code-switching, and show you exactly what needs to change.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="arabic_ai_chatbots_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Get a Free Arabic Chatbot Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+.num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+.apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+@media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } }
+
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+.journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+.journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+
+.ba-example { margin-bottom:3rem; }
+.ba-example:last-child { margin-bottom:0; }
+.ba-label { font-weight:700; color:#006875; font-size:0.8125rem; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.5rem; }
+.ba-customer { color:#00253b; font-weight:600; font-size:0.9375rem; margin-bottom:1rem; padding:0.75rem 1rem; background:#fff; border-radius:12px; }
+.ba-row { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+.ba-card { border-radius:16px; padding:1.25rem 1.5rem; }
+.ba-before { background:#fdf3f3; border:1px solid rgba(186,26,26,0.15); }
+.ba-after { background:#f0fbf9; border:1px solid rgba(0,150,110,0.18); }
+.ba-tag { font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; margin-bottom:0.625rem; }
+.ba-tag-before { color:#ba1a1a; }
+.ba-tag-after { color:#00785a; }
+.ba-text { font-size:1rem; color:#00253b; margin-bottom:0.625rem; line-height:1.8; direction:rtl; text-align:right; }
+.ba-note { font-size:0.8125rem; color:#42474e; line-height:1.65; direction:ltr; text-align:left; }
+@media(max-width:800px) { .ba-row { grid-template-columns:1fr; } }
+</style>
