@@ -1,5 +1,6 @@
 ---
 import { COMPANY } from '../config/company';
+import SafeLink from './SafeLink.astro';
 
 interface Props {
   enPath?: string;
@@ -48,6 +49,8 @@ const { enPath } = Astro.props;
           <a href="/ar/industries/retail"       class="nav-dropdown-item" role="menuitem">التجزئة والتجارة الإلكترونية</a>
           <a href="/ar/industries/hospitality"  class="nav-dropdown-item" role="menuitem">الضيافة والسياحة</a>
           <a href="/ar/industries/logistics"    class="nav-dropdown-item" role="menuitem">اللوجستيات وسلاسل التوريد</a>
+          <div style="height:1px;background:#E2E8F0;margin:.4rem .9rem;"></div>
+          <SafeLink href="/ar/industries" class="nav-dropdown-item" role="menuitem" style="color:#006875;">عرض جميع القطاعات ←</SafeLink>
         </div>
       </div>
       <a href="/ar/about"   class="nav-link text-sm">عنّا</a>
@@ -68,8 +71,11 @@ const { enPath } = Astro.props;
   <div id="mobile-menu" class="md:hidden" style="border-top:1px solid rgba(0,37,59,0.10);background:#f9f9ff;">
     <div class="container py-4 flex flex-col gap-4">
       <div>
-        <span class="mobile-nav-link" style="color:#42474e;font-weight:600;">الخدمات</span>
-        <div class="mobile-nav-sub">
+        <button type="button" class="mobile-nav-toggle" aria-expanded="false" aria-controls="mobile-services-sub" onclick="toggleMobileSection(this)">
+          الخدمات
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="mobile-nav-sub" id="mobile-services-sub">
           <a href="/ar/services/custom-ai-development" onclick="toggleMenu()">تطوير ذكاء اصطناعي مخصص</a>
           <a href="/ar/services/ai-automation"         onclick="toggleMenu()">أتمتة بالذكاء الاصطناعي</a>
           <a href="/ar/services/ai-agents"             onclick="toggleMenu()">وكلاء الذكاء الاصطناعي</a>
@@ -81,12 +87,16 @@ const { enPath } = Astro.props;
         </div>
       </div>
       <div>
-        <span class="mobile-nav-link" style="color:#42474e;font-weight:600;">القطاعات</span>
-        <div class="mobile-nav-sub">
+        <button type="button" class="mobile-nav-toggle" aria-expanded="false" aria-controls="mobile-industries-sub" onclick="toggleMobileSection(this)">
+          القطاعات
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="mobile-nav-sub" id="mobile-industries-sub">
           <a href="/ar/industries/real-estate" onclick="toggleMenu()">العقارات</a>
           <a href="/ar/industries/retail"       onclick="toggleMenu()">التجزئة</a>
           <a href="/ar/industries/hospitality"  onclick="toggleMenu()">الضيافة</a>
           <a href="/ar/industries/logistics"    onclick="toggleMenu()">اللوجستيات</a>
+          <SafeLink href="/ar/industries" onclick="toggleMenu()" style="color:#006875; font-weight:700;">عرض جميع القطاعات ←</SafeLink>
         </div>
       </div>
       <a href="/ar/about"   onclick="toggleMenu()" class="mobile-nav-link">عنّا</a>
@@ -116,6 +126,16 @@ const { enPath } = Astro.props;
   }
   .mobile-nav-link { color: #00253b; font-weight: 600; text-decoration: none; font-size: 1rem; display: block; }
   .mobile-nav-link:hover { color: #006875; }
+  .mobile-nav-toggle {
+    display: flex; align-items: center; justify-content: space-between; width: 100%;
+    background: none; border: none; padding: 0; cursor: pointer;
+    color: #00253b; font-weight: 600; font-size: 1rem; font-family: inherit; text-align: start;
+  }
+  .mobile-nav-toggle svg { width: 18px; height: 18px; flex-shrink: 0; color: #72787e; transition: transform .2s var(--ease); }
+  .mobile-nav-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .mobile-nav-toggle:focus-visible {
+    outline: 2px solid #006875; outline-offset: 4px; border-radius: 4px;
+  }
   .nav-dropdown { position: relative; }
   .nav-dropdown-btn { display:flex; align-items:center; gap:.3rem; color:#42474e; font-weight:500; font-size:.875rem; background:none; border:none; cursor:pointer; padding:0; transition:color .2s; }
   .nav-dropdown-btn:hover { color:#00253b; }
@@ -132,7 +152,8 @@ const { enPath } = Astro.props;
   .nav-dropdown-menu.open { display:block; opacity: 1; transform: translateX(50%) translateY(0); }
   .nav-dropdown-item { display:block; padding:.6rem .9rem; color:#42474e; font-size:.875rem; font-weight:500; text-decoration:none; border-radius:10px; transition:background .15s, color .15s; }
   .nav-dropdown-item:hover { background:rgba(0,227,253,0.10); color:#00253b; }
-  .mobile-nav-sub { padding-inline-start:1rem; display:flex; flex-direction:column; gap:.6rem; margin-top:.4rem; }
+  .mobile-nav-sub { padding-inline-start:1rem; display:none; flex-direction:column; gap:.6rem; margin-top:.6rem; }
+  .mobile-nav-sub.open { display:flex; }
   .mobile-nav-sub a { color:#72787e; font-size:.9rem; font-weight:500; text-decoration:none; }
   .mobile-nav-sub a:hover { color:#006875; }
   .services-mega { min-width:480px; display:grid; grid-template-columns:1fr 1px 1fr; gap:0; padding:.75rem .75rem .5rem; }
