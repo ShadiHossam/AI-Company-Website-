@@ -1,0 +1,326 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "How does the system handle a recurring booking when the customer needs to reschedule one visit?", answer: "It treats a single visit and the recurring schedule as separate things. A customer can move or skip one occurrence via a WhatsApp message without cancelling the whole recurring plan, and the next scheduled visit stays exactly where it was. The system also flags a conflict automatically if a moved visit collides with another job already booked for the same cleaner." },
+  { question: "Do our cleaners need to install an app or learn new software?", answer: "Most setups work through WhatsApp, since that's what cleaning staff in the UAE already use day to day. Dispatch details, addresses, and job notes get sent as a message, and a cleaner confirms with a simple reply. If you already use a dispatch app, we connect to that instead rather than replacing it." },
+  { question: "What payment collection methods does this actually support?", answer: "It depends on how you currently collect payment, cash on completion, card on file, or a payment link sent by message. The AI sends the reminder and, where you take online payment, the link, at the right point in the job cycle. It doesn't process payments itself, it makes sure the reminder actually goes out and the link actually gets sent." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI for Cleaning and Home Service Companies in the UAE",
+    "url": "https://lenooai.com/industries/cleaning-services",
+    "description": "Custom AI systems for UAE cleaning and home service companies: WhatsApp booking, cleaner dispatch, no-show reduction, recurring booking management, and payment reminders.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Cleaning and Home Services"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Cleaning Services AI", "item": "https://lenooai.com/industries/cleaning-services" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation for Cleaning and Home Service Companies in the UAE: The Complete Guide | Lenoo AI"
+  description="AI for cleaning companies in Dubai: WhatsApp booking, cleaner dispatch, no-show reduction, recurring booking management, and payment reminders for UAE home services."
+  canonicalPath="/industries/cleaning-services"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Cleaning Services</div>
+    <h1>AI for Dubai<br><span class="gradient-text">Cleaning & Home Services</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI systems for UAE cleaning and home service companies: WhatsApp booking, cleaner dispatch, no-show reduction, and recurring booking management. Built for a business that runs on one chaotic WhatsApp thread, not a call centre.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="cleaning_services_hero" class="btn-primary">Book a Free Cleaning Services AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=1600&q=80&auto=format&fit=crop" alt="Professional cleaning team preparing supplies before a job in Dubai" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 55%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "9x", caption: "more likely to convert when a lead is contacted within 5 minutes instead of 30 (MIT)" },
+      { value: "1", caption: "WhatsApp thread is usually where booking, dispatch, and complaints all collide today" },
+      { value: "200+", caption: "nationalities live in Dubai, most defaulting to WhatsApp over phone calls" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY CLEANING & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why booking, dispatch and no-shows all live in one chaotic WhatsApp thread</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Everything routes through the same channel.</strong> A new booking request, a change of address, a cleaner asking for the gate code, a customer asking where the team is, all of it lands in the same WhatsApp number, usually managed by whoever's free at the moment. Nothing is separated by type or urgency.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Dispatch is manual and easy to get wrong.</strong> Matching the right cleaner to the right address at the right time, accounting for traffic, prior jobs running long, and staff availability, is genuinely complex. Doing it from memory or a shared spreadsheet means mistakes happen exactly when the day is busiest.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>No-shows go both ways.</strong> A customer who forgets a booking and isn't home wastes a cleaner's slot for the day. A cleaner who doesn't show wastes the customer's morning and often costs a repeat client. Reminders sent consistently, on both sides, are what prevent it.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&q=80&auto=format&fit=crop" alt="Cleaning company dispatcher managing bookings on a phone" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE Cleaning and Home Service Companies</h2>
+      <p>Six systems built around WhatsApp, dispatch, and recurring schedules, connected to how your team already works.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">chat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">WhatsApp Booking & Scheduling Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Takes a new booking request straight from WhatsApp: collects address, service type, and preferred time, checks real availability, and confirms the slot without a back-and-forth.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Books directly in the channel customers already message you on</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">route</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Cleaner Dispatch & Route Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Matches each job to the right available cleaner based on location and schedule, and sends the job details, address, and access notes directly to their phone.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Sends the right job to the right cleaner without a manual reshuffle</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">notifications_active</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Reminder & No-show Reducer</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends a reminder to the customer ahead of every visit, and confirms with the assigned cleaner, so a job doesn't get missed on either side.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Confirms both sides of the job, customer and cleaner, every time</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Recurring Booking Manager</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Keeps a weekly or biweekly booking renewing itself automatically, while letting a customer skip or reschedule a single visit without cancelling the whole plan.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">A skipped visit doesn't cancel the whole recurring schedule</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">payments</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Payment Collection Reminder</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends a payment reminder or link at the right point in the job cycle, whether payment is collected as cash, card, or an online link, so it doesn't fall to the office to chase.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Timed to when a job actually completes, not a fixed billing date</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">rate_review</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Quality/Review Follow-up</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Checks in after a completed job to catch a quality issue early, and asks satisfied customers for a review at the moment they're most likely to leave one.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Catches a complaint before it turns into a lost recurring customer</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Runs on WhatsApp, in Arabic, English, and the languages your staff actually speak.</p>
+      <button onclick="openModal(this)" data-source="cleaning_services_mid" class="btn-primary">Book a Free Cleaning Services AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- ONE BOOKING JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="journey-heading">One booking, request to completed job</h2>
+      <p>What the AI handles from the first WhatsApp message, to the review after the job's done.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Confirmed and slotted automatically</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A customer messages asking for a cleaning this week. The bot handles it from there.</p>
+        <ul class="journey-list">
+          <li>Collects address, service type, and preferred time in the same chat</li>
+          <li>Checks real availability and confirms a slot without a manual back-and-forth</li>
+          <li>Sends a confirmation message so the customer knows it's locked in</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The cleaner dispatched with the right details</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Behind the scenes, the job gets matched and sent to the right person automatically.</p>
+        <ul class="journey-list">
+          <li>Matches the job to an available cleaner based on location and schedule</li>
+          <li>Sends address, access notes, and job details directly to their phone</li>
+          <li>Confirms with both the cleaner and the customer ahead of the visit</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The recurring booking that renews itself</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">If it's a weekly or biweekly customer, the whole cycle keeps running without office admin.</p>
+        <ul class="journey-list">
+          <li>Renews the recurring schedule automatically without a new booking each time</li>
+          <li>Sends a payment reminder or link once the job is complete</li>
+          <li>Follows up for a quick review, or flags a quality concern early</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BIGGEST IMPACT -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">chat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Booking and scheduling</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Getting a booking confirmed instantly, without waiting for someone to check a spreadsheet or call back, is often the single biggest difference between a company that wins a job and one that loses it to a faster reply.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Whoever confirms first usually gets the booking</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">route</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Dispatch coordination</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Automated matching cuts down the daily reshuffling that happens when a job runs long or a cleaner calls in sick, since the system can reassign and notify everyone involved much faster than a manual dispatcher.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reassigns a job in minutes instead of a manual phone chain</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_busy</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">No-show reduction</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Consistent reminders on both sides, customer and cleaner, close most of the gap that causes a wasted trip. It's a simple fix, but only if it happens every time, which is exactly what manual reminders struggle to do.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">A reminder that happens every time beats one that happens sometimes</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT MAKES IT WORK -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Staff availability/dispatch logic</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Understands which cleaners are actually free, where they are, and what's already on their schedule, so a job goes to someone who can genuinely make it, not just the first name on a list.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Recurring schedule handling</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Separates a single visit from the underlying recurring plan, so a skipped or moved visit doesn't accidentally cancel every future booking in the series.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Payment collection integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Sends the right reminder or payment link at the right point, matching however you actually collect payment, cash on completion, card on file, or a message with a link.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Multilingual staff & customer base</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Handles conversations in the languages your customers and your cleaning staff actually use, since a UAE cleaning team is rarely operating in just one language.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT THE DATA SHOWS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=1200&q=80&auto=format&fit=crop" alt="Cleaning team member reviewing job details on a phone" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">9x</p>
+        <p style="color:#42474e; font-size:0.875rem;">more likely to convert when contacted within 5 minutes instead of 30 (MIT)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">1st</p>
+        <p style="color:#42474e; font-size:0.875rem;">reply usually wins the booking when a customer is messaging more than one company</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">2-way</p>
+        <p style="color:#42474e; font-size:0.875rem;">reminders (customer and cleaner) are what actually stop a no-show, not just one side</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Response Speed</p>
+          <p style="color:#42474e; line-height:1.7;">Cleaning companies we talk to describe the same pattern as most service businesses: whoever replies to a booking request first tends to win it, since most customers message more than one company at once and go with whoever confirms quickest.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Dispatch Errors</p>
+          <p style="color:#42474e; line-height:1.7;">Manual dispatch, done from memory or a shared spreadsheet, is where most scheduling mistakes happen, especially on busy days. Automated matching against real availability removes the guesswork that causes double-bookings and missed jobs.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">No-Show Patterns</p>
+          <p style="color:#42474e; line-height:1.7;">A no-show, from either side, is rarely intentional. It's usually a forgotten booking or a schedule mix-up. Companies that send reminders consistently to both customer and cleaner report the pattern drops off noticeably.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for cleaning and home service companies</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Cleaning Services AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll look at where booking, dispatch, and no-shows are actually breaking down in your business, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="cleaning_services_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book a Free Cleaning Services AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    /* Journey list markers (reused inside static bento-grid-3 cards) */
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>

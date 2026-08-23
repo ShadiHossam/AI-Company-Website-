@@ -1,0 +1,327 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Which listing portals does the AI actually connect to?", answer: "We build against Dubizzle and YallaMotor, the two portals that carry most of the used and new car listing traffic in the UAE. When a lead comes in on either platform, the AI receives it the same way your sales team would, and responds within the platform's own messaging flow or by following up on the contact details provided." },
+  { question: "How accurate is the finance pre-qualification, really?", answer: "The bot doesn't approve financing, it screens for the basics: income range, employment status, existing obligations, and the general likelihood a buyer clears a standard bank or captive finance check. That's enough to tell your sales team whether to prioritize a lead or flag it for a longer conversation. Final approval always sits with the bank or finance partner, not the AI." },
+  { question: "How often does the inventory sync update?", answer: "As close to real time as your dealer management system supports, typically syncing on every change: a new unit added, a price update, a vehicle sold and pulled from listings. The goal is that a customer messaging about a car never gets told it's available when it was actually sold that morning." },
+  { question: "Can the AI handle a buyer who only speaks Hindi or Urdu?", answer: "Yes. The AI is built to communicate in Arabic, English, Hindi, and Urdu, and switches based on how the customer writes in, without needing them to select a language first. Given how broad the UAE's buyer base is, that coverage matters more here than in most other markets." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Automation for Car Dealerships in the UAE",
+    "url": "https://lenooai.com/industries/car-dealerships",
+    "description": "Custom AI systems for UAE car dealerships: Dubizzle and portal lead response bots, WhatsApp test-drive scheduling, trade-in valuation, finance pre-qualification, and service reminders.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Automotive Dealerships"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Car Dealership AI", "item": "https://lenooai.com/industries/car-dealerships" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation for Car Dealerships in the UAE: The Complete Guide | Lenoo AI"
+  description="AI for car dealerships in Dubai: Dubizzle and portal lead response bots, WhatsApp test-drive scheduling, trade-in valuation and finance pre-qualification for UAE dealerships."
+  canonicalPath="/industries/car-dealerships"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Car Dealerships</div>
+    <h1>AI Automation for<br><span class="gradient-text">Car Dealerships</span> in the UAE</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI systems for UAE car dealerships: portal lead response, WhatsApp test-drive scheduling, trade-in valuation, and finance pre-qualification. Built for a market where the first reply wins the sale.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="car_dealerships_hero" class="btn-primary">Book a Free Dealership AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1542744173-05336fcc7ad4?w=1600&q=80&auto=format&fit=crop" alt="Car dealership showroom with vehicles listed for sale in the UAE" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 45%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "9×", caption: "more likely to convert when a lead is contacted within 5 minutes vs. 30 (MIT)" },
+      { value: "<1 hr", caption: "the window before a Dubizzle or portal lead typically goes cold" },
+      { value: "4", caption: "languages a UAE dealership's buyer base commonly spans: Arabic, English, Hindi, Urdu" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY THE FIRST REPLY DECIDES THE SALE -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why the first reply decides the sale</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>A buyer browsing Dubizzle or a portal listing is looking at several dealers at once, not just yours.</strong> The moment they message about a car, they've probably messaged two or three others too. Whoever replies first, with real information, gets the conversation. Everyone else is competing for a lead that's already half gone.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>MIT research on lead response speed found contacting a lead within 5 minutes makes them roughly 9 times more likely to convert than waiting 30 minutes.</strong> That finding wasn't built on car sales specifically, but it maps directly onto how portal leads behave: fast-moving, comparison-shopping, and gone the moment a faster reply lands somewhere else.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>A human sales team can't staff every hour a portal lead might come in.</strong> A lead that lands at 11pm or during Friday prayers sits unanswered until someone's back at a desk, and by then the buyer has usually already found their car. AI closes that gap without adding a night shift.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1502810190503-8303352d0dd1?w=800&q=80&auto=format&fit=crop" alt="Salesperson showing a customer a vehicle on the showroom floor" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE Car Dealerships</h2>
+      <p>Six specific systems we deploy for UAE dealerships, each integrated with your DMS and the portals your leads actually come from.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">directions_car</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Dubizzle/Portal Lead Response Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Replies to every portal inquiry within minutes, answers the vehicle's basic questions, and books a call or visit while the buyer is still actively comparing dealers.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Answers arrive while the lead is still comparing, not after they've decided</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_available</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">WhatsApp Test-Drive Scheduler</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Books test drives directly on WhatsApp, checks vehicle and staff availability, and sends reminders so confirmed slots actually show up.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">A confirmed slot instead of a back-and-forth over the phone</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">request_quote</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Trade-in Valuation Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Collects the trade-in vehicle's details, mileage, and condition through a guided conversation and returns an estimated valuation range before the customer even visits.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">A starting estimate before the buyer commits to a visit</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">account_balance</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Finance Pre-Qualification Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Screens buyers on income range, employment, and existing obligations to flag who's likely to qualify for financing, so your sales team prioritizes leads that can actually close.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">A screening step, not a final approval, done before the showroom visit</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">build</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Service Reminder System</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Tracks service intervals and sends WhatsApp reminders when a customer's vehicle is due, keeping service bay revenue flowing without a manual call list.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Automatic reminders instead of a spreadsheet someone has to remember to check</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">search</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Inventory Matching AI</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Matches a buyer's stated budget and preferences against live inventory across your lot, suggesting alternatives when the exact listing they messaged about isn't the best fit.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Surfaces the right car on the lot, not just the one they clicked on</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems UAE-compliant, multilingual, and integrated with your DMS and the portals your leads come from.</p>
+      <button onclick="openModal(this)" data-source="car_dealerships_mid" class="btn-primary">Book a Free Dealership AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- LEAD JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="journey-heading">One lead, start to sale</h2>
+      <p>What the AI handles from the first portal message through to a follow-up that doesn't give up after one try.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The portal enquiry answered in under a minute</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A buyer messages about a listing on Dubizzle at any hour of the day.</p>
+        <ul class="journey-list">
+          <li>Replies immediately with the vehicle's specifics, price, and current availability</li>
+          <li>Asks the qualifying questions a salesperson would: budget, timeline, trade-in, financing interest</li>
+          <li>Routes a hot lead to the right salesperson while the buyer is still actively engaged</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The test drive booked without back-and-forth</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Once the buyer is interested, the AI moves straight to a booked visit.</p>
+        <ul class="journey-list">
+          <li>Checks vehicle and staff availability and proposes a time on WhatsApp</li>
+          <li>Confirms the trade-in vehicle details if one's involved, ahead of the visit</li>
+          <li>Sends a reminder before the appointment so the visit actually happens</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The follow-up that doesn't stop after one message</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A buyer who doesn't book immediately isn't a dead lead, they're a follow-up sequence.</p>
+        <ul class="journey-list">
+          <li>Sends timed follow-ups with relevant inventory instead of one message and silence</li>
+          <li>Flags a genuinely cold lead so your team stops spending time chasing it manually</li>
+          <li>Keeps the finance pre-qualification and trade-in valuation attached to the lead for whenever they're ready</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BIGGEST IMPACT -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact for UAE dealerships</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">bolt</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Lead response speed</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">MIT research puts leads contacted within 5 minutes at roughly 9 times more likely to convert than those contacted after 30. On a portal where a buyer is messaging several dealers at once, response speed alone often decides who gets the sale.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Instant replies, 24/7, not just during showroom hours</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">account_balance</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Trade-in/finance qualification</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Getting a trade-in estimate and a finance screening done before the buyer walks in cuts the length of the showroom visit and lets sales staff focus their time on buyers who are actually close to a decision.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Screening done before the visit, not during it</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">build</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Service retention</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Automatic service reminders keep customers coming back to your service bay instead of a third-party garage, protecting a revenue stream that's easy to lose without a consistent follow-up system.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">A reminder sent automatically, every time a service is due</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Portal API integration (Dubizzle, YallaMotor)</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Most dealership leads originate on Dubizzle and YallaMotor. The AI needs to receive and respond to those leads the way your sales team would, not just react to a forwarded email hours later.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">DMS integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Inventory availability, pricing, and lead data need to sync with your dealer management system directly. A system that quotes a car that's already sold damages trust before a conversation even starts.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Multilingual buyer base (Arabic/English/Hindi/Urdu)</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">UAE car buyers come from across South Asia, the Gulf, and beyond. An AI that only handles English or Arabic misses a large share of genuinely interested buyers who'd rather message in their own language.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Fast-response SLAs</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A minute-level response commitment is the whole point. If the AI is configured to batch replies or wait for a human review step before sending, it loses the speed advantage that makes it worth deploying in the first place.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&auto=format&fit=crop" alt="Row of cars for sale at a UAE dealership lot" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">9×</p>
+        <p style="color:#42474e; font-size:0.875rem;">more likely to convert when a lead is contacted within 5 minutes vs. 30 (MIT)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">&lt;1 hr</p>
+        <p style="color:#42474e; font-size:0.875rem;">the typical window before a portal lead moves on to another dealer</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">4</p>
+        <p style="color:#42474e; font-size:0.875rem;">languages a UAE dealership's buyer base commonly spans</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">The Speed Advantage Is Real</p>
+          <p style="color:#42474e; line-height:1.7;">MIT's finding that leads contacted within 5 minutes are roughly 9 times more likely to convert than those contacted after 30 is one of the most consistently cited pieces of lead-response research. It applies cleanly to portal-driven car sales, where a buyer is almost always messaging multiple dealers about similar vehicles at the same time.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Portal Leads Behave Differently Than Walk-ins</p>
+          <p style="color:#42474e; line-height:1.7;">Dealerships we talk to consistently describe portal leads as colder and more comparison-driven than walk-in traffic. A buyer who's already messaged three dealers isn't loyal to any of them yet, whoever answers first with a straight answer usually gets the next step of the conversation.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Financing Screens Out More Deals Than Price Does</p>
+          <p style="color:#42474e; line-height:1.7;">Sales teams consistently report that a deal falling through at the financing stage, after the test drive and negotiation, costs more time than any other step in the process. Pre-qualifying buyers earlier means that stall happens before a salesperson has invested hours in the deal, not after.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for UAE car dealerships</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Dealership AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll look at your portal lead volume, your current response times, and where deals stall in the finance step, then show you exactly what we'd build first. 30 minutes, no obligation.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="car_dealerships_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book a Free Dealership AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    /* Journey list markers (reused inside static bento-grid-3 cards) */
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>
