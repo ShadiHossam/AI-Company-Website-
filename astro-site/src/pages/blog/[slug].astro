@@ -61,7 +61,10 @@ try {
     pubDate = dbPost.pub_date ? new Date(dbPost.pub_date) : new Date();
     updatedDate = dbPost.updated_date ? new Date(dbPost.updated_date) : undefined;
 
-    // Fetch related posts (same category, different slug, max 3)
+    // Fetch related posts (same category, different slug, max 3).
+    // The status filter below is load-bearing: without it, a scheduled/draft
+    // post in the same category could be surfaced as a "related" link before
+    // it's actually published, producing a broken link for visitors.
     const { data: related } = await supabase
       .from('blog_posts')
       .select('title, slug, category')
