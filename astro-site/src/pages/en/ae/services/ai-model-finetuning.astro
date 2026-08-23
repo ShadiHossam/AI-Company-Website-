@@ -1,0 +1,316 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../../components/ProcessSteps.astro";
+import StatStrip from "../../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "What's the difference between fine-tuning and using a prompt?", answer: "A prompt tells a general-purpose model how to behave in a specific situation. Fine-tuning trains the model on hundreds or thousands of examples so that behavior becomes the model's default, with no prompt required. The result is faster responses, lower token costs (shorter or no system prompt needed), and significantly more consistent output. Fine-tuning is worth it when you have a high-volume use case and need the model to perform a specific task reliably, at scale." },
+  { question: "Which models can you fine-tune?", answer: "We fine-tune both proprietary and open-source foundation models. Proprietary models offer convenience and low infrastructure overhead. Open-source models can be fine-tuned on your own infrastructure, keeping your data fully within your environment. We'll recommend the right option based on your use case, data sensitivity, and cost requirements." },
+  { question: "How much data do I need to fine-tune a model?", answer: "It depends on the task. For most business use cases (classifying documents, generating responses in a specific format, or writing in a consistent brand tone), we can get strong results with 200–500 high-quality examples. More complex tasks benefit from more data, but quality matters far more than volume. We help you build and curate a training dataset as part of the engagement." },
+  { question: "Is our data safe during the fine-tuning process?", answer: "Yes. Your training data is used solely to fine-tune your model and is not used to train any shared or public models. For organizations with strict data policies, we can fine-tune open-source models on your own cloud infrastructure so your data never leaves your environment. We discuss and document your data handling requirements before any data is shared." },
+  { question: "What's included after the model is trained?", answer: "We deliver the fine-tuned model along with evaluation results showing exactly how it performs versus the base model, integration documentation for your developers, and 60-day support. For ongoing tasks, we can retrain on new data as your needs evolve. Pricing for retraining is typically much lower than the initial engagement." },
+  { question: "Can we fine-tune a model on proprietary or confidential data?", answer: "Yes, and this is one of the primary reasons businesses choose fine-tuning over other AI approaches. For organizations with strict data policies, we can fine-tune open-source models entirely on your own cloud infrastructure, so your data never leaves your environment. For proprietary models, the API provider's data handling policies apply, and we walk through these in detail before the project starts so you can make an informed decision." },
+  { question: "How long does a fine-tuning project take from start to finish?", answer: "A typical fine-tuning engagement takes 3-6 weeks from kickoff to a deployed, evaluated model. The timeline breaks down as: 1-2 weeks for data collection and preparation, 1-2 weeks for training runs and evaluation, and 1 week for integration and deployment. Projects where good training data already exists move faster. Projects that require building a training dataset from scratch take longer, since data quality has a direct impact on model quality." },
+  { question: "What happens if the fine-tuned model doesn't meet our expectations?", answer: "We define success metrics before the project starts, so there's a clear bar to hit. If the first training run doesn't reach that bar, we iterate: more data, different data, adjusted hyperparameters, or a different base model. We don't ship a model that doesn't pass evaluation. The 60-day post-launch support window also covers performance issues that only appear once the model is processing real production data." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ai_finetuning')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {}
+
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
+const processSteps = [
+  { icon: "dataset", step: "Step 1", title: "Data Collection", description: "We scope the task, identify training data sources, and build or curate the dataset, cleaning, formatting, and labeling as needed." },
+  { icon: "model_training", step: "Step 2", title: "Fine-Tune", description: "We run the training job with your data, monitoring loss curves and adjusting hyperparameters to prevent overfitting." },
+  { icon: "science", step: "Step 3", title: "Evaluate", description: "We benchmark the fine-tuned model against the base model on held-out test data, so you can see exactly how much it improved." },
+  { icon: "rocket_launch", step: "Step 4", title: "Deploy", description: "We integrate your fine-tuned model into your product or workflow, with documentation and post-launch support included." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+---
+
+<BaseLayout
+  title="AI Model Fine-Tuning for UAE Businesses | Lenoo AI"
+  description="We fine-tune foundation models on your data so your AI knows your business and delivers consistent outputs at scale. A Dubai AI agency for UAE companies."
+  canonicalPath="/services/ai-model-finetuning"
+  arPath="/ar/services/ai-model-finetuning"
+  ogImage="/assets/og-services.jpg"
+  ldJson={[faqLdJson]}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services" style="color:inherit;text-decoration:none;opacity:0.65;">Services</a><span style="opacity:0.4;padding:0 4px;"> / </span>AI Model Fine-Tuning</div>
+    <h1>Stop Using Generic AI. <span class="gradient-text">Start Using Yours.</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      Off-the-shelf models know everything about the internet and nothing about your business. Fine-tuning changes that. We train foundation models on your data, your tone, and your domain, so your AI actually performs like it belongs to you.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="finetuning_hero" class="btn-primary">Discuss Fine-Tuning</button>
+      <a href="#what-we-do" class="btn-outline">See What's Possible ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1400&q=80&auto=format&fit=crop" alt="AI model fine-tuning and machine learning training" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- STATS BANNER -->
+<div style="width:100%; overflow:hidden; position:relative;">
+  <div style="width:100%; background:linear-gradient(135deg,#001e30,#00253b,#006875); padding:3.5rem 2rem; display:flex; align-items:center; justify-content:center; position:relative;">
+    <div style="position:absolute; inset:0; background-image:radial-gradient(circle, rgba(0,227,253,0.07) 1px, transparent 1px); background-size:24px 24px;"></div>
+    <StatStrip stats={[
+      { value: "200+", caption: "Training examples can be enough for a strong fine-tuned model" },
+      { value: "40–60%", caption: "Reduction in inference cost vs. using long system prompts" },
+      { value: "Your data", caption: "Never used to train shared models. Fully isolated to your account" },
+    ]} />
+  </div>
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,#f9f9ff 0%,transparent 100%); pointer-events:none;"></div>
+</div>
+
+<!-- WHAT IS FINE-TUNING -->
+<section class="section" aria-labelledby="explain-heading">
+  <div class="container">
+    <div class="explain-split">
+      <div>
+        <h2 id="explain-heading" style="margin-bottom:1.5rem;">What Is AI Model Fine-Tuning?</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+          AI fine-tuning is the process of taking a pre-trained foundation model and training it further on your own dataset, so that it learns the specific patterns, terminology, tone, and behavior your use case requires. The result is a model that performs like it was built for your business, because it was.
+        </p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+          Think of a foundation model as a highly educated generalist: it knows a lot about everything but has never worked in your industry or read your company's documents. Fine-tuning is like putting that generalist through a deep, focused training program using hundreds of examples of exactly the work you need done. Afterwards, it doesn't need a long system prompt to produce the right output; that output is its default behavior.
+        </p>
+      </div>
+      <div class="explain-img-wrap">
+        <img src="https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800&q=80&auto=format&fit=crop" alt="Machine learning engineers preparing training data for a model fine-tuned on a UAE company's documents" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:2rem auto 0;">
+      Fine-tuning is most valuable for high-volume, repeatable tasks where consistency matters: drafting content in your brand voice, classifying documents into your taxonomy, extracting specific fields from your document types, or generating responses in your customer support style. At scale, a fine-tuned model is both more accurate than a generic model with a long prompt and typically cheaper to run, because the system prompt can be shorter or eliminated entirely.
+    </p>
+  </div>
+</section>
+
+<!-- FINE-TUNING VS PROMPTING -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="vs-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="vs-heading">Fine-Tuning vs. Prompting: When to Use Which</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Both are valid approaches. The right choice depends on your volume, consistency requirements, and data availability.</p>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+      <div style="background:#fff; border:1px solid rgba(0,37,59,0.08); border-radius:16px; padding:1.75rem;">
+        <h3 style="font-size:1rem; color:#00253b; margin-bottom:1rem;">Use prompting when:</h3>
+        <ul style="color:#42474e; font-size:0.875rem; line-height:1.8; list-style:none; padding:0; margin:0;">
+          <li style="padding:0.375rem 0; border-bottom:1px solid rgba(0,37,59,0.07);">Volume is low (under a few thousand requests per month)</li>
+          <li style="padding:0.375rem 0; border-bottom:1px solid rgba(0,37,59,0.07);">Tasks are varied and hard to provide consistent examples for</li>
+          <li style="padding:0.375rem 0; border-bottom:1px solid rgba(0,37,59,0.07);">You're still defining what good output looks like</li>
+          <li style="padding:0.375rem 0; border-bottom:1px solid rgba(0,37,59,0.07);">Speed to deploy matters more than long-term cost optimization</li>
+          <li style="padding:0.375rem 0;">The use case changes frequently</li>
+        </ul>
+      </div>
+      <div style="background:#fff; border:2px solid rgba(0,104,117,0.3); border-radius:16px; padding:1.75rem;">
+        <h3 style="font-size:1rem; color:#006875; margin-bottom:1rem;">Fine-tune when:</h3>
+        <ul style="color:#42474e; font-size:0.875rem; line-height:1.8; list-style:none; padding:0; margin:0;">
+          <li style="padding:0.375rem 0; border-bottom:1px solid rgba(0,37,59,0.07);">Volume is high and prompt costs are a real concern</li>
+          <li style="padding:0.375rem 0; border-bottom:1px solid rgba(0,37,59,0.07);">Consistency is non-negotiable (legal, compliance, customer-facing)</li>
+          <li style="padding:0.375rem 0; border-bottom:1px solid rgba(0,37,59,0.07);">Domain-specific terminology that generic models handle poorly</li>
+          <li style="padding:0.375rem 0; border-bottom:1px solid rgba(0,37,59,0.07);">The model needs to behave a specific way every time, without prompting</li>
+          <li style="padding:0.375rem 0;">You have at least 200 high-quality examples of the desired output</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRY THE DIFFERENCE -->
+<section class="section" aria-labelledby="difference-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="difference-heading">Try the Difference</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Same request, two models. Task: "Reply to a customer asking why their shipment from our Jebel Ali warehouse is late."</p>
+    </div>
+    <div class="ft-demo">
+      <div class="duo-grid">
+        <div class="duo-card">
+          <h3 style="font-size:1rem; color:#00253b; margin-bottom:1rem;">Generic model</h3>
+          <p class="ft-output">"Dear Valued Customer, We sincerely apologize for any inconvenience this may have caused. Please rest assured that our team is working diligently to resolve the matter. Your satisfaction is our highest priority, and we thank you for your patience and understanding during this time..."</p>
+          <ul class="ft-notes">
+            <li>Needed a long system prompt just to get this far</li>
+            <li>Tone drifts between replies; sounds like every other company</li>
+            <li>No order details, no warehouse context, no next step</li>
+          </ul>
+        </div>
+        <div class="duo-card">
+          <h3 style="font-size:1rem; color:#006875; margin-bottom:1rem;">Fine-tuned model</h3>
+          <p class="ft-output">"Hi Omar, your order left Jebel Ali this morning after a customs hold cleared. New delivery window: Thursday before 6pm, tracked at the link below. Since it's late, we've applied your next-order discount automatically. Anything else, just reply here."</p>
+          <ul class="ft-notes">
+            <li>No system prompt needed; this tone is the model's default</li>
+            <li>Matches your best human replies because it trained on them</li>
+            <li>Knows your policies, your locations, your voice</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT WE DO -->
+<section id="what-we-do" class="section" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">Tasks Where Fine-Tuning Delivers the Most Value</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">These are the most common use cases, not the limit of what we fine-tune. Fine-tuning works best for high-volume, repeatable tasks where consistency and accuracy matter. If your task is different, tell us what you're trying to do.</p>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1509228468518-180dd4864904?w=1200&q=80&auto=format&fit=crop" alt="Training data and evaluation formulas on a board" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="builds-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">draw</span></div>
+        <h3>Brand Voice Training</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Train the model on thousands of examples of your own copy until it writes in your exact voice, with no prompting required to get on-brand output.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">category</span></div>
+        <h3>Document Classification</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Train a model to classify incoming documents, emails, or support tickets into your specific categories, with accuracy that general models simply can't match on niche taxonomies.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">support_agent</span></div>
+        <h3>Customer Support Responses</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Train on your best human support responses so your AI replies in the same tone, at the same quality level, consistently across thousands of daily tickets.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">gavel</span></div>
+        <h3>Industry-Specific Knowledge</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Legal, medical, financial, or technical domains where general models hallucinate or use imprecise terminology. Fine-tuning on domain data gives you expert-level precision.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">data_object</span></div>
+        <h3>Structured Data Extraction</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Fine-tune a model to extract specific fields from your document types (contracts, invoices, forms) in a consistent JSON format your systems can ingest directly.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">translate</span></div>
+        <h3>Specialized Translation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">For industries with specific terminology (medical, legal, engineering), fine-tuning produces translations that preserve meaning and precision where generic translation models fall short.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">From Raw Data to Deployed Model</h2>
+    </div>
+    <div style="border-radius:20px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 20px 48px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&auto=format&fit=crop" alt="Evaluation dashboard comparing a fine-tuned model's accuracy against the base model before deployment" loading="lazy" width="1200" height="320" style="width:100%; height:clamp(180px, 26vw, 320px); object-fit:cover; display:block;" />
+    </div>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Train Your Own Model?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Tell us your use case and what data you have. Our Dubai-based team will tell you whether fine-tuning is the right approach and what performance improvements you can realistically expect.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="finetuning_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "name": "AI Model Fine-Tuning",
+      "url": "https://lenooai.com/services/ai-model-finetuning",
+      "description": "We fine-tune foundation models on your proprietary data, delivering consistent, domain-specific AI performance at scale.",
+      "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+      "areaServed": "United Arab Emirates",
+      "serviceType": "AI Model Fine-Tuning"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://lenooai.com/services" },
+        { "@type": "ListItem", "position": 3, "name": "AI Model Fine-Tuning", "item": "https://lenooai.com/services/ai-model-finetuning" }
+      ]
+    }
+  ]
+}
+</script>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+.builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+.explain-split { display:grid; grid-template-columns:1.3fr 1fr; gap:3rem; align-items:center; max-width:1080px; margin:0 auto; }
+.explain-img-wrap { border-radius:20px; overflow:hidden; box-shadow:0 20px 48px rgba(0,59,92,0.12); }
+.explain-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; min-height:280px; }
+.ft-demo { max-width:920px; margin:0 auto; }
+.duo-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+.duo-card { background:#fff; border:1px solid rgba(0,37,59,0.08); border-radius:16px; padding:1.75rem; }
+.ft-output { background:#f0f3ff; border-radius:12px; padding:1.25rem 1.5rem; color:#00253b; font-size:0.9375rem; line-height:1.75; font-style:italic; margin-bottom:1.25rem; }
+.ft-notes { list-style:none; padding:0; margin:0; }
+.ft-notes li { color:#42474e; font-size:0.875rem; line-height:1.7; padding:0.3rem 0 0.3rem 1.5rem; position:relative; }
+.ft-notes li::before { content:'•'; position:absolute; left:0.375rem; color:#006875; font-weight:700; }
+@media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } .explain-split { grid-template-columns:1fr; } .explain-img-wrap img { min-height:220px; } }
+@media(max-width:700px) { .duo-grid { grid-template-columns:1fr; } }
+@media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
+</style>

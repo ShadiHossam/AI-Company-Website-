@@ -1,0 +1,241 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { loadPageContent, getVal } from "../../../lib/page-content";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+
+export const prerender = false;
+
+const pc = await loadPageContent('services');
+const g = (key: string, fallback: string) => getVal(pc, key, fallback);
+
+const servicesFaqs = [
+  { question: "Which service should we start with?", answer: "For most businesses, an AI Strategy Sprint. It maps your workflows, ranks opportunities by ROI, and tells you exactly which service to start with. If you already know what you need, a discovery call is enough for us to scope it directly." },
+  { question: "Can we combine multiple services into one project?", answer: "Yes, most projects do. A typical engagement might include a strategy session, a custom build, and team training so the tool actually gets used. We scope combined projects as one package with one timeline." },
+  { question: "Do you work with businesses outside the UAE?", answer: "Yes. We're based in Dubai and serve UAE businesses first, but we deliver strategy, builds, and training remotely to clients across the Middle East, Europe, and beyond." },
+  { question: "How is pricing structured across services?", answer: "Every service is scoped individually based on complexity and scope. Strategy sessions and training programs have more standardized pricing; builds, automations, and integrations are quoted after a discovery call once we understand what you need." },
+  { question: "What does the 100% guarantee actually cover?", answer: "If you're not completely satisfied with what we deliver, you don't pay. No conditions, no disputes. It applies across every service on this page." },
+];
+
+const servicesFaqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: servicesFaqs.map((f) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
+const servicesLdJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'AI Services by Lenoo AI',
+    url: 'https://lenooai.com/services',
+    description: 'Custom AI development, automation, AI agents, internal tools, team training, and strategy consulting for businesses in the UAE and beyond.',
+    publisher: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    hasPart: [
+      { '@type': 'Service', name: 'Custom AI Development', url: 'https://lenooai.com/services/custom-ai-development' },
+      { '@type': 'Service', name: 'AI Agents', url: 'https://lenooai.com/services/ai-agents' },
+      { '@type': 'Service', name: 'AI Automation', url: 'https://lenooai.com/services/ai-automation' },
+      { '@type': 'Service', name: 'AI Training & Workshops', url: 'https://lenooai.com/services/ai-training' },
+      { '@type': 'Service', name: 'AI Strategy Consulting', url: 'https://lenooai.com/services/ai-strategy' },
+      { '@type': 'Service', name: 'AI Integration', url: 'https://lenooai.com/services/ai-integration' },
+      { '@type': 'Service', name: 'Internal AI Tools', url: 'https://lenooai.com/services/internal-ai-tools' },
+      { '@type': 'Service', name: 'Custom GPT Development', url: 'https://lenooai.com/services/custom-gpt-development' },
+      { '@type': 'Service', name: 'Vibe Coding', url: 'https://lenooai.com/services/vibe-coding' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://lenooai.com/services' },
+    ],
+  },
+  servicesFaqLdJson,
+];
+---
+
+<BaseLayout
+  title="AI Services in the UAE: Build, Automate, Train & Consult | Lenoo AI"
+  description="Lenoo AI is an AI agency in Dubai offering 12 services for UAE businesses: custom AI development, automation, AI agents, internal tools, training, and strategy."
+  canonicalPath="/services"
+  arPath="/ar/services"
+  ogImage="/assets/og-services.jpg"
+  ldJson={servicesLdJson}
+>
+
+<header class="hero-section page-hero" style="text-align:center;">
+  <div class="container">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span>Services</div>
+    <h1>{g('hero_h1', 'Eight Services. One Mission.')}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:600px; margin:1.5rem auto 0;">
+      {g('hero_subtext', "We don't just build AI tools. We make your business genuinely AI-ready. From strategy to build to team enablement, we cover the full journey.")}
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">Based in the UAE, working with clients worldwide</span>
+      <span class="tchip">Strategy, builds, and team enablement</span>
+      <span class="tchip">Satisfaction guarantee on every engagement</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="services_hero" class="btn-primary">{g('hero_cta', 'Book a Free Consultation')}</button>
+    </div>
+  </div>
+</header>
+
+<!-- THREE PILLARS -->
+<section id="services-list" class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>The Full AI Adoption Journey, in One Place</h2>
+      <p>Everything we do falls into three pillars: build the right systems, train your people, and plan the path before you spend.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">code</span></div>
+        <h3 style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">AI Built Around Your Workflows, Not the Other Way Around</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">Off-the-shelf AI doesn't fit your business. We build AI systems that do exactly what your team needs: chatbots, automation pipelines, dashboards, and predictive tools, integrated with your existing software.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">group</span></div>
+        <h3 style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">Your Team Needs to Use AI. We Make Sure They Do.</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">Building AI is only half the battle. We train your employees to use it confidently, with hands-on workshops tailored to your industry and your team's workflows.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bar_chart</span></div>
+        <h3 style="font-size:1.125rem; font-weight:700; margin-bottom:0.75rem;">Know Exactly Which AI to Build Before You Spend a Dollar</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">We map your workflows, identify the highest-ROI AI opportunities, and hand you a clear implementation plan. No guesswork. No wasted budget.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ALL SERVICES — one uniform grid, matching lenoo-redesign's svc-grid (no filter tabs) -->
+<section class="section hp-ind-bg">
+  <div class="container">
+    <div class="section-header">
+      <h2>More Ways We Help You Win With AI</h2>
+      <p>From autonomous agents to vibe coding to deep integrations, we cover every layer of your AI journey.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">smart_toy</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Agents &amp; Agentic Systems</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">AI that works alongside your team. We build autonomous agents that handle high-volume, repetitive tasks so your people can focus on decisions that need human judgment.</p>
+        <a href="/services/ai-agents" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">settings_suggest</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Stop doing it manually. We build intelligent automation pipelines that eliminate repetitive work across sales, ops, and admin, without changing your existing tools.</p>
+        <a href="/services/ai-automation" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">code</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Custom AI Development</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Fully bespoke AI solutions built around your specific workflows and requirements. Integrated with the tools you already use, built to last.</p>
+        <a href="/services/custom-ai-development" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">group</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Team Training</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Building AI is only half the battle. We train your employees to use it confidently, with hands-on workshops tailored to your industry and your team's workflows.</p>
+        <a href="/services/ai-training" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bar_chart</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Strategy</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">We map your workflows, identify the highest-ROI AI opportunities, and hand you a clear 12-month implementation plan. No guesswork. No wasted budget.</p>
+        <a href="/services/ai-strategy" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">hub</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Integration</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">You don't need to replace your existing software. You need to make it smarter. We add an AI layer to your CRM, ERP, and tools so they work harder with the same team.</p>
+        <a href="/services/ai-integration" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">dashboard</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Internal AI Tools</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Generic AI tools don't know your business. We build internal AI assistants, knowledge bases, and dashboards trained on your own data, SOPs, and workflows.</p>
+        <a href="/services/internal-ai-tools" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">chat</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Custom GPT Development</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Custom language models trained on your products, documentation, and workflows, so your team has an assistant that actually knows your business.</p>
+        <a href="/services/custom-gpt-development" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">terminal</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Vibe Coding</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Ship software faster with AI-accelerated development. We build your product using AI-first coding practices without compromising quality.</p>
+        <a href="/services/vibe-coding" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">model_training</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">AI Model Fine-Tuning</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Stop using generic AI. We fine-tune foundation models on your proprietary data so your AI knows your business and delivers consistent results at scale.</p>
+        <a href="/services/ai-model-finetuning" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">psychology</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Claude Agent Builds</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">The most capable autonomous agents, built for reliability. Instruction-following, long-context reasoning, and precise tool use, purpose-built for complex business workflows.</p>
+        <a href="/services/claude-agent-builds" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">tune</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Prompt Engineering</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Your AI is only as good as the prompts behind it. We audit, engineer, and optimize prompts for any AI model, cutting editing time and API costs significantly.</p>
+        <a href="/services/prompt-engineering" class="learn-link">Learn more <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STILL NOT SURE — text + photo, matching lenoo-redesign's pace-grid pattern -->
+<section class="section">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 style="margin-bottom:1.25rem;">Still Not Sure Which Service Fits?</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.8; margin-bottom:1.75rem;">Most clients don't arrive knowing exactly which service they need, and that's fine. Book a free call and we'll tell you directly, no sales pitch, just a straight answer about what would actually move your business forward.</p>
+        <button onclick="openModal(this)" data-source="services_deciding" class="btn-primary">Book a Free Consultation</button>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=900&q=80&auto=format&fit=crop" alt="Dubai skyscrapers rising above the clouds" loading="lazy" width="900" height="620" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:var(--bg-soft);" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={servicesFaqs} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section">
+  <div class="container">
+    <div class="cta-band">
+      <h2>Every Service Is Covered by Our 100% Guarantee</h2>
+      <p style="max-width:480px; margin:1rem auto 2rem;">If you're not completely satisfied with what we deliver, you pay absolutely nothing. No conditions. No disputes. Just a full refund.</p>
+      <button onclick="openModal(this)" data-source="services_guarantee" class="btn-primary">Start Risk-Free Today</button>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+  .hp-ind-bg { background: var(--bg-soft-2, #f4f7fb); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .value-card { display:flex; flex-direction:column; }
+</style>

@@ -1,0 +1,299 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../../components/ProcessSteps.astro";
+
+// Hardcoded fallback FAQ items
+const fallbackFaqs = [
+  { question: "How long does custom AI development take?", answer: "Each project is scoped individually. We give you a precise timeline after the discovery session, based on your specific workflows, data, and integration requirements." },
+  { question: "Do you work with our existing systems?", answer: "Yes. We integrate with most CRMs, ERPs, and hundreds of other business apps via API. You keep the tools your team already knows; we add an AI layer on top." },
+  { question: "Where is our data hosted?", answer: "We offer flexible hosting: cloud or on-premise. For clients with data residency requirements, we configure deployments to meet your regional compliance needs. All options are discussed during discovery." },
+  { question: "What if we need changes after launch?", answer: "All packages include 90-day post-launch support: bug fixes, small adjustments, and optimization. Beyond that, we offer ongoing support retainers. Contact us for details." },
+  { question: "What is the 100% refund guarantee?", answer: "If we deliver your custom AI system and you're not satisfied with the results, we refund 100% of your investment. No fine print, no conditions. It's our promise, and it's why we only take on projects we know we can deliver well." },
+  { question: "How is custom AI different from just using a general AI tool for our team?", answer: "Off-the-shelf AI tools are general-purpose and know nothing about your business. Custom AI development means building a system trained on your specific data, integrated with your specific workflows, and configured with your specific rules and guardrails. It knows your products, your tone, your policies, and your customers. It can take actions inside your systems, not just answer questions. The difference in practical output quality is significant." },
+  { question: "What kind of business benefits most from custom AI development?", answer: "Businesses that have high-volume, repetitive work that requires domain-specific knowledge, businesses with complex customer interactions that need consistency, and businesses where manual processes are a real bottleneck to growth. If you're spending significant team time on tasks that follow a pattern but require judgment, custom AI development almost always pays back quickly." },
+  { question: "Do we need to prepare our data before the project starts?", answer: "No. Data preparation is part of what we do. We assess your existing data during discovery, identify what's needed, help you collect or generate what's missing, and handle all cleaning and formatting before we start building. You don't need to show up with perfectly organized datasets." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'custom_ai')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // Fallback to hardcoded content on error
+}
+
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
+const processSteps = [
+  { icon: "search", step: "Step 1", title: "Discovery", description: "We map your workflows and identify where AI creates the most value." },
+  { icon: "edit", step: "Step 2", title: "Design", description: "Architecture planning, data requirements, and system design. You approve before we build." },
+  { icon: "code", step: "Step 3", title: "Build & Test", description: "Development, integration, QA testing, and thorough system checks before go-live." },
+  { icon: "rocket_launch", step: "Step 4", title: "Launch & Support", description: "System goes live. 90-day support included. Team training included in most packages." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+---
+
+<BaseLayout
+  title="Custom AI Development for UAE Businesses: Chatbots & AI Systems | Lenoo AI"
+  description="As a Dubai AI agency, we build custom AI systems for UAE businesses around your workflows: chatbots, automation, dashboards, agents."
+  canonicalPath="/services/custom-ai-development"
+  arPath="/ar/services/custom-ai-development"
+  ogImage="/assets/og-custom-ai.jpg"
+  ldJson={[faqLdJson]}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services" style="color:inherit;text-decoration:none;opacity:0.65;">Services</a><span style="opacity:0.4;padding:0 4px;"> / </span>Custom AI Development</div>
+    <h1>AI Built Around Your Workflows, <span class="gradient-text">Not the Other Way Around</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:600px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      Off-the-shelf AI doesn't fit your business. We build AI systems that do exactly what your team needs and integrate with the tools you already use.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="custom_ai_hero" class="btn-primary">Book a Free Discovery Call</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div class="container">
+  <div style="max-width:960px; margin:-60px auto 3rem; position:relative; z-index:2; border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--shadow-card-hover); border:1px solid rgba(255,255,255,0.14);">
+    <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1400&q=80&auto=format&fit=crop" alt="Custom AI development and software engineering" loading="eager" fetchpriority="high" width="1400" height="440" style="width:100%; height:clamp(220px, 32vw, 420px); object-fit:cover; object-position:center 40%; display:block;" />
+  </div>
+</div>
+
+<!-- WHY CUSTOM -->
+<section class="section" aria-labelledby="why-custom-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="why-custom-heading" style="text-align:left; margin-bottom:1.5rem;">Why Off-the-Shelf AI Isn't Enough</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+          Generic AI tools are built for everyone, which means they're optimized for no one in particular. Off-the-shelf AI doesn't know your pricing, your SOPs, or your brand guidelines. When you build with generic tools, you spend more time correcting outputs than you save generating them, because the AI is always working from a generic baseline instead of your actual context.
+        </p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+          Custom AI development builds the system around your workflows, not around someone else's idea of what a typical business looks like. The AI knows your products, your customers, your data formats, your compliance requirements, and your tone of voice. It integrates directly with your existing tools so it can take actions inside your systems, not just generate text for someone to copy-paste. The result is a system that actually fits how your business works.
+        </p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+          The businesses that benefit most are those with high-volume, domain-specific workflows where generic AI falls short: professional services firms handling complex client work, e-commerce businesses managing large product catalogs and customer relationships, logistics companies coordinating across multiple parties and systems, and any organization where accuracy and consistency are non-negotiable.
+        </p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=900&q=80&auto=format&fit=crop" alt="Developer's screen showing custom AI system code" loading="lazy" width="900" height="620" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OFF-THE-SHELF VS CUSTOM -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="cad-compare-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="cad-compare-heading">Off-the-Shelf AI vs. Custom AI</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Same question, two answers. Here is the difference context makes.</p>
+      <p style="color:#00253b; font-size:1rem; font-weight:600; margin-top:0.75rem;">Question asked: "What's our return policy for items bought during a sale?"</p>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">help</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem;">Off-the-Shelf AI</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">"Return policies vary by retailer. Most stores allow returns within 30 days of purchase, though sale items are sometimes excluded. Please check with the specific store for their exact policy."</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">verified</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem;">Custom AI</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin:0;">"Sale items can be returned within 14 days with the receipt, for store credit only. Regular-priced items get a full 30-day refund. Since your order shipped on the 3rd, you have until the 17th to return it. Want me to start the return now?"</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT WE BUILD -->
+<section id="what-we-build" class="section" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">What We Build For You</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Common categories of AI systems we build, not an exhaustive list. All built to your workflows and integrated with your existing tools. If your idea doesn't fit any of these, tell us what you need.</p>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&q=80&auto=format&fit=crop" alt="Lenoo AI engineer connecting a custom AI system to a client's business tools via API" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="builds-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">smart_toy</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Internal AI Assistants</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Trained on your company data, documents, and SOPs. Answers your team's questions instantly and accurately.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">support_agent</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Customer-Facing Chatbots</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Handles inquiries, bookings, and support 24/7 via your website, messaging apps, and other channels, in any language.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">bolt</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Workflow Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Eliminates manual repetitive tasks across sales, operations, and admin. Connect your apps and let AI do the data entry.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">monitoring</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Predictive Analytics Dashboards</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Forecasting tools for sales, demand, pricing, and inventory. Make decisions based on data, not guesswork.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">integration_instructions</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">CRM &amp; ERP AI Layers</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Add AI intelligence to your existing CRM or custom systems without replacing them. Your team keeps working the same way; the system gets smarter.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Document Processing AI</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Contracts, invoices, and reports processed automatically. Extracts, classifies, and routes data in seconds.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT'S INCLUDED -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="included-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="included-heading">What Every Custom AI Project Includes</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Not just the AI system itself. Every engagement includes the support and structure your team needs to actually use it.</p>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&q=80&auto=format&fit=crop" alt="Software development workspace during a custom AI build" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="builds-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">search</span></div>
+        <h3>Needs Assessment &amp; Scoping</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">A structured discovery session to map your workflows, identify where AI creates the most value, and define a precise scope with no surprises.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">dataset</span></div>
+        <h3>Data Preparation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">We handle all data collection, cleaning, and formatting. You don't need to show up with perfect datasets. We build what the system needs.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">code</span></div>
+        <h3>Custom Build &amp; Integration</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Full development of your AI system, integrated with your existing tools via API, configured with your business rules, and deployed to your environment.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">fact_check</span></div>
+        <h3>QA &amp; User Acceptance Testing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Thorough testing on real data including edge cases. Your team tests the system before launch and signs off on performance.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">school</span></div>
+        <h3>Team Training &amp; Handover</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Training sessions for your team so everyone knows how to use, manage, and get the most out of the system from day one.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">support</span></div>
+        <h3>90-Day Post-Launch Support</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Bug fixes, minor adjustments, and performance monitoring for 90 days after launch. If something breaks or needs tuning, we fix it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">From Discovery to Launch</h2>
+    </div>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Build Your Custom AI System?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your needs and give you a clear scope, timeline, and budget, so you know exactly what you're committing to before you decide.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="custom_ai_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Discovery Call</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "name": "Custom AI Development",
+      "url": "https://lenooai.com/services/custom-ai-development",
+      "description": "We build custom AI systems around your exact workflows: chatbots, automation pipelines, predictive dashboards, and CRM/ERP integrations.",
+      "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+      "areaServed": "United Arab Emirates",
+      "offers": { "@type": "Offer", "description": "Custom AI development: pricing tailored to your project scope. Book a free discovery call for a quote." },
+      "serviceType": "AI Development",
+      "termsOfService": "100% satisfaction guarantee. Full refund if not happy."
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://lenooai.com/services" },
+        { "@type": "ListItem", "position": 3, "name": "Custom AI Development", "item": "https://lenooai.com/services/custom-ai-development" }
+      ]
+    }
+  ]
+}
+</script>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+    .builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } }
+    @media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
+</style>

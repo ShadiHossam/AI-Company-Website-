@@ -1,0 +1,290 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../../components/ProcessSteps.astro";
+import StatStrip from "../../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "What does a prompt engineering engagement actually look like?", answer: "It depends on your starting point. For teams already using AI heavily, we start with a prompt audit: reviewing your existing prompts, identifying where output quality is inconsistent, and rewriting the worst offenders. For teams building AI features or workflows, we join the design process early and write the system prompts from scratch. Either way, you end up with a documented prompt library that's easy to maintain and update." },
+  { question: "Which AI models do you work with?", answer: "We engineer prompts for all major AI models, both proprietary and open-source. Each model has different strengths, quirks, and optimal prompting patterns. We know them all and engineer accordingly, so you get the best performance out of whichever model you're using." },
+  { question: "How much does bad prompting actually cost?", answer: "More than most teams realize. Bad prompts produce inconsistent outputs that require manual editing, which defeats the purpose of using AI in the first place. They also cause models to use more tokens than necessary, driving up API costs. And they create unpredictable behavior that erodes trust in AI tools across your team. A well-engineered prompt library typically cuts editing time by 60–80% and reduces API token usage by 20–40%." },
+  { question: "Can you write prompts for our specific industry or domain?", answer: "Yes, and this is where domain-specific prompt engineering is most valuable. Generic prompts produce generic output. We research your industry terminology, your tone standards, your compliance constraints, and your output format requirements, then engineer prompts that account for all of them. Legal, healthcare, finance, real estate, e-commerce: we've worked across all of them." },
+  { question: "Do you offer ongoing optimization?", answer: "Yes. AI models update frequently, and a prompt that works perfectly today may need adjustment after a model update. We offer monthly retainers that cover continuous testing, optimization as models evolve, and priority support when something breaks. Most clients find this valuable once they see the improvement in their prompt outputs." },
+  { question: "How long does a prompt engineering engagement take?", answer: "A prompt audit with rewrites for an existing system typically takes 1-2 weeks. Building a full prompt library from scratch for a new AI product or workflow takes 2-4 weeks depending on scope. Most clients see measurable output quality improvement within the first week of working with optimized prompts. Ongoing retainer arrangements are monthly, with no minimum term." },
+  { question: "We only use one or two AI tools. Is it still worth it?", answer: "Often yes, especially if those tools are customer-facing or produce content your team then edits heavily. The return on prompt engineering is directly proportional to how much time your team spends correcting AI output. If you're spending more than a few hours a week editing AI-generated content, the investment pays for itself quickly. A single well-engineered system prompt for a customer-facing use case can eliminate hours of weekly corrections." },
+  { question: "Can you help us build internal prompt guidelines so our team writes better prompts themselves?", answer: "Yes, this is part of every engagement. We deliver a set of documented prompting guidelines specific to your team and tools, covering structure, context setting, format instructions, and common failure modes to avoid. We also run a training session walking your team through the principles. The goal is that after working with us, your team is meaningfully better at writing and improving prompts on their own." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'prompt_engineering')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {}
+
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
+const processSteps = [
+  { icon: "search", step: "Step 1", title: "Audit", description: "We review your existing prompts, workflows, and outputs, and score exactly what's broken and why." },
+  { icon: "edit", step: "Step 2", title: "Engineer", description: "We rewrite, restructure, and rebuild your prompts using proven engineering techniques tailored to your model and use case." },
+  { icon: "science", step: "Step 3", title: "Test & Refine", description: "Structured A/B testing across real scenarios. We measure, compare, and refine until performance meets the bar we set together." },
+  { icon: "library_books", step: "Step 4", title: "Deliver & Train", description: "You get the full prompt library, documentation, and a team training session so you can maintain and build on it yourself." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+---
+
+<BaseLayout
+  title="Prompt Engineering & Optimization for UAE Businesses | Lenoo AI"
+  description="Bad prompts cost you time, money, and trust in AI. Our Dubai AI agency audits and optimizes prompts for any model, so UAE teams get consistent output."
+  canonicalPath="/services/prompt-engineering"
+  arPath="/ar/services/prompt-engineering"
+  ogImage="/assets/og-services.jpg"
+  ldJson={[faqLdJson]}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services" style="color:inherit;text-decoration:none;opacity:0.65;">Services</a><span style="opacity:0.4;padding:0 4px;"> / </span>Prompt Engineering</div>
+    <h1>Your AI Is Only as Good as <span class="gradient-text">the Prompts Behind It.</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      Most teams using AI are leaving serious performance on the table. The outputs are inconsistent, the editing never stops, and no one knows why it works sometimes and not others. That's a prompt engineering problem, and we fix it.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="prompt_eng_hero" class="btn-primary">Get a Prompt Audit</button>
+      <a href="#what-we-do" class="btn-outline">See What's Included ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1400&q=80&auto=format&fit=crop" alt="Prompt engineering and AI optimization" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 25%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- STATS BANNER -->
+<div style="width:100%; overflow:hidden; position:relative;">
+  <div style="width:100%; background:linear-gradient(135deg,#001e30,#00253b,#006875); padding:3.5rem 2rem; display:flex; align-items:center; justify-content:center; position:relative;">
+    <div style="position:absolute; inset:0; background-image:radial-gradient(circle, rgba(0,227,253,0.07) 1px, transparent 1px); background-size:24px 24px;"></div>
+    <StatStrip stats={[
+      { value: "60–80%", caption: "Reduction in manual editing time after optimization" },
+      { value: "20–40%", caption: "Reduction in API token usage with leaner, tighter prompts" },
+      { value: "All LLMs", caption: "All major AI models. We know their quirks and engineer accordingly" },
+    ]} />
+  </div>
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,#f9f9ff 0%,transparent 100%); pointer-events:none;"></div>
+</div>
+
+<!-- WHAT IS PROMPT ENGINEERING -->
+<section class="section" aria-labelledby="explain-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="explain-heading" style="text-align:left; margin-bottom:1.5rem;">What Is Prompt Engineering?</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+          Prompt engineering is the practice of designing, testing, and optimizing the instructions you give to an AI model so that it consistently produces the output you actually need. The way a prompt is structured, the context it provides, the format it requests, and the examples it includes all have a measurable impact on the quality, consistency, and cost-efficiency of AI outputs.
+        </p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+          Most businesses using AI are running on prompts that were written quickly, never properly tested, and never documented. The result is inconsistent outputs that require constant manual editing, high token usage from verbose prompts that pad the context unnecessarily, and AI behavior that works unpredictably: sometimes great, sometimes wrong, with no clear understanding of why.
+        </p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+          Professional prompt engineering treats prompts as precision instruments, not rough drafts. A well-engineered prompt defines the model's role, sets context efficiently, constrains the output format, handles edge cases explicitly, and has been tested against real inputs to verify performance. The difference in output quality between a casually written prompt and an engineered one is often dramatic, and the cost savings from tighter prompts are real and measurable at scale.
+        </p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=900&q=80&auto=format&fit=crop" alt="Structured prompt instructions and code on a developer's screen" loading="lazy" width="900" height="620" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT WE DO -->
+<section id="what-we-do" class="section" aria-labelledby="services-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="services-heading">What We Do in a Prompt Engineering Engagement</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">We don't just rewrite prompts. We build a system your team can maintain and improve on their own.</p>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1509228468518-180dd4864904?w=1200&q=80&auto=format&fit=crop" alt="Prompt evaluation criteria mapped out on a whiteboard during an Lenoo AI audit session" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">search</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Prompt Audit</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">We review every prompt your team currently uses, score them for quality and consistency, and identify the specific failures costing you time and money.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">edit</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">System Prompt Design</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">For AI products and agents, the system prompt is the foundation. We write and test system prompts that define behavior, enforce tone, and prevent the outputs you don't want.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">library_books</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Prompt Library Creation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">A documented, organized library of tested prompts for every use case your team has. Written, versioned, and ready to use. No more tribal knowledge locked in someone's head.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">science</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">A/B Testing &amp; Evaluation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">We run structured tests comparing prompt variants across real scenarios, measure output quality systematically, and pick winners based on data, not gut feel.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">school</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Team Training</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Your team learns how to write, test, and iterate on prompts themselves. We transfer the knowledge so you're not dependent on us every time something needs updating.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">refresh</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Ongoing Optimization</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Models update. Business needs change. We offer retainers that keep your prompt library current, tested, and optimized as the AI landscape evolves.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHERE IT MATTERS MOST -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="usecases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="usecases-heading">Where Prompt Engineering Makes the Biggest Difference</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">These are the highest-impact starting points, not a complete list of what we can optimize. If your use case isn't here, reach out.</p>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&q=80&auto=format&fit=crop" alt="Writing and refining prompts at a laptop" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="builds-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">support_agent</span></div>
+        <h3>Customer Support AI</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Support agents that give different answers to the same question destroy customer trust. We engineer prompts that produce consistent, on-brand responses every single time.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">draw</span></div>
+        <h3>Content Generation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">If your AI-written content always sounds like AI, your prompts aren't doing their job. We engineer prompts that produce copy that actually sounds human and matches your brand voice.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3>Document Analysis</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Extracting the right data from contracts, reports, and emails requires precise prompting. We engineer extraction prompts that pull exactly what you need, in the format you need it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SAME TASK, REWRITTEN PROMPT -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="ba-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="ba-heading">Same Task, Rewritten Prompt</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Task: summarise a support ticket. A typical first-draft prompt next to the engineered version we'd ship instead.</p>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div class="value-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem;">First-Draft Prompt</h3>
+        <p style="background:#f9f9ff; border:1px solid rgba(0,37,59,0.08); border-radius:12px; padding:1rem 1.25rem; font-family:monospace; font-size:0.875rem; color:#00253b; line-height:1.7; margin-bottom:1rem;">"Summarize this ticket."</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">No format, no length limit, no priority signal. Output length and tone vary every time, so agents cannot scan summaries quickly.</p>
+      </div>
+      <div class="value-card">
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.75rem;">Engineered Prompt</h3>
+        <p style="background:#f9f9ff; border:1px solid rgba(0,37,59,0.08); border-radius:12px; padding:1rem 1.25rem; font-family:monospace; font-size:0.875rem; color:#00253b; line-height:1.7; margin-bottom:1rem;">"Summarize this support ticket in 2 sentences: state the customer's issue, then the requested outcome. Flag as Urgent if it mentions a refund, cancellation, or legal complaint. Use plain language, no jargon."</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Fixed length, defined structure, explicit escalation rule. Every summary reads the same way, so agents triage in seconds.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">How a Prompt Engineering Engagement Works</h2>
+    </div>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Discovery Call</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Fix Your Prompts?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Share your current AI use cases with our Dubai team. We'll do a free review and tell you exactly where performance is being left on the table.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="prompt_eng_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Get a Free Prompt Audit</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "name": "Prompt Engineering & Optimization",
+      "url": "https://lenooai.com/services/prompt-engineering",
+      "description": "We audit, engineer, and optimize AI prompts for any model, so your team gets consistent, high-quality outputs and spends less time editing AI-generated content.",
+      "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+      "areaServed": "United Arab Emirates",
+      "serviceType": "Prompt Engineering"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://lenooai.com/services" },
+        { "@type": "ListItem", "position": 3, "name": "Prompt Engineering", "item": "https://lenooai.com/services/prompt-engineering" }
+      ]
+    }
+  ]
+}
+</script>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+.builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+@media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } }
+@media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
+</style>
