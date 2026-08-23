@@ -1,5 +1,6 @@
 ---
 import { COMPANY } from '../config/company';
+import SafeLink from './SafeLink.astro';
 
 interface Props {
   arPath?: string;
@@ -70,6 +71,8 @@ const { arPath } = Astro.props;
             <a href="/industries/marketing/video-generation"       class="nav-dropdown-item" role="menuitem" style="padding-left:1.4rem; font-size:0.8125rem;">Video Generation</a>
             <a href="/industries/marketing" class="nav-dropdown-item" role="menuitem" style="padding-left:1.4rem; font-size:0.8125rem; color:#006875;">More marketing AI →</a>
           </div>
+          <div style="height:1px;background:#E2E8F0;margin:.4rem .9rem;grid-column:1/-1;"></div>
+          <SafeLink href="/industries" class="nav-dropdown-item" role="menuitem" style="color:#006875;grid-column:1/-1;">View All Industries →</SafeLink>
         </div>
       </div>
       <a href="/about"      class="nav-link text-sm">About</a>
@@ -78,7 +81,7 @@ const { arPath } = Astro.props;
     </div>
     <div class="hidden md:flex items-center gap-3">
       {arPath && (
-        <a href={arPath} class="lang-switch" lang="ar" hreflang="ar" aria-label="عرض الموقع بالعربية">ع</a>
+        <a href={arPath} class="lang-switch" lang="ar" hreflang="ar-ae" aria-label="عرض الموقع بالعربية">ع</a>
       )}
       <button onclick="openModal(this)" data-source="navbar" class="btn-primary text-sm py-2.5 px-5">Book Free Consultation</button>
     </div>
@@ -90,8 +93,11 @@ const { arPath } = Astro.props;
   <div id="mobile-menu" class="md:hidden" style="border-top:1px solid rgba(0,37,59,0.10);background:#f9f9ff;">
     <div class="container py-4 flex flex-col gap-4">
       <div>
-        <span class="mobile-nav-link" style="color:#42474e;font-weight:600;">Services</span>
-        <div class="mobile-nav-sub">
+        <button type="button" class="mobile-nav-toggle" aria-expanded="false" aria-controls="mobile-services-sub" onclick="toggleMobileSection(this)">
+          Services
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="mobile-nav-sub" id="mobile-services-sub">
           <a href="/services/custom-ai-development" onclick="toggleMenu()">Custom AI Development</a>
           <a href="/services/ai-automation"         onclick="toggleMenu()">AI Automation</a>
           <a href="/services/ai-agents"             onclick="toggleMenu()">AI Agents</a>
@@ -103,8 +109,11 @@ const { arPath } = Astro.props;
         </div>
       </div>
       <div>
-        <span class="mobile-nav-link" style="color:#42474e;font-weight:600;">Industries</span>
-        <div class="mobile-nav-sub">
+        <button type="button" class="mobile-nav-toggle" aria-expanded="false" aria-controls="mobile-industries-sub" onclick="toggleMobileSection(this)">
+          Industries
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="mobile-nav-sub" id="mobile-industries-sub">
           <a href="/industries/real-estate"     onclick="toggleMenu()">Real Estate</a>
           <a href="/industries/retail"          onclick="toggleMenu()">Retail &amp; E-commerce</a>
           <a href="/industries/hospitality"     onclick="toggleMenu()">Hospitality</a>
@@ -128,6 +137,7 @@ const { arPath } = Astro.props;
           <a href="/industries/marketing/analytics-attribution"  onclick="toggleMenu()" style="padding-inline-start:1rem;">Analytics &amp; Attribution</a>
           <a href="/industries/marketing/influencer-marketing"   onclick="toggleMenu()" style="padding-inline-start:1rem;">Influencer Marketing</a>
           <a href="/industries/marketing/paid-ads"               onclick="toggleMenu()" style="padding-inline-start:1rem;">Paid Ad Optimization</a>
+          <SafeLink href="/industries" onclick="toggleMenu()" style="color:#006875; font-weight:700;">View All Industries →</SafeLink>
         </div>
       </div>
       <a href="/about"    onclick="toggleMenu()" class="mobile-nav-link">About</a>
@@ -151,6 +161,16 @@ const { arPath } = Astro.props;
   }
   .mobile-nav-link { color: #00253b; font-weight: 600; text-decoration: none; font-size: 1rem; display: block; }
   .mobile-nav-link:hover { color: #006875; }
+  .mobile-nav-toggle {
+    display: flex; align-items: center; justify-content: space-between; width: 100%;
+    background: none; border: none; padding: 0; cursor: pointer;
+    color: #00253b; font-weight: 600; font-size: 1rem; font-family: inherit; text-align: start;
+  }
+  .mobile-nav-toggle svg { width: 18px; height: 18px; flex-shrink: 0; color: #72787e; transition: transform .2s var(--ease); }
+  .mobile-nav-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .mobile-nav-toggle:focus-visible {
+    outline: 2px solid #006875; outline-offset: 4px; border-radius: 4px;
+  }
   .nav-dropdown { position: relative; }
   .nav-dropdown-btn { display:flex; align-items:center; gap:.3rem; color:rgba(255,255,255,0.88); font-weight:600; font-size:.875rem; background:none; border:none; cursor:pointer; padding:.5rem .7rem; border-radius:99px; transition:color .2s, background .2s; }
   .nav-dropdown-btn:hover { color:#00e3fd; background: rgba(255,255,255,0.08); }
@@ -167,7 +187,8 @@ const { arPath } = Astro.props;
   .nav-dropdown-menu.open { display:block; opacity: 1; transform: translateX(-50%) translateY(0); }
   .nav-dropdown-item { display:block; padding:.6rem .9rem; color:#42474e; font-size:.875rem; font-weight:500; text-decoration:none; border-radius:10px; transition:background .15s, color .15s; }
   .nav-dropdown-item:hover { background:rgba(0,104,117,0.08); color:#00253b; }
-  .mobile-nav-sub { padding-inline-start:1rem; display:flex; flex-direction:column; gap:.6rem; margin-top:.4rem; }
+  .mobile-nav-sub { padding-inline-start:1rem; display:none; flex-direction:column; gap:.6rem; margin-top:.6rem; }
+  .mobile-nav-sub.open { display:flex; }
   .mobile-nav-sub a { color:#72787e; font-size:.9rem; font-weight:500; text-decoration:none; }
   .mobile-nav-sub a:hover { color:#006875; }
   .services-mega { min-width:480px; grid-template-columns:1fr 1px 1fr; gap:0; padding:.75rem .75rem .5rem; }
