@@ -1,0 +1,18 @@
+---
+// Rest-props passthrough (not just `class`) so this can drop into nav/footer
+// markup that uses inline `style`, `role`, etc. on existing hardcoded <a> tags
+// without losing any of their attributes.
+import { isPageLive } from '../lib/internalLinks';
+
+interface Props extends astroHTML.JSX.AnchorHTMLAttributes {
+  href: string;
+}
+
+const { href, ...rest } = Astro.props;
+const live = isPageLive(href);
+---
+{live ? (
+  <a href={href} {...rest}><slot /></a>
+) : (
+  <span data-pending-page="true" {...rest}><slot /></span>
+)}
