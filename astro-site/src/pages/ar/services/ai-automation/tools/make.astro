@@ -1,0 +1,335 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../../lib/supabase";
+import FaqAccordion from "../../../../../components/FaqAccordion.astro";
+
+const h1 = 'مستشارو أتمتة Make (Integromat) في الإمارات';
+const metaTitle = 'مستشارو أتمتة Make في الإمارات | Lenoo AI';
+const metaDescription = 'تصمم وتبني Lenoo AI سيناريوهات أتمتة Make (سابقاً Integromat) للأعمال الإماراتية، بمنطق تفرّع بصري وخطوات ذكاء اصطناعي مدمجة.';
+const heroSubtext = 'يمنح Make تحكماً بصرياً في أتمتة معقدة ومتفرّعة. نصمم السيناريوهات، نبني الوحدات التي يحتاجها سير عملكم، ونضيف الذكاء الاصطناعي حيث يحتاج قرار أكثر من مرشح بسيط.';
+
+const useCases = [
+  { title: 'توجيه بيانات متعدد الفروع', description: 'تُقيَّم البيانات الواردة مقابل عدة شروط وتُوجَّه عبر المسار الصحيح من بين مسارات عديدة ممكنة، مبنية بصرياً في سيناريو واحد.' },
+  { title: 'تحويل المستندات والبيانات', description: 'تحويل، إعادة تنسيق، والتحقق من بيانات تنتقل بين أنظمة بصيغ مختلفة، فلا يحتاج شيء إعادة تنسيق يدوية قبل وصوله لوجهته.' },
+  { title: 'وحدات قرار مدعومة بالذكاء الاصطناعي', description: 'نضيف وحدة ذكاء اصطناعي داخل السيناريو لقراءة محتوى غير منظّم وتحديد كيفية التعامل معه، قبل أن يواصل Make التدفق المؤتمت.' },
+  { title: 'معالجة دفعية مجدولة', description: 'تشغيل سيناريو حسب جدول متكرر لمعالجة دفعة سجلات، كتسوية نهاية اليوم أو توليد تقرير أسبوعي، دون أن يشغّله أحد يدوياً.' },
+];
+
+const faqFallback = [
+  { question: 'كيف يختلف Make عن Zapier؟', answer: 'منشئ سيناريوهات Make البصري يتعامل مع التفرّع المعقد وتحويل البيانات بشكل أصلي أكثر من هيكل Zap الخطي في Zapier. إذا احتاج سير عملكم الانقسام لمسارات عديدة حسب الشروط، أو تحويل بيانات بكثافة بين الخطوات، Make عادة الملاءمة الأفضل. للأتمتة الخطية البسيطة، كلاهما يعمل.' },
+  { question: 'هل يستطيع Make التعامل مع سير عمل عالي الحجم؟', answer: 'نعم، يتوسع Make جيداً لسير العمل عالي عدد العمليات. نحدد حجم الخطة وبنية السيناريو بناءً على حجمكم الفعلي فلا تدفعون مقابل سعة لا تحتاجونها.' },
+  { question: 'هل تقدّمون دعماً مستمراً بعد إطلاق السيناريو؟', answer: 'كل مشروع Make يشمل ٩٠ يوماً من المراقبة بعد الإطلاق. نراقب التشغيلات الفاشلة، نصلح الحالات الحدية عند ظهورها، ونقدّم عقود صيانة مستمرة بعد تلك النافذة.' },
+  { question: 'هل تستطيعون بناء سيناريو Make يستخدم أيضاً الذكاء الاصطناعي لقراءة مستندات أو رسائل بريدية؟', answer: 'نعم، هذا أحد الطلبات الأكثر شيوعاً التي نتلقاها. نضيف وحدة ذكاء اصطناعي داخل السيناريو تقرأ المدخل غير المنظّم، تستخرج أو تصنّف ما تحتاجه، وتمرر نتيجة نظيفة فيستطيع بقية السيناريو التصرف عليها كأي بيانات أخرى.' },
+  { question: 'ماذا لو احتاج سيناريونا التحدث لتطبيق لا يدعمه Make أصلياً؟', answer: 'لدى Make وحدة HTTP عامة تستطيع استدعاء أي واجهة API تقريباً مباشرة، فتكامل أصلي مفقود نادراً ما يوقف مشروعاً. نبني وحدة مخصصة لنقطة النهاية المحددة التي يعرضها تطبيقكم ونوصلها بالسيناريو كأنها أصلية.' },
+];
+
+let faqItems = faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_automation_tools_make')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: h1,
+    url: 'https://lenooai.com/ar/services/ai-automation/tools/make',
+    description: metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع أتمتة Make: التسعير حسب تعقيد السيناريو ونطاقه. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر.' },
+    serviceType: 'Make Automation Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'أتمتة الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'الأدوات', item: 'https://lenooai.com/ar/services/ai-automation/tools' },
+      { '@type': 'ListItem', position: 4, name: 'Make', item: 'https://lenooai.com/ar/services/ai-automation/tools/make' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonicalPath="/ar/services/ai-automation/tools/make"
+  enPath="/services/ai-automation/tools/make"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">أتمتة الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-automation/tools" style="color:inherit;text-decoration:none;opacity:0.65;">الأدوات</a><span style="opacity:0.4;padding:0 4px;"> / </span>Make</div>
+    <div class="tool-logo-hero"><img src="https://cdn.simpleicons.org/make/6D00CC" alt="شعار Make" width="56" height="56" loading="eager" /></div>
+    <h1>{h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ar_ai_automation_tools_make_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#use-cases" class="btn-outline">شاهدوا ما نبنيه ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1714846201670-1c5721196c7a?w=1400&q=80&auto=format&fit=crop" alt="لقطة مقرّبة لشاشة مطور تعرض كوداً في محرر إلى جانب مراقب عملية طرفية حية" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHAT IS MAKE -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">ما هو Make؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Make (سابقاً Integromat) منصة أتمتة بصرية مبنية حول السيناريوهات: مخططات انسيابية من وحدات تنقل وتحوّل البيانات بين التطبيقات. يتعامل مع منطق تفرّع وتحويل بيانات أكثر تعقيداً بشكل أصلي من معظم أدوات بلا كود، وهذا سبب تفضيل كثير من فرق العمليات والمالية له.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        منشئ السيناريوهات يعرض الأتمتة بأكملها كمخطط انسيابي على الشاشة، مع كل وحدة تقوم بمهمة محددة واحدة: جلب بيانات، تحويلها، فحص شرط، توجيهها عبر أحد عدة مسارات. ذلك العرض البصري يجعل التفكير في سير عمل له خمسة أو ستة فروع أسهل من التمرير عبر قائمة خطوات خطية، وهو حيث يميل Zapier للتعقيد. Make أيضاً يشحن بأدوات تحويل بيانات مدمجة أكثر جاهزة، فإعادة تنسيق تاريخ، إعادة هيكلة كائن JSON، أو تحليل جدول بيانات غالباً لا تحتاج أي كود مخصص إطلاقاً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW LENOO USES MAKE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="how-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="how-heading" style="margin-bottom:1.5rem;">كيف تستخدم Lenoo AI منصة Make لبناءات الأتمتة الإماراتية</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        نحن شريك تنفيذ: نبني ونصون سيناريوهات Make لعملكم بدلاً من بيع المنصة نفسها. معظم مشاريع Make التي نتولاها تشمل منطق متعدد الفروع (توجيه هذه البيانات خمس طرق مختلفة حسب الشروط)، تحويل بيانات أثقل بين الأنظمة، أو وحدة ذكاء اصطناعي مضافة في منتصف السيناريو للتعامل مع قرارات الحكم التي لا تستطيعها المرشحات المدمجة.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        نبدأ عادة مشروع Make برسم السيناريو كمخطط انسيابي قبل لمس المنصة، لأن سيناريو غير مخطط له يميل للانتشار العشوائي بمجرد الدخول للمنشئ. بمجرد الاتفاق على المنطق، نبنيه وحدة بوحدة، نختبر كل فرع مقابل بيانات حقيقية بدلاً من افتراض أن المسار السعيد سيصمد دائماً. حيث يحتاج قرار حكماً حقيقياً لا قاعدة، نضع وحدة ذكاء اصطناعي تقرأ المدخل وتعيد قيمة نظيفة يستطيع بقية السيناريو التفرّع عليها، فيبقى المخطط الانسيابي مقروءاً حتى حيث المنطق الأساسي ذكي.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FREE VS PAID -->
+<section class="section" aria-labelledby="make-pricing-heading">
+  <div class="container" style="max-width:800px;">
+    <h2 id="make-pricing-heading" style="text-align:center; margin-bottom:1.5rem;">Make مجاني مقابل مدفوع</h2>
+    <div class="make-toggle" role="tablist" aria-label="مستوى التسعير">
+      <button type="button" id="make-tier-free" class="make-toggle-btn active" data-make-tier="free" role="tab" aria-selected="true" aria-controls="make-panel-free">مجاني</button>
+      <button type="button" id="make-tier-paid" class="make-toggle-btn" data-make-tier="paid" role="tab" aria-selected="false" aria-controls="make-panel-paid">مدفوع</button>
+    </div>
+    <div class="card" id="make-panel-free" data-make-tier-panel="free" role="tabpanel" aria-labelledby="make-tier-free">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">خطة Make المجانية تشغّل سيناريوهات حقيقية، لا مجرد عرض تجريبي: تشمل حالياً بدل عمليات شهري (حوالي ١٠٠٠ عملية)، تسمح بإبقاء سيناريوهين نشطين في آن واحد، وتفرض فاصلاً أدنى قدره ١٥ دقيقة بين التشغيلات المجدولة. هذا يكفي لبناء نموذج أولي لسير عمل وإثبات أن المنطق يعمل مقابل بياناتكم الفعلية قبل تقرير الدفع، وهذا بالضبط كيف نستخدمها أثناء الاكتشاف.</p>
+    </div>
+    <div class="card" id="make-panel-paid" data-make-tier-panel="paid" role="tabpanel" aria-labelledby="make-tier-paid" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">خطط Make المدفوعة (Core وPro وTeams وEnterprise) ترفع بدل العمليات الشهري، تزيل سقف السيناريوهين، وتقصّر الفاصل الأدنى لدقيقة واحدة فقط للسيناريوهات التي تحتاج التشغيل بشكل أقرب للوقت الفعلي. المستويات الأعلى تضيف أيضاً أدوار الفريق، متغيرات مخصصة، ودعماً ذا أولوية. نحدد حجم الخطة لحجم عملياتكم الفعلي بدلاً من الافتراض لمستوى أكبر مما تحتاجونه.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO THIS FITS -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">هل Make مناسب لكم؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        يناسب Make فرق العمليات والمالية في الإمارات التي يتفرّع سير عملها بعدة اتجاهات حسب الشروط، أو تحتاج تحويل بيانات أثقل بين الأنظمة مما يستطيعه Zap خطي بسيط.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        بضع إشارات ملموسة نراقبها: يحتاج سير عملكم فحص ثلاثة أو أربعة شروط قبل تحديد ماذا يحدث تالياً، أحدهم في فريقكم يعيد تنسيق بيانات يدوياً بين نظامين لا يشتركان في بنية، أو أتمتة Zapier بنيتموها أصلاً تستمر بالانكسار على فرع لم تُصمَّم أصلاً للتعامل معه. أي من هذه يشير لأن منشئ سيناريوهات Make الملاءمة الأكثر طبيعية لما تحاولون فعله.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">كيف يبدو مشروع Make نموذجي معنا</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        لأن سيناريوهات Make يمكن أن تتفرّع بعدة اتجاهات في آن واحد، نقضي وقتاً أطول على المخطط قبل قضاء وقت في المنشئ.
+      </p>
+      <ol class="journey-list" style="gap:1rem;">
+        <li><strong style="color:#00253b;">الاكتشاف.</strong> نمر عبر كل فرع يمكن أن تسلكه عمليتكم، لا فقط المسار الشائع، لأن سيناريوهات تتجاوز حالة حدية في هذه المرحلة تميل للانكسار عليها في الإنتاج. هنا أيضاً نؤكد أي الأنظمة لديها احتياجات تحويل بيانات لم يستطع Zap التعامل معها بنظافة.</li>
+        <li><strong style="color:#00253b;">التصميم.</strong> نرسم السيناريو كمخطط انسيابي أولاً، وحدة بوحدة، نعلّم أين يقسم موجّه المسار وأين يحتاج قرار وحدة ذكاء اصطناعي حقاً بدلاً من مرشح، قبل فتح منشئ Make إطلاقاً.</li>
+        <li><strong style="color:#00253b;">البناء والاختبار.</strong> نبني السيناريو فرعاً بفرع داخل Make، نشغّل سجلات حقيقية عبر كل مسار، بما فيها الأقل شيوعاً، قبل أن يذهب أي شيء مباشراً، ونتحقق من مخرجات تحويل البيانات مقابل صيغ مصدركم حقلاً بحقل.</li>
+        <li><strong style="color:#00253b;">الإطلاق والمراقبة.</strong> نُفعِّل الجدولة أو المحفزات، نراقب سجل التشغيل للفترة الأولى بعد الإطلاق، ونصلح أي فرع يتصرف بشكل مختلف مقابل بيانات حية عما فعل في الاختبار.</li>
+        <li><strong style="color:#00253b;">التوثيق والتسليم.</strong> نشرح لفريقكم السيناريو المكتمل وحدة بوحدة، فيستطيع أحد داخلياً قراءة ما يفعله كل فرع، ونترك مسار صيانة مفتوحاً لأي شيء أكثر تعقيداً من تعديل صغير.</li>
+      </ol>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        سيناريو بفرعين أو ثلاثة يمكن عادة أن يُطلَق خلال أسبوع. سيناريوهات أكبر متعددة الفروع تربط عدة أنظمة عادة تُحدَّد نطاقها على مدى أسبوعين لثلاثة، مرتبة فيُطلَق الفرع الأعلى قيمة أولاً بينما يستمر الباقي بالتوازي.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">Make مقابل البدائل</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        يحل Make و<a href="/ar/services/ai-automation/tools/zapier">Zapier</a> مشاكل متداخلة، ولسير عمل خطي بسيط، كلاهما يعمل جيداً؛ نختار بناءً على أي منصة لدى فريقكم أصلاً تسجيل دخول لها. حيث يتقدم Make هو سيناريو بعدة فروع وتحويل بيانات أثقل، لأن عرض المخطط الانسيابي يبقى مقروءاً بطريقة لا تستطيعها قائمة طويلة من خطوات Zapier. إذا احتاج سير عملكم استضافة ذاتية لأسباب امتثال، كوداً مخصصاً يتجاوز ما تتعامل معه محوّلات Make المدمجة، أو وكيل ذكاء اصطناعي يتخذ سلسلة قرارات بدلاً من خطوة تصنيف واحدة، <a href="/ar/services/ai-automation/tools/n8n">n8n</a> الملاءمة الأفضل. سنقول ذلك مباشرة إذا كان هذا ما تحتاجه عمليتكم، بدلاً من إجبارها في سيناريو Make لأن ذلك ما بدأنا ببنائه. وإذا كان السيناريو بسيطاً فعلياً بمجرد رسمه، أحياناً عمل جاء إلينا مفترضاً أنه يحتاج قوة تفرّع Make ينتهي مخدوماً بشكل أفضل باثنين أو ثلاثة Zaps مباشرة بدلاً من ذلك، وسنوصي بذلك رغم أنه البناء الأصغر.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- RELIABILITY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="reliability-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="reliability-heading" style="margin-bottom:1.5rem;">الحفاظ على موثوقية سيناريو Make بعد الإطلاق</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        سيناريوهات Make التي تتفرّع بشدة أكثر عرضة لنوع محدد من الفشل: حالة لم يفكر أحد باختبارها تتسلل عبر مسار غير مُختبَر وإما تنتج خطأً أو، أسوأ، تعمل بصمت مع بيانات خاطئة تذهب لمكان لا يجب أن تذهب إليه. نبني كل سيناريو بمعالجات أخطاء على كل وحدة يمكن أن تفشل واقعياً، فيُوجَّه سجل سيء لطابور مراجعة بدلاً من كسر التشغيل أو إفساد بيانات لاحقة بصمت.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        نضبط أيضاً حدود العمليات ونراقب الاستهلاك مقابل خطتكم، لأن سيناريو يتوسع في الحجم دون أن يراجعه أحد يمكن أن يستنفد بصمت عملياتكم الشهرية ويتوقف عن العمل في منتصف الشهر. كل مشروع Make نسلّمه يشمل توثيقاً لمنطق السيناريو الكامل، فرعاً بفرع، فيستطيع فريقكم رؤية بالضبط ماذا يحدث لسجل عند كل نقطة قرار دون فتح المنشئ وتتبعه يدوياً بأنفسهم.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="use-cases" class="section" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">ما نبنيه بـ Make</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">مشاريع Make شائعة للعملاء الإماراتيين، من التوجيه متعدد الفروع إلى المعالجة الدفعية المجدولة. كل بناء محدد النطاق لسير عملكم الفعلي، لا قالب عام.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {useCases.map((uc) => (
+        <div class="value-card">
+          <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- WHAT A MAKE PROJECT COSTS -->
+<section class="section" aria-labelledby="pricing-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="pricing-heading" style="margin-bottom:1.5rem;">كم يكلف مشروع Make</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        نحدد نطاق مشاريع Make بناءً على كم سيناريو تحتاجونه، كم وحدة يلمسها كل واحد، وهل تحتاج خطوة وحدة ذكاء اصطناعي لقراءة والحكم على محتوى غير منظّم بدلاً من مجرد تحويل بيانات. سيناريو واحد يربط تطبيقين أو ثلاثة بمنطق تفرّع واضح تعاون أصغر محدد النطاق. مجموعة سيناريوهات مترابطة تتعامل مع توجيه متعدد الفروع، تحويل بيانات أثقل، وقرارات مدعومة بالذكاء الاصطناعي عبر عدة أنظمة مشروع أكبر نحدد نطاقه بعد رؤية سير عملكم الفعلي في مكالمة اكتشاف.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        اشتراك Make الخاص بكم يُفوتَر منفصلاً بناءً على العمليات المستخدَمة شهرياً، ونساعدكم على تحديد حجمه بشكل صحيح بدلاً من الافتراض لخطة أكبر مما يحتاجه حجمكم. لا نضيف هامش ربح على فاتورة Make الخاصة بكم. البناء تكلفة لمرة واحدة، ونشمل نافذة مراقبة ٩٠ يوماً مع كل مشروع؛ الصيانة المستمرة بعد ذلك عقد اختياري للفرق التي تفضّل أن نستمر بمراقبة السيناريو بدلاً من التعامل معه داخلياً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">غير متأكدين إن كان Make الملاءمة الصحيحة لسير عملكم؟ سنخبركم بصدق.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_automation_tools_make_mid" class="btn-primary">احجزوا استشارة Make مجانية</button>
+  </div>
+</section>
+
+<!-- GETTING STARTED -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="getting-started-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="getting-started-heading" style="margin-bottom:1.5rem;">البدء بسيناريو Make</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        إذا كنتم جدداً على Make كلياً، نُعِدّ الحساب، نهيكل مساحة العمل حول فريقكم (مجلدات حسب القسم أو الوظيفة تميل للعمل بشكل أفضل من قائمة مسطحة واحدة من السيناريوهات مع إضافة المزيد من الأتمتة بمرور الوقت)، ونبني السيناريو الأول كقالب يستطيع فريقكم الرجوع إليه عند طلب التالي. إذا كان لديكم أصلاً سيناريوهات تعمل، نبدأ بمراجعة قصيرة: ماذا يعمل حياً، ماذا هش، ماذا مكرر عبر أداتين يجب أن تكونا فعلياً واحدة.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        بأي طريقة، المُخرَج الأول دائماً سيناريو عامل يستطيع فريقكم رؤيته يعمل مقابل بيانات حقيقية قبل أن نعتبر المشروع منتهياً، لا مستند تصميم أو عرض تجريبي بسجلات نموذجية. نفضّل أن تحكموا على الأتمتة بما تفعله فعلياً بفواتيركم، عملائكم المحتملين، أو تقاريركم لا بنموذج أولي.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لبناء سيناريوكم؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجزوا مكالمة اكتشاف مجانية مع فريقنا في دبي. سنرسم سير عملكم فرعاً بفرع ونخبركم بالضبط كيف سيبدو سيناريو Make، بما في ذلك أين ستساعد خطوة ذكاء اصطناعي فعلياً.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_automation_tools_make_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.tool-logo-hero { width:64px; height:64px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; }
+.value-card { display:flex; flex-direction:column; }
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.journey-list li { position:relative; padding-right:1.75rem; color:#42474e; font-size:1.0625rem; line-height:1.85; }
+.journey-list li::before { content:''; position:absolute; right:0; top:0.6em; width:9px; height:9px; border-radius:50%; background:#00e3fd; }
+.make-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+.make-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.make-toggle-btn.active { background:#006875; color:#fff; }
+.make-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const makeToggleWrap = document.querySelector('.make-toggle');
+  if (makeToggleWrap) {
+    const makeBtns = makeToggleWrap.querySelectorAll('.make-toggle-btn');
+    const makePanels = document.querySelectorAll('[data-make-tier-panel]');
+    makeBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-make-tier');
+        makeBtns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        makePanels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-make-tier-panel') !== key; });
+      });
+    });
+  }
+</script>

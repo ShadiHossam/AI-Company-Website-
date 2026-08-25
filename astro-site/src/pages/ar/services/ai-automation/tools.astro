@@ -1,0 +1,274 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import { AUTOMATION_TOOLS } from "../../../../data/automationTools";
+
+const teasers: Record<string, string> = {
+  zapier: "أسرع طريقة لربط التطبيقات وأتمتة سير العمل اليومي الخطي. معظم الفرق الإماراتية لديها أصلاً بضعة Zaps تعمل في مكان ما، ونبني على ما هو موجود بدلاً من البدء من الصفر.",
+  n8n: "مفتوح المصدر وقابل للاستضافة الذاتية، مبني لخطوات كود مخصصة وسير عمل وكلاء الذكاء الاصطناعي. المنصة التي نلجأ إليها عندما تهم إقامة البيانات أو يحتاج سير عمل للتفكير، لا فقط للتشغيل.",
+  make: "سيناريوهات بصرية ومتفرعة لسير عمل يحتاج أكثر من خط مستقيم. العرض المرئي على شكل مخطط انسيابي يبقي المنطق المعقد متعدد المسارات مقروءاً بطريقة لا تستطيعها قائمة خطوات طويلة.",
+  "power-automate": "أتمتة أصلية للأعمال التي تعمل أصلاً على Microsoft 365. تتصل بـ Outlook وSharePoint وTeams ضمن صلاحياتكم الحالية، فلا حاجة لإدارة تسجيل دخول منفصل.",
+  uipath: "الرائد في سوق RPA، لعمل خلفي عالي الحجم قائم على القواعد. يتعامل مع الأنظمة القديمة دون واجهة API حديثة بتشغيل نفس الشاشات التي يستخدمها موظف بشري.",
+  "automation-anywhere": "منصة RPA أصلية السحابة للمؤسسات التي تدير الروبوتات مركزياً. لوحة Automation 360 تبسّط الطرح عبر مكاتب متعددة مقارنة بالبنى الأقدم الأولوية للبنية المحلية.",
+  workato: "وصفات أتمتة محكومة ومعتمدة من تقنية المعلومات مبنية للمؤسسات الكبيرة. تحتفظ تقنية المعلومات بالإشراف على ما ينتقل إلى أين، بينما تبني فرق الأقسام وصفاتها الخاصة ضمن حواجز محددة.",
+  boomi: "تكامل مبني لربط الأنظمة القديمة المحلية بالتطبيقات السحابية الحديثة. وقت تشغيل Atom المحلي يربط قاعدة بيانات محلية بالسحابة دون تعريضها مباشرة للإنترنت.",
+  mulesoft: "اتصال قائم على واجهات API للمؤسسات في القطاعات المنظمة. ينظم التكاملات في طبقات API قابلة لإعادة الاستخدام، فيصبح بناء كل اتصال جديد أسرع من السابق.",
+};
+
+const noCodeTools = AUTOMATION_TOOLS.filter((t) => t.category === "no-code");
+const enterpriseTools = AUTOMATION_TOOLS.filter((t) => t.category === "enterprise");
+
+const fallbackFaqs = [
+  { question: "كيف تقررون أي أداة أتمتة تستخدمونها؟", answer: "ننظر لما تشغّلونه أصلاً، مدى تقنية فريقكم، هل تحتاجون استضافة ذاتية أو ضوابط امتثال، وكم يحتاج المنطق الأساسي أن يكون معقداً. فريق صغير على Microsoft 365 عادة يحصل على Power Automate. فريق تجاوز Zapier ويحتاج كوداً مخصصاً أو منطق وكيل ذكاء اصطناعي يحصل على n8n. مؤسسة تربط عشرات الأنظمة في قطاع منظم تحصل على MuleSoft أو Boomi. نوصي بالأداة التي تناسب المهمة، لا التي نفضّل بيعها." },
+  { question: "هل تستطيعون نقلنا من أداة أتمتة لأخرى؟", answer: "نعم. نراجع أتمتتكم الحالية، نعيد بناء ما يستحق الاحتفاظ به على المنصة الجديدة، ونتحقق من الإعداد الجديد مقابل القديم قبل التحويل، فلا ينكسر شيء في العملية." },
+  { question: "هل تبنون أتمتة مخصصة دون أي من هذه الأدوات المسمّاة؟", answer: "نعم. بعض سير العمل تُخدَم بشكل أفضل بتكامل مُبرمَج مخصص من أي منصة جاهزة، خاصة عندما يستبعد الأداء عند الحجم الكبير، التكلفة، أو متطلب محدد جداً أداة بلا كود. سنخبركم بصدق عندما يكون ذلك المسار الأفضل." },
+  { question: "هل نحتاج امتلاك ترخيص لإحدى هذه الأدوات أصلاً؟", answer: "لا. إذا لم يكن لديكم أداة بعد، نساعدكم في اختيار واحدة وإعدادها كجزء من المشروع. إذا كنتم تشغّلون أصلاً Zapier أو Make أو n8n أو منصة أخرى، نبني ضمن ما لديكم." },
+  { question: "كم تكلف مشروع أتمتة عادة؟", answer: "يعتمد كلياً على المنصة وتعقيد ما تؤتمتونه. سير عمل Zapier واحد ببضع خطوات يكلف أقل بكثير من سيناريو Make متعدد الفروع أو روبوت UiPath يؤتمت نظاماً قديماً. نحدد نطاق وسعر كل مشروع فردياً بعد مكالمة اكتشاف، بدلاً من نشر معدل ثابت لن يعكس ما يحتاجه سير عملكم فعلياً." },
+  { question: "هل تبنون الأتمتة فقط، أم تتولون الصيانة المستمرة أيضاً؟", answer: "كلاهما. كل مشروع نسلّمه يشمل فترة مراقبة بعد الإطلاق، ونقدّم عقود صيانة بعدها للتحديثات، إضافات سير العمل الجديدة، وإصلاح أي شيء ينكسر عندما يتغير تطبيق متصل من طرفه." },
+  { question: "هل يستطيع سير عمل واحد استخدام أكثر من واحدة من هذه الأدوات معاً؟", answer: "نعم، ويحدث أكثر مما تتوقعون. نمط شائع هو تدفق Power Automate داخل Microsoft 365 يشغّل webhook إلى سير عمل n8n يشغّل خطوة وكيل ذكاء اصطناعي، ثم يعيد نتيجة. نصمم عبر حدود الأدوات عندما يكون ذلك فعلياً الطريقة الأفضل لحل المشكلة." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_automation_tools')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'أدوات وتنفيذ أتمتة الذكاء الاصطناعي',
+    url: 'https://lenooai.com/ar/services/ai-automation/tools',
+    description: 'أدوات الأتمتة وRPA التي تنفذها Lenoo AI للعملاء الإماراتيين: Zapier وn8n وMake وPower Automate وUiPath والمزيد.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'تنفيذ أدوات الأتمتة: التسعير حسب المنصة ونطاق العمل. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر.' },
+    serviceType: 'AI Automation Tool Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'أتمتة الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'الأدوات', item: 'https://lenooai.com/ar/services/ai-automation/tools' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="أدوات أتمتة الذكاء الاصطناعي التي ننفذها | Lenoo AI"
+  description="أدوات الأتمتة وRPA التي تنفذها Lenoo AI للعملاء الإماراتيين: Zapier وn8n وMake وPower Automate وUiPath والمزيد."
+  canonicalPath="/ar/services/ai-automation/tools"
+  enPath="/services/ai-automation/tools"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">أتمتة الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>الأدوات</div>
+    <h1>أدوات أتمتة الذكاء الاصطناعي <span class="gradient-text">التي ننفذها</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      لسنا محصورين بمنصة واحدة. تنفذ Lenoo AI الأتمتة عبر أدوات بلا كود وRPA والتكامل المذكورة أدناه، وتختار ما يناسب عملكم لا ما نفضّل بيعه.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ar_ai_automation_tools_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#no-code" class="btn-outline">شاهدوا الأدوات ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1753715613388-7e03410b1dce?w=1400&q=80&auto=format&fit=crop" alt="يد ترسم مخطط سير عمل أتمتة على شاشة لوحية، مع ظهور كود على شاشة في الخلفية" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 68%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- INTRO -->
+<section class="section" aria-labelledby="intro-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="intro-heading" style="margin-bottom:1.5rem;">شريك تنفيذ واحد، أدوات عديدة</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        معظم وكالات الأتمتة تدفع نحو منصة واحدة لأنها ما يعرفونه، أو ما يحصلون عليه عمولة إحالة مقابله. نحن نبني أتمتة لكسب العيش، لا تراخيص برمجيات، فنبدأ من سير عملكم ومنظومتكم الحالية، ثم نختار الأداة التي تناسب: منصة بلا كود لسير عمل مباشر، محرك مستضاف ذاتياً عندما تهم إقامة البيانات، أو منصة RPA مؤسسية عند أتمتة نظام قديم دون واجهة API.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        هذا يعني أننا لا نبيعكم Zapier أو n8n أو UiPath. نبيعكم النتيجة: سير عمل يعمل من تلقاء نفسه، مبني على أياً كانت الأداة التي توصلكم هناك أسرع وتصمد مع الوقت. أدناه القائمة الحالية للمنصات التي ننفذها، كل منها بصفحتها الخاصة تغطي كيف نستخدمها وما نبنيه عادة.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        عملياً، هذا القرار يحدث أثناء الاكتشاف، قبل أن نكتب خطوة سير عمل واحدة. نسأل أي أنظمة تشغّلونها أصلاً، هل يفتقر أي منها لواجهة API حديثة، كم شخصاً يحتاج فهم أو تعديل الأتمتة بعد تسليمنا إياها، وهل تنطبق قواعد امتثال أو إقامة بيانات على ما تتم أتمتته. تلك الإجابات عادة تشير بوضوح لفئة أداة واحدة، وغالباً لمنصة محددة واحدة ضمنها، قبل وصولنا للتصميم التقني بكثير. إذا كانت أداتان ستعملان فعلياً كلتاهما، نقول ذلك ونترك التكلفة ومهارات فريقكم الحالية تحسم الأمر، بدلاً من التظاهر أن هناك إجابة صحيحة واحدة دائماً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORY COMPARISON -->
+<section class="section" aria-labelledby="category-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="category-heading" style="margin-bottom:1.5rem;">بلا كود مقابل RPA المؤسسية: أي فئة تناسب عملكم</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        منصات بلا كود وiPaaS مثل Zapier وn8n وMake وPower Automate تناسب الأعمال التي لديها عدد محدود من العمليات الواضحة لأتمتتها ودون حاجة لفريق أتمتة مخصص بعدها. تتصل عبر واجهات API حديثة، وتُطلق خلال أيام أو أسابيع لا أشهر، ومبنية بحيث يستطيع عضو فريق غير تقني قراءة ما يفعله سير العمل وإجراء تعديلات صغيرة دون الاتصال بنا أولاً. هذا يجعلها نقطة البداية الصحيحة لمعظم الأعمال الإماراتية الصغيرة والمتوسطة، ولجزء كبير من السوق المتوسط أيضاً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        منصات RPA والتكامل المؤسسية مثل UiPath وAutomation Anywhere وWorkato وBoomi وMuleSoft تكسب مكانها في وضع مختلف: عمليات عالية الحجم قائمة على القواعد تعمل على أنظمة قديمة أو محلية دون واجهة API حديثة للاتصال بها، أو مؤسسة تربط عشرات الأنظمة حيث تهم الحوكمة ومسارات التدقيق والإشراف المركزي بقدر أهمية الأتمتة نفسها. هذه المنصات تكلف أكثر ترخيصاً وتستغرق وقتاً أطول لتنفيذها بشكل صحيح، لذا نوصي بها فقط عندما تتطلب المشكلة الأساسية فعلياً ذلك المستوى من البنية التحتية.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        بضعة أسئلة عادة تحسم أي فئة تناسب. كم شخصاً في فريقكم يحتاج بناء أو صيانة الأتمتة، وكم هم تقنيون؟ هل يعرض برنامجكم الأساسي واجهة API حديثة، أم فقط شاشة يضغط عليها إنسان؟ هل تعملون تحت متطلبات تنظيمية تستلزم مسارات تدقيق وموافقة مركزية قبل إطلاق أتمتة؟ وكم نظاماً منفصلاً تلمسه العملية فعلياً، واحداً أو اثنين، أم دستة؟ فريق عمليات صغير يؤتمت توجيه العملاء المحتملين بين CRM وWhatsApp نادراً ما يحتاج RPA. بنك يؤتمت إدخال بيانات في نظام مصرفي أساسي قديم دون واجهة API نادراً ما يصل هناك بأداة بلا كود وحدها. معظم الأعمال تحسم بوضوح على أحد جانبي هذا الخط بمجرد أن نمر عليه معاً في مكالمة اكتشاف.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TOOL CATEGORIES (TABBED) -->
+<section id="no-code" class="section" style="background:#f0f3ff;" aria-labelledby="tools-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="tools-heading">أدوات أتمتة الذكاء الاصطناعي حسب الفئة</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">تصفحوا كل فئة أدناه، أو انتقلوا مباشرة للمنصة التي تقيّمونها.</p>
+    </div>
+    <div class="automation-tools-tabs" role="tablist" aria-label="فئات الأدوات">
+      <button type="button" id="automation-tools-tab-nocode" class="automation-tools-tab-btn active" data-automation-tools-tab="nocode" role="tab" aria-selected="true" aria-controls="automation-tools-panel-nocode">بلا كود وiPaaS</button>
+      <button type="button" id="automation-tools-tab-enterprise" class="automation-tools-tab-btn" data-automation-tools-tab="enterprise" role="tab" aria-selected="false" aria-controls="automation-tools-panel-enterprise">RPA والتكامل المؤسسي</button>
+    </div>
+
+    <div id="automation-tools-panel-nocode" data-automation-tools-tab-panel="nocode" role="tabpanel" aria-labelledby="automation-tools-tab-nocode">
+      <p style="color:#42474e; font-size:1.0625rem; margin-bottom:1.5rem;">للأعمال التي تريد إطلاق الأتمتة بسرعة، دون فريق تطوير. كل منصة أدناه توازن بشكل مختلف بين السرعة والمرونة وكم تحتفظون به من تحكم في البنية التحتية الأساسية.</p>
+      <div class="bento-grid bento-grid-3">
+        {noCodeTools.map((tool) => (
+          <div class="value-card">
+            <div class="tool-logo-wrap"><img src={`https://cdn.simpleicons.org/${tool.logoSlug}/${tool.logoColor}`} alt={`شعار ${tool.name}`} width="32" height="32" loading="lazy" /></div>
+            <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{tool.name}</h3>
+            <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">{teasers[tool.slug]}</p>
+            <a href={`/ar/services/ai-automation/tools/${tool.slug}`} class="learn-link">اعرفوا المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div id="automation-tools-panel-enterprise" data-automation-tools-tab-panel="enterprise" role="tabpanel" aria-labelledby="automation-tools-tab-enterprise" hidden>
+      <p style="color:#42474e; font-size:1.0625rem; margin-bottom:1.5rem;">للمؤسسات التي تؤتمت عمليات عالية الحجم أو أنظمة قديمة أو عشرات التطبيقات المتصلة. هذه المنصات تكلف أكثر وتستغرق وقتاً أطول للنشر من أداة بلا كود، لكنها تصمد تحت متطلبات الامتثال والحجم التي تحتاجها فعلياً مؤسسة إماراتية كبيرة.</p>
+      <div class="bento-grid bento-grid-4">
+        {enterpriseTools.map((tool) => (
+          <div class="value-card">
+            <div class="tool-logo-wrap"><img src={`https://cdn.simpleicons.org/${tool.logoSlug}/${tool.logoColor}`} alt={`شعار ${tool.name}`} width="32" height="32" loading="lazy" /></div>
+            <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{tool.name}</h3>
+            <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">{teasers[tool.slug]}</p>
+            <a href={`/ar/services/ai-automation/tools/${tool.slug}`} class="learn-link">اعرفوا المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WRAP-UP -->
+<section class="section-sm" aria-label="كيف نختار">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        لا شيء من المنصات أعلاه مُرتَّب، ولا توجد واحدة أفضل مطلقاً؛ كل منها تحل شكلاً مختلفاً من المشاكل. ما يبقى ثابتاً عبر كل مشروع هو كيف نعمل: نحدد نطاق سير العمل أولاً، نسمّي الأداة التي تناسبه ثانياً، ونبني بمراقبة وتوثيق مشمولة فلا يعتمد فريقكم علينا لكل تغيير صغير لاحقاً. إذا لم يطابق سير عملكم بنظافة أي منصة واحدة، أو امتد عبر اثنتين أو ثلاث منها، نصمم عبر تلك الحدود بدلاً من إجبار كل شيء عبر أداة واحدة لأنها التي بدأنا بها المحادثة.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- BACK TO HUB -->
+<section class="section-sm" aria-label="ذات صلة">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1rem;">تبحثون عن الصورة الأكبر؟ شاهدوا <a href="/ar/services/ai-automation" class="learn-link" style="display:inline;">نظرة أتمتة الذكاء الاصطناعي الشاملة ←</a></p>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">غير متأكدين أي منصة تناسب سير عملكم؟ سنخبركم بصدق في مكالمة مجانية.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_automation_tools_mid" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">غير متأكدين أي أداة تناسب سير عملكم؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجزوا مكالمة اكتشاف مجانية مع فريقنا في دبي. سننظر في سير عملكم ومنظومتكم الحالية، ثم نخبركم أي منصة منطقية، بصدق.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_automation_tools_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.tool-logo-wrap { background:#fff; border:1px solid #e6e9f0; border-radius:12px; width:56px; height:56px; display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+.value-card { display:flex; flex-direction:column; }
+.automation-tools-tabs { display:flex; gap:0.5rem; justify-content:center; margin-bottom:2rem; flex-wrap:wrap; }
+.automation-tools-tab-btn { padding:0.625rem 1.25rem; border-radius:100px; border:1px solid rgba(0,37,59,0.15); background:#fff; color:#42474e; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.automation-tools-tab-btn:hover { background:#e7eeff; }
+.automation-tools-tab-btn.active { background:#006875; border-color:#006875; color:#fff; }
+.automation-tools-tab-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+[data-automation-tools-tab-panel][hidden] { display:none; }
+</style>
+
+<script>
+  const automationToolsTabWrap = document.querySelector('.automation-tools-tabs');
+  if (automationToolsTabWrap) {
+    const btns = automationToolsTabWrap.querySelectorAll('.automation-tools-tab-btn');
+    const panels = document.querySelectorAll('[data-automation-tools-tab-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-automation-tools-tab');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-automation-tools-tab-panel') !== key; });
+      });
+    });
+  }
+</script>

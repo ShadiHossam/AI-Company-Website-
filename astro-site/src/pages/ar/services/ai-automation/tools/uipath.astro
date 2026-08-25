@@ -1,0 +1,335 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../../lib/supabase";
+import FaqAccordion from "../../../../../components/FaqAccordion.astro";
+
+const h1 = 'شريك تنفيذ RPA لـ UiPath في الإمارات';
+const metaTitle = 'شريك تنفيذ RPA لـ UiPath في الإمارات | Lenoo AI';
+const metaDescription = 'تنفذ Lenoo AI أتمتة العمليات الروبوتية UiPath للمؤسسات الإماراتية، تبني وتصون روبوتات لعمليات خلفية عالية الحجم وقائمة على القواعد.';
+const heroSubtext = 'يتعامل UiPath مع العمل عالي الحجم والقائم على القواعد الذي تصعّب الأنظمة القديمة أتمتته بأي طريقة أخرى. نصمم، نبني، ونصون الروبوتات.';
+
+const useCases = [
+  { title: 'إدخال بيانات في أنظمة قديمة', description: 'روبوتات تقرأ بيانات من تطبيق قديم واحد وتدخلها في آخر، بالضبط كما يفعل مشغّل بشري، لأنظمة دون واجهة API للاتصال عبرها.' },
+  { title: 'معالجة خلفية عالية الحجم', description: 'التسويات، التقارير الدفعية، والمهام الخلفية المتكررة التي عملت يدوياً لسنوات تعمل الآن على روبوتات مجدولة بمسارات تدقيق كاملة.' },
+  { title: 'تصميم روبوتات مراقَبة وغير مراقَبة', description: 'نصمم روبوتات إما تعمل كلياً دون مراقبة حسب جدول، أو تجلس إلى جانب موظف لتسريع مهمة لا يزال يحتاج مراجعتها.' },
+];
+
+const faqFallback = [
+  { question: 'متى تكون RPA أكثر منطقية من أتمتة الذكاء الاصطناعي؟', answer: 'تناسب RPA العمليات عالية الحجم والقائمة على القواعد على أنظمة دون واجهة API، عادة برمجيات قديمة أو محلية. إذا شمل عملكم قرارات حكم، بيانات غير منظّمة، أو اختلف من حالة لأخرى، طبقة أتمتة ذكاء اصطناعي عادة تقدّم قيمة أكثر من روبوت UiPath وحده. نُقيّم هذا بصدق أثناء مكالمة الاكتشاف، وغالباً نوصي بدمج الاثنين.' },
+  { question: 'كيف تتعاملون مع صيانة الروبوت عندما يتغير التطبيق الأساسي؟', answer: 'أي أتمتة قائمة على الواجهة حساسة لتغييرات واجهة التطبيق المستهدف. كل مشروع UiPath نسلّمه يشمل مراقبة وخطة صيانة فتُحدَّث الروبوتات بسرعة عندما تتغير شاشة، بدلاً من الفشل بصمت.' },
+  { question: 'هل UiPath مناسب لمتطلبات امتثال بمستوى حكومي أو مصرفي؟', answer: 'نعم، UiPath منتشر على نطاق واسع في القطاعات المنظمة. نصمم روبوتات بسجلات تدقيق كاملة، وصول قائم على الأدوار، وتوثيق يستوفي مراجعة الامتثال الداخلية، مصمم لمتطلبات التنظيم الإماراتية.' },
+  { question: 'كم يستغرق بناء ونشر روبوت UiPath؟', answer: 'عملية واحدة محددة جيداً يمكن أن تنتقل من الاكتشاف لروبوت في الإنتاج خلال ثلاثة لستة أسابيع. البرامج الأكبر التي تؤتمت عمليات عديدة عبر قسم تُحدَّد نطاقها وتُطرَح على مراحل فتصل القيمة تدريجياً لا دفعة واحدة.' },
+];
+
+let faqItems = faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_automation_tools_uipath')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: h1,
+    url: 'https://lenooai.com/ar/services/ai-automation/tools/uipath',
+    description: metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع أتمتة UiPath المؤسسية: التسعير حسب النطاق، الأنظمة المتورطة، ومتطلبات الحوكمة. احجزوا استشارة للحصول على عرض سعر.' },
+    serviceType: 'UiPath',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'أتمتة الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'الأدوات', item: 'https://lenooai.com/ar/services/ai-automation/tools' },
+      { '@type': 'ListItem', position: 4, name: 'UiPath', item: 'https://lenooai.com/ar/services/ai-automation/tools/uipath' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonicalPath="/ar/services/ai-automation/tools/uipath"
+  enPath="/services/ai-automation/tools/uipath"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;" aria-label="مسار التصفح">
+      <a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      <a href="/ar/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">أتمتة الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      <a href="/ar/services/ai-automation/tools" style="color:inherit;text-decoration:none;opacity:0.65;">الأدوات</a><span style="opacity:0.4;padding:0 4px;"> / </span>
+      UiPath
+    </div>
+    <div style="margin-bottom:1.5rem;">
+      <img src="https://cdn.simpleicons.org/uipath/FA4616" alt="شعار UiPath" width="56" height="56" loading="eager" fetchpriority="high" style="background:#fff;border-radius:16px;padding:10px;box-shadow:0 8px 24px rgba(0,59,92,0.18);" />
+    </div>
+    <h1>{h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ar_ai_automation_tools_uipath_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#what-we-build" class="btn-outline">شاهدوا ما نبنيه ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1684369175833-4b445ad6bfb5?w=1400&q=80&auto=format&fit=crop" alt="روبوت برمجي أبيض يعمل على حاسوب محمول، يمثل روبوتات UiPath الآلية التي تتعامل مع مهام سطح المكتب" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHAT IS -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">ما هو UiPath؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        UiPath منصة أتمتة العمليات الروبوتية (RPA) الرائدة في السوق، تستخدمها المؤسسات لأتمتة عمليات متكررة عالية الحجم بجعل روبوتات برمجية تتفاعل مع التطبيقات الحالية بنفس الطريقة التي يفعلها إنسان: الضغط، الكتابة، قراءة الشاشات.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        السبب الذي يجعل RPA موجودة أصلاً هو أن قدراً هائلاً من برمجيات المؤسسات، خاصة في المصرفية والحكومة والمكاتب الخلفية القديمة الكبيرة، ليس لديها واجهة API حديثة للاتصال عبرها. تتحايل روبوتات UiPath على ذلك بتشغيل واجهة التطبيق نفسها، نفس الأزرار والحقول التي يستخدمها موظف بشري، ما يعني أن روبوتاً يمكن بناؤه لأتمتة تقريباً أي تطبيق سطح مكتب أو ويب بغض النظر عن قِدَمه أو هل بنى مزوّده أصلاً خطافات تكامل. تلك المرونة تأتي بمقايضة: الروبوتات حساسة لتغييرات الواجهة، وهذا سبب أهمية الصيانة بقدر أهمية البناء الأولي.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATION ANGLE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="angle-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="angle-heading" style="margin-bottom:1.5rem;">كيف تستخدم Lenoo AI منصة UiPath لأتمتة المؤسسات الإماراتية</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        نحن شريك تنفيذ UiPath، نعمل مع المؤسسات الإماراتية لتصميم، بناء، وصيانة روبوتات أتمتة، لا نبيع تراخيص UiPath بأنفسنا. تكسب RPA مكانها عندما تكون عملية عالية الحجم، قائمة على القواعد، وتلمس أنظمة دون واجهة API حديثة، غالباً برمجيات قديمة أو محلية شائعة في المصرفية والحكومة والمكاتب الخلفية للمؤسسات الكبيرة عبر الإمارات.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-top:1.25rem;">
+        قبل التوصية بـ UiPath إطلاقاً، ننظر بصدق هل RPA الأداة الصحيحة، لأن الروبوتات منطقية للعمليات المستقرة والقائمة على القواعد وتعاني مع أي شيء يتطلب حكماً أو يتغير صيغته كثيراً. حيث تناسب، نرسم العملية خطوة بخطوة بالضبط كما يؤديها إنسان اليوم، نبني الروبوت مقابل بيئة اختبار أولاً، ونشغّله بالتوازي مع العملية اليدوية قبل التحويل الكامل فلا ينكسر شيء بصمت. كل روبوت نسلّمه يأتي بمراقبة ومسار تصعيد واضح لحين تتغير واجهة تطبيق، وهو السبب الأكثر شيوعاً لفشل RPA بعد فترة طويلة من الإطلاق.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FREE VS PAID -->
+<section class="section" aria-labelledby="uipath-pricing-heading">
+  <div class="container" style="max-width:800px;">
+    <h2 id="uipath-pricing-heading" style="text-align:center; margin-bottom:1.5rem;">UiPath مجاني مقابل مدفوع</h2>
+    <div class="uipath-toggle" role="tablist" aria-label="مستوى التسعير">
+      <button type="button" id="uipath-tier-free" class="uipath-toggle-btn active" data-uipath-tier="free" role="tab" aria-selected="true" aria-controls="uipath-panel-free">مجاني (النسخة المجتمعية)</button>
+      <button type="button" id="uipath-tier-paid" class="uipath-toggle-btn" data-uipath-tier="paid" role="tab" aria-selected="false" aria-controls="uipath-panel-paid">مدفوع (Standard / Enterprise)</button>
+    </div>
+    <div class="card" id="uipath-panel-free" data-uipath-tier-panel="free" role="tabpanel" aria-labelledby="uipath-tier-free">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">النسخة المجتمعية من UiPath مجانية للمطورين الأفراد، الطلاب، والأعمال الصغيرة تحت حد إيرادات متواضع، مع ما يصل لثلاثة روبوتات مراقَبة لبناء واختبار الأتمتة. إنها طريقة حقيقية لتعلّم المنصة وبناء نموذج أولي لروبوت، لكنها لا تشمل Orchestrator، طبقة الحوكمة المذكورة أعلاه التي تعطي تقنية المعلومات مكاناً واحداً لرؤية كل روبوت يعمل ومسار التدقيق الذي تطلبه فرق الامتثال، لذا نعاملها كمكان لتقييم UiPath، لا حيث ينتهي روبوت مؤسسي إنتاجي.</p>
+    </div>
+    <div class="card" id="uipath-panel-paid" data-uipath-tier-panel="paid" role="tabpanel" aria-labelledby="uipath-tier-paid" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">مستويات UiPath المدفوعة (Standard وEnterprise) تفتح Orchestrator، تنفيذ روبوت غير مراقَب يعمل دون أن يشاهده أحد، وضوابط الوصول القائمة على الأدوار وتسجيل التدقيق التي سيريدها فريق الامتثال لديكم قبل أن يلمس روبوت الإنتاج. يُرخِّص UiPath حسب عدد الروبوتات وهل تعمل مراقَبة أو غير مراقَبة بدلاً من نشر رسم ثابت، لذا نحدد نطاق عرض سعر مقابل حجم عمليتكم الفعلي بمجرد معرفة كم روبوتاً يحتاجه البرنامج.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO IT'S FOR -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">هل UiPath مناسب لمؤسستكم؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        UiPath يناسب المؤسسات الإماراتية، خاصة في المصرفية، القطاعات شبه الحكومية، وعمليات المكاتب الخلفية الكبيرة، ذات العمليات عالية الحجم والقائمة على القواعد التي تعمل على أنظمة قديمة دون واجهة API للاتصال بها بأي طريقة أخرى.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ENGAGEMENT PHASES -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="engagement-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="engagement-heading" style="margin-bottom:1.5rem;">كيف يبدو تعاون UiPath مؤسسي نموذجي</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.75rem;">
+        برنامج UiPath لمؤسسة إماراتية نادراً ما يبدأ بالروبوت نفسه. يبدأ بفهم أي الأنظمة تلمسها العملية فعلياً، لأن معظم التطبيقات المتورطة لم تُبنَ أصلاً مع وضع الأتمتة في الاعتبار.
+      </p>
+      <div style="display:flex; flex-direction:column; gap:1.5rem;">
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">١. اكتشاف الأنظمة القديمة وتقييم العملية</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">نقضي الفترة الأولى من التعاون برسم كل شاشة، تطبيق، وتسليم يدوي متورط في العملية المستهدفة، غالباً بالعمل مع موظفين يؤدون المهمة يدوياً منذ سنوات. للعملاء المصرفيين وشبه الحكوميين، هذه المرحلة تعني أيضاً فهرسة أي الأنظمة القديمة لم يعد لديها أي توثيق على الإطلاق، لأن من بناها غادروا منذ زمن طويل.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">٢. تجربة على عملية واحدة</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">بدلاً من الالتزام بطرح على مستوى القسم مقدماً، نبني الروبوت الأول مقابل عملية واحدة محددة النطاق جيداً ونشغّله بالتوازي مع سير العمل اليدوي الحالي. ذلك التشغيل الموازي حيث نلتقط الحالات الحدية التي يفوّتها استعراض عملية وحده، قبل أن يلمس الروبوت بيانات إنتاج دون إشراف أبداً.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">٣. مراجعة الحوكمة والأمان</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">بمجرد إثبات التجربة، يمر الروبوت بمراجعة حوكمة وأمان: ضوابط وصول قائمة على الأدوار، تسجيل تدقيق، وعملية إدارة تغيير تُرضي أياً كانت وظيفة الامتثال الداخلية التي تشغّلها المؤسسة أصلاً. في القطاعات الإماراتية المنظمة، هذه الخطوة ليست اختيارية، ونبنيها من البداية بدلاً من إضافتها لاحقاً.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">٤. طرح مرحلي عبر الأقسام</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">مع وجود الحوكمة، نطرح الأتمتة لأقسام أو تنويعات عملية إضافية على مراحل، نتحقق من كل واحدة مقابل نفس المعيار قبل أن تصبح حية. هذا أيضاً حيث يثبت Orchestrator من UiPath قيمته، يمنح تقنية المعلومات مكاناً واحداً لرؤية كل روبوت يعمل عبر المؤسسة بدلاً من دستة نصوص منفصلة.</p>
+        </div>
+        <div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.375rem;">٥. الإدارة المستمرة</h3>
+          <p style="color:#42474e; font-size:1rem; line-height:1.75; margin:0;">تبقى الروبوتات حية طويلاً بعد الإطلاق، وتغييرات الواجهة في التطبيقات التي تتفاعل معها السبب الأكثر شيوعاً للفشل بعد أشهر. نبني مراقبة ومسار تصعيد واضحاً في كل تعاون، فيُعلَّم روبوت مكسور ويُصلَح بسرعة بدلاً من الفشل بصمت لأسابيع.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">UiPath مقابل Automation Anywhere</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        يحل UiPath و<a href="/ar/services/ai-automation/tools/automation-anywhere">Automation Anywhere</a> نفس المشكلة بطرق مختلفة. UiPath لديه القاعدة المُثبَّتة الأكبر، Orchestrator المحلي الأكثر نضجاً، ومنظومة الشركاء الأعمق، وهذا يميل للأهمية للمؤسسات ذات البيئات المحلية المعقدة والموظفين المعتمدين على UiPath أصلاً. Automation Anywhere يميل لأصالة سحابية من الأساس، مع بناء الروبوتات، نشرها، ومراقبتها عبر وحدة تحكم ويب مركزية بدلاً من غرفة تحكم مثبتة محلياً، ما يمكن أن يبسّط الطرح عبر مكاتب متعددة. إذا كانت مؤسستكم تشغّل معظمها بنية تحتية محلية أصلاً وتحتاج وصولاً عميقاً للأنظمة القديمة، UiPath عادة نقطة البداية الأقوى. إذا أراد تقنية المعلومات إدارة الأتمتة مركزياً عبر السحابة مع بنية تحتية محلية أقل للصيانة، Automation Anywhere يستحق النظر. نعمل مع كليهما وسنخبركم بصدق أيهما يناسب بيئتكم أثناء مكالمة الاكتشاف.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- UAE CONTEXT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="uae-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="uae-heading" style="margin-bottom:1.5rem;">أين يظهر UiPath في المؤسسات الإماراتية</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        يظهر UiPath غالباً في المصرفية الإماراتية، الكيانات شبه الحكومية، وعمليات المكاتب الخلفية الكبيرة: أنواع المؤسسات التي تشغّل أنظمة أساسية رُكِّبت منذ سنوات أو عقود ولم تُصمَّم أبداً لعرض واجهة API. هذه أيضاً القطاعات حيث تعمل عملية قائمة على القواعد بحجم عالٍ فعلياً، التسويات، إدخال البيانات الدفعي، وتوليد التقارير المتكرر، فالعائد على روبوت مبني جيداً مباشر وسهل قياسه مقابل البديل اليدوي. حيث لا تزال عملية تتطلب حكماً بشرياً أو البيانات الأساسية غير منظّمة، عادة نوصي بإقران روبوت UiPath بخطوة ذكاء اصطناعي بدلاً من الاعتماد على RPA وحدها.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SCOPING -->
+<section class="section" aria-labelledby="scoping-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="scoping-heading" style="margin-bottom:1.5rem;">كيف نحدد نطاق مشروع UiPath</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        التسعير والجدول الزمني لتعاون UiPath يعتمدان على ثلاثة أشياء: كم عملية منفصلة تحتاج أتمتة، كم تلك العمليات مستقرة وموثّقة أصلاً، وأي مراجعة حوكمة وامتثال تتطلبها مؤسستكم قبل أن يستطيع روبوت لمس بيانات الإنتاج. عملية واحدة مفهومة جيداً بمتطلبات حوكمة خفيفة يمكن أن تنتقل من الاكتشاف للإنتاج خلال أسابيع. برنامج على مستوى القسم يمتد عبر عدة أنظمة قديمة، مراجعة امتثال أثقل، وطرح مرحلي عبر فرق متعددة يُحدَّد نطاقه ويُسعَّر على مراحل، فترون قيمة من أول عملية تصبح حية بدلاً من الانتظار حتى ينتهي البرنامج بأكمله قبل شحن أي شيء.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PITFALLS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="pitfalls-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="pitfalls-heading" style="margin-bottom:1.5rem;">أين تخطئ برامج UiPath عادة</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        معظم برامج RPA الفاشلة التي نُستدعى لإصلاحها تشترك في نفس الأسباب الجذرية، ولا شيء منها فعلياً عن البرنامج. عملية ليست مستقرة فعلياً، تغيّر صيغتها أو معالجة الاستثناءات كل بضعة أسابيع، تكسر روبوتاً أسرع من أي تحديث واجهة، لذا نقاوم بشدة عندما لا تزال عملية بها استثناءات كثيرة غير موثّقة لأتمتتها بموثوقية. الروبوتات المبنية دون خطة مراقبة تميل للفشل بصمت لأسابيع قبل أن يلاحظ أحد تراكم القائمة المتأخرة. والروبوتات المبنية لإبهار جمهور عرض توضيحي بدلاً من الصمود لشهر كامل من بيانات الإنتاج الحقيقية عادة لا تصمد. نفضّل تحديد نطاق عملية أصغر وأكثر استقراراً أولاً على وعد بطرح على مستوى قسم يتوقف عند أول حالة حدية لم يخطط لها أحد.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="what-we-build" class="section" aria-labelledby="usecases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="usecases-heading">ما نبنيه بـ UiPath</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">تعاونات تمثيلية، محددة النطاق فردياً بناءً على أنظمتكم وعملياتكم.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {useCases.map((uc) => (
+        <div class="value-card">
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">تفكرون بـ UiPath لعملية قديمة؟ سنعطيكم قراءة صادقة قبل الالتزام.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_automation_tools_uipath_mid" class="btn-primary">احجزوا استشارة أتمتة مؤسسية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">استشارة أتمتة مؤسسية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لتشغيل UiPath لمؤسستكم؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجزوا استشارة مع فريقنا في دبي. سنحدد نطاق التكامل، الأنظمة المتورطة، والحوكمة التي يحتاجها مشروعكم.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ تحديد نطاق مؤسسي</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_automation_tools_uipath_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا استشارة أتمتة مؤسسية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+.uipath-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+.uipath-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.uipath-toggle-btn.active { background:#006875; color:#fff; }
+.uipath-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const uipathToggleWrap = document.querySelector('.uipath-toggle');
+  if (uipathToggleWrap) {
+    const uipathBtns = uipathToggleWrap.querySelectorAll('.uipath-toggle-btn');
+    const uipathPanels = document.querySelectorAll('[data-uipath-tier-panel]');
+    uipathBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-uipath-tier');
+        uipathBtns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        uipathPanels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-uipath-tier-panel') !== key; });
+      });
+    });
+  }
+</script>

@@ -1,0 +1,307 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../../lib/supabase";
+import FaqAccordion from "../../../../../components/FaqAccordion.astro";
+
+const h1 = 'وكالة أتمتة ومستشارو n8n في دبي';
+const metaTitle = 'وكالة أتمتة ومستشارو n8n في دبي | Lenoo AI';
+const metaDescription = 'تبني وتستضيف Lenoo AI سير عمل أتمتة n8n للأعمال في دبي والإمارات، بما فيها أتمتة وكلاء الذكاء الاصطناعي حيث يحتاج سير عمل للتفكير، لا فقط لنقل البيانات.';
+const heroSubtext = 'يمنحنا n8n محرك أتمتة مستضافاً ذاتياً وقابلاً للتخصيص كلياً. نستخدمه لبناء سير عمل لا تستطيعه أدوات بلا كود البسيطة: منطق تفرّع معقد، خطوات كود مخصصة، ووكلاء ذكاء اصطناعي يتخذون قرارات في منتصف المسار.';
+
+const useCases = [
+  { title: 'سير عمل بيانات مستضاف ذاتياً', description: 'للأعمال ذات متطلبات إقامة بيانات، ننشر n8n على بنيتكم التحتية الخاصة فلا تغادر بيانات العملاء أو البيانات المالية الحساسة بيئتكم أبداً.' },
+  { title: 'كود مخصص وتفرّع منطقي', description: 'عندما يحتاج سير عمل منطقاً شرطياً معقداً جداً على أداة بناء بصرية وحدها، نضيف خطوات JavaScript مخصصة مباشرة داخل سير عمل n8n.' },
+  { title: 'خطوط أنابيب وكلاء ذكاء اصطناعي', description: 'n8n أيضاً كيف نبني أتمتة وكلاء الذكاء الاصطناعي: سير عمل حيث يقرأ وكيل نموذج لغوي كبير السياق، يتخذ قراراً، ويتخذ الإجراء التالي، بدلاً من مجرد نقل البيانات من أ إلى ب. شاهدوا بناءات وكيل n8n المخصصة لدينا أدناه.' },
+  { title: 'تنسيق أنظمة متعددة', description: 'ننسّق عملية تلمس خمسة أو ستة أدوات مختلفة بالتسلسل، مع عمل n8n كطبقة تحكم تقرر ماذا يحدث تالياً في كل خطوة.' },
+];
+
+const faqFallback = [
+  { question: 'لماذا نختار n8n على Zapier أو Make؟', answer: 'يصبح n8n منطقياً عندما تحتاجون استضافة ذاتية لإقامة البيانات أو الامتثال، كوداً مخصصاً داخل خطوة سير عمل، أو منطق وكيل ذكاء اصطناعي حيث يحتاج سير العمل للتفكير لا فقط تشغيل إجراء. إذا كان سير عملكم أبسط، Zapier أو Make عادة المسار الأسرع والأرخص، وسنقول ذلك بصدق أثناء مكالمة الاكتشاف.' },
+  { question: 'هل تستضيفون مثيل n8n لنا، أم نحتاج خادمنا الخاص؟', answer: 'كلاهما. نستطيع نشر وإدارة مثيل n8n مستضاف ذاتياً على بنية تحتية تتحكمون بها، أو البناء على عرض n8n السحابي إذا لم تكن الاستضافة الذاتية متطلباً لكم.' },
+  { question: 'ما هي "أتمتة وكلاء الذكاء الاصطناعي" في n8n تحديداً؟', answer: 'تعني أن سير العمل يشمل خطوة وكيل ذكاء اصطناعي يفكر في المدخل ويقرر ماذا يفعل تالياً، بدلاً من اتباع مسار ثابت "إذا حدث هذا فافعل ذلك". على سبيل المثال، وكيل يقرأ تذكرة دعم واردة، يقرر هل تحتاج تصعيداً، يصيغ رداً، ولا يُنبّه إنساناً إلا عندما يكون غير متأكد فعلياً.' },
+  { question: 'هل تستطيعون نقل سير عمل Zapier أو Make الحالي لدينا إلى n8n؟', answer: 'نعم. نراجع أتمتتكم الحالية، نعيد بناء ما يستحق الاحتفاظ به في n8n، ونستخدم النقل كفرصة لإصلاح أي شيء كان هشاً في الإعداد الأصلي.' },
+  { question: 'من يصون مثيل n8n بعد الإطلاق؟', answer: 'نشمل نافذة مراقبة بعد الإطلاق مع كل بناء، ونقدّم عقود صيانة مستمرة بعدها للتحديثات، إضافات سير العمل الجديدة، وإبقاء المثيل نفسه محدّثاً وآمناً إذا كنا نستضيفه لكم.' },
+  { question: 'هل نحتاج مطورين في فريقنا للعمل مع n8n على المدى الطويل؟', answer: 'ليس بالضرورة. معظم سير العمل الذي نبنيه بصري بما يكفي فيستطيع عضو فريق غير تقني قراءة ما يفعله وإجراء تعديلات صغيرة كضبط جدول أو عنوان بريد إلكتروني. أي شيء يشمل عُقد الكود أو منطق وكيل الذكاء الاصطناعي هو حيث يصبح وجودنا على عقد صيانة، أو توظيف تقني، يستحق الأمر.' },
+];
+
+let faqItems = faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_automation_tools_n8n')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: h1,
+    url: 'https://lenooai.com/ar/services/ai-automation/tools/n8n',
+    description: metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع أتمتة n8n: التسعير حسب تعقيد سير العمل ونطاقه. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر.' },
+    serviceType: 'n8n Automation Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'أتمتة الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'الأدوات', item: 'https://lenooai.com/ar/services/ai-automation/tools' },
+      { '@type': 'ListItem', position: 4, name: 'n8n', item: 'https://lenooai.com/ar/services/ai-automation/tools/n8n' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonicalPath="/ar/services/ai-automation/tools/n8n"
+  enPath="/services/ai-automation/tools/n8n"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">أتمتة الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-automation/tools" style="color:inherit;text-decoration:none;opacity:0.65;">الأدوات</a><span style="opacity:0.4;padding:0 4px;"> / </span>n8n</div>
+    <div class="tool-logo-hero"><img src="https://cdn.simpleicons.org/n8n/EA4B71" alt="شعار n8n" width="56" height="56" loading="eager" /></div>
+    <h1>{h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ar_ai_automation_tools_n8n_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#use-cases" class="btn-outline">شاهدوا ما نبنيه ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1607799279861-4dd421887fb3?w=1400&q=80&auto=format&fit=crop" alt="مطور يبني سير عمل أتمتة بكود على شاشة حاسوب محمول" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHAT IS N8N -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">ما هو n8n؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        n8n أداة أتمتة سير عمل مفتوحة المصدر وقابلة للاستضافة الذاتية، مبنية للفرق التقنية التي تحتاج تحكماً أكثر مما يسمح به Zapier أو Make. تدعم كود JavaScript وPython مخصصاً داخل سير العمل، استضافة ذاتية لإقامة البيانات، وعُقداً أصلية لبناء خطوط أنابيب وكلاء الذكاء الاصطناعي.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        ما يميّز n8n عن معظم أدوات بلا كود هو أنه لا يجبركم على البقاء بلا كود. يمكن بناء سير عمل بصرياً كلياً، ثم الانتقال لعقدة كود لحظة أن يصبح المنطق محدداً جداً لكتلة سحب وإفلات، دون تبديل منصات. لأنه يستطيع العمل على خادمكم الخاص، n8n أيضاً الأداة المفضلة عندما يحتاج عمل إبقاء بيانات حساسة داخل بنيته التحتية الخاصة بدلاً من توجيهها عبر سحابة طرف ثالث، وهو أمر يظهر كثيراً لعملاء المالية والرعاية الصحية والقطاعات شبه الحكومية في الإمارات.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW LENOO USES N8N -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="how-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="how-heading" style="margin-bottom:1.5rem;">كيف تستخدم Lenoo AI منصة n8n لبناءات الأتمتة الإماراتية</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        نحن شريك تنفيذ n8n: نصمم، نبني، نستضيف، ونصون سير عمل n8n لعملكم، لا نبيع n8n نفسها. معظم مشاريع n8n لدينا تقع في إحدى فئتين: أعمال تحتاج أتمتة مستضافة ذاتياً لأسباب إقامة بيانات أو امتثال، وأعمال تجاوزت Zapier أو Make وتحتاج خطوات كود مخصصة أو منطق وكيل ذكاء اصطناعي يتعامل معه نظام عُقد n8n بشكل أفضل.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.5rem;">
+        عندما نتولى مشروع n8n، القرار الأول هو البنية التحتية: هل ننشر على خادمكم الخاص، على مثيل سحابي ندير لكم، أو نستخدم عرض n8n المستضاف نفسه. ذلك القرار عادة يعود لمتطلبات الامتثال وكم تريدون امتلاكه مقابل تسليمه. من هناك نبني سير العمل بنفس الطريقة بغض النظر: بصرياً حيث ممكن، بعُقد كود حيث يحتاجها المنطق فعلياً، وبنفس المراقبة ومعالجة الأخطاء التي نضعها في كل مشروع نسلّمه. لأن سير عمل n8n بيانات JSON قابلة للنقل تحت الغطاء، لن تكونوا محبوسين معنا كالوحيدين القادرين على لمسه.
+      </p>
+      <div class="ai-agent-callout">
+        <p style="color:#00253b; font-size:1.0625rem; line-height:1.85; margin:0;">
+          n8n أيضاً كيف نبني <strong>أتمتة وكلاء الذكاء الاصطناعي</strong>: سير عمل حيث يقرأ وكيل نموذج لغوي كبير المدخل، يتخذ قراراً، ويتخذ الإجراء التالي في منتصف المسار، بدلاً من مجرد نقل البيانات من تطبيق لآخر بمحفز ثابت. هذا نفس محرك سير العمل، لكن نوع بناء مختلف، أقرب لنظام صنع قرار صغير من Zap. شاهدوا بناءات وكيل n8n المخصصة لدينا <a href="/ar/services/ai-agents/tools/n8n-ai-agent">←</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FREE VS PAID -->
+<section class="section" aria-labelledby="n8n-pricing-heading">
+  <div class="container" style="max-width:800px;">
+    <h2 id="n8n-pricing-heading" style="text-align:center; margin-bottom:1.5rem;">n8n مجاني مقابل مدفوع</h2>
+    <div class="n8n-toggle" role="tablist" aria-label="مستوى التسعير">
+      <button type="button" id="n8n-tier-free" class="n8n-toggle-btn active" data-n8n-tier="free" role="tab" aria-selected="true" aria-controls="n8n-panel-free">مجاني (استضافة ذاتية)</button>
+      <button type="button" id="n8n-tier-paid" class="n8n-toggle-btn" data-n8n-tier="paid" role="tab" aria-selected="false" aria-controls="n8n-panel-paid">مدفوع (سحابي)</button>
+    </div>
+    <div class="card" id="n8n-panel-free" data-n8n-tier-panel="free" role="tabpanel" aria-labelledby="n8n-tier-free">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">n8n مفتوح المصدر ومجاني للاستضافة الذاتية على خادمكم الخاص أو مثيل سحابي تتحكمون به، دون سقف على سير العمل أو التشغيلات. أنتم (أو نحن، على عقد صيانتكم) تمتلكون الخادم، التحديثات، ووقت التشغيل. هذا الخيار الذي نلجأ إليه عندما تعني قواعد إقامة البيانات أو الامتثال أن بياناتكم لا تستطيع مغادرة بنية تحتية تتحكمون بها.</p>
+    </div>
+    <div class="card" id="n8n-panel-paid" data-n8n-tier-panel="paid" role="tabpanel" aria-labelledby="n8n-tier-paid" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">n8n Cloud هو عرض n8n المستضاف الخاص: دون خادم لإدارته، مع تحديثات ووقت تشغيل يُدار لكم. الخطط تُسعَّر بحجم تشغيل سير العمل بدلاً من رسم مقعد ثابت، فتتصاعد التكلفة مع كم الأتمتة التي تشغّلونها فعلياً. نوصي به عندما لا تكون الاستضافة الذاتية متطلباً حقيقياً لعملكم.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO THIS FITS -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">هل n8n مناسب لكم؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        n8n يناسب الأعمال الإماراتية التي تجاوزت أصلاً إعداد Zapier بسيط، تحتاج إبقاء البيانات على بنية تحتية تتحكم بها، أو تريد سير عمل يشمل وكيل ذكاء اصطناعي يتخذ قرارات في منتصف المسار بدلاً من مجموعة خطوات ثابتة.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        بضع إشارات ملموسة نراقبها: فريق الامتثال أو القانوني لديكم أشار أن بيانات العملاء لا تستطيع مغادرة بنيتكم التحتية الخاصة، سير عملكم يحتاج خطوة لا تعبّر عنها بنظافة أي منصة سحب وإفلات، أو تستمرون بوصف فكرة أتمتة تبدو أقل "نقل بيانات من أ إلى ب" وأكثر "اقرأ هذا، قرّر، ثم تصرّف". أي من هذه عادة يعني أن n8n، لا أداة بلا كود أخف، هو حيث يجب أن يبدأ المشروع.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">كيف يبدو مشروع n8n نموذجي معنا</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        مشاريع n8n تحمل قراراً إضافياً واحداً لا تحمله أدوات بلا كود: أين يعمل سير العمل فعلياً.
+      </p>
+      <ol class="journey-list" style="gap:1rem;">
+        <li><strong style="color:#00253b;">الاكتشاف.</strong> نحدد ما إذا كانت الاستضافة الذاتية متطلباً حقيقياً (إقامة بيانات، امتثال، تكلفة عند الحجم) أم أنها مُفترَضة افتراضياً، ونرسم منطق سير العمل الذي يحتاجه عملكم فعلياً.</li>
+        <li><strong style="color:#00253b;">التصميم والبنية التحتية.</strong> نقرر بين خادمكم الخاص، مثيل سحابي ندير، أو عرض n8n المستضاف، ثم نصمم سير العمل بصرياً، نعلّم أي الخطوات تحتاج عقدة كود أو خطوة وكيل ذكاء اصطناعي.</li>
+        <li><strong style="color:#00253b;">البناء والاختبار.</strong> نبني سير العمل عقدة بعقدة، نكتب JavaScript مخصصاً فقط حيث لا تستطيع أداة البناء البصرية التعبير عن المنطق فعلياً، ونختبر كل فرع مقابل بيانات حقيقية قبل أن يلمس أي شيء الإنتاج.</li>
+        <li><strong style="color:#00253b;">الإطلاق والمراقبة.</strong> ننشر المثيل، نسلّم توثيقاً يستطيع فريقكم قراءته، ونراقب سجلات التشغيل للأسابيع الأولى فتُلتقط الأعطال وتُصلَح بسرعة بدلاً من أن يكتشفها عميل.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">n8n مقابل البدائل</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        n8n أكثر قدرة من <a href="/ar/services/ai-automation/tools/zapier">Zapier</a> أو <a href="/ar/services/ai-automation/tools/make">Make</a> في كل معنى تقني تقريباً: يستضاف ذاتياً، يقبل كوداً مخصصاً، ويتعامل مع منطق وكيل الذكاء الاصطناعي أصلياً. هذا لا يجعله الافتراضي الصحيح. إذا كان سير عملكم حفنة من المحفزات والإجراءات المباشرة دون متطلب امتثال يفرض الاستضافة الذاتية، Zapier يوصل نفس النتيجة حية أسرع وبصيانة أقل. إذا تفرّع سير العمل بشدة لكن دون حاجة لكود مخصص أو خطوة وكيل ذكاء اصطناعي، عارض سيناريوهات Make البصري غالباً حل وسط أبسط. نوصي بـ n8n تحديداً عندما تكون إقامة البيانات، المنطق المخصص، أو صنع القرار بأسلوب الوكيل متطلبات حقيقية، لا لأنه الخيار الأكثر مرونة على الورق. القدرة غير المستخدَمة مجرد عبء صيانة، ونفضّل تسليمكم Zap يعمل من تلقاء نفسه على مثيل n8n لا يلمسه أحد في فريقكم في النهاية.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- RELIABILITY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="reliability-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="reliability-heading" style="margin-bottom:1.5rem;">الحفاظ على موثوقية سير عمل n8n بعد الإطلاق</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        الأتمتة المستضافة ذاتياً تحمل مسؤولية لا تحملها أدوات بلا كود ذات سحابة مُدارة: يجب على أحدهم إبقاء المثيل نفسه يعمل، محدّثاً، ومنسوخاً احتياطياً، لا فقط سير العمل داخله. عندما نستضيف n8n لعميل، تلك الصيانة تجلس داخل عقد الصيانة، تغطي الخادم نفسه، لا فقط سجلات تشغيل سير العمل. كل سير عمل نبنيه يحصل أيضاً على معالجة أخطاء منظّمة على مستوى العقدة، فلا يُسقط فشل في فرع واحد التشغيل بأكمله، ويُسجَّل بتفصيل كافٍ فنستطيع تشخيصه دون إعادة تشغيل خط الأنابيب بأكمله مقابل بيانات الإنتاج. لسير عمل وكلاء الذكاء الاصطناعي تحديداً، نسجّل مسار التفكير: ماذا قرأ الوكيل، ماذا قرر، وأي إجراء اتخذ، فقرار يبدو خاطئاً يمكن تتبعه للمدخل الدقيق الذي سببه، بدلاً من معاملته كصندوق أسود لا يستطيع أحد شرحه.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="use-cases" class="section" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">ما نبنيه بـ n8n</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">مشاريع n8n شائعة للعملاء الإماراتيين، من سير عمل البيانات المستضاف ذاتياً إلى خطوط أنابيب وكلاء الذكاء الاصطناعي الكاملة. كل بناء محدد النطاق لسير عملكم الفعلي، لا قالب عام.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {useCases.map((uc) => (
+        <div class="value-card">
+          <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">فضوليون إن كان n8n الملاءمة الصحيحة قبل الالتزام؟ اسألونا مباشرة.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_automation_tools_n8n_mid" class="btn-primary">احجزوا استشارة n8n مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون للبناء على n8n؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجزوا مكالمة اكتشاف مجانية مع فريقنا في دبي. سننظر هل n8n، أو شيء أبسط، يناسب فعلياً ما تحاولون أتمتته.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_automation_tools_n8n_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.tool-logo-hero { width:64px; height:64px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; }
+.value-card { display:flex; flex-direction:column; }
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.journey-list li { position:relative; padding-right:1.75rem; color:#42474e; font-size:1.0625rem; line-height:1.85; }
+.journey-list li::before { content:''; position:absolute; right:0; top:0.6em; width:9px; height:9px; border-radius:50%; background:#00e3fd; }
+.ai-agent-callout { background:#fff; border:1px solid rgba(0,104,117,0.18); border-radius:14px; padding:1.5rem 1.75rem; }
+.ai-agent-callout a { color:#006875; font-weight:700; text-decoration:none; }
+.ai-agent-callout a:hover { text-decoration:underline; }
+.n8n-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+.n8n-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.n8n-toggle-btn.active { background:#006875; color:#fff; }
+.n8n-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const toggleWrap = document.querySelector('.n8n-toggle');
+  if (toggleWrap) {
+    const btns = toggleWrap.querySelectorAll('.n8n-toggle-btn');
+    const panels = document.querySelectorAll('[data-n8n-tier-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-n8n-tier');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-n8n-tier-panel') !== key; });
+      });
+    });
+  }
+</script>

@@ -1,0 +1,227 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "كيف نُقيّم فعلياً شركة تطوير وكلاء ذكاء اصطناعي؟", answer: "اطلبوا رؤية وكلاء شحنوها فعلياً، لا عروضاً توضيحية. العرض التوضيحي مبني ليُبهر خلال خمس دقائق؛ الوكيل المشحون نجا من بيانات حقيقية، حالات حدية، وبضعة أشهر من الاستخدام الفعلي. اسألوا ماذا يحدث عندما يخطئ الوكيل، واستمعوا لما إذا كانت لديهم إجابة حقيقية، تسجيل، تراجع، نقطة موافقة، أم أنهم لم يفكروا في الأمر بعد." },
+  { question: "ما العلامات التحذيرية التي يجب أن تجعلنا ننسحب؟", answer: "وكالة لا تستطيع وصف مشروع محدد فشل أو احتاج إعادة عمل، أو لا تريد شرح الضوابط التي يعمل تحتها الوكيل، أو تدفع منصة واحدة بغض النظر عن سير عملكم، كلها إشارات تستحق أخذها بجدية. كذلك عرض يعد باستقلالية كاملة دون نقطة توقف بشرية في أي مكان، على أي شيء، هذه ليست ثقة، إنها شركة لم تبنِ وكلاء حقيقيين كافيين لتعرف أين تسوء الأمور." },
+  { question: "هل تعملون بنطاق ثابت أم بعقد شهري؟", answer: "كلاهما، حسب المشروع. وكيل واحد محدد جيداً عادة يحصل على نطاق وسعر ثابتين بعد الاكتشاف. تطوير وكلاء مستمر، أو عمل يريدنا نبني ونحسّن عدة وكلاء عبر الزمن، عادة ينتقل لعقد شهري. سنوصي بما يناسب أثناء مكالمة الاكتشاف بدلاً من اللجوء افتراضياً لما هو أسهل بيعاً لنا." },
+  { question: "من يملك كود ومنطق الوكيل بعد المشروع؟", answer: "أنتم. ما تملكونه يختلف قليلاً حسب المنصة، البناءات القائمة على الكود على Pipedream أو n8n تُسلِّم كوداً قابلاً للقراءة والنقل؛ البناءات على منصة مثل Gumloop أو Lindy تُسلِّم سير العمل نفسه، الذي تستطيعون الوصول إليه وتعديله داخل حساب تلك المنصة. في الحالتين، لا شيء من المنطق مقفل خلف شيء نحن فقط نستطيع فتحه." },
+  { question: "هل يجب أن نوظف وكالة أم نُدخل مهندس وكلاء ذكاء اصطناعي داخلياً؟", answer: "يعتمد على مقدار تطوير الوكلاء المستمر الذي تتوقعون احتياجه. وكيل واحد، أو حفنة منهم، عادة لا يبرر توظيفاً بدوام كامل؛ الوكالة توصلكم أسرع وأرخص. العمل الذي يخطط لبناء وصيانة محفظة متنامية من الوكلاء عبر سنوات يصل أحياناً لنقطة يصبح فيها مهندس داخلي منطقياً، غالباً بعد العمل مع وكالة طويلاً بما يكفي لمعرفة ما يحتاج الدور تغطيته فعلياً." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_agents_agencies')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'شركة تطوير وكلاء الذكاء الاصطناعي',
+    url: 'https://lenooai.com/ar/services/ai-agents/agencies',
+    description: 'ما يجب البحث عنه في شركة تطوير وكلاء ذكاء اصطناعي، ما يفعله فعلياً مهندس وكلاء الذكاء الاصطناعي، وكيف تتعامل Lenoo AI مع كليهما.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'وكلاء الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'الوكالات', item: 'https://lenooai.com/ar/services/ai-agents/agencies' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="اختيار شركة تطوير وكلاء الذكاء الاصطناعي | Lenoo AI"
+  description="ما يجب البحث عنه في شركة تطوير وكلاء ذكاء اصطناعي، ما يفعله فعلياً مهندس وكلاء الذكاء الاصطناعي، وكيف تتعامل Lenoo AI مع كليهما."
+  canonicalPath="/ar/services/ai-agents/agencies"
+  enPath="/services/ai-agents/agencies"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">وكلاء الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>الوكالات</div>
+    <h1>اختيار شركة تطوير <span class="gradient-text">وكلاء الذكاء الاصطناعي</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      داخلياً، مستقل، أو وكالة: المسار الصحيح يعتمد على حجم ما تبنونه ومدة حاجتكم لصيانته. إليكم كيف تُقيّمون فعلياً شركة تطوير وكلاء ذكاء اصطناعي، وما يغطيه دور "مهندس وكلاء الذكاء الاصطناعي" حتى لو لم توظفوا أحداً بهذا المسمى مباشرة.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_ai_agents_agencies_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#checklist" class="btn-outline">شاهدوا قائمة التحقق ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- IN-HOUSE VS FREELANCER VS AGENCY -->
+<section class="section" aria-labelledby="paths-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="paths-heading" style="margin-bottom:1.5rem;">داخلياً، مستقل، أو وكالة: المفاضلات الصادقة</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        <strong>التوظيف الداخلي</strong> منطقي عندما تبنون وتصيّنون وكلاء باستمرار، بحجم يجعل شخصاً مخصصاً مشغولاً بدوام كامل. إنه أبطأ مسار لأول وكيل، لأنكم توظفون قبل البناء، ويضع كل رهاناتكم في مهارة شخص واحد. إنه أيضاً الخيار الأغلى لكل وكيل مشحون، إلا إذا كان الحجم مرتفعاً فعلياً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        <strong>المستقل</strong> غالباً أرخص طريقة لبناء وكيل واحد محدد، ويمكن أن ينجح جيداً لمشروع محدد جيداً ومحصور. الخطر يظهر بعد الإطلاق: مستقل واحد دون فريق حوله يعني عدم تغطية إذا كان غير متاح، عدم وجود مراجع ثانٍ يلتقط خطأً قبل شحنه، وعدم استمرارية إذا احتاج وكيلكم التالي شخصاً يفهم ضوابط الأول.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        <strong>الوكالة</strong> تقع بين الاثنين: أسرع بدءاً من التوظيف، استمرارية ومراجعة أكبر من مستقل منفرد، ودون التزام موظفين طويل الأمد. المفاضلة هي أن التكلفة لكل ساعة عادة أعلى من مستقل، وأنتم تعتمدون على انضباط الوكالة الفعلي، ليست كل وكالة صارمة بنفس القدر، وهذا بالضبط سبب أهمية قائمة التحقق أدناه أكثر من مجرد لقب "وكالة" نفسه.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT TO LOOK FOR -->
+<section id="checklist" class="section" style="background:#f0f3ff;" aria-labelledby="checklist-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="checklist-heading">ما يجب البحث عنه في شركة تطوير وكلاء ذكاء اصطناعي</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">أربعة أمور تفصل وكالة تشحن وكلاء موثوقين عن أخرى تشحن عروضاً توضيحية مبهرة.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">work_history</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">محفظة وكلاء مشحونين، لا عروض توضيحية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">اسألوا ما يعمل فعلياً في الإنتاج اليوم، منذ متى، وما انكسر في الطريق. عرض توضيحي مبني ليُبهر في مكالمة مبيعات ووكيل نجا من ثلاثة أشهر من بيانات عملاء حقيقية أمران مختلفان تماماً.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">verified_user</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">انضباط ضوابط الحماية والاختبار</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">الوكالة الجادة تستطيع وصف بالتحديد كيف تختبر وكيلاً ضد حالات حدية قبل الإطلاق وما يمنعه من اتخاذ إجراء خارج حد محدد. "نستخدم أوامر جيدة" ليست إجابة على ذلك السؤال.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">monitoring</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">مراقبة ودعم بعد الإطلاق</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">المدخلات الحقيقية تُظهر حالات حدية لا تُظهرها بيانات الاختبار أبداً. الوكالة التي تستحق التوظيف تراقب ما يفعله الوكيل بعد الإطلاق، لا قبله فقط، ولديها خطة لما يحدث عندما يتغير نظام متصل وينكسر شيء.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">visibility</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">عملية شفافة وموثقة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يجب أن تفهموا ماذا يفعل وكيلكم ولماذا، لا مجرد الثقة بأنه يعمل. وكالة لا تستطيع أو لا تريد توثيق منطق الوكيل بطريقة يستطيع فريقكم قراءتها تبني لكم صندوقاً أسود، أياً كانت المنصة.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI AGENT ARCHITECT -->
+<section class="section" aria-labelledby="architect-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="architect-heading" style="margin-bottom:1.5rem;">ما هو مهندس وكلاء الذكاء الاصطناعي؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        مهندس وكلاء الذكاء الاصطناعي هو الشخص، أو الوظيفة، المسؤولة عن قرارات تصميم النظام خلف وكيل: أي منصة أو إطار عمل يناسب سير العمل، هل تحتاج المشكلة وكيلاً واحداً أم عدة وكلاء منسّقين، أين تقع خطوة التفكير في خط الأنابيب، أي أدوات وصلاحيات يحصل عليها الوكيل، وكيف تُقيَّم قراراته عبر الزمن. إنها مهارة متمايزة عن كتابة الأوامر أو ربط التكاملات؛ إنها الطبقة فوق كليهما، تقرر ما يجب بناؤه قبل أن يبنيه أحد.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        لا تحتاجون توظيف ذلك المسمى للحصول على تلك المهارة. المهم هو أن أياً كان من يحدد نطاق مشروعكم، توظيف داخلي، مستقل، أو وكالة، يقوم فعلياً بذلك التفكير المعماري بدلاً من القفز مباشرة لمنصة وأمر. عند تقييم وكالة، اسألوهم مباشرة كيف سيتعاملون مع سير عملكم المحدد قبل أن يبيعوكم أي شيء. فريق بتفكير حقيقي بمستوى مهندس سيسألكم أسئلة توضيحية حول القرار نفسه، لا فقط أي أدوات تستخدمونها أصلاً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- LENOO'S APPROACH -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="approach-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="approach-heading" style="margin-bottom:1.5rem;">كيف تقارن Lenoo AI مقابل هذا</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        مقابل سؤال المحفظة: صفحة أنواع الوكلاء وصفحات الصناعات لدينا تُظهر فئات الوكلاء التي نبنيها عبر المبيعات، الدعم، العمليات، الامتثال، والجدولة، كل منها بمثال حقيقي، لا افتراضي. سنشرح لكم بناءً محدداً أثناء الاكتشاف، بما في ذلك ما لم ينجح في المحاولة الأولى، لأن كل مشروع حقيقي لديه واحد من ذلك.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        مقابل ضوابط الحماية والاختبار: كل وكيل نبنيه يحصل على قائمة إجراءات مسموحة محددة، لا تعليمات عامة باستخدام الحكم الجيد، ونقطة موافقة لأي شيء لا رجعة فيه، دفعة، رسالة موجهة للعميل، حذف سجل. نختبر ضد بيانات حقيقية مسحوبة من عملكم قبل أن يلمس أي شيء الإنتاج، لا بيانات عينة تبدو نظيفة بالصدفة.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        مقابل الدعم بعد الإطلاق: كل مشروع يشمل ٩٠ يوماً من المراقبة، بتسجيل يتتبع ما قرأه الوكيل، ماذا قرر، وماذا فعل، فيمكن تتبع نتيجة تبدو خاطئة للمدخل الدقيق الذي أنتجها. سنخبركم بصدق عندما لا يحتاج مشروع لنا على المدى الطويل، وعندما يحتاج، فهذه محادثة عقد شهري، لا افتراض مدمج في السعر منذ اليوم الأول.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ONE MORE QUESTION WORTH ASKING -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="honest-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="honest-heading" style="margin-bottom:1.5rem;">السؤال الوحيد الذي تأمل معظم الوكالات ألا تسألوه</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        "أخبروني عن مشروع لم يسر كما توقعتم، وماذا فعلتم حياله." كل وكالة بخبرة حقيقية لديها واحد. الوكالة التي تدّعي سجلاً مثالياً إما جديدة بما يكفي لم تصطدم بمشكلة صعبة بعد، أو لا تكون صادقة معكم تماماً، ولا أحد الأمرين علامة جيدة قبل الدخول في مشروع يتضمن أحكاماً حقيقية. سنخبركم بحالتنا مباشرة في المكالمة: ماذا اعوجّ، ماذا تعلمنا، وماذا تغيّر في طريقة بنائنا بسبب ذلك. تلك الإجابة تخبركم عن كيفية عمل فريق فعلياً تحت الضغط أكثر مما ستفعله أي دراسة حالة مصقولة على موقع، بما في ذلك موقعنا.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">تقارنون بين وكالات؟ اسألونا نفس الأسئلة في مكالمة مجانية، وسنجيب عليها مباشرة.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_agents_agencies_mid" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون للتحدث مع فريق تطوير وكلاء حقيقي؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">اطرحوا علينا أصعب سؤال لديكم حول كيفية عملنا. سنجيب عليه مباشرة في مكالمة اكتشاف مجانية، دون نص مبيعات.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_agents_agencies_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>

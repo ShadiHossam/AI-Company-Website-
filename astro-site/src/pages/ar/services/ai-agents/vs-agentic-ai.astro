@@ -1,0 +1,223 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "هل 'الذكاء الاصطناعي الوكيلي' مجرد كلمة رنانة؟", answer: "جزئياً، نعم. مثل كثير من مصطلحات الذكاء الاصطناعي، مُدِّد تسويقياً ليغطي كل شيء من نظام متعدد وكلاء مستقل فعلياً إلى بوت محادثة بأمر توجيهي أطول قليلاً. هذا لا يعني أن الفكرة الأساسية، أنظمة تخطط وتتصرف بدلاً من الاستجابة فقط، ليست حقيقية. يعني أن التسمية وحدها لا تخبركم بالكثير؛ ما يهم هو ما يفعله النظام فعلياً." },
+  { question: "هل أحتاج 'ذكاء اصطناعي وكيلي'، أم يكفي وكيل واحد أبسط؟", answer: "معظم الأعمال تحتاج وكيلاً واحداً محدد النطاق جيداً، لا نظام ذكاء اصطناعي وكيلي كامل بالمعنى الطموح الذي يعنيه المصطلح أحياناً. ابدؤوا من القرار الذي تريدون أتمتته، لا من التسمية. إذا احتاج ذلك القرار فعلياً عدة وكلاء منسّقين، ستنتهون بشيء يمكن تسميته بإنصاف ذكاءً اصطناعياً وكيلياً؛ إذا لم يحتج، وكيل واحد يوصلكم للنتيجة بتعقيد أقل للبناء والصيانة." },
+  { question: "كيف تقررون أي منهما يحتاجه مشروع فعلياً؟", answer: "نحدد النطاق من المهمة للخلف، لا من المصطلحات للأمام. أثناء الاكتشاف، نسأل أي قرار يجب اتخاذه، على أي معلومات يعتمد، وما إذا كان ينقسم طبيعياً لمهام فرعية متمايزة تستفيد من وكلاء منفصلين ومنسّقين. إذا انقسم، نصمم نظاماً متعدد الوكلاء. إذا لم ينقسم، نبني وكيلاً واحداً مركزاً، لأن التنسيق المُضاف تعقيد مُضاف يُثمر فقط عندما تحتاجه المهمة فعلياً." },
+  { question: "هل بوت المحادثة وكيل ذكاء اصطناعي؟", answer: "عموماً لا، رغم أن الخط تشوّش مع اكتساب بوتات المحادثة وصول أدوات. بوت محادثة تقليدي يجيب عن الأسئلة واحدة تلو الأخرى وينتظر أن يُسأل مرة أخرى. الوكيل يُمنح مهمة ويكتشف الخطوات بنفسه: ماذا يبحث عنه، أي أداة يستدعي، بأي ترتيب. بعض بوتات المحادثة الحديثة اكتسبت قدرات شبيهة بالوكيل، وهذا بالضبط نوع التشوش الذي يجعل 'الذكاء الاصطناعي الوكيلي' مصطلحاً ودوداً تسويقياً لكن غير دقيق." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_agents_vs_agentic_ai')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'وكلاء الذكاء الاصطناعي مقابل الذكاء الاصطناعي الوكيلي',
+    url: 'https://lenooai.com/ar/services/ai-agents/vs-agentic-ai',
+    description: 'وكلاء الذكاء الاصطناعي مقابل الذكاء الاصطناعي الوكيلي، مشروحة بصدق: ماذا يعني كل مصطلح فعلياً، أين يتقاطعان، وكيف تعرفون أيهما يحتاجه مشروعكم.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'وكلاء الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'مقابل الذكاء الاصطناعي الوكيلي', item: 'https://lenooai.com/ar/services/ai-agents/vs-agentic-ai' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="وكلاء الذكاء الاصطناعي مقابل الذكاء الاصطناعي الوكيلي: ما الفرق | Lenoo AI"
+  description="وكلاء الذكاء الاصطناعي مقابل الذكاء الاصطناعي الوكيلي، مشروحة بصدق: ماذا يعني كل مصطلح فعلياً، أين يتقاطعان، وكيف تعرفون أيهما يحتاجه مشروعكم."
+  canonicalPath="/ar/services/ai-agents/vs-agentic-ai"
+  enPath="/services/ai-agents/vs-agentic-ai"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">وكلاء الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>مقابل الذكاء الاصطناعي الوكيلي</div>
+    <h1>وكلاء الذكاء الاصطناعي مقابل الذكاء الاصطناعي الوكيلي: <span class="gradient-text">ما الفرق</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      مصطلحان، تقاطع كبير، ووفرة من التسويق الذي يشوّش الخط بينهما. إليكم ماذا يعني كل منهما فعلياً، ولماذا التمييز يهم أقل من اختيار الشيء الصحيح لبنائه.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_ai_agents_vs-agentic-ai_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#definitions" class="btn-outline">شاهدوا التفصيل ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- DEFINITIONAL CLARITY -->
+<section id="definitions" class="section" aria-labelledby="definitions-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="definitions-heading" style="margin-bottom:1.5rem;">ماذا يعني كل مصطلح فعلياً</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        <strong>"وكيل ذكاء اصطناعي"</strong> عادة اسم: نظام محدد ومنشور مبني للتعامل مع مهمة. يقرأ مدخلاً، يفكر فيما يجب فعله، ويتخذ إجراءً، سواء كان التحقق من سجل، صياغة رسالة، أو تحديث قاعدة بيانات. عندما يقول أحدهم "بنينا وكيل ذكاء اصطناعي لتأهيل العملاء المحتملين"، يعني نظاماً واحداً عاملاً يؤدي عملاً واحداً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        <strong>"الذكاء الاصطناعي الوكيلي"</strong> عادة وصف أوسع لنهج أو خاصية: أنظمة ذكاء اصطناعي تخطط، تقرر، وتتصرف بدرجة من الاستقلالية، بعكس الأنظمة التي تستجيب فقط لأمر واحد. إنه أقل فئة منتج محددة وأكثر طريقة لوصف فئة سلوك، أقرب لكيفية وصف "الحوسبة السحابية" لنهج مما تسمّي به "Salesforce" منتجاً محدداً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        عملياً، تتقاطع هذه بشدة، وبصدق، بشكل غير متسق. وكيل ذكاء اصطناعي واحد مبني جيداً هو ذكاء اصطناعي وكيلي، تقنياً. نظام يُسوَّق كـ"ذكاء اصطناعي وكيلي" عادة وكيل ذكاء اصطناعي واحد أو أكثر يعملون معاً. لن نتظاهر بوجود خط نظيف ومتفق عليه عالمياً هنا، لأنه لا يوجد واحد في كيفية استخدام الصناعة لهذه المصطلحات فعلياً يومياً. ما نستطيع إخباركم به هو ماذا يفعل نظام محدد، وهذا يهم أكثر بكثير من أي تسمية يُسوَّق تحتها.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- VS CHATBOT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="chatbot-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="chatbot-heading" style="margin-bottom:1.5rem;">كيف يختلف كلاهما عن بوت محادثة</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        بوت المحادثة يجيب عن الأسئلة واحدة تلو الأخرى وينتظر أن يُسأل مرة أخرى. أعطوه مهمة مثل "ابحث عن أفضل ٢٠ عميل محتمل وصغ تواصلاً"، وسيعطيكم بوت المحادثة تعليمات لفعل ذلك بأنفسكم. الوكيل، سواء سميتموه وكيل ذكاء اصطناعي أو جزءاً من نظام ذكاء اصطناعي وكيلي، يؤدي المهمة: يجد العملاء المحتملين، يصيغ التواصل، ويسلّمكم النتيجة. الخط تشوّش مع اكتساب بوتات المحادثة وصول أدوات واستقلالية محدودة، وهذا جزء من سبب فوضى المصطلحات، لكن الاختبار العملي لا يزال صامداً: هل يخبركم النظام بما يجب فعله، أم يفعله؟
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- VS PLAIN AUTOMATION -->
+<section class="section" aria-labelledby="automation-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="automation-heading" style="margin-bottom:1.5rem;">كيف يختلف كلاهما عن الأتمتة البسيطة</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        الأتمتة البسيطة تتبع قاعدة ثابتة: إذا حدث س، افعل ص، في كل مرة، دون حكم متضمن. الوكيل، وكيلياً كان أو غير ذلك، يفكر في الموقف المحدد أمامه ويقرر ما يجب أن يحدث، مما يعني أنه يستطيع التعامل مع تباين وغموض لا تستطيعه قاعدة ثابتة. الأتمتة أسرع للبناء وأرخص للتشغيل للمهام المتوقعة والمتكررة. الوكيل يستحق تكلفته عندما تعتمد الخطوة التالية الصحيحة فعلياً على حكم، لا قاعدة كان بإمكانكم كتابتها مسبقاً. راجعوا <a href="/ar/services/ai-automation">صفحة أتمتة الذكاء الاصطناعي لدينا</a> لجانب القاعدة الثابتة من هذه المقارنة.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- UMBRELLA TERM -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="umbrella-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="umbrella-heading" style="margin-bottom:1.5rem;">"الذكاء الاصطناعي الوكيلي" كمظلة للأنظمة متعددة الوكلاء</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        في كثير من الكتابات التسويقية والتحليلية، يُستخدم "الذكاء الاصطناعي الوكيلي" تحديداً لوصف أنظمة متعددة الوكلاء: عدة وكلاء متخصصين، كل بدور محدد، ينسّقهم منسّق يوجّه العمل ويجمع النتائج. هذا الاستخدام أدق من أوسع تطبيقات المصطلح، لكنه لا يزال يصف نمط بنية، لا منتجاً ثابتاً تشترونه من رف. راجعوا <a href="/ar/services/ai-agents/use-cases">صفحة أمثلة الوكلاء لدينا</a> لكيف يبدو "فريق" متعدد الوكلاء فعلياً عملياً، بأمثلة ملموسة بدلاً من الوصف المجرد.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- WHY THIS MATTERS FOR SCOPING -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="scoping-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="scoping-heading" style="margin-bottom:1.5rem;">لماذا التمييز يهم للمزودين أكثر مما يهمكم</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        للمزودين أسباب لتفضيل مصطلح على آخر: "الذكاء الاصطناعي الوكيلي" يبدو أكثر تقدماً، أكثر حداثة، ويبرر نقطة سعر أعلى في عرض تقديمي من "سنبني لكم وكيلاً". هذا حافز تسويقي، لا تمييز تقني يجب أن يقود قراركم. عندما تُقيِّمون ما إذا كنتم ستستثمرون في هذا النوع من المشاريع، التسمية على العرض تخبركم بشيء لا يُذكَر تقريباً عما إذا كان سيعمل فعلياً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        ما يهم فعلياً واحد بغض النظر عن أي مصطلح يُستخدم: أي قرار يحتاج النظام اتخاذه، ماذا يحدث عندما يكون غير متأكد، أي ضوابط حماية تمنعه من التصرف خارج نطاقه، وكيف تعرفون أنه يعمل بمجرد إطلاقه. اسألوا أي وكالة تعرض عليكم "حلاً وكيلياً بالذكاء الاصطناعي" تلك الأسئلة المحددة. إذا استطاعت الإجابة بشكل ملموس، التسمية لا تهم. إذا لم تستطع، كانت التسمية تقوم بعمل لم يكن المضمون يقوم به.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- WHERE THE TERMS COME FROM -->
+<section class="section" aria-labelledby="origin-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="origin-heading" style="margin-bottom:1.5rem;">لماذا تحوّلت المصطلحات في الأساس</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        منتجات الذكاء الاصطناعي المبكرة كانت معظمها أحادية الدور: تسألون سؤالاً، يجيب النموذج، ينتهي التفاعل. مع تحسّن النماذج في استخدام الأدوات، تسلسل الخطوات، والتفكير عبر أدوار متعددة دون توجيه بشري مستمر، احتاجت الصناعة لغة لذلك التحول، و"وكيل" كانت الكلمة التي علقت أولاً. "وكيلي" تبعتها كصفة لوصف ذلك السلوك عموماً، ثم اعتُمد "الذكاء الاصطناعي الوكيلي" كتسمية فئة بمجرد أن ادّعى منتجات كافية ذلك السلوك ليصبح اختصار مفيداً في التسويق والتقارير التحليلية.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        ذلك التاريخ يفسّر لماذا المصطلح فضفاض بدلاً من مُعرَّف بدقة: نشأ من تحول واسع في القدرة على مستوى الصناعة، لا من هيئة معايير تتفق على مواصفة. توقعوا استمرار تحول المصطلحات مع تحول التقنية. ما لن يتغير هو أن السؤال الصحيح لطرحه عن أي نظام محدد هو ماذا يفعل فعلياً، لا أي فئة يضعه تسويقه فيها.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT TO ASK INSTEAD -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="ask-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="ask-heading" style="margin-bottom:1.5rem;">أسئلة تستحق طرحها بدلاً من المصطلحات</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        تخطوا "هل هذا ذكاء اصطناعي وكيلي" واسألوا بدلاً من ذلك: أي قرار محدد يتخذه، ماذا يحدث على المدخلات التي لم يُصمَّم لها، من يستطيع رؤية ماذا فعل ولماذا، وما الذي يمنعه من اتخاذ إجراء خارج نطاقه المقصود. تلك الأسئلة الأربعة تخبركم أكثر عما إذا كان نظام مفيداً فعلياً لعملكم من أي تسمية إطلاقاً، وأي فريق بنى وشحن وكلاء فعلياً، بما فيهم نحن، يجب أن يستطيع الإجابة على الأربعة بشكل ملموس في مكالمة أولى.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">غير متأكدين أي منهما يحتاجه مشروعكم فعلياً؟ أخبرونا بالمهمة، وسنحدد نطاقها بصدق، لا حسب أي مصطلح يبدو أكثر إبهاراً.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_agents_vs-agentic-ai_mid" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لتحديد نطاق ما تحتاجونه فعلياً؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">أخبرونا بالمهمة، لا التسمية. سنخبركم بصدق ما إذا كانت تحتاج وكيلاً واحداً، عدة وكلاء، أو شيئاً أبسط كلياً.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_agents_vs-agentic-ai_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>

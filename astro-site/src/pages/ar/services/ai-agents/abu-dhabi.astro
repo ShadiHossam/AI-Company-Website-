@@ -1,0 +1,292 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../../components/ProcessSteps.astro";
+import StatStrip from "../../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "هل يستطيع الوكيل التكامل فعلياً مع البوابات الحكومية؟", answer: "حيث تعرض البوابة شيئاً يمكننا العمل معه، مسار تسجيل دخول، رفع مستند، واجهة API، يستطيع الوكيل التصرف حوله. البوابات الحكومية وشبه الحكومية تختلف كثيراً في مدى قابليتها للأتمتة؛ بعضها يدعم وصول API صحيحاً، وبعضها يتطلب خطوة يدوية لا يستطيع أي وكيل تجاوزها كلياً. سنخبركم أثناء الاكتشاف بالضبط إلى أي مدى يستطيع الوكيل الوصول لبوابة محددة بدلاً من افتراض قابليتها للاتصال الكامل، لأن المبالغة في ذلك أسرع طريقة لفقدان ثقتكم." },
+  { question: "كيف يؤثر نظام حماية بيانات ADGM على بناء الوكيل؟", answer: "يشغّل ADGM نظامه القانوني الخاص من نظام القانون العام، بلوائح حماية بيانات خاصة به، منفصلة عن كل من PDPL الاتحادي ونظام DIFC. إذا كانت شركتكم مسجلة في ADGM وسيقرأ الوكيل أو يخزن أي شيء يُعتبر بيانات شخصية، فهذا يحدد أي القواعد تنطبق على البناء، ونحدد نطاق ذلك ضد قواعد ADGM المحددة، لا افتراض تعامل إماراتي عام مع البيانات." },
+  { question: "هل تعملون مع جهات القطاع العام وشبه الحكومية؟", answer: "نعم. المرافق شبه الحكومية والهيئات والشركات المتصلة بالحكومة تشكّل حصة حقيقية من عملنا في أبوظبي. جداول المشتريات والموافقة تميل لأن تستغرق أطول من مشروع قطاع خاص، ونحدد نطاق المشاركة بهذا الواقع مسبقاً بدلاً من الوعد بجدول قطاع خاص لا نستطيع الالتزام به." },
+  { question: "هل أنتم مقيمون في أبوظبي، أم تخدمونها عن بُعد من دبي؟", answer: "مقرنا في الخليج التجاري، دبي، ونخدم عملاء أبوظبي بشكل أساسي عن بُعد، مع زيارات حضورية متاحة لجلسات الاكتشاف، المحطات الرئيسية، أو جلسات عمل مع فريقكم عندما يكون ذلك مفيداً فعلياً. المسافة بين المدينتين قصيرة بما يكفي ليكون الحضور غير عائق لوجستي عندما يهم." },
+  { question: "كم تكلف مشروع وكيل نموذجي في أبوظبي؟", answer: "يعتمد على تعقيد القرار الذي يحتاج الوكيل اتخاذه وكم نظاماً يحتاج الاتصال به، مثل أي مكان آخر. مشاريع القطاع العام وشبه الحكومي أحياناً تحمل وقت تحديد نطاق إضافياً للموافقة ومراجعة الامتثال، والذي نأخذه في الحسبان في الجدول الزمني لا في السعر نفسه. كل مشروع يحصل على مكالمة اكتشاف مجانية قبل أي التزام." },
+  { question: "كم يضيف عادة إجراء المشتريات والموافقة لمشروع أبوظبي؟", answer: "يختلف حسب الجهة، لكن من الواقعي تخصيص ميزانية أسابيع إضافية بعد البناء نفسه للمراجعة الداخلية والموافقة في سياق حكومي أو شبه حكومي، مقارنة بعمل خاص على البر الرئيسي. نبني هذا التوقع في الجدول الزمني الذي نعطيكم إياه بدلاً من عرض رقم قطاع خاص وترككم تكتشفون الفجوة لاحقاً." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_agents_abu_dhabi')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+const processSteps = [
+  { icon: "target", step: "الخطوة ١", title: "تحديد المهمة", description: "نحدد نطاق ما يحتاج وكيلكم فعله بالضبط، أي أدوات وبوابات يحتاج الوصول إليها، وأين يبقى البشر في الحلقة." },
+  { icon: "extension", step: "الخطوة ٢", title: "البناء والربط", description: "نبني الوكيل، نربطه بأدواتكم، ندربه على سياقكم، ونحدد ضوابط الحماية المناسبة لبيئة قطاع عام أو منظمة." },
+  { icon: "science", step: "الخطوة ٣", title: "اختبار صارم", description: "نختبر بشدة بحالات حدية وسيناريوهات حقيقية مسحوبة من سير عملكم الفعلي قبل أن يلمس الوكيل الإنتاج إطلاقاً." },
+  { icon: "monitoring", step: "الخطوة ٤", title: "المراقبة والتحسين", description: "سجلات تدقيق كاملة، لوحات أداء، ودعم ٩٠ يوماً تضمن استمرار تحسن وكيلكم بعد الإطلاق." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'وكلاء الذكاء الاصطناعي في أبوظبي',
+    url: 'https://lenooai.com/ar/services/ai-agents/abu-dhabi',
+    description: 'تطوير وكلاء الذكاء الاصطناعي لحكومة أبوظبي والجهات شبه الحكومية والشركات المتصلة بـ ADGM، من فريقنا المقيم في دبي.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'Abu Dhabi, United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع وكلاء ذكاء اصطناعي لمنظمات أبوظبي: التسعير حسب تعقيد القرار والنطاق. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر.' },
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'وكلاء الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'أبوظبي', item: 'https://lenooai.com/ar/services/ai-agents/abu-dhabi' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="تطوير وكلاء الذكاء الاصطناعي في أبوظبي | Lenoo AI"
+  description="تطوير وكلاء الذكاء الاصطناعي لحكومة أبوظبي والجهات شبه الحكومية والشركات المتصلة بـ ADGM، من فريقنا المقيم في دبي."
+  canonicalPath="/ar/services/ai-agents/abu-dhabi"
+  enPath="/services/ai-agents/abu-dhabi"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">وكلاء الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>أبوظبي</div>
+    <h1>وكلاء ذكاء اصطناعي مبنيون لـ<span class="gradient-text">منظمات أبوظبي</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      نعمل مع جهات حكومة أبوظبي، المرافق شبه الحكومية، الشركات المسجلة في ADGM، والأعمال المتصلة بالقطاع العام لبناء وكلاء يحترمون واقع الامتثال والموافقات الذي تعمل ضمنه تلك المنظمات فعلياً، لا قالب قطاع خاص مُمدَّد ليناسب.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">نطاق محدد واقعياً مقابل جداول الموافقة والمشتريات</span>
+      <span class="tchip">ضمان استرداد إذا لم تكونوا راضين عما نقدمه</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_ai_agents_abu-dhabi_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#use-cases" class="btn-outline">شاهدوا ما نبنيه ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1580746738099-79dda9d4c98f?w=1400&q=80&auto=format&fit=crop" alt="أفق أبوظبي يمثل تطوير وكلاء ذكاء اصطناعي لمنظمات القطاع العام والمؤسسي" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "٢٤/٧", caption: "الوكلاء يعملون حول الساعة، دون فترات راحة أو أيام إجازة" },
+      { value: "نطاق صادق", caption: "مقابل جدول المشتريات والموافقة الفعلي لديكم، لا وعد عام" },
+      { value: "١٠٠٪", caption: "ضمان استرداد إذا لم تكونوا راضين عما نقدمه" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY THIS DIFFERS -->
+<section class="section" aria-labelledby="explain-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="explain-heading" style="margin-bottom:1.5rem;">بناء وكلاء لسياق حكومي أو شبه حكومي</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        وكيل مبني لشركة ناشئة سريعة الحركة في منطقة حرة ووكيل مبني لجهة حكومية أو مرفق شبه حكومي يحلّان نفس النوع الأساسي من المشكلة، لكن القيود المحيطة مختلفة فعلياً. سلاسل الموافقة أطول. التعامل مع البيانات يخضع لتدقيق أكبر، غالباً لسبب وجيه. والرغبة في أن يتخذ وكيل إجراءً لا رجعة فيه دون تأكيد شخص أولاً منخفضة بشكل صحيح. لا نعامل مشروع قطاع عام في أبوظبي كمشروع منطقة حرة في دبي مع تبديل اسم المدينة فقط.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        عملياً، هذا يعني أن جزءاً أكبر من مرحلة التصميم يذهب لتحديد بالضبط ما يُسمح للوكيل أن يقرره مقابل ما يستطيع فقط التوصية به لموافقة شخص، وجزءاً أكبر من البناء يذهب لتسجيل تدقيق يستطيع مراجع امتثال، لا مهندس فقط، قراءته وفهمه. للصورة الكاملة عن ماهية وكيل الذكاء الاصطناعي وكيف يختلف عن بوت محادثة أو أتمتة بسيطة، راجعوا <a href="/ar/services/ai-agents">صفحة وكلاء الذكاء الاصطناعي الرئيسية</a>. هذه الصفحة تركز على كيف يبدو ذلك تحديداً لجهة حكومية أو شبه حكومية في أبوظبي، أو منظمة متصلة بـ ADGM.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        مقرنا في دبي، في الخليج التجاري، ونخدم عملاء أبوظبي بشكل أساسي عن بُعد، مع زيارات حضورية متاحة لجلسة الاكتشاف، المحطات الرئيسية، أو جلسة عمل مع فريقكم عندما يكون ذلك مفيداً فعلياً. المسافة بين المدينتين قصيرة بما يكفي ليكون الحضور غير عائق حقيقي عندما يهم، لكن معظم التعاون اليومي يحدث عبر مكالمة فيديو، بنفس الطريقة التي يحدث بها لأي عميل آخر.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- AGENT USE CASES BY ABU DHABI SECTOR -->
+<section id="use-cases" class="section" style="background:#f0f3ff;" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">وكلاء ذكاء اصطناعي نبنيها لمنظمات أبوظبي</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">نفس فئات الوكلاء التي نبنيها لأي عميل، مُكيّفة مع ما يظهر فعلياً في مشهد أبوظبي المؤسسي والقطاع العام.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">description</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء مستندات متصلون بالبوابات الحكومية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يقرأ الطلبات أو التقديمات الواردة، يتحقق منها مقابل الوثائق المطلوبة، ويصيغ الناقص قبل أن تصل الحالة لمراجع بشري.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> وكيل استقبال جهة شبه حكومية يُعلِّم الآن التقديمات الناقصة تلقائياً، بدلاً من اكتشاف المراجع للفجوة بعد أيام.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">gavel</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء امتثال ADGM</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يراجع المستندات والمعاملات مقابل سياسة امتثال محددة، يُعلِّم أي شيء يبدو مخالفة مع القاعدة المحددة التي يتعارض معها، ويوجّهها للشخص الصحيح.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> وكيل امتثال لشركة مسجلة في ADGM يُظهر الآن استثناءات السياسة في نفس اليوم، بدلاً من مراجعة يدوية ربع سنوية.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">support_agent</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء استفسارات موجهة للجمهور</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يجيب عن أسئلة المواطنين أو العملاء الشائعة مقابل مصدر معتمَد، ويصعّد أي شيء خارج ذلك النطاق لشخص بدلاً من التخمين.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> وكيل استفسارات لجهة موجهة للجمهور يحل الآن معظم الأسئلة الروتينية قبل وصولها لطابور مركز اتصال.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء عمليات المرافق وشبه الحكومي</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يراقب طلبات الخدمة أو تقارير الأعطال، يقرر التوجيه والأولوية، ويبقي أصحاب المصلحة محدَّثين دون فرز يدوي لكل تذكرة.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> فريق عمليات متصل بمرفق قلّص وقت فرز التذاكر اليدوي بأتمتة التصنيف والتوجيه الأولي.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">health_and_safety</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء إداريون متصلون بالرعاية الصحية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يتولى جدولة المواعيد، أوراق الموافقة المسبقة للتأمين، ورسائل متابعة المرضى، بحد واضح حول ما يستطيع تقريره مقابل ما يُعلِّمه فقط.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> وكيل جدولة لعيادة يتولى الآن إعادة الجدولة والتذكيرات كاملة، محرراً موظفي الاستقبال للمرضى الحاضرين.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">calculate</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء استقبال للخدمات المهنية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">مكاتب المحاماة والاستشارات العاملة مع عملاء حكوميين وADGM تستخدم وكلاء لاستقبال قضايا جديدة، ملاحقة المستندات الناقصة، وتجهيز الملفات للمراجعة.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> وكيل استقبال لشركة استشارية في أبوظبي يجهز الآن ملفاً كاملاً قبل أن يفتحه شريك أصلاً.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ADGM CALLOUT -->
+<section class="section" aria-labelledby="adgm-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="adgm-heading" style="margin-bottom:1rem;">قواعد بيانات ADGM وماذا تعنيه لوكيل</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">يشغّل ADGM نظامه القانوني الخاص من نظام القانون العام، منفصل عن البر الرئيسي لأبوظبي ومنفصل عن DIFC في دبي. يشمل ذلك لوائح حماية بيانات خاصة به، منفصلة عن كل من قانون حماية البيانات الشخصية الاتحادي الإماراتي ونظام DIFC.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">إذا كانت منظمتكم مسجلة في ADGM وسيقرأ الوكيل أو يعالج أو يخزن أي شيء يُعتبر بيانات شخصية، فهذا يحدد أي القواعد تنطبق على البناء: ما يمكن تسجيله، أين يمكن تخزينه، وأي ضوابط وصول يحتاجها مسار تدقيق الوكيل. نحدد ذلك بوضوح عند الاكتشاف بدلاً من افتراض أن سياسة بيانات إماراتية عامة تغطيه.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">للجهات الحكومية وشبه الحكومية خارج ADGM تحديداً، الإطار ذو الصلة عادة هو PDPL الاتحادي بالإضافة لأي سياسة حوكمة بيانات داخلية تشغّلها جهتكم أصلاً. في الحالتين، نبني هيكل تسجيل وصلاحيات الوكيل مقابل القواعد الفعلية التي تنطبق عليكم، لا قالب مستعار من مشروع قطاع خاص في دبي.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1591474200742-8e512e6f98f8?w=800&q=80&auto=format&fit=crop" alt="منطقة أعمال في أبوظبي" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">من الاكتشاف إلى وكيل عامل</h2>
+    </div>
+    <div style="border-radius:20px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 20px 48px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1200&q=80&auto=format&fit=crop" alt="فريق يراجع منطق امتثال وكيل ذكاء اصطناعي قبل النشر" loading="lazy" width="1200" height="320" style="width:100%; height:clamp(180px, 26vw, 320px); object-fit:cover; display:block;" />
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:0 auto 2.5rem;">
+      مشروع أبوظبي النموذجي يتبع نفس العملية الأساسية كأي مشروع آخر، مع وقت إضافي مبني في الاكتشاف والتصميم لمراجعة الموافقة والامتثال. الاكتشاف يرسم القرار الذي يحتاج الوكيل اتخاذه ويحدد من يحتاج التوقيع داخلياً قبل بدء البناء. التصميم يحدد بالضبط ما يقرأه الوكيل، كيف يفكر، والحد الدقيق بين ما يستطيع تقريره باستقلالية وما يستطيع فقط التوصية به. البناء والاختبار يعملان مقابل بيانات حقيقية من منظمتكم، مع تسجيل تدقيق مبني منذ اليوم الأول لا مضافاً لاحقاً. نعطيكم جدولاً زمنياً واقعياً يأخذ عملية الموافقة الداخلية لديكم في الحسبان أثناء مكالمة الاكتشاف، بدلاً من عرض جدول قطاع خاص وترككم تكتشفون الفجوة لاحقاً.
+    </p>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- CROSS-LINKS -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="more-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="more-heading">المزيد من موارد وكلاء الذكاء الاصطناعي</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">apps</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء الذكاء الاصطناعي، نظرة شاملة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">ما هو وكيل الذكاء الاصطناعي، كيف يختلف عن بوت محادثة أو أتمتة بسيطة، والنطاق الكامل للوكلاء الذين نبنيهم عبر الإمارات.</p>
+        <a href="/ar/services/ai-agents" class="learn-link">اعرفوا المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">location_city</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء الذكاء الاصطناعي في دبي</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">تطوير وكلاء لشركات دبي في المناطق الحرة والبر الرئيسي، من مقرنا في الخليج التجاري.</p>
+        <a href="/ar/services/ai-agents/dubai" class="learn-link">اعرفوا المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">build</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">الأدوات التي نبني بها</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Gumloop وLindy وPipedream وn8n وSalesforce Agentforce: تعرفوا على ما تتفوق فيه كل منصة وأيها يناسب منظومتكم.</p>
+        <a href="/ar/services/ai-agents/tools" class="learn-link">اعرفوا المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">تعملون ضمن هيكل حكومي، شبه حكومي، أو ADGM؟ أخبرونا بالقيد، وسنحدد النطاق حوله بصدق.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_agents_abu-dhabi_mid" class="btn-primary">احجزوا مكالمة اكتشاف أبوظبي</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لتحديد نطاق أول وكيل لكم في أبوظبي؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجزوا مكالمة اكتشاف مجانية. سنرسم القرار الذي يستحق الأتمتة أولاً ونعطيكم جدولاً زمنياً يأخذ عملية الموافقة الفعلية لديكم في الحسبان.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_agents_abu-dhabi_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>

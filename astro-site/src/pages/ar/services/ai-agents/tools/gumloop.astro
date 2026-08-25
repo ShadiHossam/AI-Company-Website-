@@ -1,0 +1,256 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../../lib/supabase";
+import FaqAccordion from "../../../../../components/FaqAccordion.astro";
+
+const h1 = 'وكلاء ذكاء اصطناعي مبنيون على Gumloop';
+const metaTitle = 'وكلاء ذكاء اصطناعي مبنيون على Gumloop | Lenoo AI';
+const metaDescription = 'تبني Lenoo AI وكلاء ذكاء اصطناعي على Gumloop للشركات الإماراتية: أداة بناء وكلاء بصرية بلا كود يستطيع فريقكم رؤيتها وفهمها بعد أن نسلّمها.';
+const heroSubtext = "Gumloop أداة بناء وكلاء بصرية بلا كود: لوحة سحب وإفلات حيث كل خطوة من منطق الوكيل عقدة تستطيعون النظر إليها، لا صندوقاً أسود. نستخدمها عندما تكون الأولوية وكيلاً يستطيع فريقكم رؤيته وفهمه فعلياً، لا مجرد أن يعمل.";
+
+const useCases = [
+  { title: 'وكيل إعادة توظيف المحتوى', description: 'يأخذ قطعة طويلة الشكل، نص ندوة عبر الإنترنت، أو منشور مدونة، ويحوّلها لمجموعة صيغ أقصر، منشورات سوشيال ميديا، نسخة بريد إلكتروني، ملخص، مطابقاً قواعد النبرة والطول التي تعطونه إياها لكل قناة.' },
+  { title: 'وكيل فرز صندوق الوارد', description: 'يقرأ البريد الإلكتروني الوارد، يصنّفه حسب الفئة والإلحاح، يصيغ رداً للحالات الروتينية، ويُعلِّم أي شيء يحتاج رأي شخص، فيتوقف صندوق وارد مشترك عن كونه أول شيء يجب على أحدهم تفريغه كل صباح.' },
+  { title: 'وكيل بحث العملاء المحتملين', description: 'يأخذ اسم شركة أو جهة اتصال، يجمع معلومات عامة عن العمل، ويعيد ملخصاً منظماً يقرؤه مندوب مبيعات خلال أقل من دقيقة قبل مكالمة، بدلاً من عشر دقائق بحث يدوي.' },
+  { title: 'وكيل توليد التقارير', description: 'يسحب أرقاماً من مصادركم المتصلة حسب جدول، يكتب ملخصاً بلغة واضحة لما تغيّر، ويسلّم تقريراً منسّقاً للأشخاص الذين يحتاجونه، دون أن يجمّع أحد نفس جدول البيانات كل أسبوع.' },
+  { title: 'وكيل الإجابة على الأسئلة الشائعة والمستندات', description: 'يقرأ مجموعة مستندات أو سياسات داخلية، يجيب عن أسئلة فريقكم مقابل ذلك المصدر المحدد، ويستشهد بأي مستند جاءت منه الإجابة، فيتوقف الناس عن مراسلة زميل لشيء مكتوب أصلاً.' },
+];
+
+const faqFallback = [
+  { question: 'هل يحتاج فريقنا لمسه بعد الإطلاق؟', answer: "ليس بالضرورة، لكنهم يستطيعون. هذا بيت القصيد من البناء على Gumloop تحديداً: منطق الوكيل يجلس على لوحة بصرية، فيستطيع عضو فريق غير تقني فتحها، رؤية ما تفعله كل خطوة، وإجراء تعديل صغير، كتغيير قاعدة صياغة أو إضافة فئة، دون الاتصال بنا لكل تغيير بسيط." },
+  { question: 'هل Gumloop مجاني للبدء؟', answer: 'لدى Gumloop مستوى مجاني للأحمال الأصغر، بخطط مدفوعة مع نمو الاستخدام والتعقيد. نحدد نطاق البناء مقابل ما يحتاجه سير عملكم فعلياً ونخبركم مسبقاً أي مستوى يضعكم فيه، بدلاً من عرض رقم قبل معرفة ما يجب أن يفعله الوكيل.' },
+  { question: 'كيف يقارن هذا ببناء مخصص كامل؟', answer: "الوكيل المبني بكود مخصص يعطيكم تحكماً أكبر في السلوك الدقيق ودون اعتماد على منصة، لكنه يكلف أكثر ويستغرق وقتاً أطول للتغيير لاحقاً، لأن كل تعديل مهمة تطوير. وكيل Gumloop يتبادل قدراً صغيراً من تلك المرونة مقابل سرعة الإطلاق ومنطق يستطيع فريقكم قراءته دون مساعدة هندسية. معظم سير العمل الذي لا يحتاج كوداً مخصصاً أو استضافة ذاتية يُخدَم بشكل أفضل بـ Gumloop." },
+  { question: 'كيف تُدار بياناتنا؟', answer: "البيانات التي يعالجها الوكيل تتدفق عبر بنية Gumloop السحابية التحتية وأياً كانت الأدوات التي تربطونه بها. إذا كان لدى سير عملكم متطلب حقيقي لإقامة البيانات يستبعد منصة سحابية مُدارة، فتلك عادة الإشارة للبناء على n8n بدلاً من ذلك، وسنقول ذلك أثناء الاكتشاف بدلاً من فرض حاجة استضافة ذاتية على أداة لا تدعمها." },
+  { question: 'كيف تبدو الصيانة بعد الإطلاق؟', answer: 'نراقب الوكيل خلال الأسابيع الأولى بعد الإطلاق لرصد أي شيء يحتاج تعديلاً، ونقدّم عقد صيانة بعد ذلك للتحديثات، الخطوات الجديدة، والإصلاحات إذا تغيّر تطبيق متصل من طرفه. لأن المنطق مرئي على اللوحة، الصيانة تميل لأن تكون أخف من نظام مخصص كلياً.' },
+  { question: 'هل يستطيع Gumloop الاتصال بأدوات لا يدعمها أصلياً؟', answer: 'غالباً نعم، عبر عقد HTTP وAPI الخاصة به، التي تسمح لخطوة باستدعاء أي نقطة نهاية تعرض واحدة، حتى دون موصل جاهز. إذا احتاج سير عمل منطقاً مخصصاً أعمق مما يسمح به ذلك، سنعلّم على ذلك ونناقش ما إذا كان n8n أو Pipedream يناسب أفضل قبل الالتزام بمنصة لا تستطيع فعلياً أداء المهمة.' },
+];
+
+let faqItems = faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_agents_tools_gumloop')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: h1,
+    url: 'https://lenooai.com/ar/services/ai-agents/tools/gumloop',
+    description: metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع وكلاء Gumloop: التسعير حسب تعقيد سير العمل وعدد الخطوات. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر.' },
+    serviceType: 'Gumloop AI Agent Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'وكلاء الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'الأدوات', item: 'https://lenooai.com/ar/services/ai-agents/tools' },
+      { '@type': 'ListItem', position: 4, name: 'Gumloop', item: 'https://lenooai.com/ar/services/ai-agents/tools/gumloop' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonicalPath="/ar/services/ai-agents/tools/gumloop"
+  enPath="/services/ai-agents/tools/gumloop"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">وكلاء الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents/tools" style="color:inherit;text-decoration:none;opacity:0.65;">الأدوات</a><span style="opacity:0.4;padding:0 4px;"> / </span>Gumloop</div>
+    <div class="tool-logo-hero"><img src="https://cdn.simpleicons.org/gumloop/6E56CF" alt="شعار Gumloop" width="56" height="56" loading="eager" onerror="this.parentElement.style.display='none'" /></div>
+    <h1>{h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ar_ai_agents_tools_gumloop_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#use-cases" class="btn-outline">شاهدوا ما نبنيه ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- WHAT IS GUMLOOP -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">ما هو Gumloop؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Gumloop أداة بناء وكلاء بلا كود مبنية حول لوحة سحب وإفلات. بدلاً من كتابة كود أو قراءة إعدادات سير عمل، تنظرون لسلسلة عُقد متصلة: محفز، خطوة تقرأ بيانات، خطوة يفكر فيها الذكاء الاصطناعي حولها، خطوة تتخذ إجراءً. كل عقدة كتلة بصرية بسيطة، فيستطيع أي شخص في فريقكم تتبع بالضبط ما يفعله الوكيل في كل مرحلة دون حاجة لمطور يشرح له.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        هذا الوضوح هو القيمة الفعلية لـ"أداة بناء وكيل ذكاء اصطناعي" مثل Gumloop، أكثر من كونها بلا كود. كثير من المنصات تسمح بالبناء دون كتابة كود. أقلها تجعل الوكيل النهائي مفهوماً لشخص غير تقني بعد شهر، عندما يحتاج سير العمل تغييراً صغيراً ولا يريد أحد فتح تذكرة دعم لإجرائه. لوحة Gumloop مبنية لتلك القابلية المستمرة للفهم، لا البناء الأولي فقط.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW LENOO USES GUMLOOP -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="how-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="how-heading" style="margin-bottom:1.5rem;">كيف تستخدم Lenoo AI منصة Gumloop لبناءات الوكلاء الإماراتية</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        نحن شريك تنفيذ Gumloop: نصمم، نبني، ونسلّم وكلاء Gumloop لعملكم، لا نبيع المنصة نفسها. معظم مشاريعنا على Gumloop تأتي من فرق تريد وكيلاً يتعامل مع جزء محدد من عمل متكرر، لكن لا تملك مطوراً في الموظفين ليمتلك ذلك البناء وكل تغيير مستقبلي عليه.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        لأن اللوحة بصرية، نشرح للعملاء الوكيل النهائي عقدة بعقدة قبل الإطلاق، لا فقط النتيجة التي ينتجها. ذلك التسليم جزء من المُخرَج: يجب أن يستطيع فريقكم فتح سير العمل بعد رحيلنا وفهم ما يفعله، حتى لو لم يلمسوا المنطق الأساسي بأنفسهم أبداً. للتعديلات الصغيرة التي تظهر لاحقاً، تغييرات صياغة، فئة جديدة، شرط مُضاف، غالباً يستطيع أحد في فريقكم إجراءها مباشرة، وهي صورة صيانة مختلفة جوهرياً عن نظام نحن فقط نستطيع فتحه.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO THIS FITS -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">هل Gumloop مناسب لكم؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Gumloop يناسب الأعمال دون مطور داخلي التي لا تزال تريد رؤية حقيقية لما يفعله وكيلها، بالإضافة لقدرة تسليم تعديلات صغيرة لأحد في الفريق بدلاً من توجيه كل تغيير عبرنا. يناسب أيضاً الفرق التي تختبر ما إذا كان الوكيل يستحق التوسع أكثر قبل الالتزام بنظام مخصص أثقل: اللوحة البصرية تجعل من السهل رؤية المنطق يعمل، أو لا يعمل، قبل غرق ميزانية معتبرة فيه.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        يناسب أقل عندما يحتاج سير العمل خطوة كود مخصصة حقيقية، متطلب استضافة ذاتية لأسباب امتثال، أو تكاملاً محدداً جداً لا تغطيه أي عقدة بصرية بنظافة. تلك المواقف عادة تشير لـ n8n أو Pipedream بدلاً من ذلك، وسنقول ذلك في مكالمة الاكتشاف بدلاً من فرض بناء على منصة ليست الملاءمة الصحيحة للمنطق الذي تحتاجونه فعلياً. يستحق استبعاده مبكراً أيضاً إذا كان فريقكم يشغّل أصلاً Salesforce كنظام CRM الرسمي وسير العمل يعيش معظمه داخل سجلات العملاء، لأن Agentforce العامل أصلياً داخل تلك البيانات قد ينتهي أبسط من الوصول لـ Salesforce من منصة خارجية.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">كيف يبدو مشروع Gumloop نموذجي معنا</h2>
+      <ol class="journey-list" style="gap:1rem;">
+        <li><strong style="color:#00253b;">الاكتشاف.</strong> نرسم المهمة الدقيقة التي تريدون من الوكيل التعامل معها، أي بيانات يحتاج قراءتها، وأياً كانت أدواتكم الحالية التي يحتاج الاتصال بها.</li>
+        <li><strong style="color:#00253b;">التصميم.</strong> نضع تسلسل العُقد على لوحة Gumloop، نقرر أين تجلس خطوة التفكير وما يُسمح للوكيل فعله في كل مرحلة.</li>
+        <li><strong style="color:#00253b;">البناء والاختبار.</strong> نبني سير العمل، نربطه بأدواتكم الحية، ونختبره مقابل أمثلة حقيقية، نعدّل الأوامر ومنطق العُقد حتى يتعامل مع الحالات الحدية بشكل صحيح، لا الأمثلة النظيفة فقط.</li>
+        <li><strong style="color:#00253b;">الإطلاق والتسليم.</strong> نشرح لفريقكم اللوحة النهائية، نوثّق ما تفعله كل عقدة، ونراقب الأداء خلال الأسابيع الأولى فيُلتَقط أي شيء يحتاج ضبطاً مبكراً.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">Gumloop مقابل البدائل</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        <a href="/ar/services/ai-agents/tools/lindy">Lindy</a> يميل أكثر لمكتبة تكامل أصلي واسعة جداً، فإذا كانت منظومتكم معظمها أدوات SaaS سائدة تتصل بها أصلاً، Lindy أحياناً يصل لذلك بإعداد أقل. <a href="/ar/services/ai-agents/tools/pipedream">Pipedream</a> و<a href="/ar/services/ai-agents/tools/n8n-ai-agent">n8n</a> كلاهما يجعل كل خطوة كوداً حقيقياً، مما يضعهما متقدمَين على Gumloop لحظة أن يحتاج سير عمل منطقاً مخصصاً لا تستطيع عقدة بصرية التعبير عنه، لكن تلك المرونة تأتي بمزيد للبناء والصيانة. <a href="/ar/services/ai-agents/tools/salesforce-agentforce">Salesforce Agentforce</a> فئة مختلفة تماماً، لأنه منطقي فقط إذا كان Salesforce نظام CRM الرسمي لديكم أصلاً. نوصي بـ Gumloop عندما تكون الأولوية وكيلاً مرئياً وقابلاً للتعديل يستطيع فريقكم صيانته دون مطور، والمنطق الأساسي لا يتطلب كوداً مخصصاً أو استضافة ذاتية. حيث لا تنطبق تلك الشروط، سنوجهكم لأياً كان من هذه يناسب فعلياً بدلاً من ذلك.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- RELIABILITY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="reliability-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="reliability-heading" style="margin-bottom:1.5rem;">الحفاظ على موثوقية وكيل Gumloop بعد الإطلاق</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        اللوحة البصرية تجعل الوكيل أسهل فهماً، لكنها لا تجعله مراقِباً لنفسه. كل وكيل Gumloop نبنيه يحصل على تسجيل لما قرأه، ماذا قرر، وأي إجراء اتخذه، فنتيجة تبدو خاطئة يمكن تتبعها للخطوة الدقيقة التي أنتجتها. نراجع ذلك السجل في الأسابيع الأولى بعد الإطلاق تحديداً، لأن مدخلات العالم الحقيقي تُظهر حالات حدية لا تُظهرها بيانات الاختبار عادة. بعد تلك النافذة، عقد صيانة يغطي الضبط المستمر، خطوات جديدة مع تطور سير عملكم، وإصلاحات إذا غيّر تطبيق متصل شيئاً من طرفه يكسر عقدة يعتمد عليها الوكيل. نحتفظ أيضاً بسجل إصدارات لسير العمل نفسه، فإذا سبّب تعديل صغير أجراه فريقكم مباشرة على اللوحة نتيجة غير متوقعة، العودة للإصدار السابق العامل يستغرق دقائق لا إعادة بناء.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="use-cases" class="section" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">ما نبنيه بـ Gumloop</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">مشاريع وكلاء Gumloop شائعة للعملاء الإماراتيين، من سير عمل المحتوى إلى البحث الداخلي. كل بناء محدد النطاق لمهمتكم الفعلية، لا قالب عام.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {useCases.map((uc) => (
+        <div class="value-card">
+          <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">لديكم مهمة تريدون من وكيل التعامل معها؟ أخبرونا بما يجب أن يفعله، وسنبنيه على Gumloop.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_agents_tools_gumloop_mid" class="btn-primary">احجزوا استشارة Gumloop مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لبناء وكيلكم على Gumloop؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">أخبرونا أي مهمة تريدون التعامل معها. سنصمم ونبني الوكيل على Gumloop، ثم نشرح لفريقكم بالضبط كيف يعمل قبل إطلاقه.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_agents_tools_gumloop_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.tool-logo-hero { width:64px; height:64px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; }
+.value-card { display:flex; flex-direction:column; }
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.journey-list li { position:relative; padding-right:1.75rem; color:#42474e; font-size:1.0625rem; line-height:1.85; }
+.journey-list li::before { content:''; position:absolute; right:0; top:0.6em; width:9px; height:9px; border-radius:50%; background:#00e3fd; }
+</style>

@@ -1,0 +1,265 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "هل يبدو آلياً فعلياً؟", answer: "الجيل الحالي من نماذج الصوت أكثر طبيعية بكثير من أنظمة IVR التي يتخيلها معظم الناس عند سماع 'وكيل هاتف بالذكاء الاصطناعي'. ليس مطابقاً تماماً لشخص في كل مكالمة، ولن ندّعي ذلك. ما يفعله جيداً هو إدارة محادثة مباشرة ومنظمة (التحقق من التوفر، تأكيد طلب، الإجابة عن سؤال شائع) دون أن يشعر المتصل بأنه عالق في شجرة هاتفية." },
+  { question: "هل المكالمة مُسجَّلة، وهل ذلك متوافق؟", answer: "تُسجَّل المكالمات وتُفرَّغ نصياً لأغراض الجودة والتدريب افتراضياً، مثل معظم أنظمة الهاتف التجارية أصلاً. نبني تدفق الإفصاح والموافقة في افتتاح المكالمة، ونعدّل الاحتفاظ والتعامل حسب متطلبات امتثال عملكم، بدلاً من افتراض أن إعداداً افتراضياً واحداً يناسب كل عميل." },
+  { question: "هل يعمل مع نظام هاتفنا الحالي؟", answer: "في معظم الحالات، نعم. الوكلاء الصوتيون عادة يتصلون عبر خط SIP أو رقم تخصصونه تحديداً للوكيل، الذي يمكن أن يجلس جنباً إلى جنب مع خطوطكم الحالية بدلاً من استبدال نظام هاتفكم كلياً. نؤكد التوافق مع إعدادكم المحدد أثناء الاكتشاف." },
+  { question: "ما الذي يحدد تكلفة مشروع وكيل صوتي؟", answer: "بشكل أساسي حجم المكالمات، كم سيناريو متمايز يحتاج الوكيل التعامل معه (خط حجز أحادي الغرض يكلف أقل من خط استقبال متعدد المواضيع)، وكم تكاملاً يحتاجه مع تقويمكم أو نظام CRM أو نظام الطلبات. نحدد النطاق ونعرض سعراً بعد الاكتشاف بدلاً من نشر معدل ثابت لن يعكس ما تحتاجه حالة استخدامكم فعلياً." },
+  { question: "ماذا يحدث عندما يحتاج المتصل شيئاً لا يستطيع الوكيل التعامل معه؟", answer: "يحوّل لشخص، مع سياق. بدلاً من تدوير متصل مرتبك عبر خيارات قائمة، يدرك الوكيل متى يقع طلب خارج نطاقه المحدد ويحوّله لفريقكم، مثالياً مع ملخص لما قاله المتصل أصلاً فلا يضطر لتكرار نفسه." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_agents_voice_agents')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'وكلاء صوتيون بالذكاء الاصطناعي',
+    url: 'https://lenooai.com/ar/services/ai-agents/voice-agents',
+    description: 'وكلاء صوتيون بالذكاء الاصطناعي للشركات الإماراتية: وكلاء اتصال واردة وصادرة يجيبون، يحجزون، ويتابعون بالعربية والإنجليزية.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع وكلاء صوتيين بالذكاء الاصطناعي: التسعير حسب حجم المكالمات وتعقيد السيناريو. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر.' },
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'وكلاء الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'الوكلاء الصوتيون', item: 'https://lenooai.com/ar/services/ai-agents/voice-agents' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="وكلاء صوتيون بالذكاء الاصطناعي للشركات الإماراتية | Lenoo AI"
+  description="وكلاء صوتيون بالذكاء الاصطناعي للشركات الإماراتية: وكلاء اتصال واردة وصادرة يجيبون، يحجزون، ويتابعون بالعربية والإنجليزية."
+  canonicalPath="/ar/services/ai-agents/voice-agents"
+  enPath="/services/ai-agents/voice-agents"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">وكلاء الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>الوكلاء الصوتيون</div>
+    <h1>وكلاء صوتيون بالذكاء الاصطناعي <span class="gradient-text">يجيبون على الهاتف</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      وكيل صوتي يجيب على أو يجري مكالمات، يفهم ما يريده المتصل فعلياً، ويتخذ إجراءً: يحجز، يحوّل، يؤكد، أو يسجّل، دون أن يرد شخص على كل رنة.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_ai_agents_voice-agents_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#use-cases" class="btn-outline">شاهدوا ما نبنيه ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- WHAT IT DOES -->
+<section class="section" aria-labelledby="what-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-heading" style="margin-bottom:1.5rem;">ما يفعله وكيل صوتي فعلياً</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        الوكيل الصوتي يستمع لمتصل في الوقت الفعلي، يفهم القصد خلف ما يسأله، لا مجرد مطابقة كلمات مفتاحية كشجرة IVR قديمة، ويتخذ الخطوة التالية: التحقق من التوفر، سحب طلب، حجز موعد، أو تحويل المكالمة عندما يحتاج الطلب شخصاً. يشغّل نفس التفكير الذي يستخدمه وكيل عبر النص أو سير عمل، فقط عبر محادثة هاتفية بدلاً من webhook.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        الفرق عن بوت محادثة هو القناة والمخاطر: المحادثة الهاتفية ليس لها زر تراجع ولا وقفة كتابة للتفكير. هذا يعني أن الوكلاء الصوتيين يحتاجون نطاقاً أضيق وقواعد تصعيد أوضح من وكيل نصي، ونصممهم بتلك الطريقة، مهام ضيقة ومحددة جيداً تُدار بموثوقية، بدلاً من مساعد عام الغرض يحاول التعامل مع أي شيء قد يقوله متصل.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- INBOUND -->
+<section id="use-cases" class="section" style="background:#f0f3ff;" aria-labelledby="inbound-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="inbound-heading">وكلاء صوتيون واردون</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">يجيبون على الهاتف فلا يضطر فريقكم لالتقاط كل مكالمة.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">call</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">استبدال الاستقبال</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يجيب على المكالمات الواردة العامة، يوجّه للقسم الصحيح، ويجيب عن أسئلة شائعة حول ساعات العمل، الموقع، أو الخدمات دون أن يرد شخص أولاً.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">event</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">حجز المواعيد عبر الهاتف</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يتحقق من التوفر الفعلي مقابل تقويمكم، يحجز الموعد الذي يريده المتصل، ويرسل تأكيداً، دون أن يتعامل شخص مع التقويم في منتصف المكالمة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">local_shipping</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">حالة الطلب عبر الهاتف</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يبحث عن طلب برقم مرجعي ويجيب أين هو، مع تحويل حي لشخص لأي شيء يتجاوز فحص الحالة.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OUTBOUND -->
+<section class="section" aria-labelledby="outbound-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="outbound-heading">وكلاء صوتيون صادرون</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">يجرون مكالمات كانت ستبقى في قائمة مهام لا يصلها أحد.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">check_circle</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">مكالمات التأكيد</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يتصل لتأكيد موعد، معاينة، أو طلب مسبقاً، ويسجّل ما إذا أكد الشخص، أعاد الجدولة، أو لم يرد.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">redo</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">مكالمات المتابعة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يتحقق بعد معاينة، توصيل، أو زيارة خدمة، ويوجّه أي شيء يبدو كشكوى أو عميل محتمل قوي مباشرة لشخص.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">payments</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">تذكيرات الدفعات الفائتة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يجري مكالمة تذكير مهذبة قبل موعد استحقاق، يعرض رابط دفع أو تحويلاً للفوترة، ويسجّل النتيجة دون أن يعمل شخص عبر قائمة اتصال.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BILINGUAL -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="bilingual-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="bilingual-heading" style="margin-bottom:1.5rem;">التعامل مع المكالمات بالإنجليزية والعربية</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        حجم مكالمات الإمارات ينقسم بين الإنجليزية والعربية، أحياناً ضمن نفس المحادثة، ويحتاج وكيل صوتي التعامل مع ذلك الواقع بدلاً من إجبار كل متصل على لغة واحدة. نماذج الصوت الحالية تتعامل مع الفصحى الحديثة وأنماط اللهجة الخليجية الشائعة بشكل معقول لمهام منظمة كالحجز أو حالة الطلب، رغم أن الجودة تختلف أكثر مما تختلف بالإنجليزية، ونختبر مقابل أنماط كلام إقليمية حقيقية أثناء الاكتشاف بدلاً من افتراض عملها مباشرة من الصندوق.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        لأي نشر، نحدد نطاقاً واضحاً لما يتعامل معه الوكيل بثقة بكل لغة، ونوجّه أي شيء خارج ذلك بثقة لشخص بدلاً من دفع محادثة يُرجَّح أن يخطئ فيها الوكيل. الصدق حول أين يقع الحد يهم أكثر من ادعاء تسويقي بأنه يتعامل مع كل شيء بشكل مثالي.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- LIMITATIONS -->
+<section class="section" aria-labelledby="limits-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="limits-heading" style="margin-bottom:1.5rem;">أين يحتاج بشري تولي المكالمة فوراً</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        الوكيل الصوتي مبني لمحادثات منظمة وقابلة للتوقع، لا كل مكالمة تصل. حالات الطوارئ الحقيقية، المتصلون المكروبون، المفاوضات المعقدة، وأي شيء يتطلب حكم علاقة حقيقياً يجب أن يوجَّه لشخص فوراً، ونصمم منطق تصعيد الوكيل حول إدراك تلك الإشارات مبكراً بدلاً من محاولة دفع مكالمة صعبة عبر نص جامد. الهدف وكيل يتعامل مع الحجم بكفاءة ويتنحى بسرعة عندما تحتاج مكالمة بشرياً، لا واحد يتظاهر بأنه يستطيع التعامل مع كل شيء.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">كيف يبدو مشروع وكيل صوتي نموذجي</h2>
+      <ol class="journey-list" style="gap:1rem;">
+        <li><strong style="color:#00253b;">الاكتشاف.</strong> نستمع لعينة من مكالماتكم الحقيقية، أو نعمل من سجلات مكالماتكم، لفهم ما يُسأل فعلياً، بأي مزيج لغة، وكم مرة تحتاج مكالمة شيئاً لا يستطيع الوكيل التعامل معه فعلياً.</li>
+        <li><strong style="color:#00253b;">التصميم.</strong> نحدد نطاق الوكيل بدقة: أي أنواع مكالمات يديرها من البداية للنهاية، أيها يديرها جزئياً قبل التحويل، والصياغة والنبرة الدقيقة التي يستخدمها، مُختبَرة مقابل كيف يريد عملكم أن يبدو فعلياً على الهاتف.</li>
+        <li><strong style="color:#00253b;">البناء والاختبار.</strong> نبني الوكيل ونشغّله مقابل سيناريوهات مكالمات حقيقية، بما في ذلك المحرجة منها عمداً، ضوضاء خلفية، كلام بلكنة، متصل يغيّر رأيه في منتصف الجملة، قبل أن يجيب على مكالمة حية إطلاقاً.</li>
+        <li><strong style="color:#00253b;">الإطلاق والمراقبة.</strong> نربطه بنظام هاتفكم، نُطلق على مجموعة فرعية من المكالمات أولاً إذا فضّلتم طرحاً تدريجياً، ونراجع نصوص المكالمات عن كثب خلال الأسابيع الأولى لرصد أي شيء يحتاج ضبطاً.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- COST DRIVERS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="cost-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="cost-heading" style="margin-bottom:1.5rem;">ما الذي يحدد تكلفة وكيل صوتي</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        حجم المكالمات يهم، لكن ليس بقدر تعقيد السيناريو. خط حجز أحادي الغرض، تحقق من التوفر، أكد موعداً، بناء محصور بغض النظر عن كم مكالمة يتعامل معها يومياً. خط استقبال يحتاج التعرف على اثني عشر نوع طلب مختلف، التوجيه بناءً عليها، وإجراء محادثة طبيعية بلغتين يكلف أكثر، لأن كل سيناريو يحتاج اختباره الخاص مقابل أنماط مكالمات حقيقية قبل أن نثق به حياً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        عمق التكامل هو المحرك الفعلي الآخر: وكيل يحتاج فقط التحقق من تقويم أبسط من واحد يحتاج البحث في تاريخ الطلب، التحقق من حالة الدفع، وتحديث نظام CRM في منتصف المكالمة. نحدد نطاق التكلفة مقابل سيناريوهاتكم وتكاملاتكم المحددة أثناء الاكتشاف، لا معدل عام لكل دقيقة يتجاهل مدى تعقيد مكالماتكم فعلياً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        حجم المكالمات يؤثر على تكاليف البنية التحتية أكثر من تكاليف البناء: خط يتعامل مع حفنة مكالمات يومياً وآخر يتعامل مع المئات يعملان على نفس منطق الوكيل الأساسي، فقط بتخطيط سعة مختلف خلفهما. نأخذ الحجم المتوقع بعين الاعتبار في توصية البنية التحتية أثناء الاكتشاف فيصمد الإعداد تحت حمل مكالماتكم الفعلي، لا اختبار بحجم عرض توضيحي فقط.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">تفوّتون مكالمات خارج ساعات العمل؟ أخبرونا بالسيناريو، وسنُريكم ما سيتعامل معه وكيل صوتي فعلياً.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_agents_voice-agents_mid" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون للتوقف عن تفويت المكالمات؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">أخبرونا كيف تبدو مكالماتكم فعلياً. سنصمم وكيلاً صوتياً محدد النطاق لما يستطيع التعامل معه جيداً، ونُريكم بالضبط كيف يعمل قبل إطلاقه.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_agents_voice-agents_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.journey-list li { position:relative; padding-right:1.75rem; color:#42474e; font-size:1.0625rem; line-height:1.85; }
+.journey-list li::before { content:''; position:absolute; right:0; top:0.6em; width:9px; height:9px; border-radius:50%; background:#00e3fd; }
+</style>

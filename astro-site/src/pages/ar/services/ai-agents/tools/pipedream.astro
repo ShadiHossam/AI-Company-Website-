@@ -1,0 +1,256 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../../lib/supabase";
+import FaqAccordion from "../../../../../components/FaqAccordion.astro";
+
+const h1 = 'وكلاء ذكاء اصطناعي مبنيون على Pipedream';
+const metaTitle = 'وكلاء ذكاء اصطناعي مبنيون على Pipedream | Lenoo AI';
+const metaDescription = "تبني Lenoo AI وكلاء ذكاء اصطناعي على Pipedream للشركات الإماراتية: منصة سير عمل قائمة على الكود حيث كل خطوة يمكن أن تكون كوداً حقيقياً، مبنية للفرق التي تريد تحكماً كاملاً.";
+const heroSubtext = "Pipedream منصة سير عمل قائمة على الكود. كل خطوة في خط الأنابيب يمكن أن تكون كتلة كود حقيقية، لا مجرد عقدة مُعَدَّة، مما يجعلها المنصة التي نلجأ إليها عندما يكون منطق الوكيل محدداً جداً، أو مخصصاً جداً، لتعبّر عنه أداة بناء بصرية فقط.";
+
+const useCases = [
+  { title: 'وكيل تكامل API مخصص', description: "يتصل بنظام داخلي أو واجهة API طرف ثالث دون موصل جاهز، يصادق عليها مباشرة بالكود، ويترك الوكيل يقرأ منها ويكتب إليها كجزء من خط أنابيب اتخاذ قرار أكبر." },
+  { title: 'وكيل تحويل البيانات واتخاذ القرار', description: "يسحب بيانات من مصدر واحد أو أكثر، يعيد تشكيلها بالكود بالضبط بالطريقة التي يتوقعها نظامكم اللاحق، ثم يسلّمها لخطوة التفكير فيقرر الوكيل ماذا يجب أن يحدث بالنتيجة المُحوَّلة." },
+  { title: 'وكيل دعم مُطلَق بـ webhook', description: "يُطلَق لحظة وصول webhook من مكتب مساعدتكم أو منتجكم، يقرأ الحمولة، يقرر كيف يوجّه أو يرد، ويكتب النتيجة عائداً عبر نفس API، كل ذلك داخل خط أنابيب واحد دون تحويل يدوي." },
+  { title: 'وكيل بحث متعدد الخطوات', description: "يسلسل عدة خطوات كود معاً، يستعلم واجهة API، يحلّل النتيجة، يتحقق منها مقابل مصدر ثانٍ، ويجعل الوكيل يوليّف إجابة نهائية، لمهام بحث محددة جداً لا يستطيع استدعاء تفكير واحد التعامل معها جيداً." },
+  { title: 'وكيل أدوات داخلية', description: "يجلس بين نظامين أو ثلاثة داخليين لم يُصمَّموا أبداً للتحدث لبعضهم، يكتب الكود الذي يترجم شكل بيانات نظام لما يتوقعه الآخر، ويترك الوكيل يقرر ماذا يفعل بالنتيجة، سادّاً فجوة لم يكن أي موصل جاهز ليغطيها أبداً." },
+];
+
+const faqFallback = [
+  { question: "هل نحتاج مطوراً خاصاً بنا في الموظفين؟", answer: "لا. نكتب، نستضيف، ونصون خطوات الكود كجزء من البناء. وجود مطور داخلي يساعد إذا أردتم إجراء تغييرات بأنفسكم لاحقاً، لكنه ليس متطلباً لبناء وتشغيل وكيل Pipedream." },
+  { question: "من يملك الكود والاستضافة بعد المشروع؟", answer: "أنتم. سير عمل Pipedream مبني من كود حقيقي، فلا شيء من منطق الوكيل مقفل خلف صيغة ملكية نحن فقط نستطيع قراءتها. إذا أردتم يوماً إحضار العمل داخلياً أو الانتقال لمزود آخر، خطوات الكود شفافة وقابلة للنقل." },
+  { question: "ما الذي يحدد فعلياً تكلفة بناء Pipedream؟", answer: "بشكل أساسي كم كود مخصص يحتاجه سير العمل مقابل كم يستطيع استخدام إجراءات Pipedream المدمجة، بالإضافة لكم نظاماً خارجياً يحتاج الوكيل المصادقة عليه وكم اختباراً تحتاجه كل نقطة تكامل قبل الوثوق بها مقابل بيانات حية." },
+  { question: "كيف يعمل تصحيح الأخطاء إذا حدث خطأ؟", answer: "كل خطوة تسجّل مدخلها ومخرجها، فعندما ينتج سير عمل نتيجة غير متوقعة، نستطيع تتبع بالضبط أي خطوة استلمت ماذا وأعادت ماذا، بدلاً من التخمين أين في خط الأنابيب حدثت المشكلة. لخطوة تفكير الوكيل تحديداً، نسجّل أيضاً ما قرأه وماذا قرر." },
+  { question: "كيف يختلف هذا عن نظام مخصص بالكامل خارج Pipedream؟", answer: "لا يزال Pipedream يعطيكم بنية المحفز التحتية، بيئة التنفيذ، والإجراءات المدمجة للخدمات الشائعة، فلا نكتب محرك سير عمل من الصفر لكل مشروع. تحصلون على تحكم الكود الحقيقي دون أن تدفعوا أيضاً لإعادة بناء السباكة التي توفرها كل منصة أخرى أصلاً." },
+  { question: "هل يستطيع سير عمل Pipedream استدعاء نفس واجهات API التي كانت ستستدعيها خلفية مخصصة؟", answer: "نعم. خطوة كود تستطيع استدعاء أي واجهة API يستخدمها عملكم أصلاً، بنفس المصادقة والترويسات ومعالجة الأخطاء التي كنتم ستكتبونها في خدمة مستقلة. الفرق هو أن المحفز، الجدولة، وبيئة التنفيذ موجودة أصلاً، فنحن نكتب المنطق المهم بدلاً من البنية التحتية حوله." },
+];
+
+let faqItems = faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_agents_tools_pipedream')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: h1,
+    url: 'https://lenooai.com/ar/services/ai-agents/tools/pipedream',
+    description: metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع وكلاء Pipedream: التسعير حسب كم كود مخصص يحتاجه سير العمل. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر.' },
+    serviceType: 'Pipedream AI Agent Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'وكلاء الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'الأدوات', item: 'https://lenooai.com/ar/services/ai-agents/tools' },
+      { '@type': 'ListItem', position: 4, name: 'Pipedream', item: 'https://lenooai.com/ar/services/ai-agents/tools/pipedream' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonicalPath="/ar/services/ai-agents/tools/pipedream"
+  enPath="/services/ai-agents/tools/pipedream"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">وكلاء الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents/tools" style="color:inherit;text-decoration:none;opacity:0.65;">الأدوات</a><span style="opacity:0.4;padding:0 4px;"> / </span>Pipedream</div>
+    <div class="tool-logo-hero"><img src="https://cdn.simpleicons.org/pipedream/000000" alt="شعار Pipedream" width="56" height="56" loading="eager" onerror="this.parentElement.style.display='none'" /></div>
+    <h1>{h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ar_ai_agents_tools_pipedream_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#use-cases" class="btn-outline">شاهدوا ما نبنيه ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- WHAT IS PIPEDREAM -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">ما هو Pipedream؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Pipedream منصة سير عمل قائمة على الكود. حيث تقدم معظم أدوات بناء الوكلاء مجموعة عُقد جاهزة مسبقاً وحفنة مقتطفات كود مضافة للحالات الحدية، يعامل Pipedream الكود كافتراضي: كل خطوة في خط أنابيب يمكن أن تكون كتلة حقيقية من JavaScript أو Python، مع إجراءات جاهزة متاحة للخدمات الشائعة عندما لا تكون كتابة الخطوة من الصفر ضرورية.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        لبناءات وكلاء الذكاء الاصطناعي تحديداً، هذا يعني أن خطوة التفكير والمنطق المحيط بها يجلسان في نفس البيئة: قرار الوكيل يستطيع إطلاق خطوة كود تفعل بالضبط ما تحتاجونه، لا فقط ما يدعمه إجراء جاهز بالصدفة. إنها المنصة المبنية للفرق التي تريد تحكماً كاملاً في ما تفعله كل خطوة، بدلاً من العمل ضمن مجموعة ثابتة من كتل البناء.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW LENOO USES PIPEDREAM -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="how-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="how-heading" style="margin-bottom:1.5rem;">كيف تستخدم Lenoo AI منصة Pipedream لبناءات الوكلاء الإماراتية</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        نصمم، نكتب، ونصون سير عمل Pipedream لعملكم؛ نحن شريك تنفيذ، لا نبيع المنصة. كل مشروع Pipedream يبدأ بقرار لا تتطلبه معظم المنصات الأخرى: أي الخطوات تحتاج فعلياً كوداً مخصصاً، وأيها تستطيع استخدام إجراء جاهز ويوفر وقت بناء.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        الحصول على ذلك التقسيم بشكل صحيح يهم. كتابة كود مخصص لشيء يتعامل معه إجراء جاهز أصلاً تضيف فقط سطح صيانة دون فائدة حقيقية. استخدام إجراء جاهز حيث يحتاج المنطق فعلياً دقة لا يستطيع تقديمها ينتج سير عمل يتصرف بشكل صحيح معظم الوقت ويفشل بصمت في الحالات المهمة. نتخذ ذلك القرار خطوة بخطوة أثناء التصميم، لا كسياسة شاملة، ونوثّق أي أجزاء خط الأنابيب كود مخصص فيفهم مطور مستقبلي، لنا أو لكم، السبب.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO THIS FITS -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">هل Pipedream مناسب لكم؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Pipedream يناسب الأعمال بموارد مطورين داخليين أو متعاقدين تريد امتلاك الكود خلف وكيلها، أو التي منطق سير عملها محدد بما يكفي ألا تستطيع أداة بناء بصرية فقط التعبير عنه بنظافة. يناسب أيضاً الفرق التي تتوقع نمو تعقيد الوكيل عبر الزمن وتريد منصة لا تضع سقفاً لما تستطيع خطوة واحدة فعله.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        يناسب أقل عندما لا يريد أحد من جانبكم التفكير في الكود إطلاقاً، أو عندما ينطبق سير العمل بنظافة على مكتبة منصة وكلاء مخصصة موجودة أصلاً. في تلك الحالات، Gumloop أو Lindy عادة يصلان لنفس النتيجة أسرع وبصيانة أقل، وسنوصي بذلك المسار مباشرة بدلاً من اللجوء افتراضياً للخيار الأكثر مرونة لأنه الذي بدأنا به المحادثة بالصدفة. اختبار مفيد أثناء الاكتشاف هو ما إذا كنتم تستطيعون وصف منطق سير العمل كقائمة قصيرة من قواعد واضحة، أم أنه يستمر باحتياج استثناء، حالة خاصة، أو حساب لا يغطيه أي إجراء جاهز تماماً. كلما تراكمت استثناءات على سير عمل، كلما دفعت منصة قائمة على الكود ثمنها بنفسها عبر الزمن، لأن كل استثناء يصبح سطر كود عادياً بدلاً من حل بديل مضاف لأداة بناء بصرية لم تُصمَّم له أبداً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">كيف يبدو مشروع Pipedream نموذجي معنا</h2>
+      <ol class="journey-list" style="gap:1rem;">
+        <li><strong style="color:#00253b;">الاكتشاف.</strong> نرسم سير العمل من البداية للنهاية ونقرر أي الخطوات تحتاج فعلياً كوداً مخصصاً مقابل أيها تستطيع استخدام إجراء جاهز دون فقدان الدقة.</li>
+        <li><strong style="color:#00253b;">التصميم.</strong> نصمم خط الأنابيب خطوة بخطوة، نُعلِّم أين يجلس تفكير الوكيل وأي خطوات كود يعتمد عليها للقراءة أو التصرف على أنظمة خارجية.</li>
+        <li><strong style="color:#00253b;">البناء والاختبار.</strong> نكتب خطوات الكود، نربط الوكيل بها، ونختبر كل خطوة بمعزل قبل اختبار خط الأنابيب من البداية للنهاية مقابل بيانات حقيقية.</li>
+        <li><strong style="color:#00253b;">الإطلاق والمراقبة.</strong> ننشر، نسلّم كوداً موثقاً يستطيع مطوروكم قراءته وتوسيعه، ونراقب سجلات التنفيذ خلال الأسابيع الأولى لرصد أي شيء يحتاج تعديلاً.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">Pipedream مقابل البدائل</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        أقرب مقارنة هنا هي <a href="/ar/services/ai-agents/tools/n8n-ai-agent">n8n</a>، لأن كلتا المنصتين تجعلان كل خطوة كوداً حقيقياً وكلاهما مبني مع وضع المطورين في الاعتبار. الفرق هو نموذج الاستضافة وفلسفة اللوحة: n8n مبني حول لوحة عُقد بصرية أولاً، بالكود كمخرج طوارئ، ويُستضاف ذاتياً، وهذا يهم للبناءات المدفوعة بالامتثال. Pipedream قائم على الكود من الأساس ويعمل على بنيته التحتية المُدارة الخاصة دون خيار استضافة ذاتية. إذا كانت الاستضافة الذاتية متطلباً صلباً، يحسم ذلك الأمر لصالح n8n فوراً. إذا لم تكن كذلك، الاختيار غالباً يعود لما إذا كان فريقكم يفضّل التفكير في لوحة بصرية بكود عند الحاجة، أو في كود بإجراءات جاهزة حيث تفيد. <a href="/ar/services/ai-agents/tools/gumloop">Gumloop</a> و<a href="/ar/services/ai-agents/tools/lindy">Lindy</a> تقعان أبعد من كليهما، تتبادلان تحكماً على مستوى الكود مقابل مسار أسرع لوكيل عامل عندما لا يتطلبه المنطق. <a href="/ar/services/ai-agents/tools/salesforce-agentforce">Salesforce Agentforce</a> ليس فعلياً جزءاً من هذه المقارنة إطلاقاً، لأنه ينطبق فقط إذا كان Salesforce نظام CRM الرسمي لديكم أصلاً، وقيمته تأتي من العمل داخل بيانات تملكونها أصلاً لا من مدى قدرة المنصة على الكود.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- RELIABILITY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="reliability-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="reliability-heading" style="margin-bottom:1.5rem;">الحفاظ على موثوقية وكيل Pipedream بعد الإطلاق</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        الكود المخصص يحمل مسؤولية أكبر من عقدة جاهزة، ونعامله بذلك. كل خطوة كود نكتبها تحصل على معالجة أخطاء لأنماط الفشل التي نستطيع توقعها، وتسجيلاً مفصلاً بما يكفي لتشخيص التي لا نستطيع. لخطوة تفكير الوكيل، نسجّل ما قرأه وماذا قرر منفصلاً عن خطوات الكود المحيطة، فيمكن تتبع نتيجة غريبة لما إذا كانت المشكلة في حكم الوكيل أو في البيانات التي سلّمته إياها خطوة كود. لأن سير العمل كود حقيقي، سجل الإصدارات جزء من كيفية عملنا: التغييرات مُتتبَّعة، فإذا أدخل تحديث انحداراً، نستطيع العودة للإصدار السابق العامل بدلاً من التصحيح مباشرة مقابل حركة إنتاجية. إذا كان لفريقكم مطوروه الخاصون، نسلّم أيضاً الكود بحالة يستطيعون التقاطها فعلياً: مُعلَّقاً، منظماً، وموثقاً بما يكفي ألا تعتمد صيانته على استمرار انخراطنا.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="use-cases" class="section" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">ما نبنيه بـ Pipedream</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">مشاريع وكلاء Pipedream شائعة للعملاء الإماراتيين، من التكاملات المخصصة للبحث متعدد الخطوات. كل بناء محدد النطاق لمنطقكم الفعلي، لا قالب عام.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {useCases.map((uc) => (
+        <div class="value-card">
+          <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">لديكم منطق محدد جداً لأداة بناء بصرية؟ أخبرونا بما يحتاج فعله، وسنبنيه على Pipedream.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_agents_tools_pipedream_mid" class="btn-primary">احجزوا استشارة Pipedream مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لبناء وكيلكم على Pipedream؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">أخبرونا بما يحتاج سير العمل فعله. سنصمم ونبني الوكيل على Pipedream، ثم نُريكم بالضبط كيف تعمل كل خطوة قبل الإطلاق.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_agents_tools_pipedream_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.tool-logo-hero { width:64px; height:64px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; }
+.value-card { display:flex; flex-direction:column; }
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.journey-list li { position:relative; padding-right:1.75rem; color:#42474e; font-size:1.0625rem; line-height:1.85; }
+.journey-list li::before { content:''; position:absolute; right:0; top:0.6em; width:9px; height:9px; border-radius:50%; background:#00e3fd; }
+</style>

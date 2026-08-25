@@ -1,0 +1,293 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../../components/ProcessSteps.astro";
+import StatStrip from "../../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "هل تعملون حضورياً في دبي، أم عن بُعد فقط؟", answer: "كلاهما. مقرنا في الخليج التجاري، فيمكننا الالتقاء شخصياً لجلسة الاكتشاف، مراجعة سير عملكم حضورياً، والمتابعة في المحطات الرئيسية. بمجرد أن يعمل الوكيل، معظم الدعم يحدث عن بُعد لأنه أسرع للجميع، لكن الزيارة الحضورية متاحة دائماً إذا فضّلتم مناقشة شيء وجهاً لوجه." },
+  { question: "هل تعملون مع شركات المناطق الحرة؟", answer: "نعم. سواء كنتم مؤسسين في DMCC أو JAFZA أو DIFC أو على البر الرئيسي، يرتبط الوكيل بالأدوات التي تستخدمونها أصلاً، لا بنوع رخصتكم. بنينا وكلاء لفرق صغيرة في مناطق حرة وعمليات أكبر على البر الرئيسي على حد سواء." },
+  { question: "هل يستطيع الوكيل التعامل مع محادثات واتساب للأعمال؟", answer: "نعم. واتساب واحدة من أكثر القنوات شيوعاً التي يريد عميل دبي وكيلاً يقرأها ويرد من خلالها، خاصة في العقارات والضيافة والتجزئة، لأن الكثير من التواصل اليومي مع العملاء هنا يحدث عبر واتساب بدلاً من البريد الإلكتروني. نربطه بنفس طريقة ربط أي قناة أخرى: يقرأ الوكيل الرسائل الواردة، يقرر كيف يرد أو يتصرف، ويسجّل المحادثة في نظام CRM لديكم." },
+  { question: "كم يستغرق البدء بعد مكالمة الاكتشاف؟", answer: "عادة خلال أسبوع. مكالمة الاكتشاف تعطينا ما يكفي لتحديد نطاق أول وكيل وإعطائكم جدولاً زمنياً ثابتاً. من هناك، يعتمد وقت البناء على كم نقطة قرار واتصال أداة يحتاجها الوكيل، لكن معظم أول وكيل يُطلق خلال أسبوعين إلى أربعة أسابيع." },
+  { question: "أين يقع فريقكم فعلياً؟", answer: "الخليج التجاري، دبي. لسنا وكالة عن بُعد تضع عنوان دبي للمظهر فقط. إذا أردتم الجلوس معنا قبل الالتزام بأي شيء، يمكننا ترتيب ذلك." },
+  { question: "هل يحتاج وكيل يلمس بيانات شخصية معالجة خاصة إذا كنا مسجلين في DIFC؟", answer: "نعم. يشغّل DIFC نظام حماية بيانات خاصاً به من نظام القانون العام، منفصل عن قانون حماية البيانات الشخصية الاتحادي الذي ينطبق على البر الرئيسي. إذا كانت شركتكم مسجلة في DIFC وسيقرأ الوكيل أو يخزن أي شيء يُعتبر بيانات شخصية، فهذا يغيّر أي قواعد تعامل مع البيانات تحكم البناء، ونحدد نطاق المشروع مع أخذ ذلك بعين الاعتبار منذ البداية بدلاً من معاملة كل عميل في دبي بنفس الطريقة." },
+  { question: "ماذا لو لم يناسب سير عملنا أياً من الفئات في هذه الصفحة؟", answer: "معظمها لا يناسب بالضبط. الفئات أدناه نقاط بداية شائعة، لا قائمة ثابتة. أخبرونا بالمهمة التي تريدون التعامل معها أثناء مكالمة الاكتشاف وسنخبركم بصدق إن كان الوكيل الأداة الصحيحة لها." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_agents_dubai')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+const processSteps = [
+  { icon: "target", step: "الخطوة ١", title: "تحديد المهمة", description: "نحدد نطاق ما يحتاج وكيلكم فعله بالضبط، أي أدوات يحتاج الوصول إليها، وأين يبقى البشر في الحلقة، حضورياً في الخليج التجاري أو عبر مكالمة فيديو." },
+  { icon: "extension", step: "الخطوة ٢", title: "البناء والربط", description: "نبني الوكيل، نربطه بأدواتكم، ندربه على سياقكم، ونحدد ضوابط الحماية للتشغيل الآمن." },
+  { icon: "science", step: "الخطوة ٣", title: "اختبار صارم", description: "نختبر بشدة بحالات حدية، مدخلات خصومية، وسيناريوهات حقيقية مسحوبة من عملكم الفعلي قبل أن يلمس الوكيل الإنتاج إطلاقاً." },
+  { icon: "monitoring", step: "الخطوة ٤", title: "المراقبة والتحسين", description: "سجلات تدقيق كاملة، لوحات أداء، ودعم ٩٠ يوماً تضمن استمرار تحسن وكيلكم بعد الإطلاق." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'وكلاء الذكاء الاصطناعي في دبي',
+    url: 'https://lenooai.com/ar/services/ai-agents/dubai',
+    description: 'تطوير وكلاء الذكاء الاصطناعي لشركات دبي: وكلاء مستقلون يفكرون ويتصرفون، مبنيون ومدعومون من فريق مقيم في الخليج التجاري.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'Dubai, United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع وكلاء ذكاء اصطناعي لشركات دبي: التسعير حسب تعقيد القرار والنطاق. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر.' },
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'وكلاء الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'دبي', item: 'https://lenooai.com/ar/services/ai-agents/dubai' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="تطوير وكلاء الذكاء الاصطناعي في دبي | Lenoo AI"
+  description="تطوير وكلاء الذكاء الاصطناعي لشركات دبي: وكلاء مستقلون يفكرون ويتصرفون، مبنيون ومدعومون من فريق مقيم في الخليج التجاري."
+  canonicalPath="/ar/services/ai-agents/dubai"
+  enPath="/services/ai-agents/dubai"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">وكلاء الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>دبي</div>
+    <h1>وكلاء ذكاء اصطناعي مبنيون لـ<span class="gradient-text">شركات دبي</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      Lenoo AI مقرها الخليج التجاري، دبي. سواء كانت شركتكم على البر الرئيسي أو في منطقة حرة مثل DMCC أو JAFZA أو DIFC، نستطيع الجلوس مع فريقكم شخصياً لرسم أي القرارات في سير عملكم تستحق تسليمها لوكيل، ثم بناءه على الأدوات التي تشغّلونها أصلاً. دون مدير حساب خارجي ينقل الرسائل ذهاباً وإياباً.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">مكالمات اكتشاف حضورية متاحة في دبي</span>
+      <span class="tchip">ضمان استرداد إذا لم تكونوا راضين عما نقدمه</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_ai_agents_dubai_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#use-cases" class="btn-outline">شاهدوا ما نبنيه ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1400&q=80&auto=format&fit=crop" alt="أفق دبي يمثل تطوير وكلاء ذكاء اصطناعي للشركات المحلية" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "٢٤/٧", caption: "الوكلاء يعملون حول الساعة، دون فترات راحة أو أيام إجازة" },
+      { value: "٢-٤ أسابيع", caption: "الوقت النموذجي من مكالمة الاكتشاف لأول وكيل عامل" },
+      { value: "١٠٠٪", caption: "ضمان استرداد إذا لم تكونوا راضين عما نقدمه" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY LOCAL -->
+<section class="section" aria-labelledby="explain-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="explain-heading" style="margin-bottom:1.5rem;">لماذا تعملون مع وكالة وكلاء ذكاء اصطناعي مقيمة في دبي؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        كثير من الوكالات التي تبني وكلاء تبيع في دبي من مكان آخر. هذا يعمل جيداً حتى يخطئ وكيل في قراءة حالة الساعة الرابعة عصراً يوم أربعاء وأنتم تنتظرون رداً من منطقة زمنية مختلفة لإصلاحه. نحن في الخليج التجاري. إذا أردتم مناقشة مشكلة وجهاً لوجه، أو استضافتنا لجلسة عمل مع فريقكم، فالأمر لا يتطلب أكثر من قيادة قصيرة، لا رحلة طيران.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        كوننا محليين يعني أيضاً أننا نفهم كيف تسير الأعمال هنا فعلياً: أسبوع العمل من الأحد إلى الخميس، الفرق بين أوراق المناطق الحرة والبر الرئيسي، وحقيقة أن كثيراً من شركات دبي تعمل بفرق صغيرة، دون موظف عمليات مخصص لتحديد بالضبط ما يجب أن يقرره الوكيل وما لا يجب. للصورة الكاملة عن ماهية وكيل الذكاء الاصطناعي وكيف يختلف عن بوت محادثة أو أتمتة بسيطة، راجعوا <a href="/ar/services/ai-agents">صفحة وكلاء الذكاء الاصطناعي الرئيسية</a>. هذه الصفحة تركز على كيف يبدو ذلك لعمل يعمل في دبي تحديداً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        مزيج أعمال دبي واسع بشكل غير معتاد لمدينة بهذا الحجم: بيوت تجارية عائلية عملت لعقود تجاور شركات ناشئة في مناطق حرة عمرها سنتان، وكلاهما يجاور مكاتب فروع إقليمية لشركات متعددة الجنسيات أكبر. كل منها يجلب نقطة بداية مختلفة لبناء وكيل. عمل يديره مؤسسه غالباً لا يملك فريق عمليات إطلاقاً، فضوابط حماية الوكيل يجب أن تكون بسيطة بما يكفي لأن يراجعها المالك بنظرة سريعة. مكتب فرع عادة يعمل أصلاً على نظام CRM عالمي بقواعد مُحدَّدة في مكان آخر، فالعمل يكون تصميم وكيل يحترم تلك القيود بدلاً من العمل حولها. نحدد نطاق كل مشروع حول أي من هذه يصف عملكم، لا قالب عام.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- AGENT USE CASES BY DUBAI INDUSTRY -->
+<section id="use-cases" class="section" style="background:#f0f3ff;" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">وكلاء ذكاء اصطناعي نبنيها لشركات دبي</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">نفس فئات الوكلاء التي نبنيها لأي عميل، مُكيّفة مع ما يظهر فعلياً في شركات دبي يومياً.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">home_work</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء تأهيل عملاء عقاريين محتملين</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يقرأ استفساراً وارداً عبر واتساب أو منصة، يتحقق منه مقابل معايير المشتري، ويقرر ما إذا كان يجب حجز معاينة أو توجيهه لمتابعة بشرية.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> وسيط عقاري في دبي كان يفقد عملاء محتملين خلال عطلة نهاية الأسبوع، أصبح الآن كل استفسار وارد مؤهلاً خلال دقائق، أي يوم من الأسبوع.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">local_shipping</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء التجارة واللوجستيات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يتحقق من حالة الشحنة الواردة مقابل الجداول الزمنية المتوقعة، يقرر ما إذا كان تأخير يحتاج إشعار عميل، ويصيغ تلك الرسالة قبل أن يضطر أحد للسؤال.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> شركة تجارية اختصرت الوقت المُنفَق في ملاحقة تحديثات الشحن من يوم كامل أسبوعياً إلى أقل من ساعة.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">hotel</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء حجز الضيافة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يتولى محادثات من الاستفسار للتأكيد، يتحقق من التوفر، ويجيب عن أسئلة العقار، مُصعِّداً لبشري لحظة أن يحتاج طلب حكماً.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> مشغل تأجير قصير الأمد أتمت ٨٠٪ من رسائل النزلاء الروتينية، محرراً الموظفين للتعامل مع ما يحتاج فعلياً شخصاً.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">storefront</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء خدمة عملاء التجزئة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يجيب عن أسئلة حالة الطلب والمنتج عبر متجركم والأسواق الإلكترونية، ويقرر متى يحتاج إرجاع أو شكوى الوصول لشخص.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> بائع تجزئة في دبي يبيع على ثلاث منصات توقف عن الحاجة لشخص يجيب عن نفس سؤال حالة الطلب عشرات المرات يومياً.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">calculate</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء استقبال الخدمات المهنية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">مكاتب المحاماة والمحاسبة والاستشارات تستخدم وكلاء لاستقبال عملاء جدد، ملاحقة المستندات الناقصة، وتقرير متى يكون الملف جاهزاً للانتقال للمرحلة التالية.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> وكيل مكتب محاسبة يلاحق الآن المستندات الناقصة بنفسه، مقلصاً سلسلة رسائل البريد الإلكتروني المتبادلة كلياً تقريباً.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">business_center</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء إدارة أعمال المناطق الحرة والبر الرئيسي</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يتتبع مواعيد تجديد الرخصة، يقرر متى يستحق تذكير أو تصعيد، ويصيغ قائمة تحقق الامتثال لمن يحتاج التصرف عليها.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> شركة استشارية مسجلة في DMCC توقفت عن تتبع مواعيد التجديد في جدول بيانات؛ الوكيل الآن يُعلِّم عليها تلقائياً قبل أسابيع.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DIFC CALLOUT -->
+<section class="section" aria-labelledby="difc-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="difc-heading" style="margin-bottom:1rem;">DIFC، منطقة حرة، أو بر رئيسي: ما يتغير فعلياً للوكيل</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">منطق تفكير الوكيل لا يهتم بأي رخصة تحملونها. ما يتغير هو سياق الامتثال الذي نبنيه حوله، ويستحق معرفة الفرق قبل تحديد نطاق مشروع.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>شركات البر الرئيسي والمناطق الحرة</strong> غالباً تؤثر على أي حقول وفحوصات يحتاجها سير عمل الوكيل، مثلاً تعليم أي سجلات تتطلب إرفاق تفاصيل موزّع قبل خروج إجراء، لا كيف يتصل الوكيل بنظام CRM أو المحاسبة لديكم.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>الشركات المسجلة في DIFC</strong> تستحق ذكراً خاصاً: يشغّل DIFC نظامه القانوني الخاص من نظام القانون العام، بما يشمل قانون حماية بيانات خاصاً به، منفصل عن قانون حماية البيانات الشخصية الاتحادي الذي ينطبق على البر الرئيسي. إذا كانت شركتكم مسجلة في DIFC وسيقرأ الوكيل أو يخزن أي شيء يُعتبر بيانات شخصية، فهذا يغيّر أي قواعد تعامل مع البيانات تحكم البناء، ونحدد نطاق المشروع مع أخذ ذلك بعين الاعتبار منذ البداية.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1546412414-e1885259563a?w=800&q=80&auto=format&fit=crop" alt="أفق منطقة أعمال في دبي" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">من الاكتشاف إلى وكيل عامل</h2>
+    </div>
+    <div style="border-radius:20px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 20px 48px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1568992687947-868a62a9f521?w=1200&q=80&auto=format&fit=crop" alt="فريق يرسم سير عمل وكيل ذكاء اصطناعي على مكتب في دبي" loading="lazy" width="1200" height="320" style="width:100%; height:clamp(180px, 26vw, 320px); object-fit:cover; display:block;" />
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:0 auto 2.5rem;">
+      مشروع دبي النموذجي يسير تقريباً بهذا الجدول الزمني. الأسبوع الأول هو جلسة الاكتشاف في الخليج التجاري أو عبر مكالمة فيديو، حيث نرسم القرار الذي يحتاج الوكيل اتخاذه ونتفق على النطاق. الأسبوع الثاني هو التصميم: نحدد بالضبط ما يقرأه الوكيل، كيف يفكر، وما يُسمح له فعله، ونحصل على موافقتكم قبل أن يلمس عمل البناء أنظمتكم. الأسبوعان الثالث والرابع هما البناء والاختبار، يعملان مقابل بيانات حقيقية من عملكم لا بيانات عينة، فما يُطلَق يكون قد تعامل أصلاً مع الحالات الفوضوية التي يطرحها سير عملكم الفعلي. للوكلاء الأبسط ذوي القرار الواحد، يتقلص ذلك الجدول؛ للوكلاء المنسِّقين عبر عدة أنظمة، قد يستغرق أطول قليلاً، ونخبركم أيهما تقعون فيه قبل أن تلتزموا بأي شيء.
+    </p>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- CROSS-LINKS -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="more-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="more-heading">المزيد من موارد وكلاء الذكاء الاصطناعي</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">apps</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء الذكاء الاصطناعي، نظرة شاملة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">ما هو وكيل الذكاء الاصطناعي، كيف يختلف عن بوت محادثة أو أتمتة بسيطة، والنطاق الكامل للوكلاء الذين نبنيهم عبر الإمارات.</p>
+        <a href="/ar/services/ai-agents" class="learn-link">اعرفوا المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">location_city</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء الذكاء الاصطناعي في أبوظبي</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">تطوير وكلاء لحكومة أبوظبي والجهات شبه الحكومية والأعمال المتصلة بـ ADGM، من مقرنا في دبي.</p>
+        <a href="/ar/services/ai-agents/abu-dhabi" class="learn-link">اعرفوا المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">build</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">الأدوات التي نبني بها</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">Gumloop وLindy وPipedream وn8n وSalesforce Agentforce: تعرفوا على ما تتفوق فيه كل منصة وأيها يناسب منظومتكم.</p>
+        <a href="/ar/services/ai-agents/tools" class="learn-link">اعرفوا المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">مقرنا في الخليج التجاري ومستعدون لرسم أول وكيل لكم هذا الأسبوع.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_agents_dubai_mid" class="btn-primary">احجزوا مكالمة اكتشاف في دبي</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لنشر أول وكيل لكم في دبي؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجزوا مكالمة اكتشاف مجانية مع فريقنا في الخليج التجاري. سنحدد القرار الذي يستحق الأتمتة أولاً ونقدّر الوقت والتكلفة لإطلاقه.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_agents_dubai_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>

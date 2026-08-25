@@ -1,0 +1,341 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "هل يستطيع مبتدئ كامل بناء شيء فعلياً بالبرمجة الحدسية؟", answer: "نعم، لمشروع أول: موقع بسيط، أداة صغيرة، نموذج أولي للعبة. تتولى الأدوات الصياغة فتستطيعون التركيز على وصف ما تريدونه. ما يستغرق وقتاً أطول لتعلّمه هو الحكم: معرفة هل إجابة الذكاء الاصطناعي حلّت مشكلتكم فعلياً، أم فقط تبدو كذلك. ذلك يأتي مع الممارسة، لا مع أداة أفضل." },
+  { question: "هل البرمجة الحدسية آمنة للأطفال ليتعلموها؟", answer: "بإشراف ومشروع مناسب، نعم. طريقة جيدة لتقديم مفاهيم برمجية، السبب والنتيجة، تقسيم مشكلة لخطوات، دون إحباط مبكر من حفظ الصياغة. لا يزال يجب على والد أو معلّم المشاركة: مراجعة ما يُبنى، إبقاء المشاريع مناسبة للعمر، ومعاملة مخرجات الذكاء الاصطناعي كنقطة بداية للتساؤل، لا إجابة للثقة بها بشكل أعمى." },
+  { question: "كم يستغرق التعلّم؟", answer: "تستطيعون بناء مشروعكم الصغير الأول خلال بعد ظهر. الشعور بالراحة الكافية لبناء شيء أكثر طموحاً بأنفسكم، دون التعلق عندما تكون إجابة الذكاء الاصطناعي خاطئة، عادة يستغرق بضعة أسابيع من الممارسة المنتظمة. هذا أسرع بكثير من تعلّم كتابة الكود من الصفر، لكنه ليس فورياً." },
+  { question: "هل أحتاج تعلّم البرمجة في النهاية على أي حال؟", answer: "ليس بالضرورة، يعتمد على هدفكم. إذا أردتم الاستمرار ببناء مشاريع شخصية صغيرة، تستطيعون الوصول بعيداً دون تعلّم كتابة كود يدوياً أبداً. إذا أردتم بناء شيء ستعتمدون عليه على المدى الطويل، أو تفكرون بمهنة في البرمجيات، فهم ما يفعله الذكاء الاصطناعي فعلياً يصبح قيّماً عاجلاً لا آجلاً، لأنه ما يتيح لكم الحكم على مخرجاته بدلاً من الثقة بها فقط." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_vibe_coding_beginners')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+---
+
+<ArBaseLayout
+  title="البرمجة الحدسية ١٠١: دليل المبتدئين | Lenoo AI"
+  description="دليل مبتدئين بلغة بسيطة للبرمجة الحدسية: ما هي، لمن تناسب، كيف تبنون مشروعكم الأول، والأخطاء الشائعة التي يجب تجنبها."
+  canonicalPath="/ar/services/vibe-coding/beginners"
+  enPath="/services/vibe-coding/beginners"
+  ogImage="/assets/og-services.jpg"
+  ldJson={[faqLdJson]}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services" style="color:inherit;text-decoration:none;opacity:0.65;">الخدمات</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/vibe-coding" style="color:inherit;text-decoration:none;opacity:0.65;">البرمجة الحدسية</a><span style="opacity:0.4;padding:0 4px;"> / </span>المبتدئون</div>
+    <h1>البرمجة الحدسية <span class="gradient-text">للمبتدئين الكاملين.</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      لا تحتاجون معرفة البرمجة لبناء مشروعكم الأول بالذكاء الاصطناعي. إليكم ما هي البرمجة الحدسية فعلياً، لمن تناسب واقعياً، وكيف تبنون شيئاً في الساعة القادمة.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_vibe_beginners_hero" class="btn-primary">ناقشوا مشروعكم</button>
+      <a href="#getting-started" class="btn-outline">ابدؤوا البناء ↓</a>
+    </div>
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1400&q=80&auto=format&fit=crop" alt="مبتدئ يبرمج على حاسوب محمول في المنزل، يتبع اقتراحات مساعد ذكاء اصطناعي على الشاشة" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHAT IS IT, BEGINNER FRAMING -->
+<section class="section" aria-labelledby="explain-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="explain-heading" style="margin-bottom:1.5rem;">ماذا تعني البرمجة الحدسية فعلياً، ببساطة</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+          عادة، بناء موقع أو تطبيق يعني كتابة تعليمات بلغة برمجة، سطراً بسطر، ومعرفة بالضبط ماذا يفعل كل سطر. البرمجة الحدسية تقلب ذلك. تصفون ما تريدونه بلغة بسيطة، "اصنع صفحة تسرد كتبي المفضلة وتتيح لي تعليمها كمقروءة"، وتكتب أداة ذكاء اصطناعي الكود الفعلي لكم. تنظرون للنتيجة، تخبرونها ماذا تصلح أو تضيف، وتستمر بالتعديل حتى تطابق ما كان في ذهنكم.
+        </p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+          المصطلح يأتي من كيف يشعر العمل بهذه الطريقة: تقودون بـ"الإحساس" العام لما تريدونه، لا بقواعد صياغة محفوظة. هذا لا يعني أنها سحرية أو تستطيعون تخطي التفكير كلياً. لا تزالون تحتاجون معرفة ما تحاولون بناءه، التحقق هل النتيجة تعمل فعلياً، وملاحظة عندما يكون شيء خاطئاً. ما لم تعودوا تحتاجونه هو سنوات من الممارسة قبل أن تستطيعوا بناء أي شيء إطلاقاً.
+        </p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+          مقارنة مفيدة: تعلّم الطبخ باتباع وصفة كتبها شخص آخر مقابل تعلّم الطبخ بوصف طبق لطاهٍ وتذوق النتيجة حتى تصبح صحيحة. النهج الثاني يوصلكم لوجبة جيدة أسرع بكثير. لا يعلّمكم مهارات السكين. تعمل البرمجة الحدسية بنفس الطريقة للبرمجيات: توصلكم لنتيجة عاملة بسرعة، والفهم التقني الأعمق، إذا أردتموه، يأتي لاحقاً ومنفصلاً، لا كشرط مسبق.
+        </p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1753545975907-dcb51efdd0d5?w=800&q=80&auto=format&fit=crop" alt="شخص يتبع درساً برمجياً على حاسوب محمول في وقت متأخر من الليل" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHO IT'S FOR -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="who-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="who-heading">لمن تناسب واقعياً</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">تخفض البرمجة الحدسية حاجز الدخول. لا تزيل كل حاجز لكل جمهور بالتساوي.</p>
+    </div>
+    <div class="builds-grid">
+      <div class="card">
+        <h3>غير المبرمجين بفكرة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">إذا لم تكتبوا سطر كود أبداً، هذا أسرع مسار واقعي لرؤية فكرتكم تعمل كشيء حقيقي وقابل للنقر بدلاً من رسم على ورق. لا تزالون تتخذون كل قرار، الذكاء الاصطناعي فقط يتولى الكتابة.</p>
+      </div>
+      <div class="card">
+        <h3>الطلاب والأطفال</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">مقدمة جيدة للتفكير الحاسوبي، تقسيم هدف لخطوات، دون جدار أخطاء الصياغة المبكر الذي يُبعِد كثيراً من المبتدئين عن البرمجة كلياً. يبني الثقة قبل الأساسيات الأصعب.</p>
+      </div>
+      <div class="card">
+        <h3>متغيّرو المسار المهني</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">طريقة لبناء مشروع محفظة أعمال حقيقي قبل الالتزام بمعسكر تدريبي كامل أو شهادة، وطريقة لرؤية هل العمل اليومي لبناء البرمجيات يناسبكم فعلياً قبل استثمار أشهر فيه.</p>
+      </div>
+      <div class="card">
+        <h3>الهواة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">أشخاص يريدون أتمتة مهمة شخصية، بناء أداة صغيرة لأنفسهم، أو صنع شيء فقط ليروا هل يستطيعون، دون معاملته كخطوة مهنية أو عمل تجاري إطلاقاً.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GETTING STARTED -->
+<section id="getting-started" class="section" aria-labelledby="start-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="start-heading" style="text-align:right; margin-bottom:0.75rem;">مشروعكم الأول، خطوة بخطوة</h2>
+    <p style="color:#42474e; font-size:1rem; line-height:1.7; margin-bottom:1.5rem;">ست خطوات من شاشة فارغة لمشروع أول عامل. اضغطوا على خطوة لقراءة التفاصيل.</p>
+    <div style="display:flex; flex-direction:column; gap:1rem;">
+      <div class="card beginners-card" data-beginners-expand>
+        <button type="button" class="beginners-card-toggle" aria-expanded="false" aria-controls="beginners-panel-1" id="beginners-toggle-1">
+          <div style="display:flex; gap:1rem; align-items:center;">
+            <span style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:#006875; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9375rem;">١</span>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">اختاروا شيئاً صغيراً وشخصياً.</h3>
+          </div>
+          <span class="beginners-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="beginners-card-panel" id="beginners-panel-1" role="region" aria-labelledby="beginners-toggle-1" hidden>
+          <p style="color:#42474e; font-size:1rem; line-height:1.8;"><strong>اختاروا شيئاً صغيراً وشخصياً.</strong> قائمة مهام، صفحة عن هواية، آلة حاسبة بسيطة. ليست فكرة عمل تجاري بعد، فقط شيء ستتعرفون فعلياً على عمله أو عدمه، وشيء ستستخدمونه فعلياً فتلاحظون ما ينقص.</p>
+        </div>
+      </div>
+      <div class="card beginners-card" data-beginners-expand>
+        <button type="button" class="beginners-card-toggle" aria-expanded="false" aria-controls="beginners-panel-2" id="beginners-toggle-2">
+          <div style="display:flex; gap:1rem; align-items:center;">
+            <span style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:#006875; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9375rem;">٢</span>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">اختاروا أداة مناسبة للمبتدئين.</h3>
+          </div>
+          <span class="beginners-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="beginners-card-panel" id="beginners-panel-2" role="region" aria-labelledby="beginners-toggle-2" hidden>
+          <p style="color:#42474e; font-size:1rem; line-height:1.8;"><strong>اختاروا أداة مناسبة للمبتدئين.</strong> أداة بناء تطبيقات تعمل في المتصفح (شاهدوا <a href="/ar/services/vibe-coding/tools" style="color:#006875;">دليل الأدوات</a> لدينا) أسهل للبدء بها من محرر كود، لأنه لا شيء لتثبيته ولا إعداد حساب أبعد من تسجيل الدخول.</p>
+        </div>
+      </div>
+      <div class="card beginners-card" data-beginners-expand>
+        <button type="button" class="beginners-card-toggle" aria-expanded="false" aria-controls="beginners-panel-3" id="beginners-toggle-3">
+          <div style="display:flex; gap:1rem; align-items:center;">
+            <span style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:#006875; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9375rem;">٣</span>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">صفوه بلغة بسيطة، ثم تفاعلوا مع ما تحصلون عليه.</h3>
+          </div>
+          <span class="beginners-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="beginners-card-panel" id="beginners-panel-3" role="region" aria-labelledby="beginners-toggle-3" hidden>
+          <p style="color:#42474e; font-size:1rem; line-height:1.8;"><strong>صفوه بلغة بسيطة، ثم تفاعلوا مع ما تحصلون عليه.</strong> قولوا ما تريدونه بجملة أو اثنتين. انظروا للنتيجة. قولوا ماذا خاطئ أو ناقص، بلغة بسيطة مرة أخرى. كرروا. معظم المشاريع الأولى تستغرق ما بين خمس إلى خمس عشرة جولة تبادل قبل أن تبدو مكتملة.</p>
+        </div>
+      </div>
+      <div class="card beginners-card" data-beginners-expand>
+        <button type="button" class="beginners-card-toggle" aria-expanded="false" aria-controls="beginners-panel-4" id="beginners-toggle-4">
+          <div style="display:flex; gap:1rem; align-items:center;">
+            <span style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:#006875; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9375rem;">٤</span>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">اكسروه عمداً.</h3>
+          </div>
+          <span class="beginners-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="beginners-card-panel" id="beginners-panel-4" role="region" aria-labelledby="beginners-toggle-4" hidden>
+          <p style="color:#42474e; font-size:1rem; line-height:1.8;"><strong>اكسروه عمداً.</strong> اضغطوا أشياء لا يُفترَض بكم الضغط عليها، اكتبوا مدخلات غير متوقعة، حاولوا جعله يفشل. هكذا تتعلمون ماذا فهمت الأداة فعلياً مقابل ماذا خمّنت. أيضاً العادة الأكثر فائدة التي يستطيع مبتدئ بناءها مبكراً، لأنها نفس الغريزة التي يُبنى عليها الاختبار المهني.</p>
+        </div>
+      </div>
+      <div class="card beginners-card" data-beginners-expand>
+        <button type="button" class="beginners-card-toggle" aria-expanded="false" aria-controls="beginners-panel-5" id="beginners-toggle-5">
+          <div style="display:flex; gap:1rem; align-items:center;">
+            <span style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:#006875; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9375rem;">٥</span>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">اطلبوا منها شرح ما بنته.</h3>
+          </div>
+          <span class="beginners-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="beginners-card-panel" id="beginners-panel-5" role="region" aria-labelledby="beginners-toggle-5" hidden>
+          <p style="color:#42474e; font-size:1rem; line-height:1.8;"><strong>اطلبوا منها شرح ما بنته.</strong> قبل المتابعة، اجعلوا الأداة تشرح لكم ماذا فعلت للتو ولماذا. لا تحتاجون حفظ الإجابة، لكن سماعها مرة تبني المفردات التي ستحتاجونها للمشروع التالي.</p>
+        </div>
+      </div>
+      <div class="card beginners-card" data-beginners-expand>
+        <button type="button" class="beginners-card-toggle" aria-expanded="false" aria-controls="beginners-panel-6" id="beginners-toggle-6">
+          <div style="display:flex; gap:1rem; align-items:center;">
+            <span style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:#006875; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9375rem;">٦</span>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">شاركوه، أو اتركوه، وابدؤوا التالي.</h3>
+          </div>
+          <span class="beginners-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="beginners-card-panel" id="beginners-panel-6" role="region" aria-labelledby="beginners-toggle-6" hidden>
+          <p style="color:#42474e; font-size:1rem; line-height:1.8;"><strong>شاركوه، أو اتركوه، وابدؤوا التالي.</strong> المشروع الثاني دائماً أسرع من الأول، لأنكم ستعرفون أصلاً كيف تصفون ما تريدونه وأي أسئلة تسألونها في الطريق.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REALISTIC EXPECTATIONS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="expectations-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="expectations-heading" style="text-align:right; margin-bottom:1.5rem;">ماذا تتوقعون في الأسبوع الأول</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      الساعة الأولى عادة الجزء الأكثر تشجيعاً: شيء يعمل بشكل مرئي تقريباً فوراً، وهذا بالضبط الهدف. أول احتكاك حقيقي يميل للظهور في اليوم الثاني أو الثالث، بمجرد محاولة إضافة ميزة ثانية وتغيير الأداة شيئاً لم تطلبوا لمسه. هذا طبيعي، لا علامة أنكم تفعلون شيئاً خاطئاً. وصف ما يجب أن يبقى كما هو، لا فقط ما يجب أن يتغير، مهارة تتطور مع بضعة مشاريع من الممارسة.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      بنهاية أسبوع من الاستخدام العادي، معظم المبتدئين يستطيعون وصف ما يريدونه بوضوح كافٍ فتكون المحاولة الأولى قريبة عادة، يلتقطون الفرق بين "يبدو صحيحاً" و"يعمل فعلياً" دون أن يُطلَب منهم التحقق، ولديهم إحساس تقريبي بأي فئة أدوات (شاهدوا <a href="/ar/services/vibe-coding/tools" style="color:#006875;">دليل الأدوات</a> لدينا) تناسب نوع ما يحبون بناءه. هذا سقف واقعي وقابل للتحقيق، لا مثالي.
+    </p>
+  </div>
+</section>
+
+<!-- COMMON MISTAKES -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="mistakes-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="mistakes-heading" style="text-align:right; margin-bottom:1.5rem;">أخطاء يرتكبها معظم المبتدئين</h2>
+    <ul style="color:#42474e; font-size:1rem; line-height:2; padding-right:1.25rem;">
+      <li><strong>الثقة بالإجابة الأولى.</strong> أدوات الذكاء الاصطناعي تنتج مخرجات تبدو واثقة سواء كانت صحيحة أم لا. اختبروها قبل تصديقها، كل مرة، لا فقط عندما يبدو شيء خاطئاً بوضوح.</li>
+      <li><strong>البدء بشيء كبير جداً.</strong> فكرة عمل تجاري كامل كمشروع أول تعني اصطدامكم بكل مشكلة صعبة دفعة واحدة، قبل أن تتعلموا العمل مع الأداة إطلاقاً. احتفظوا بالفكرة الطموحة للمشروع الثالث أو الرابع.</li>
+      <li><strong>إعطاء تعليمات غامضة ولوم الأداة.</strong> "اجعله أفضل" لا تعطي الذكاء الاصطناعي شيئاً للعمل معه. "اجعل الزر أكبر وغيّر اللون للأزرق" تحصل على نتيجة تستطيعون الحكم عليها فعلياً.</li>
+      <li><strong>عدم قراءة الكود الذي يكتبه أبداً.</strong> لا تحتاجون فهم كل سطر، لكن إلقاء نظرة على ما تغيّر يعلّمكم أسرع من النظر فقط للنتيجة على الشاشة، ويساعدكم على ملاحظة عندما يتغير شيء لم تطلبوه.</li>
+      <li><strong>افتراض أن عرضاً تجريبياً عاملاً يعني أنه جاهز للاستخدام الحقيقي.</strong> نموذج أولي يعمل عند اختباره ليس نفس منتج جاهز لبيانات أشخاص آخرين، حركتهم، أو ثقتهم. شاهدوا <a href="/ar/services/vibe-coding/risks-and-limitations" style="color:#006875;">دليل المخاطر والحدود</a> لدينا قبل وضع أي شيء تبنونه أمام مستخدمين حقيقيين.</li>
+      <li><strong>الاستسلام بعد أول خطأ مربك.</strong> انسخوا رسالة الخطأ بالضبط وأعيدوها للأداة واسألوا ماذا تعني قبل افتراض أن المشروع منكسر بما لا يمكن إصلاحه. معظم عوائق المرة الأولى تُحل خلال تبادل أو اثنين إضافيين.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- FOR PARENTS AND TEACHERS -->
+<section class="section" aria-labelledby="parents-heading">
+  <div class="container" style="max-width:820px;">
+    <h2 id="parents-heading" style="text-align:right; margin-bottom:1.5rem;">ملاحظة للآباء والمعلمين</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      إذا كان طفل يتعلم بهذه الطريقة، عاملوا كوداً مولّداً بالذكاء الاصطناعي كما تعاملون مقالاً مكتوباً بالذكاء الاصطناعي: نقطة بداية مفيدة للتساؤل، لا إجابة نهائية للقبول. اطلبوا من الطفل شرح ما يفعله جزء من المشروع بكلماته الخاصة قبل الانتقال للخطوة التالية. إذا لم يستطع، تلك إشارة للتباطؤ لا إشارة أن الأداة فشلت.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+      أبقوا المشاريع المبكرة شخصية ومنخفضة المخاطر: لعبة، اختبار قصير، صفحة عن موضوع مفضّل. تجنبوا ربط مشاريع طفلكم الأولى بأنظمة دفع حقيقية، استضافة عامة باسمه مرفقاً، أو أي شيء يجمع معلومات أشخاص آخرين، لأن ممارسات السلامة والمراجعة المشمولة في <a href="/ar/services/vibe-coding/risks-and-limitations" style="color:#006875;">دليل المخاطر والحدود</a> لدينا تهم أكثر عندما يكون الباني لا يزال يتعلم رصد ما قد يسوء.
+    </p>
+  </div>
+</section>
+
+<!-- BRIDGE / MID CTA -->
+<section class="section" aria-labelledby="next-step-heading">
+  <div class="container" style="max-width:820px; text-align:center;">
+    <h2 id="next-step-heading" style="margin-bottom:1rem;">عندما يحتاج نموذج أولي أن يصبح منتجاً حقيقياً</h2>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+      بناء مشروعكم الأول بأنفسكم مفيد فعلياً، يعلّمكم ماذا تريدون ويثبت أن الفكرة تستطيع العمل. ما لا يفعله هو تجهيز ذلك المشروع لمستخدمين حقيقيين، بيانات حقيقية، أو عمل يعتمد عليه. تلك مهمة مختلفة: أمان، توسّع، قابلية صيانة، ودعم، يقوم بها أشخاص يفعلون ذلك مهنياً.
+    </p>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:2rem;">
+      لا عيب في ذلك التسليم، ولا استعجال للوصول إليه أيضاً. كثير من مشاريع المبتدئين الجيدة تبقى بالضبط ما كان مقصوداً لها: شيء بنيتموه لتتعلموا، لأنفسكم، لم يحتج أبداً أن يصبح أكثر من ذلك. النقطة التي يستحق فيها الأمر محادثة مع فريق محترف بسيطة، عندما يعتمد عليه أشخاص آخرون، أو عندما تكون تكلفة انكساره أعلى من تكلفة بنائه بشكل صحيح. إذا تجاوز نموذجكم الأولي "فقط لي"، هنا نأتي نحن.
+    </p>
+    <button onclick="openModal(this)" data-source="ar_vibe_beginners_mid" class="btn-primary">ناقشوا مشروعكم</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">تجاوز مشروعكم الأول حدوده؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">أخبرونا بما بنيتموه وماذا يحتاج أن يصبح تالياً. سنعطيكم جدولاً زمنياً وتقدير تكلفة، مجاناً، دون التزام.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_vibe_beginners_final" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">ناقشوا مشروعكم</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "name": "البرمجة الحدسية للمبتدئين",
+      "url": "https://lenooai.com/ar/services/vibe-coding/beginners",
+      "description": "دليل مبتدئين بلغة بسيطة للبرمجة الحدسية: ما هي، لمن تناسب، كيف تبنون مشروعكم الأول، والأخطاء الشائعة التي يجب تجنبها.",
+      "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+      "areaServed": "United Arab Emirates",
+      "serviceType": "Software Development"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
+        { "@type": "ListItem", "position": 2, "name": "الخدمات", "item": "https://lenooai.com/ar/services" },
+        { "@type": "ListItem", "position": 3, "name": "البرمجة الحدسية", "item": "https://lenooai.com/ar/services/vibe-coding" },
+        { "@type": "ListItem", "position": 4, "name": "المبتدئون", "item": "https://lenooai.com/ar/services/vibe-coding/beginners" }
+      ]
+    }
+  ]
+}
+</script>
+
+</ArBaseLayout>
+
+<style>
+.beginners-card-toggle { display:flex; justify-content:space-between; align-items:center; width:100%; background:none; border:none; cursor:pointer; text-align:right; padding:0; gap:1rem; }
+.beginners-card-toggle h3 { margin:0; }
+.beginners-card-icon { font-size:1.25rem; color:#006875; transition:transform 0.2s; flex-shrink:0; }
+.beginners-card-toggle[aria-expanded="true"] .beginners-card-icon { transform:rotate(45deg); }
+.beginners-card-toggle:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+.beginners-card-panel { margin-top:0.75rem; }
+.builds-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+@media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
+</style>
+
+<script>
+  document.querySelectorAll('[data-beginners-expand]').forEach((card) => {
+    const btn = card.querySelector('.beginners-card-toggle');
+    const panel = card.querySelector('.beginners-card-panel');
+    btn?.addEventListener('click', () => {
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!expanded));
+      if (panel) (panel as HTMLElement).hidden = expanded;
+    });
+  });
+</script>

@@ -1,0 +1,267 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../../lib/supabase";
+import FaqAccordion from "../../../../../components/FaqAccordion.astro";
+
+const h1 = 'سير عمل وكيل الذكاء الاصطناعي على n8n';
+const metaTitle = 'سير عمل وكيل الذكاء الاصطناعي على n8n للشركات الإماراتية | Lenoo AI';
+const metaDescription = 'تبني Lenoo AI سير عمل وكلاء ذكاء اصطناعي على n8n للشركات الإماراتية: خطوط أنابيب يقرأ فيها نموذج لغوي السياق، يقرر، ويتصرف في منتصف سير العمل، لا مجرد نقل بيانات بين تطبيقات.';
+const heroSubtext = "يستطيع n8n تشغيل نوعين مختلفين من البناء على نفس المحرك. أحدهما ينقل بيانات من أ إلى ب بمحفز ثابت. الآخر وكيل ذكاء اصطناعي: سير عمل يقرأ فيه نموذج لغوي ما أمامه، يقرر ما يجب أن يحدث، وعندها فقط يُطلق الخطوة التالية. هذه الصفحة تغطي النوع الثاني.";
+
+const useCases = [
+  { title: 'وكيل تأهيل عملاء محتملين واردين', description: "يقرأ تقديم نموذج عميل محتمل جديد وأي بيانات شركة مرتبطة، يقرر مدى مطابقته لملف عميلكم المثالي، ويوجّه العملاء المحتملين الجادين مباشرة لمندوب بينما يذهب الأضعف لتسلسل رعاية، دون فرز إنسان لصندوق الوارد أولاً." },
+  { title: 'وكيل معالجة استثناءات الفواتير', description: "يتحقق من الفواتير الواردة مقابل أوامر الشراء وشروط العقد، يوافق على المطابقات النظيفة، ويُعلِّم على عدم التطابق بشرح مكتوب لبالضبط ما لا يتطابق، فيراجع فريقكم المالي استثناءً مع التبرير مرفق بدلاً من البدء من الصفر." },
+  { title: 'وكيل فرز تذاكر الدعم', description: 'يقرأ تذكرة واردة، يقرر إلحاحها وفئتها، يصيغ رداً أولاً حيث تكون الإجابة مباشرة، ويصعّد لبشري مع ملخص عندما يحتاج السؤال حكماً يجب ألا يتخذه الوكيل وحده.' },
+  { title: 'وكيل مراقبة الامتثال', description: 'يراجع المستندات، المعاملات، أو السجلات مقابل سياسة محددة حسب جدول، يُعلِّم على أي شيء يبدو مخالفة بالبند المحدد الذي يتعارض معه، وينبّه الشخص الصحيح بدلاً من دفن النتيجة في ملف سجل لا يقرأه أحد.' },
+  { title: 'وكيل فرز طلبات العمليات الداخلية', description: 'يقرأ الطلبات الواردة من نموذج داخلي أو قناة Slack (طلبات وصول، موافقات شراء، تذاكر تقنية معلومات)، يقرر أي سياسة تنطبق، وإما يُنفِّذ الطلب مباشرة أو يوجّهه للمعتمِد الصحيح مع سياق مرفق أصلاً.' },
+];
+
+const faqFallback = [
+  { question: 'هل هذه نفس صفحة أتمتة n8n؟', answer: "لا. صفحة أتمتة n8n لدينا تغطي سير عمل ينقل بيانات بمحفز ثابت: يحدث شيء، تسلسل خطوات محدد يعمل، لا شيء في المنتصف يتخذ قراراً. هذه الصفحة تغطي سير عمل يجلس فيه عقدة نموذج لغوي داخل خط الأنابيب ويقرر ما يحدث تالياً بناءً على ما يقرأه. نفس المنصة الأساسية، نوع بناء مختلف. شاهدوا جانب الأتمتة البحت من نفس هذه المنصة في صفحة أتمتة n8n لدينا." },
+  { question: 'هل يجب أن نستضيف n8n ذاتياً للحصول على سير عمل وكيل ذكاء اصطناعي؟', answer: "لا. الاستضافة الذاتية متطلب حقيقي لبعض العملاء، عادة بسبب قواعد إقامة بيانات أو امتثال حول ما يغادر بنيتكم التحتية، لكن كثيراً من سير عمل الوكلاء يعمل جيداً على نسخة سحابية مُدارة. نحدد أيها ينطبق فعلياً على حالتكم أثناء الاكتشاف بدلاً من افتراض الاستضافة الذاتية افتراضياً." },
+  { question: 'ما الذي يحدد فعلياً تكلفة بناء وكيل n8n؟', answer: 'ثلاثة أمور: كم نقطة قرار يحتاج الوكيل التفكير خلالها، كم أداة أو نظاماً يحتاج الوصول إليها للتصرف، وكم معالجة أخطاء واختبار يحتاجه كل فرع قبل أن نثق به مقابل بيانات حقيقية. وكيل قرار واحد يقرأ مصدر مدخل واحد يكلف أقل بكثير من وكيل متعدد الخطوات ينسّق عبر خمسة أنظمة.' },
+  { question: 'هل هذا يستبدل حالات الاستخدام في صفحة أتمتة n8n؟', answer: "لا، تحلان مشكلتين مختلفتين. إذا كان سير عملكم قاعدة مباشرة من نوع إذا-حدث-هذا-فافعل-ذلك، الأتمتة البحتة أسرع للبناء، أرخص للتشغيل، وأسهل للصيانة، وسنخبركم بذلك بصدق. سير عمل الوكيل يستحق تكلفته عندما يستحيل فعلياً كتابة المنطق كقاعدة ثابتة، لأن الإجراء الصحيح يعتمد على قراءة وحكم المدخل في كل مرة." },
+  { question: 'هل يستطيع الوكيل استدعاء كودنا المخصص أو واجهات API الداخلية؟', answer: "نعم. هذا أحد أسباب بنائنا سير عمل الوكلاء على n8n تحديداً: عقدة كود تجلس مباشرة بجانب عقدة AI Agent، فيستطيع قرار الوكيل إطلاق استدعاء لواجهة API الداخلية، سكربت مخصص، أو استعلام قاعدة بيانات دون مغادرة المنصة أو إضافة نظام منفصل." },
+  { question: 'ما الذي يمنع الوكيل من اتخاذ إجراء يجب ألا يتخذه؟', answer: "قائمة إجراءات مسموحة محددة. أثناء مرحلة البناء، نحدد بالضبط أي أدوات وإجراءات يُسمح للوكيل استدعاءها، لا تعليمات عامة باستخدام الحكم الجيد. أي شيء خارج تلك القائمة ببساطة غير متاح له، وللإجراءات الأعلى مخاطرة نضيف نقطة موافقة فيؤكد شخص قبل التنفيذ." },
+];
+
+let faqItems = faqFallback;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_agents_tools_n8n-ai-agent')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: h1,
+    url: 'https://lenooai.com/ar/services/ai-agents/tools/n8n-ai-agent',
+    description: metaDescription,
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'مشاريع وكلاء n8n: التسعير حسب عدد نقاط القرار والتكاملات. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر.' },
+    serviceType: 'n8n AI Agent Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'وكلاء الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'الأدوات', item: 'https://lenooai.com/ar/services/ai-agents/tools' },
+      { '@type': 'ListItem', position: 4, name: 'وكيل n8n', item: 'https://lenooai.com/ar/services/ai-agents/tools/n8n-ai-agent' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonicalPath="/ar/services/ai-agents/tools/n8n-ai-agent"
+  enPath="/services/ai-agents/tools/n8n-ai-agent"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">وكلاء الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents/tools" style="color:inherit;text-decoration:none;opacity:0.65;">الأدوات</a><span style="opacity:0.4;padding:0 4px;"> / </span>وكيل n8n</div>
+    <div class="tool-logo-hero"><img src="https://cdn.simpleicons.org/n8n/EA4B71" alt="شعار n8n" width="56" height="56" loading="eager" /></div>
+    <h1>{h1}</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      {heroSubtext}
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ar_ai_agents_tools_n8n-ai-agent_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#use-cases" class="btn-outline">شاهدوا ما نبنيه ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- WHAT IS N8N AI AGENT -->
+<section class="section" aria-labelledby="what-is-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="what-is-heading" style="margin-bottom:1.5rem;">ما هو سير عمل وكيل ذكاء اصطناعي على n8n؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        سير عمل n8n البسيط يتبع منطقاً ثابتاً: يُطلَق محفز، تسلسل خطوات محدد يعمل بالترتيب، ولا شيء في المنتصف يتخذ قراراً. سير عمل وكيل ذكاء اصطناعي على n8n يضيف شيئاً واحداً فوق ذلك: عقدة نموذج لغوي تجلس داخل خط الأنابيب تقرأ أياً كان ما وصل أمامها، سواء كان بريداً إلكترونياً، تذكرة دعم، فاتورة، أو حمولة webhook، وتقرر ما يجب أن يحدث تالياً، بدلاً من اتباع فرع رمّزناه مسبقاً. المحفز، جلب البيانات، والإجراء النهائي لا تزال تستطيع العمل تماماً كأتمتة عادية. خطوة الوكيل هي الجزء الذي يفكر.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        عندما يبحث الناس عن "وكيل ذكاء اصطناعي n8n"، هذا هو البناء الذي يعنونه: سير عمل n8n بعقدة AI Agent واحدة أو أكثر متصلة بنموذج لغوي، غالباً أحد نفس النماذج التي يعنيها الناس عند البحث عن "وكيل ذكاء اصطناعي ChatGPT"، بالإضافة لمجموعة أدوات محددة يُسمح للوكيل استدعاءها. قد يتحقق الوكيل من سجل، يبحث عن شيء، يصيغ رسالة، أو يحدّث قاعدة بيانات، لكن فقط ضمن الإجراءات التي نحددها أثناء البناء. ليس حراً بفعل أي شيء يتخيله؛ حر بالتفكير ضمن حد نضعه.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW LENOO BUILDS N8N AGENT WORKFLOWS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="how-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="how-heading" style="margin-bottom:1.5rem;">أين تجلس خطوة التفكير، وما يُسمح لها بفعله</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        الموضع يهم أكثر مما يتوقع معظم العملاء دخولاً. أحياناً ينتمي الوكيل مباشرة لبداية خط أنابيب، يقرأ ويصنّف أياً كان ما وصل للتو قبل تشغيل أي شيء آخر. أحياناً ينتمي للمنتصف، كخطوة تقرر أي من عدة فروع لاحقة يجب أن يسلكه سجل. وأحياناً ينتمي قرب النهاية، كحكم نهائي قبل خروج إجراء، يتحقق من أن ما جمّعته الخطوات السابقة منطقي فعلياً لإرساله. نرسم هذا أثناء الاكتشاف مقابل عمليتكم الفعلية، لا قالب عام، لأن نفس مشكلة العمل قد تتطلب الوكيل في موضع مختلف حسب أين يعيش الغموض في سير عملكم فعلياً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.5rem;">
+        ضوابط الحماية تأتي من قائمة إجراءات مسموحة محددة، لا تعليمات عامة باستخدام الحكم الجيد. أثناء البناء، نحدد بالضبط أي أدوات وسجلات وأنظمة يستطيع الوكيل لمسها، ولأي إجراء بعواقب حقيقية، أي دفعة، رسالة موجهة للعميل، أو حذف سجل، نضيف نقطة موافقة فيؤكد شخص قبل التنفيذ. الوكيل يفكر فيما يجب أن يحدث؛ حد ما يُسمح له فعله فعلياً محدد مسبقاً.
+      </p>
+      <div class="ai-agent-callout">
+        <p style="color:#00253b; font-size:1.0625rem; line-height:1.85; margin:0;">
+          هذه الصفحة تحديداً عن بناءات وكلاء n8n. إذا كنتم تحتاجون سير عمل ينقل بيانات بين تطبيقات بمحفز ثابت، دون خطوة تفكير متضمنة، فذلك جانب الأتمتة البحت من نفس هذه المنصة. شاهدوا <a href="/ar/services/ai-automation/tools/n8n">صفحة أتمتة n8n ←</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHO THIS FITS -->
+<section class="section" aria-labelledby="who-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="who-heading" style="margin-bottom:1.5rem;">هل بناء وكيل n8n مناسب لكم؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        إشارتان تميلان للإشارة لـ n8n تحديداً، متقدماً على أداة بناء وكلاء بلا كود أخف. الأولى متطلب إقامة بيانات أو امتثال حقيقي: إذا كان المدخل الذي يقرأه الوكيل، أو السجلات التي يلمسها، لا يستطيع مغادرة بنية تحتية تتحكمون بها، الاستضافة الذاتية تستبعد معظم المنصات المُدارة وتشير مباشرة لـ n8n. الثانية منطق لا تعبّر عنه أداة بناء وكلاء بصرية فقط. إذا احتاج سير العمل خطوة كود مخصصة إلى جانب خطوة التفكير، استدعاء واجهة API داخلية بمصادقة لا تستطيع لوحة سحب وإفلات التعامل معها، أو تفريعاً محدداً جداً لمكتبة عقد عامة، قدرة n8n على مزج تصميم سير عمل بصري بكود حقيقي هي ما يجعل البناء ممكناً إطلاقاً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        إذا لم ينطبق أي منهما، أي لا يوجد متطلب بنية تحتية والمنطق ضمن ما تقدمه أصلاً منصة وكلاء مخصصة جاهزة، أداة مثل Gumloop أو Lindy غالباً تُطلقكم أسرع بصيانة أقل لاحقاً. سنقول ذلك مباشرة في مكالمة الاكتشاف بدلاً من اللجوء افتراضياً لكل مشروع للمنصة الأكثر مرونة نظرياً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TYPICAL PROJECT -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="typical-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="typical-heading" style="margin-bottom:1.5rem;">كيف يبدو مشروع وكيل n8n نموذجي معنا</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        بناءات الوكلاء تحمل طبقة تصميم إضافية مقارنة بالأتمتة البحتة: لا نرسم خطوات فقط، نرسم قرارات.
+      </p>
+      <ol class="journey-list" style="gap:1rem;">
+        <li><strong style="color:#00253b;">الاكتشاف.</strong> نحدد بالضبط أين في عمليتكم يتخذ إنسان حالياً حكماً من مدخل غير منظم، ونؤكد ما إذا كانت الاستضافة الذاتية متطلباً حقيقياً أم افتراضاً يستحق إعادة النظر.</li>
+        <li><strong style="color:#00253b;">التصميم.</strong> نقرر بين خادمكم الخاص، نسخة سحابية ندير نحن، أو عرض n8n المُستضاف، ثم نصمم خط الأنابيب، نُعلِّم بالضبط أين تجلس خطوة التفكير وأي إجراءات يُسمح لها بإطلاقها.</li>
+        <li><strong style="color:#00253b;">البناء والاختبار.</strong> نبني سير العمل، نربط الوكيل بأدواته المسموحة، ونختبر كل فرع منفصلاً مقابل بيانات حقيقية، بمعالجة أخطاء منظمة لكل فرع فلا يُسقط نمط فشل واحد خط الأنابيب كله.</li>
+        <li><strong style="color:#00253b;">الإطلاق والمراقبة.</strong> ننشر، نسلّم توثيقاً يغطي بالضبط ما يستطيع الوكيل فعله وما لا يستطيع، ونراقب قراراته خلال الأسابيع الأولى فيُلتقط نمط يبدو خاطئاً ويُصحَّح بسرعة.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- VS ALTERNATIVES -->
+<section class="section" aria-labelledby="vs-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="vs-heading" style="margin-bottom:1.5rem;">وكلاء n8n مقابل البدائل</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        <a href="/ar/services/ai-agents/tools/gumloop">Gumloop</a> و<a href="/ar/services/ai-agents/tools/lindy">Lindy</a> و<a href="/ar/services/ai-agents/tools/pipedream">Pipedream</a> جميعها تبني سير عمل وكلاء ذكاء اصطناعي أيضاً، كل منها مغطى بصفحته الخاصة، وكل منها يتبادل بشكل مختلف مقابل n8n. Gumloop وLindy منصتا وكلاء مخصصتان بلوحة بصرية أو مكتبة تكامل أصلي واسعة على التوالي، وتُطلقان وكيلاً قياسياً أسرع عندما يناسب المنطق ما تقدمانه أصلاً. Pipedream أقرب لـ n8n بالروح، لأن كليهما يجعل كل خطوة كوداً حقيقياً، لكنهما يختلفان في نموذج الاستضافة وكم بنية تحتية تملكونها. نوصي بـ n8n تحديداً عندما تكون الاستضافة الذاتية متطلباً حقيقياً، أو عندما يحتاج منطق الوكيل خطوة كود مخصصة لا تغطيها مكتبة عقد منصة مخصصة. خارج هذين الشرطين، أداة بناء وكلاء أخف عادة تعطيكم نفس النتيجة بصيانة أقل.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- RELIABILITY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="reliability-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="reliability-heading" style="margin-bottom:1.5rem;">الحفاظ على موثوقية وكيل n8n بعد الإطلاق</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        الوكيل الذي يفكر موثوق فقط إذا استطعتم رؤية لماذا قرر ما قرره. كل سير عمل وكيل نبنيه يسجّل مسار التفكير: ما قرأه الوكيل، ماذا استنتج، أي أداة استدعى، وأي إجراء نتج. إذا بدا قرار خاطئاً بعد ثلاثة أسابيع من الإطلاق، نتتبعه للمدخل الدقيق الذي أنتجه بدلاً من معاملة الوكيل كصندوق أسود لا يستطيع أحد تفسيره. كل فرع يحصل أيضاً على معالجة أخطائه الخاصة على مستوى العقدة، فلا يوقف فشل في مدخل واحد خط الأنابيب كله، وإذا كنا نستضيف النسخة بأنفسنا، تلك الصيانة تغطي الخادم، لا منطق سير العمل العامل فوقه فقط. لبناءات الوكلاء تحديداً، نراجع أيضاً عينة من القرارات دورياً بعد الإطلاق، لأن قيمة سير عمل الوكيل حقيقية فقط إذا استمرت الأحكام التي يتخذها بمطابقة ما تريدون من شخص في ذلك المقعد تقريره.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="use-cases" class="section" aria-labelledby="use-cases-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="use-cases-heading">ما نبنيه بسير عمل وكلاء n8n</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">مشاريع وكلاء n8n شائعة للعملاء الإماراتيين، من تأهيل العملاء المحتملين لمراقبة الامتثال. كل بناء يبدأ من نقاط قراركم الفعلية، لا قالب عام.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {useCases.map((uc) => (
+        <div class="value-card">
+          <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bolt</span></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{uc.title}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">{uc.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">لديكم سير عمل يحتاج التفكير، لا الإطلاق فقط؟ أخبرونا بما يجب أن يقرره، وسنبنيه على n8n.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_agents_tools_n8n-ai-agent_mid" class="btn-primary">احجزوا استشارة وكيل n8n مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لبناء وكيل على n8n؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">أخبرونا أي قرار تريدون أتمتته. سنصمم ونبني الوكيل على n8n، ثم نُريكم بالضبط كيف يفكر قبل أن يلمس الإنتاج.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_agents_tools_n8n-ai-agent_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.tool-logo-hero { width:64px; height:64px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; }
+.value-card { display:flex; flex-direction:column; }
+.ai-agent-callout { background:#fff; border:1px solid rgba(0,104,117,0.18); border-radius:14px; padding:1.5rem 1.75rem; }
+.ai-agent-callout a { color:#006875; font-weight:700; text-decoration:none; }
+.ai-agent-callout a:hover { text-decoration:underline; }
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.journey-list li { position:relative; padding-right:1.75rem; color:#42474e; font-size:1.0625rem; line-height:1.85; }
+.journey-list li::before { content:''; position:absolute; right:0; top:0.6em; width:9px; height:9px; border-radius:50%; background:#00e3fd; }
+</style>

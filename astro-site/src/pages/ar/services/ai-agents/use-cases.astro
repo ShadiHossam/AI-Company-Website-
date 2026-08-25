@@ -1,0 +1,248 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+
+const fallbackFaqs = [
+  { question: "كم يستطيع وكيل أن يكون محدداً فعلياً؟", answer: "كثيراً جداً. الأمثلة في هذه الصفحة نقاط بداية، لا قائمة تختارون منها كما هي. بناء وكيل حقيقي محدد النطاق لمعاييركم المحددة، أدواتكم المحددة، وحالاتكم الحدية المحددة، وهذا بالضبط سبب انتهاء عملين في نفس القطاع بوكلاء مختلفين جوهرياً حتى عندما تبدو الفئة، 'تأهيل عملاء محتملين' مثلاً، متطابقة." },
+  { question: "هل يستطيع وكيل واحد القيام بعدة وظائف؟", answer: "يمكن منحه قدرات متعددة، لكننا عموماً نبني وكلاء ضيقي النطاق يؤدون عملاً واحداً بامتياز بدلاً من وكيل عام واحد يحاول تغطية كل شيء. لسير العمل الذي يمتد فعلياً عبر مجالات متعددة، هذا ما يخدمه فريق وكلاء، راجعوا القسم أدناه، بدلاً من تحميل وكيل واحد بمسؤوليات لم يُصمَّم لموازنتها." },
+  { question: "كيف يختلف 'فريق وكلاء' عن وكيل واحد بأدوات كثيرة؟", answer: "وكيل واحد بأدوات كثيرة لا يزال يتخذ كل قرار عبر عملية تفكير واحدة، التي يصعب الوثوق بها أكثر مع تعقد المهمة. فريق الوكلاء يقسّم العمل عبر وكلاء متخصصين، كل بعمل ضيق، ينسّقهم منسّق يوجّه المهام ويجمع النتائج. إنه الفرق بين شخص عام واحد يحاول فعل كل شيء وفريق صغير حيث لكل عضو دور واضح." },
+  { question: "هل وكيل مساعد شخصي واقعي لشخص واحد، أم للفرق فقط؟", answer: "واقعي لشخص واحد. وكيل مساعد شخصي محدد لمسؤول تنفيذي فردي، يتعامل مع الجدولة، فرز البريد الوارد، ومتابعة المهام، أحد البناءات الأكثر انحصاراً التي نقوم بها، لأن النطاق محدود طبيعياً بما يتضمنه يوم عمل شخص واحد فعلياً." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_agents_use_cases')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'أمثلة وحالات استخدام وكلاء الذكاء الاصطناعي',
+    url: 'https://lenooai.com/ar/services/ai-agents/use-cases',
+    description: 'أمثلة حقيقية وحالات استخدام لوكلاء الذكاء الاصطناعي حسب الوظيفة: بحث، مبيعات، دعم، عمليات، امتثال، جدولة، فرق وكلاء، ومساعدين شخصيين.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    serviceType: 'AI Agent Development',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'وكلاء الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'حالات الاستخدام', item: 'https://lenooai.com/ar/services/ai-agents/use-cases' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="أمثلة وحالات استخدام وكلاء الذكاء الاصطناعي | Lenoo AI"
+  description="أمثلة حقيقية وحالات استخدام لوكلاء الذكاء الاصطناعي حسب الوظيفة: بحث، مبيعات، دعم، عمليات، امتثال، جدولة، فرق وكلاء، ومساعدين شخصيين."
+  canonicalPath="/ar/services/ai-agents/use-cases"
+  enPath="/services/ai-agents/use-cases"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">وكلاء الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>حالات الاستخدام</div>
+    <h1>أمثلة وكلاء الذكاء الاصطناعي <span class="gradient-text">حسب الوظيفة</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      كتالوج واسع لما تنشر الشركات فعلياً وكلاء لفعله، منظم حسب الوظيفة، بالإضافة لماهية "فريق الوكلاء" وكيف يعمل وكيل مساعد شخصي لفرد واحد.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_ai_agents_use-cases_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#by-function" class="btn-outline">شاهدوا الأمثلة ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- BY FUNCTION -->
+<section id="by-function" class="section" aria-labelledby="function-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="function-heading">وكلاء حسب الوظيفة</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">أمثلة، لا كتالوج ثابت. كل بناء حقيقي محدد النطاق لمعاييركم وأدواتكم المحددة.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">manage_search</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء البحث</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">بسؤال مثل "لخّص ما غيّره منافسونا الرئيسيون في التسعير هذا الربع"، يبحث وكيل بحث في مصادر عامة، يقرأ صفحات التسعير والتغطية الإعلامية، يتحقق من التواريخ، ويعيد تقريراً منظماً بمصادر مُستشهَد بها، خلال دقائق بدلاً من يوم بحث يدوي.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">trending_up</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء المبيعات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يسحب عملاء محتملين مطابقين من CRM، يتحقق من النشاط الأخير لكل منهم، ويصيغ تواصلاً مخصصاً يُشير لشيء محدد للعميل المحتمل، فيبدأ مندوب يومه بـ٢٠ مسودة جاهزة للمراجعة بدلاً من ٢٠ بريداً إلكترونياً فارغاً يجب كتابته.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">support_agent</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء الدعم</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يقرأ تذكرة واردة، يتحقق من حالة الطلب أو الحساب، ويجيب مباشرة عندما تكون الحالة روتينية، مُصعِّداً بسياق كامل لحظة أن يحتاج شيء حكم شخص لا نصاً جامداً.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">settings_suggest</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء العمليات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يحوّل بيانات مُصدَّرة فوضوية، جداول بيانات، مستندات ممسوحة ضوئياً، أنظمة منفصلة، لتقارير وإجراءات عمل قياسية منظمة ونظيفة، يلتقط عمل التسوية اليدوي الذي عادة يقع على من لديه أكبر صبر لجداول البيانات.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">gavel</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء الامتثال</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يراجع المستندات أو المعاملات مقابل سياسة محددة حسب جدول، يُعلِّم على أي شيء يبدو مخالفة بالبند المحدد الذي يتعارض معه، وينبّه الشخص الصحيح بدلاً من بقاء النتيجة في سجل لا يقرأه أحد.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">calendar_month</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">وكلاء الجدولة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">يقرأ التوفر عبر التقاويم، يقترح أوقات اجتماع تناسب فعلياً، ويتولى تبادل التأكيد، فيتوقف تنسيق مكالمة مع خمسة أشخاص عن تكليف خمس سلاسل بريد إلكتروني منفصلة.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AGENT TEAM -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="team-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="team-heading" style="margin-bottom:1.5rem;">ما هو "فريق وكلاء الذكاء الاصطناعي"؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        فريق الوكلاء نظام متعدد الوكلاء: عدة وكلاء متخصصين، كل بعمل ضيق ومحدد جيداً، ينسّقهم منسّق يوجّه العمل بينهم ويجمع مخرجاتهم. نمط شائع هو وكيل يبحث، وكيل يصيغ، وكيل يراجع، ووكيل ينشر، كل يؤدي جزءه بدلاً من وكيل واحد يحاول حمل العملية كاملة في ذهنه دفعة واحدة.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        السبب في تفوق هذا على وكيل عام واحد ليس فلسفياً، إنه عملي. الوكيل ضيق النطاق أسهل اختباره بشمولية، أسهل تصحيح أخطائه عندما يسوء شيء، وأسهل الوثوق به، لأنكم تستطيعون التحقق من كل جزء من العملية بشكل مستقل. نلجأ لفريق وكلاء تحديداً عندما يمتد سير عمل فعلياً عبر مجالات متمايزة متعددة لا تنتمي لحكم وكيل واحد، لا كافتراضي لكل مشروع، لأن التنسيق المُضاف بين الوكلاء تعقيد مُضاف يُثمر فقط عندما تحتاجه المهمة فعلياً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PERSONAL ASSISTANT -->
+<section class="section" aria-labelledby="assistant-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="assistant-heading" style="margin-bottom:1.5rem;">وكيل مساعد شخصي، لفرد واحد</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        ليس كل وكيل مبني لفريق أو قسم. وكيل مساعد شخصي محدد لمسؤول تنفيذي واحد يتعامل مع الجدولة (اقتراح وتأكيد أوقات اجتماع مقابل التوفر الفعلي)، فرز البريد الوارد (الترتيب حسب الأولوية، صياغة ردود للرسائل الروتينية، تعليم ما يحتاج فعلياً رداً شخصياً)، ومتابعة المهام (تتبع الالتزامات المتخذة في اجتماعات أو رسائل بريد إلكتروني وتنبيه عندما يوشك شيء على الإفلات).
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        النطاق هنا محدود طبيعياً، يوم عمل شخص واحد فعلياً، مما يجعله أحد البناءات الأكثر انحصاراً التي نقوم بها. إنه أيضاً نقطة دخول مفيدة لعمل يريد رؤية وكيل يعمل جيداً قبل الالتزام بنشر أكبر على مستوى الفريق.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY EXAMPLES -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="industry-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="industry-heading" style="margin-bottom:1.5rem;">نفس الوظائف، مطبقة عبر القطاعات</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        الوظائف الست أعلاه تظهر بشكل مختلف حسب العمل. وكيل بحث في وكالة عقارية يسحب بيانات مبيعات مقارنة لإعلان؛ نفس فئة وكيل البحث في شركة خدمات مهنية تسحب سوابق قضايا أو تحليل منافسين. وكيل امتثال في شركة خدمات مالية يتحقق من المعاملات مقابل قواعد تنظيمية؛ نفس الفئة في مصنّع تتحقق من وثائق الموردين مقابل متطلبات شهادة الجودة. النمط الأساسي، القراءة، التفكير، القرار، التصرف، يبقى ثابتاً؛ ما يتغير هو البيانات والأدوات والقواعد المحددة التي يُحدَّد نطاق الوكيل مقابلها.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        هذا الثبات مفيد عندما تحاولون تخيل ما سيعنيه وكيل لعملكم: إذا بدت فئة أعلاه قريبة من مشكلة لديكم، شكل الحل غالباً مماثل حتى لو اختلفت التفاصيل تماماً عن المثال المعطى. أحضروا لنا تفاصيل نسختكم أثناء الاكتشاف، وسنخبركم بصدق أي وظيفة تنطبق عليها وما سيتضمنه البناء فعلياً.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- STARTING POINT -->
+<section class="section" aria-labelledby="starting-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="starting-heading" style="margin-bottom:1.5rem;">أي مثال هو نقطة البداية الصحيحة؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        إذا كنتم جدداً على الوكلاء وتحاولون تقرير من أين تبدؤون، الإجابة عادة ليست "الأكثر إبهاراً". إنها المهمة التي يؤديها فريقكم أصلاً بأكبر تكرار، تتبع نمطاً معروفاً، وحيث الخطأ فيها قليلاً أحياناً خطأ منخفض المخاطر لا مكلف. وكيل بحث يلخّص تسعير المنافسين مشروع أول أكثر أماناً من وكيل يوافق على استردادات، ليس لأن التقنية أقل قدرة، بل لأن تكلفة خطأ مبكر أقل بينما لا تزالون تبنون الثقة في كيفية تصرف النظام.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        بمجرد أن يعمل ذلك الوكيل الأول ويثبت نفسه، التوسع لفئات أعلى مخاطرة، وكيل يستطيع الموافقة على إجراءات، أو واحد يلمس تواصل العملاء مباشرة، يصبح قراراً أسهل بكثير، لأنكم توسّعون ثقة اكتسبتموها أصلاً بدلاً من المراهنة على أن يسير البناء الأول بشكل مثالي.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- COMBINING FUNCTIONS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="combining-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="combining-heading" style="margin-bottom:1.5rem;">عندما تتحد الوظائف في سير عمل واحد</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        سير العمل الحقيقي نادراً ما يبقى داخل فئة واحدة بنظافة. حالة دعم عميل قد تحتاج خطوة بحث (التحقق من تاريخ الطلب عبر أنظمة) قبل قرار الدعم (الموافقة أو التصعيد). سير عمل مبيعات قد يحتاج خطوة جدولة (حجز مكالمة متابعة) بعد خطوة التواصل (صياغة الرسالة). هذه ليست مشاريع منفصلة؛ إنها وكيل واحد، أو فريق صغير منسّق من الوكلاء، يتعامل مع سير عمل يصادف أنه يلمس أكثر من واحدة من الوظائف أعلاه.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        لا نجبر سير عملكم في فئة واحدة فقط لأن ذلك يجعل صفحة مبيعات أنظف. أثناء الاكتشاف، نرسم عمليتكم الفعلية من البداية للنهاية، نُعلِّم على كل مكان يعبر حداً وظيفياً، ونصمم الوكيل (أو الوكلاء) حول شكل العمل الحقيقي، لا أقرب تسمية واحدة من قائمة كهذه.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">رأيتم حالة استخدام قريبة من سير عملكم؟ أخبرونا بالتفاصيل، وسنحدد نطاق ما يتطلبه بناؤها.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_agents_use-cases_mid" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">مستعدون لبناء حالة استخدامكم الخاصة؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">لا شيء من هذه الأمثلة ملاءمة مثالية لكل عمل. أخبرونا كيف تبدو مهمتكم الفعلية، وسنحدد نطاق وكيل لها بالضبط.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_agents_use-cases_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>

@@ -1,0 +1,266 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+
+const tools = [
+  {
+    slug: "n8n-ai-agent",
+    name: "n8n",
+    logoSlug: "n8n",
+    logoColor: "EA4B71",
+    teaser: "قابل للاستضافة الذاتية ومبني لخطوات كود مخصصة إلى جانب خطوة التفكير. نلجأ إليه عندما تهم إقامة البيانات أو يحتاج سير عمل منطقاً لا تغطيه أي مكتبة عقد بصرية.",
+  },
+  {
+    slug: "gumloop",
+    name: "Gumloop",
+    logoSlug: "gumloop",
+    logoColor: "6E56CF",
+    teaser: "أداة بناء وكلاء بصرية بلا كود حيث كل خطوة عقدة يستطيع فريقكم رؤيتها وتعديلها. تناسب الأعمال دون مطور داخلي التي لا تزال تريد فهم ما يفعله الوكيل.",
+  },
+  {
+    slug: "lindy",
+    name: "Lindy",
+    logoSlug: "lindy",
+    logoColor: "6C5CE7",
+    teaser: "أداة بناء وكلاء بمكتبة تكامل أصلي واسعة جداً، بعمق آلاف التطبيقات. تناسب منظومة SaaS سائدة، بريد إلكتروني، تقويم، CRM، Slack، حيث معظم الموصلات موجودة أصلاً.",
+  },
+  {
+    slug: "pipedream",
+    name: "Pipedream",
+    logoSlug: "pipedream",
+    logoColor: "000000",
+    teaser: "منصة سير عمل قائمة على الكود حيث كل خطوة يمكن أن تكون كوداً حقيقياً. نستخدمها عندما يكون منطق الوكيل محدداً جداً، أو يصل عميقاً في نظام مخصص، لتعبّر عنه أداة بناء بصرية.",
+  },
+  {
+    slug: "salesforce-agentforce",
+    name: "Salesforce Agentforce",
+    logoSlug: "salesforce",
+    logoColor: "00A1E0",
+    teaser: "طبقة الوكيل الأصلية لـ Salesforce، تعمل داخل البيانات والصلاحيات التي تملكونها أصلاً. تنطبق فقط إذا كان Salesforce نظام CRM الرسمي لديكم أصلاً، وهي أقل مسار احتكاكاً عندما يكون كذلك.",
+  },
+];
+
+const fallbackFaqs = [
+  { question: "كيف تقررون أي منصة وكلاء ذكاء اصطناعي تستخدمونها لعميل؟", answer: "نبدأ من سير عملكم الفعلي، لا منصة مفضلة. أثناء الاكتشاف ننظر لما يحتاج الوكيل لمسه من أنظمة، هل تفتقر أي منها لواجهة API حديثة، هل يريد فريقكم تعديل منطق الوكيل مباشرة لاحقاً، هل يستبعد متطلب إقامة بيانات أو امتثال منصة سحابية مُدارة، وهل Salesforce نظام CRM الرسمي لديكم أصلاً. تلك الإجابات عادة تشير بوضوح لمنصة واحدة، أحياناً لأداة محددة واحدة ضمنها، قبل أن نصمم خطوة واحدة." },
+  { question: "هل تستطيعون نقلنا بين المنصات بعد أن نبدأ بواحدة؟", answer: "نعم. نراجع ما بُني أصلاً، نعيد بناء الأجزاء التي تستحق الاحتفاظ بها على المنصة الجديدة، ونتحقق من الإصدار الجديد مقابل القديم قبل التحويل. هذا يحدث أكثر مما تتوقعون، عادة عندما ينمو سير عمل بدأ بسيطاً منطقاً لم تعد أداة بناء بلا كود تستطيع التعبير عنه بنظافة." },
+  { question: "هل نحتاج امتلاك ترخيص لإحدى هذه الأدوات أصلاً؟", answer: "يعتمد على المنصة. Salesforce Agentforce يتطلب ترخيص ومنظمة Salesforce نشطة قبل أن يكون بناء وكيل منطقياً هناك. n8n وGumloop وLindy وPipedream لا تتطلب شيئاً مسبقاً. إذا لم يكن لديكم حساب أصلاً، نساعدكم في اختيار وإعداد واحد كجزء من المشروع. إذا كنتم تشغّلون أصلاً إحدى هذه الأدوات، نبني ضمن ما لديكم." },
+  { question: "كيف تختلف التكلفة حسب المنصة؟", answer: "بشكل أساسي حسب كم منطق مخصص يحتاجه الوكيل مقابل كم تغطيه مكتبة المنصة الموجودة أصلاً، وكم نظاماً يحتاج الاتصال به. وكيل Gumloop أو Lindy يستخدم موصلات مدمجة غالباً عادة أسرع وأرخص للبناء من وكيل Pipedream أو n8n يحتاج خطوات كود مخصصة لنظام داخلي دون موصل جاهز. تسعير Agentforce يعتمد بشكل أساسي على كم كائن Salesforce ومجموعة صلاحيات يلمسها الوكيل. نحدد نطاق وسعر كل مشروع فردياً بعد مكالمة اكتشاف بدلاً من نشر معدل ثابت لن يعكس ما يحتاجه سير عملكم فعلياً." },
+  { question: "هل يستطيع مشروع واحد استخدام أكثر من واحدة من هذه الأدوات معاً؟", answer: "نعم، وليس غير معتاد. نمط شائع هو وكيل مبني على Gumloop أو Lindy يستدعي خطوة كود Pipedream أو n8n لجزء منطق مخصص واحد لا تغطيه أي عقدة بصرية، أو وكيل مدمج في Salesforce يحوّل مهمة لمنصة عامة الغرض لشيء خارج نظام CRM. نصمم عبر حدود المنصات عندما يكون ذلك فعلياً الطريقة الأفضل لحل المشكلة، بدلاً من إجبار كل شيء عبر أداة واحدة لأنها التي بدأنا بها المحادثة." },
+  { question: "هل تبنون وكلاء خارج هذه المنصات الخمس المحددة؟", answer: "نعم. بعض سير العمل تُخدَم بشكل أفضل بوكيل مبني كلياً بكود مخصص من أي من المنصات في هذه الصفحة، خاصة عندما يستبعد الأداء عند الحجم، التكلفة عند الحجم الكبير، أو متطلب محدد جداً أداة بناء جاهزة. سنخبركم بصدق عندما يكون ذلك المسار الأفضل بدلاً من إجبار ملاءمة غير موجودة." },
+  { question: "ماذا لو أردنا فقط تجربة أداة بناء وكلاء مجانية أولاً قبل توظيف أحد؟", answer: "هذه طريقة معقولة لتعلم ما يستطيع وكيل فعله. OpenAI وGoogle وMicrosoft كل منها ينشر حزم تطوير وأدوات مجانية أو منخفضة التكلفة لبناء وكيل بأنفسكم، وتستحق الاستخدام إذا أراد أحدكم أو أحد فريقكم التجربة العملية. ما لا تعطيكم إياه هو نظام مُسلَّم، مُختبَر، ومُراقَب مبني حول سير عملكم وبياناتكم الفعليين، تلك هي الفجوة التي نسدها بمجرد استعدادكم لتجاوز تجربة شخصية." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_agents_tools')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'أدوات ومنصات وكلاء الذكاء الاصطناعي التي نبني بها',
+    url: 'https://lenooai.com/ar/services/ai-agents/tools',
+    description: 'أدوات بناء ومنصات وكلاء الذكاء الاصطناعي التي تنفذها Lenoo AI للعملاء الإماراتيين: n8n وGumloop وLindy وPipedream وSalesforce Agentforce.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'تنفيذ منصات وكلاء الذكاء الاصطناعي: التسعير حسب المنصة ونطاق العمل. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر.' },
+    serviceType: 'AI Agent Platform Implementation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'وكلاء الذكاء الاصطناعي', item: 'https://lenooai.com/ar/services/ai-agents' },
+      { '@type': 'ListItem', position: 3, name: 'الأدوات', item: 'https://lenooai.com/ar/services/ai-agents/tools' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<ArBaseLayout
+  title="أدوات ومنصات وكلاء الذكاء الاصطناعي التي نبني بها | Lenoo AI"
+  description="أدوات بناء ومنصات وكلاء الذكاء الاصطناعي التي تنفذها Lenoo AI للعملاء الإماراتيين: n8n وGumloop وLindy وPipedream وSalesforce Agentforce."
+  canonicalPath="/ar/services/ai-agents/tools"
+  enPath="/services/ai-agents/tools"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services/ai-agents" style="color:inherit;text-decoration:none;opacity:0.65;">وكلاء الذكاء الاصطناعي</a><span style="opacity:0.4;padding:0 4px;"> / </span>الأدوات</div>
+    <h1>أدوات وكلاء الذكاء الاصطناعي <span class="gradient-text">والمنصات التي نبني بها</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      لسنا محصورين بمنصة وكلاء ذكاء اصطناعي واحدة. تبني Lenoo AI على الأدوات أدناه وتختار أيها يناسب سير عملكم، راحة فريقكم التقنية، والمنظومة التي تشغّلونها أصلاً، لا الأداة التي نفضّل بيعها.
+    </p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:2rem;">
+      <button onclick="openModal(this)" data-source="ar_ai_agents_tools_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#platforms" class="btn-outline">شاهدوا الأدوات ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- INTRO -->
+<section class="section" aria-labelledby="intro-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="intro-heading" style="margin-bottom:1.5rem;">شريك تنفيذ واحد، أدوات عديدة</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        ابحثوا عن "أداة بناء وكيل ذكاء اصطناعي" أو "منصة وكيل ذكاء اصطناعي" وستجدون عشرات المزودين، كل منهم مقتنع أن منتجه الوحيد الذي يستحق الاستخدام. نحن لسنا مزوداً. نحن وكالة تبني وكلاء لكسب العيش، ولم نجد أبداً منصة وكيل ذكاء اصطناعي واحدة تناسب كل عمل نعمل معه. فريق توظيف على Salesforce يحتاج شيئاً مختلفاً عن فريق دعم يعمل على Gmail وSlack، والذي يحتاج شيئاً مختلفاً مرة أخرى عن عمل يؤتمت نظاماً قديماً دون واجهة API عامة. لذا بدلاً من دفعكم نحو أداة واحدة، نبدأ من سير عملكم ومنظومتكم الحالية، ثم نختار المنصة التي تناسب فعلياً.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        هذا يعني أيضاً أننا لسنا سوق وكلاء ذكاء اصطناعي أو متجراً يبيعكم ترخيصاً ويمضي. نصمم الوكيل، نبنيه على أي منصة منطقية، نختبره مقابل بياناتكم الحقيقية، ونسلّم شيئاً يستطيع فريقكم تشغيله فعلياً. أدناه القائمة الحالية للمنصات التي ننفذها، كل منها بصفحتها الخاصة تغطي كيف نستخدمها، من تناسب، وما نبنيه عادة.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        القرار يحدث أثناء الاكتشاف، قبل أن نصمم خطوة واحدة. نسأل أي أنظمة يحتاج الوكيل القراءة منها والكتابة إليها، هل تفتقر أي منها لواجهة API حديثة، كم فريقكم تقني وهل يريدون تعديل منطق الوكيل مباشرة بعد الإطلاق، هل تحدد قاعدة إقامة بيانات أو امتثال أين يمكن أن تعيش بيانات الوكيل، وهل Salesforce نظام CRM الرسمي لديكم أصلاً. تلك الإجابات عادة تشير بوضوح لفئة منصة واحدة، وغالباً لأداة محددة واحدة ضمنها، قبل وصولنا للتصميم التقني بكثير. إذا كانت منصتان ستعملان فعلياً كلتاهما، نقول ذلك ونترك التكلفة ومهارات فريقكم الحالية تحسم الأمر.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORY COMPARISON -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="category-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="category-heading" style="margin-bottom:1.5rem;">ثلاث فئات من منصات وكلاء الذكاء الاصطناعي، ومتى تناسب كل منها</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        أدوات بناء وكلاء مخصصة بلا كود مثل Gumloop وLindy تتبادل قدراً صغيراً من المرونة مقابل السرعة والوضوح. منطق الوكيل يجلس على لوحة أو داخل تكامل مُعَدّ، شيء يستطيع شخص غير تقني في فريقكم النظر إليه وفهمه وغالباً تعديله مباشرة، دون الاتصال بنا لكل تغيير صغير في الصياغة. Gumloop يميل لوضوح بصري للتفكير نفسه. Lindy يميل للاتساع، مكتبة تكامل أصلي واسعة جداً تُطلق وكيلاً بسرعة عندما تكون منظومتكم معظمها أدوات SaaS سائدة تتصل بها أصلاً. هذه تناسب الأعمال دون مطور داخلي التي لا تزال تريد منصة إدارة وكلاء ذكاء اصطناعي حقيقية وعاملة تستطيع الرؤية داخلها، لا صندوقاً أسود.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        المنصات القائمة على الكود للمطورين مثل Pipedream وn8n تكسب مكانها لحظة أن يصبح منطق سير عمل محدداً جداً لتعبّر عنه مكتبة عقد بصرية بنظافة، واجهة API داخلية بمصادقة غير معتادة، حساب بقواعد عمل حقيقية خلفه، أو تفريع يستمر باحتياج استثناء واحد آخر. كلاهما يجعل كل خطوة كوداً حقيقياً. الفرق بينهما بشكل أساسي هو الاستضافة: n8n يُستضاف ذاتياً، وهذا يهم عندما تقول قاعدة امتثال أو إقامة بيانات أن مدخل الوكيل لا يستطيع مغادرة بنية تحتية تتحكمون بها، بينما Pipedream يعمل على بنيته التحتية المُدارة الخاصة وهو قائم على الكود من الأساس بدلاً من بصري أولاً مع كود كمخرج طوارئ.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        المنصات المدمجة المؤسسية فئة وحيدة هنا: Salesforce Agentforce. ليست منصة وكيل ذكاء اصطناعي عامة الغرض تتنافس على الميزات كما تفعل الأربع الأخرى. توجد تحديداً للأعمال التي تشغّل Salesforce أصلاً كنظام CRM الرسمي، وقيمتها الكاملة هي أن الوكيل يقرأ ويكتب داخل البيانات والصلاحيات التي بنيتموها أصلاً، لا أداة خارجية تصل عبر واجهة API. إذا لم تكونوا على Salesforce، هذه الفئة لا تنطبق عليكم إطلاقاً، وإحدى المنصات عامة الغرض أعلاه دائماً تقريباً نقطة البداية الأفضل.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- HONEST FREE SECTION -->
+<section class="section" aria-labelledby="free-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="free-heading" style="margin-bottom:1.5rem;">ماذا عن أدوات الوكلاء المجانية من OpenAI أو Google أو Microsoft؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        إذا كنتم تبحثون عن خيار وكيل ذكاء اصطناعي مجاني، أو نقطة بداية مجانية، يستحق الأمر الصراحة: OpenAI وGoogle وMicrosoft كل منها يشحن عروضه الخاصة لبناء وكلاء. Agents SDK من OpenAI عموماً يعني حزمة أدوات وأدوات بأسلوب Assistants المبنية حول نماذجها. أطر عمل وكلاء Google تشير لأطر عمل Google للوكلاء وVertex AI Agent Builder. Microsoft عادة تعني Copilot Studio أو أدوات الوكلاء داخل Azure AI. الثلاثة حقيقية، وليست خدعة، مبنية لمطور يريد التجربة منفرداً، نموذجاً أولياً لفكرة، أو ربط شيء من الصفر بكود ومفاتيح API.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        ما لا تعطيكم إياه هو نظام مُسلَّم. حزمة تطوير مجانية تعطيكم نقطة بداية، لا معالجة أخطاء للحالات الحدية التي ستطرحها بياناتكم الحقيقية، لا مراقبة فتعرفون متى تنحرف قرارات الوكيل عما تريدونه، لا حد صلاحيات محدد فلا يستطيع اتخاذ إجراء لا يجب أن يتخذه، ولا أحد على الطرف الآخر عندما يغيّر تطبيق متصل واجهة API الخاصة به وينكسر شيء بصمت. بناء تلك الطبقة معظم العمل الفعلي في وكيل إنتاجي، وهو الجزء الذي تتركه أداة مجانية كلياً عليكم.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        فالإجابة الصادقة هي: إذا أراد أحدكم أو أحد فريقكم تعلم كيف تعمل الوكلاء ببناء واحد منفرداً، ابدأوا بأي من هذه الأدوات المجانية يطابق مزود سحابتكم الحالي، توجد قيمة حقيقية في تلك الخبرة العملية. إذا أردتم وكيلاً يشغّل سير عمل عملكم الفعلي، مُختبَراً مقابل بياناتكم الحقيقية، مُراقَباً بعد الإطلاق، ومُصاناً عندما يتغير شيء من الطرف الآخر، فذلك مشروع مختلف، وهو الذي نبنيه. نقطة بداية مجانية ونظام مُسلَّم ومُصان يحلان مشكلتين مختلفتين، ولن نتظاهر بعكس ذلك لإتمام بيعة.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">جربتم أداة وكيل مجانية أصلاً ووصلتم لحدودها؟ أخبرونا بما تحاولون بناءه، وسنخبركم بصدق بما يتطلبه جعله جاهزاً للإنتاج.</p>
+    <button onclick="openModal(this)" data-source="ar_ai_agents_tools_mid" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+  </div>
+</section>
+
+<!-- PLATFORM GRID -->
+<section id="platforms" class="section" style="background:#f0f3ff;" aria-labelledby="platforms-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="platforms-heading">المنصات التي نبني عليها</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">خمس أدوات وكلاء ذكاء اصطناعي، خمس قوى مختلفة. كل صفحة أدناه تغطي كيف نستخدم المنصة، من تناسب، وما نبنيه عادة.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      {tools.map((tool) => (
+        <div class="value-card">
+          <div class="tool-logo-wrap"><img src={`https://cdn.simpleicons.org/${tool.logoSlug}/${tool.logoColor}`} alt={`شعار ${tool.name}`} width="32" height="32" loading="lazy" /></div>
+          <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">{tool.name}</h3>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0 0 1rem;">{tool.teaser}</p>
+          <a href={`/ar/services/ai-agents/tools/${tool.slug}`} class="learn-link">اعرفوا المزيد <span class="material-symbols-outlined" aria-hidden="true" style="font-size:16px;">arrow_forward</span></a>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- WRAP-UP -->
+<section class="section-sm" aria-label="كيف نختار">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        لا شيء من المنصات الخمس أعلاه مُرتَّب، ولا توجد واحدة أفضل مطلقاً؛ كل منها تحل شكلاً مختلفاً من المشاكل. ما يبقى ثابتاً عبر كل مشروع هو كيف نعمل: نحدد نطاق القرار الذي يحتاج الوكيل اتخاذه أولاً، نسمّي المنصة التي تناسبه ثانياً، ونبني بتسجيل ومراقبة وتوثيق مشمولة فلا يعتمد فريقكم علينا لكل تغيير صغير لاحقاً. إذا لم يطابق مشروعكم بنظافة أي منصة واحدة، أو احتاج فعلياً اثنتين تعملان معاً، نصمم عبر تلك الحدود بدلاً من إجبار كل شيء عبر أداة واحدة لأنها التي بدأنا بها المحادثة.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- BACK TO HUB -->
+<section class="section-sm" aria-label="ذات صلة">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1rem;">تبحثون عن الصورة الأكبر؟ شاهدوا <a href="/ar/services/ai-agents" class="learn-link" style="display:inline;">نظرة وكلاء الذكاء الاصطناعي الشاملة ←</a></p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للعمل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">غير متأكدين أي منصة وكلاء تناسب عملكم؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجزوا مكالمة اكتشاف مجانية مع فريقنا في دبي. سننظر في سير عملكم ومنظومتكم الحالية، ثم نخبركم أي منصة منطقية، بصدق.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون التزام</span>
+          <span class="cta-trust-badge">✓ ضمان استرداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_ai_agents_tools_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</ArBaseLayout>
+
+<style>
+.tool-logo-wrap { background:#fff; border:1px solid #e6e9f0; border-radius:12px; width:56px; height:56px; display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+.value-card { display:flex; flex-direction:column; }
+</style>
