@@ -1,0 +1,328 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "How accurate is an AI voice agent at confirming COD orders?", answer: "For a structured call like a COD confirmation, accuracy is high because the conversation is narrow: confirm the order, confirm the address, confirm the amount due, ask if anything needs to change. The AI is trained on your product catalog and order data, so it isn't guessing. Calls it can't resolve, a wrong number, a customer who wants to negotiate the price, get flagged and routed to a person instead of forced through." },
+  { question: "Which couriers and aggregators can the AI actually integrate with?", answer: "We connect to the courier and fulfillment APIs you're already using, Aramex is the most common one we build against in the UAE, along with other regional couriers and in-house delivery fleets. If your courier doesn't expose a public API, we can usually still pull tracking status through webhook feeds or scheduled syncs, though real-time updates work best with a proper API connection." },
+  { question: "Can the AI handle refunds and exchanges, or just answer questions about them?", answer: "Both, within limits you set. For clear-cut cases, wrong size, damaged item, standard return window, the AI can start the return, generate a return label or pickup request, and update the order status without a human touching it. Anything outside your policy, a dispute, a bulk order, a VIP customer, gets escalated with the full order history attached so your team isn't starting from zero." },
+  { question: "Does the AI work in Arabic as well as English?", answer: "Yes, and it switches mid-conversation if the customer does. A UAE ecommerce audience is genuinely mixed, and a customer who opens in English but drops into Arabic halfway through a WhatsApp thread is common. The AI follows the customer, not the other way around." },
+  { question: "Will this replace our customer support team?", answer: "No, and that's not the goal. The AI takes the repetitive volume, order status, COD confirmation, basic return questions, off your team's plate so the people you already have spend their time on the customers who actually need a human: complaints, high-value orders, anything ambiguous. Most stores don't shrink their support team after this. They stop needing to grow it as fast as order volume grows." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Automation for E-Commerce Businesses in the UAE",
+    "url": "https://lenooai.com/industries/ecommerce",
+    "description": "Custom AI systems for online-first UAE ecommerce brands: COD order confirmation voice agents, abandoned cart WhatsApp recovery, support chatbots, and returns automation.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for E-Commerce"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "E-Commerce AI", "item": "https://lenooai.com/industries/ecommerce" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation for E-Commerce Businesses in the UAE: The Complete Guide | Lenoo AI"
+  description="AI for ecommerce UAE: COD confirmation voice agents, WhatsApp cart recovery, support chatbots and returns automation for online-first Dubai and UAE ecommerce brands."
+  canonicalPath="/industries/ecommerce"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>E-Commerce</div>
+    <h1>AI Automation for<br><span class="gradient-text">E-Commerce Businesses</span> in the UAE</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI systems for online-first UAE ecommerce brands: COD order confirmation, abandoned cart recovery on WhatsApp, support chatbots, and returns automation. Built for the way people actually buy online in this market, cash on delivery and all.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ecommerce_hero" class="btn-primary">Book a Free E-Commerce AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1611746869696-d09bce200020?w=1600&q=80&auto=format&fit=crop" alt="Ecommerce fulfillment warehouse packing online orders for delivery" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 50%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "~70%", caption: "average cart abandonment rate across ecommerce (Baymard Institute)" },
+      { value: "98%", caption: "typical WhatsApp message open rate vs. roughly 20% for email" },
+      { value: "COD", caption: "still one of the most common payment methods for UAE online orders" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY COD MAKES THIS THE EASIEST ROI CASE -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why COD alone makes this the easiest AI ROI case in the market</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Cash on delivery is still how a large share of the UAE buys online.</strong> That's great for conversion at checkout and terrible for fulfillment cost, because every COD order needs a human to call and confirm the address, the item, and the amount before it ships. Skip the call and your return-to-origin rate climbs. Do the call manually and you've hired a team whose only job is asking the same four questions on repeat, all day.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>A voice agent does that exact call, at any volume, without getting tired by the 200th order.</strong> It reads the order back, confirms the address and the amount due, asks if anything needs to change, and only escalates to a person when something's actually unusual: a customer who wants to negotiate, a mismatched address, a language it can't parse. That's the part of the job that needed a human. The confirmation script never did.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Once that's handled, the rest of the order lifecycle follows the same logic.</strong> Cart abandonment recovery on WhatsApp, order status updates, review requests, none of these need judgment either. They need speed and consistency, which is exactly what makes them a fit for AI rather than a growing headcount line.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&q=80&auto=format&fit=crop" alt="Delivery courier handing a package to a customer for a cash on delivery order" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE E-Commerce Businesses</h2>
+      <p>Six specific systems we deploy for online-first UAE ecommerce brands, each integrated with your store platform and courier network.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">call</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">COD Order Confirmation Voice Agent</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Calls every cash-on-delivery order automatically to confirm the item, the address, and the amount due before it ships. Reschedules or cancels on request, and flags anything unusual to a human instead of pushing it through.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Runs every confirmation call the same day the order is placed, at any volume</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">shopping_cart</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Abandoned Cart WhatsApp Recovery</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends a timed WhatsApp message when a cart is left behind, with the exact items, a working checkout link, and an offer to answer questions before the customer buys elsewhere.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">WhatsApp message open rates run far higher than recovery email</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">chat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Customer Support Chatbot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Answers product questions, sizing, order status, and policy questions on your website and WhatsApp, 24/7, in Arabic and English. Escalates anything it can't resolve with full conversation context.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Handles routine questions instantly instead of a next-business-day reply</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">undo</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Returns & Exchange Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Starts the return or exchange, checks it against your policy, and generates the pickup or label request without a support agent doing it manually. Edge cases route to your team automatically.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Cuts the back-and-forth a manual return request usually takes</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">local_shipping</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Order Status Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Answers "where's my order" instantly by pulling live courier tracking data, instead of a customer waiting on a support queue for information the system already has.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Deflects the single most common support ticket in ecommerce</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">rate_review</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Review Request Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends a review request timed to actual delivery confirmation, not a fixed number of days after purchase, so the ask lands when the product is fresh in the customer's hands.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Timed to delivery data instead of guesswork</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems UAE-compliant, bilingual Arabic &amp; English, and integrated with your existing store and courier tools.</p>
+      <button onclick="openModal(this)" data-source="ecommerce_mid" class="btn-primary">Book a Free E-Commerce AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- ORDER JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="journey-heading">One order journey, handled end to end</h2>
+      <p>What the AI takes care of from checkout to review, without adding headcount to your support or fulfillment team.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The order confirmed without a manual call</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A customer checks out COD. Within hours, not the next day, the AI has already called.</p>
+        <ul class="journey-list">
+          <li>Reads the order back, confirms the item, size, and delivery address are correct</li>
+          <li>Confirms the amount due and asks if anything in the order needs to change</li>
+          <li>Marks the order confirmed and ready to ship, or flags it for a human if something's off</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The delivery update that heads off a support ticket</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Instead of the customer messaging to ask where their order is, the AI reaches them first.</p>
+        <ul class="journey-list">
+          <li>Sends a proactive WhatsApp update when the order ships and again when it's out for delivery</li>
+          <li>Answers "where's my order" instantly if the customer messages anyway, pulling live courier data</li>
+          <li>Flags a delayed or failed delivery attempt before it turns into a complaint</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The review asked for automatically</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Once delivery is confirmed, the AI closes the loop while the purchase is still top of mind.</p>
+        <ul class="journey-list">
+          <li>Sends a review request tied to actual delivery confirmation, not a guessed delay window</li>
+          <li>Handles any last question about the product or a return, without the customer starting a new thread</li>
+          <li>Routes a genuinely unhappy customer straight to your team, not into a generic support queue</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BIGGEST IMPACT -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact for UAE ecommerce</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">call</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">COD confirmation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Cash on delivery converts well at checkout and costs the most to fulfill, because every order needs a confirmation call before it ships. A voice agent doing that call removes the single biggest manual bottleneck between an order and a shipped package.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">The confirmation call is repetitive by design, which is exactly what AI handles well</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">shopping_cart</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Cart recovery</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Cart abandonment is a fact of ecommerce; Baymard Institute's ongoing research puts the average rate near 70% across industries. Recovery messages sent on WhatsApp instead of email land where UAE shoppers actually read.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">A recovered cart costs nothing to acquire twice</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">chat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Support deflection</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Order status, sizing, and policy questions make up most inbound support volume for a typical online store. Answering them instantly, at any hour, means your support team spends its time on the customers who actually need a person.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">The routine questions never need to wait for business hours again</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Shopify/Salla/Zid integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">The AI needs to read and write order data directly from your store platform, whether that's Shopify, Salla, or Zid. A system bolted on the side that doesn't sync order status in real time creates more confusion than it solves.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Courier/aggregator integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Order status answers are only useful if they're accurate, which means a live connection to your courier, Aramex and other regional carriers being the ones we build against most. Stale tracking data is worse than no tracking data.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">COD-specific flows</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Generic chatbot tooling isn't built around cash on delivery as the dominant payment method. Confirmation calls, RTO reduction, and amount-due verification need to be first-class flows, not an afterthought bolted onto a system built for card-only checkout.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Arabic + English support</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A UAE customer base moves between Arabic and English within the same conversation. The AI needs to follow that switch naturally, on both the voice agent and the chat channels, without forcing the customer to pick a language upfront.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1612130536441-95ece5dcbb86?w=1200&q=80&auto=format&fit=crop" alt="Warehouse staff scanning packages for an ecommerce order in the UAE" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">~70%</p>
+        <p style="color:#42474e; font-size:0.875rem;">average cart abandonment rate across ecommerce (Baymard Institute)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">98%</p>
+        <p style="color:#42474e; font-size:0.875rem;">typical WhatsApp open rate, against roughly 20% for marketing email</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">COD</p>
+        <p style="color:#42474e; font-size:0.875rem;">remains a widely used payment method for online orders across the UAE and wider Gulf</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Return-to-Origin Costs</p>
+          <p style="color:#42474e; line-height:1.7;">Stores we talk to consistently point to unconfirmed COD orders as their single biggest source of return-to-origin cost: an item ships, the customer isn't reachable or changes their mind, and the courier trip is wasted both ways. A confirmation step before dispatch is the standard fix, the question is just whether a person or an AI does the confirming.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Where Support Volume Actually Goes</p>
+          <p style="color:#42474e; line-height:1.7;">Talk to any UAE ecommerce support team and the same three ticket types dominate: "where's my order," sizing or product questions, and return requests. None of these require judgment. They require speed and an accurate connection to order data, which is exactly what a well-integrated AI system provides.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Messaging Beats Email in This Market</p>
+          <p style="color:#42474e; line-height:1.7;">WhatsApp is the dominant messaging channel across the UAE, and message open rates on it run far ahead of email. Cart recovery, delivery updates, and review requests sent through WhatsApp get seen. The same messages sent by email, especially to a mobile-first buyer, mostly don't.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for UAE ecommerce</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free E-Commerce AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll look at your order volume, your COD share, and where support tickets are actually coming from, then show you exactly what we'd build first. 30 minutes, no obligation.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="ecommerce_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book a Free E-Commerce AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    /* Order journey list markers (reused inside static bento-grid-3 cards) */
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>

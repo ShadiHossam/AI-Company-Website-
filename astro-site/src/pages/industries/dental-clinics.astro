@@ -1,0 +1,327 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "How long does insurance pre-approval usually take, and can AI speed it up?", answer: "Turnaround depends entirely on the insurer and the treatment type; some pre-approvals clear in a day, others take over a week if documentation is incomplete on the first submission. The AI assistant doesn't change the insurer's own processing time, but it removes the most common cause of delay: incomplete or incorrectly formatted submissions, and it chases the response automatically instead of a staff member checking a portal manually." },
+  { question: "Does a treatment plan follow-up bot actually increase acceptance, or just remind patients?", answer: "Both. The bot follows up on a set cadence with the specific plan details and cost breakdown the patient already saw in clinic, rather than a generic reminder. Clinics we talk to say the biggest lift comes simply from a plan not going silent after the consultation, since a large share of unaccepted plans are cases where the patient meant to say yes and never got asked again." },
+  { question: "What's a reasonable recall cadence for a dental clinic in the UAE?", answer: "Most general clinics recall patients every 6 months for a check-up and cleaning, with shorter intervals for periodontal maintenance or ongoing treatment plans. The recall system can run different cadences per patient type automatically, so a routine check-up patient and someone mid-treatment don't get the same generic reminder." },
+  { question: "Is this compliant with DHA rules around patient messaging?", answer: "The systems are built to stay within DHA-compliant messaging practices: no diagnosis or clinical advice delivered by the AI, clear identification that the patient is messaging an automated assistant, and a defined handoff to clinical staff for anything sensitive. We review the specific messaging content with your clinic before anything goes live." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Automation for Dental Clinics in the UAE",
+    "url": "https://lenooai.com/industries/dental-clinics",
+    "description": "Custom AI systems for UAE dental clinics: treatment plan follow-up, insurance pre-approval assistance, appointment and recall reminders, new patient intake, and WhatsApp booking.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Dental Clinics"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Dental Clinic AI", "item": "https://lenooai.com/industries/dental-clinics" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation for Dental Clinics in the UAE: The Complete Guide | Lenoo AI"
+  description="How UAE dental clinics use AI for treatment plan follow-up, insurance pre-approval, appointment and recall reminders, new patient intake, and WhatsApp booking."
+  canonicalPath="/industries/dental-clinics"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Dental Clinics</div>
+    <h1>AI Automation for<br><span class="gradient-text">Dental Clinics</span> in the UAE</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI systems for UAE dental clinics: treatment plan follow-up, insurance pre-approval assistance, appointment reminders, and WhatsApp booking. Bilingual, DHA-aware, and backed by our 100% refund guarantee.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="dental_clinics_hero" class="btn-primary">Book Free Dental Clinic AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1600&q=80&auto=format&fit=crop" alt="Dental clinic treatment room in the UAE" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 45%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "9×", caption: "more likely a patient responds when followed up within 5 minutes (MIT)" },
+      { value: "200+", caption: "nationalities live in the UAE, most defaulting to WhatsApp for bookings" },
+      { value: "24/7", caption: "AI coverage for booking, reminders, and treatment plan follow-up" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY DENTAL & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why the treatment plan you propose isn't the one that gets paid for</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>The gap between "presented" and "accepted" is where clinics lose the most revenue.</strong> A patient sits through a consultation, hears the treatment plan, nods, and leaves. Without a structured follow-up, that plan sits in the practice management system untouched, and the patient's intent to proceed fades within days, not because they decided against it, but because nobody asked again.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Insurance pre-approval is a full-time administrative task in itself.</strong> Higher-value treatments in the UAE usually require pre-approval from the patient's insurer before work can start. Chasing that approval, checking portals, resubmitting incomplete forms, following up on silence, consumes hours of front-desk time per week and delays treatment starts that would otherwise happen immediately.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Recall and retention depend entirely on someone remembering to reach out.</strong> A patient due for a 6-month check-up doesn't call the clinic to remind them; the clinic has to reach out first. When that reminder system is manual, it slips, and the patient either goes elsewhere or simply stops coming back.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=80&auto=format&fit=crop" alt="Dentist reviewing a treatment plan with a patient in a UAE dental clinic" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for Dental Clinics</h2>
+      <p>Six specific systems our Dubai AI agency deploys for dental clinics across the UAE, each integrated with your practice management software.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Treatment Plan Follow-up Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Follows up on every unaccepted treatment plan with the specific cost breakdown and next steps the patient already saw in clinic, on a set cadence, without a coordinator having to remember who's still pending.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Plans get a follow-up instead of going silent</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Appointment &amp; Recall Reminders</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends appointment confirmations and reminders ahead of every visit, and runs recall cadences automatically for check-ups, cleanings, and periodontal maintenance based on each patient's treatment history.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Recall runs on its own schedule, per patient type</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">verified</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Insurance Pre-Approval Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Prepares and submits pre-approval requests with the documentation insurers actually need, tracks each submission, and chases a response automatically instead of a staff member checking a portal by hand.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Fewer resubmissions from incomplete first-pass paperwork</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">person_add</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">New Patient Intake Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Collects medical history, insurance details, and consent forms before the first visit, so the chair time is spent on treatment, not paperwork the patient could have filled in from home.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Intake completed before the patient walks in</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">chat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">WhatsApp Booking Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Lets patients check availability and book directly over WhatsApp, in Arabic or English, without a phone call during a clinic's busiest hours. Escalates anything clinical to staff immediately.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Booking handled where patients already message</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_busy</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">No-show Reduction System</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends confirmation requests ahead of each appointment and automatically opens the slot to the waitlist the moment a patient doesn't confirm, instead of a chair sitting empty.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Open slots get filled before the appointment time arrives</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems are DHA-aware, bilingual, and integrated with your practice management software.</p>
+      <button onclick="openModal(this)" data-source="dental_clinics_mid" class="btn-primary">Book Free Dental Clinic AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- TREATMENT PLAN JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="dental-journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="dental-journey-heading">One treatment plan, start to accepted</h2>
+      <p>What the AI handles between the consultation and the confirmed booking, while your team focuses on the chair.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The plan that gets a follow-up instead of silence</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">The consultation ends. The AI's job starts.</p>
+        <ul class="journey-list">
+          <li>Sends the patient a written summary of the proposed treatment and cost the same day</li>
+          <li>Follows up on a set cadence if the plan hasn't been accepted or scheduled</li>
+          <li>Answers routine cost and process questions instantly, escalating anything clinical to staff</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The insurance approval chased automatically</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">If the treatment needs insurer pre-approval, the AI keeps the paperwork moving instead of your front desk.</p>
+        <ul class="journey-list">
+          <li>Prepares the pre-approval submission with the documentation the insurer requires</li>
+          <li>Tracks the request status and follows up on delays without a manual portal check</li>
+          <li>Notifies the patient and clinic the moment approval comes through, so booking can happen immediately</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The recall that brings patients back</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Once treatment is complete, the relationship doesn't stop. The AI keeps the recall cycle running.</p>
+        <ul class="journey-list">
+          <li>Schedules the next recall based on the treatment type and clinical recommendation on file</li>
+          <li>Sends a reminder as the recall date approaches, with a direct booking link</li>
+          <li>Flags patients who've gone quiet past their expected recall window for a personal outreach</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Treatment Plan Follow-up</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">This is where the revenue actually lives. A treatment plan a patient nodded along to in the room is not revenue until it's booked and completed, and the single biggest lever most clinics have is simply not letting that plan go quiet after the patient walks out.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Every accepted plan started with a follow-up someone remembered to send</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">verified</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Insurance Admin</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Pre-approval paperwork is repetitive, deadline-sensitive, and almost entirely about correct documentation the first time. Automating the submission and follow-up removes the most common cause of delay: an incomplete form sitting unresubmitted for days.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Submissions tracked and chased without a manual portal check</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Recall/Retention</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Recall is a volume game: hundreds of patients due at different times, on different cycles. An automated recall system that runs quietly in the background keeps the chairs full without the front desk having to manually track who's overdue.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Recall reminders sent on schedule, per patient, without manual tracking</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">DHA-compliant messaging</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">The AI never delivers a diagnosis or clinical advice; it handles scheduling, admin, and follow-up, and clearly identifies itself as an automated assistant. Anything clinical routes to a member of staff.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">PMS integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Treatment plans, recall dates, and patient records need to live in your practice management system, not a parallel spreadsheet. The AI reads and writes directly into the system your staff already use.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Bilingual patient communication</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A UAE patient base spans dozens of first languages. Booking and follow-up in Arabic and English, at minimum, reaches far more of a clinic's actual patients than English-only messaging.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Sensitive-topic handoff to staff</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Pain, anxiety, cost concerns, and anything clinical need a clear, fast escalation path to a human. The AI's job is to recognize the moment it should step back, not to push a conversation it shouldn't be having.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1579397256979-cc326aefe273?w=1200&q=80&auto=format&fit=crop" alt="Front desk of a dental clinic handling patient bookings and insurance paperwork" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">9×</p>
+        <p style="color:#42474e; font-size:0.875rem;">more likely a follow-up lands when sent within 5 minutes of the moment of interest (MIT)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">200+</p>
+        <p style="color:#42474e; font-size:0.875rem;">nationalities living in the UAE, reflected in most clinics' patient base</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">24/7</p>
+        <p style="color:#42474e; font-size:0.875rem;">coverage for booking requests, reminders, and treatment plan follow-up</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">The Follow-up Gap</p>
+          <p style="color:#42474e; line-height:1.7;">Clinics we talk to consistently describe the same pattern: a patient hears a treatment plan, seems receptive, and then never follows up, and neither does the clinic. The MIT finding on 5-minute response speed was built around sales leads, but the underlying mechanism, that intent fades fast without a prompt, applies just as directly to a dental treatment plan sitting unbooked.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Insurance Friction</p>
+          <p style="color:#42474e; line-height:1.7;">Front desk staff at clinics handling insurance-covered treatment routinely describe pre-approval chasing as one of the most time-consuming parts of their week, not because any single case is complex, but because the volume of portals, forms, and follow-up calls adds up across dozens of patients at once.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Recall and Retention</p>
+          <p style="color:#42474e; line-height:1.7;">Recall systems that rely on a receptionist remembering to check a list are the first thing to slip during a busy week, and a busy week is exactly when recall matters most. Automated, patient-specific recall cadences remove that dependency entirely.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for dental clinics</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Dental Clinic AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll look at how treatment plans, insurance, and recall are handled at your clinic today, and show you exactly what we'd automate first. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="dental_clinics_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Dental Clinic AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    /* Treatment plan journey list markers (reused inside static bento-grid-3 cards) */
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>
