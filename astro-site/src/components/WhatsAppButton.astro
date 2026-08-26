@@ -1,6 +1,27 @@
 ---
 import { COMPANY } from '../config/company';
+
+interface Props {
+  lang?: 'en' | 'ar';
+}
+
+const { lang = 'en' } = Astro.props;
+const formLabel = lang === 'ar' ? 'احجز استشارة مجانية' : 'Book a Free Consultation';
 ---
+
+<button
+  type="button"
+  id="form-float"
+  aria-label={formLabel}
+  title={formLabel}
+  onclick="openModal(this)"
+  data-source="floating_form_button"
+>
+  <svg viewBox="0 0 24 24" fill="none" width="24" height="24" aria-hidden="true" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 12h6M9 16h6M9 8h6"/>
+    <path d="M4 4h16v14H8l-4 4V4z"/>
+  </svg>
+</button>
 
 {COMPANY.whatsapp && (
   <a
@@ -40,6 +61,41 @@ import { COMPANY } from '../config/company';
   @media (max-width: 640px) {
     #whatsapp-float {
       bottom: 20px;
+      right: 16px;
+      width: 50px;
+      height: 50px;
+    }
+  }
+
+  #form-float {
+    position: fixed;
+    bottom: 96px;
+    right: 28px;
+    z-index: 999;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--grad-cta);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px -6px rgba(0, 138, 154, 0.5);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+  #form-float:hover {
+    transform: scale(1.1);
+    box-shadow: 0 12px 26px -6px rgba(0, 138, 154, 0.55);
+  }
+  #form-float:focus-visible {
+    outline: 2px solid #00e3fd;
+    outline-offset: 3px;
+  }
+  @media (max-width: 640px) {
+    #form-float {
+      bottom: 82px;
       right: 16px;
       width: 50px;
       height: 50px;

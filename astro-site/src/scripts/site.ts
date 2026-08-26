@@ -68,6 +68,19 @@ function toggleMenu() {
   btn.setAttribute('aria-expanded', String(!isOpen));
   document.getElementById('ham-icon')?.classList.toggle('hidden', !isOpen);
   document.getElementById('close-icon')?.classList.toggle('hidden', isOpen);
+  // Collapse any expanded mobile submenus so the menu always reopens short.
+  if (!isOpen) {
+    m.querySelectorAll<HTMLElement>('.mobile-nav-sub.open').forEach(sub => sub.classList.remove('open'));
+    m.querySelectorAll<HTMLElement>('.mobile-nav-toggle[aria-expanded="true"]').forEach(t => t.setAttribute('aria-expanded', 'false'));
+  }
+}
+
+function toggleMobileSection(btn: HTMLElement) {
+  const sub = btn.nextElementSibling as HTMLElement | null;
+  if (!sub) return;
+  const isOpen = sub.classList.contains('open');
+  sub.classList.toggle('open', !isOpen);
+  btn.setAttribute('aria-expanded', String(!isOpen));
 }
 
 let isArabic = false;
@@ -179,7 +192,7 @@ let currentStep = 1;
 function goToStep(n: number) {
   if (n > currentStep && !validateStep(currentStep)) return;
   document.querySelector('#modal #step-' + currentStep)?.classList.add('hidden');
-  [1, 2, 3].forEach(i => {
+  [1, 2].forEach(i => {
     const dot = document.getElementById('dot-' + i);
     if (!dot) return;
     dot.classList.remove('active', 'done', 'inactive');
@@ -187,16 +200,16 @@ function goToStep(n: number) {
     else if (i === n) dot.classList.add('active');
     else dot.classList.add('inactive');
   });
-  [1, 2].forEach(i => document.getElementById('line-' + i)?.classList.toggle('done', i < n));
+  document.getElementById('line-1')?.classList.toggle('done', 1 < n);
   currentStep = n;
   document.querySelector('#modal #step-' + n)?.classList.remove('hidden');
 }
 
-// Submits the qualification data collected in steps 1-2, then reveals the Calendly
-// widget in step 3. Best-effort: scheduling shouldn't be blocked by a CRM hiccup, so a
+// Submits the contact data collected in step 1, then reveals the Calendly
+// widget in step 2. Best-effort: scheduling shouldn't be blocked by a CRM hiccup, so a
 // failed submit doesn't stop the user from reaching the calendar.
 async function continueToSchedule() {
-  if (!validateStep(2)) return;
+  if (!validateStep(1)) return;
   const btn = document.querySelector('#modal [onclick="continueToSchedule()"]') as HTMLButtonElement | null;
   if (btn) btn.disabled = true;
 
@@ -208,12 +221,6 @@ async function continueToSchedule() {
     work_email:     (document.getElementById('email') as HTMLInputElement)?.value?.trim() ?? '',
     whatsapp:       countryCode + waVal.replace(/^0+/, '').replace(/\D/g, ''),
     job_title:      (document.getElementById('job-title') as HTMLInputElement)?.value?.trim() ?? '',
-    industry:       (document.getElementById('industry') as HTMLSelectElement)?.value ?? '',
-    company_size:   (document.getElementById('company-size') as HTMLSelectElement)?.value ?? '',
-    main_challenge: (document.getElementById('challenge') as HTMLTextAreaElement)?.value?.trim() ?? '',
-    budget_range:   (document.getElementById('budget') as HTMLSelectElement)?.value ?? '',
-    ai_experience:  (document.querySelector('input[name="ai-exp"]:checked') as HTMLInputElement)?.value ?? '',
-    notes:          (document.getElementById('notes') as HTMLTextAreaElement)?.value?.trim() ?? '',
     source:         'modal',
     page_source:    (document.getElementById('modal-source-field') as HTMLInputElement)?.value ?? 'unknown',
     utm_source:     sessionStorage.getItem('utm_source') ?? '',
@@ -231,7 +238,7 @@ async function continueToSchedule() {
   } catch {
     // Silent — Calendly scheduling still proceeds even if the CRM lead write failed.
   }
-  goToStep(3);
+  goToStep(2);
   if (btn) btn.disabled = false;
 }
 
@@ -244,7 +251,7 @@ window.addEventListener('message', (e: MessageEvent) => {
   if ((e.data as { event?: string })?.event !== 'calendly.event_scheduled') return;
   const modal = document.getElementById('modal');
   if (!modal?.classList.contains('open')) return;
-  modal.querySelector('#step-3')?.classList.add('hidden');
+  modal.querySelector('#step-2')?.classList.add('hidden');
   modal.querySelector('#step-success')?.classList.remove('hidden');
   const ind = modal.querySelector('#step-indicator') as HTMLElement | null;
   if (ind) ind.style.display = 'none';
@@ -331,6 +338,7 @@ declare global {
     toggleServicesDropdown: typeof toggleServicesDropdown;
     toggleIndustriesDropdown: typeof toggleIndustriesDropdown;
     toggleMenu: typeof toggleMenu;
+    toggleMobileSection: typeof toggleMobileSection;
     toggleLang: typeof toggleLang;
     openModal: typeof openModal;
     closeModal: typeof closeModal;
@@ -347,6 +355,7 @@ Object.assign(window, {
   toggleServicesDropdown,
   toggleIndustriesDropdown,
   toggleMenu,
+  toggleMobileSection,
   toggleLang,
   openModal,
   closeModal,
