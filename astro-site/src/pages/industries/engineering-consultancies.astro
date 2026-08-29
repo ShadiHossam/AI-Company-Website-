@@ -1,0 +1,297 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Can the AI handle drawing and CAD files, or only text documents?", answer: "It can index and search across drawings and CAD-derived documents (PDFs, exported sheets, spec documents) well enough to answer a question like which drawing shows the HVAC layout for level 3, or pull up the relevant spec section for a tender response. It's not editing CAD files or doing structural analysis. Think of it as a very fast, very thorough research assistant across your project archive, not a design tool." },
+  { question: "How is client and project confidentiality protected?", answer: "Access is scoped per project and per client, the same way your file server or document management system should already be set up, so the AI never surfaces one client's technical documents in response to a query about another. For sensitive government or regulated work, we also apply stricter access controls and, where relevant, keep processing within UAE-hosted infrastructure to match your data residency requirements." },
+  { question: "How much of the authority-specific requirement checking can the AI actually cover?", answer: "It's strongest at catching the recurring, well-documented requirements, standard formatting, mandatory document sets, common rejection reasons, for authorities you submit to regularly. It's a first-pass check that catches the obvious gaps before a human reviewer does the final, expert review. It doesn't replace the judgment of the engineer who signs off on the submission." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Automation for Engineering Consultancies",
+    "url": "https://lenooai.com/industries/engineering-consultancies",
+    "description": "AI systems for UAE engineering consultancies: tender response drafting, authority submission prep, RFI tracking, and document search across projects.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Engineering Consultancies"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Engineering Consultancies", "item": "https://lenooai.com/industries/engineering-consultancies" }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems.map((f) => ({
+      "@type": "Question",
+      "name": f.question,
+      "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+    }))
+  }
+];
+---
+
+<BaseLayout
+  title="AI for Engineering Consultancies in the UAE | Lenoo AI"
+  description="Lenoo AI builds AI systems for UAE engineering consultancies: tender response drafting, authority submission prep, RFI tracking, and project document search."
+  canonicalPath="/industries/engineering-consultancies"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/industries" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Engineering Consultancies</div>
+    <h1>AI for UAE<br><span class="gradient-text">Engineering Consultancies</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI systems for UAE engineering consultancies: tender response drafting, authority submission prep, RFI tracking, and document search across every project you've ever run. Bilingual, UAE-compliant, and built around confidentiality by default.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="engineering_consultancies_hero" class="btn-primary">Book a Free Engineering Consultancy AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1600&q=80&auto=format&fit=crop" alt="Engineers reviewing technical drawings and plans" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 55%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "Repeatable", caption: "most tender and submission documents draw on the same structure every time" },
+      { value: "Multiple", caption: "authorities, each with their own specific submission requirements to track" },
+      { value: "Years", caption: "of project archive most consultancies have sitting unsearched" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY THIS FITS -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why tenders and authority submissions are repeatable work disguised as bespoke work</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Every project looks unique from the outside.</strong> Different site, different client, different specification. But the process of responding to a tender, or preparing a submission for a municipality or civil defence authority, follows a structure your firm has repeated dozens of times: the same document sets, the same standard clauses, the same categories of information requested in a slightly different order each time.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>That repetition is exactly what a firm's engineers shouldn't be spending their billable hours reassembling by hand.</strong> A senior engineer drafting a tender response from a blank page is redoing work the firm has effectively already done on the last project of a similar type, just without a system that surfaces it.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Meanwhile, the archive itself is an underused asset.</strong> Years of past drawings, specs, and correspondence sit in folders that are technically searchable but practically aren't, because finding the right document means someone remembering which project it was on and digging through the file structure manually.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800&q=80&auto=format&fit=crop" alt="Engineering team reviewing project documents on a laptop" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT WE BUILD -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for Engineering Consultancies</h2>
+      <p>Six systems built around the document-heavy reality of consultancy work, each integrated with your existing project archive.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">edit_document</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Tender Response Drafting Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Assembles a first-draft tender response from your firm's own past submissions and standard content, so an engineer starts from a strong draft instead of a blank page.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">gavel</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Authority Submission Document Prep</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Assembles the required document set for a given authority submission and flags missing items against that authority's standard checklist before it goes in.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">track_changes</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">RFI/Query Tracking</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Logs every RFI with its status, who owns the response, and the deadline, so nothing sits unanswered because it got buried in an inbox.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">search</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Drawing &amp; Document Search</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Finds the right drawing, spec section, or past correspondence across your entire project archive by describing what you're looking for, not by remembering the file path.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">checklist</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Compliance Checklist Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Runs a submission against the relevant checklist automatically, catching a missing signature page or an out-of-date certificate before a reviewer has to.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">follow_the_signs</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Proposal Follow-up Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Follows up on outstanding proposals on a set schedule, keeping the deal warm without a partner having to remember which client they were supposed to check in with.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Built with confidentiality and access control by default, integrated with your existing document management system.</p>
+      <button onclick="openModal(this)" data-source="engineering_consultancies_mid" class="btn-primary">Book a Free Engineering Consultancy AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="journey-heading">One tender, RFP to submission</h2>
+      <p>What the AI handles from the moment a tender lands to the moment your response goes in.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Response assembled from a knowledge base</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A new tender comes in. The AI pulls the relevant sections from your firm's past submissions and standard content.</p>
+        <ul class="journey-list">
+          <li>Matches the tender's requirements against similar past projects</li>
+          <li>Drafts the standard sections, methodology, firm credentials, past experience, automatically</li>
+          <li>Leaves the technical and pricing sections for your engineers to complete</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Submission checked against requirements automatically</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Before anything goes out, the AI runs a compliance pass against what's actually required.</p>
+        <ul class="journey-list">
+          <li>Flags missing documents against the authority or tender's checklist</li>
+          <li>Checks formatting and required signatures</li>
+          <li>Surfaces anything that looks inconsistent with the tender's stated scope</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The follow-up that keeps the deal warm</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">After submission, the AI keeps the relationship active without anyone having to remember to.</p>
+        <ul class="journey-list">
+          <li>Sends scheduled follow-ups until a decision is reached</li>
+          <li>Tracks RFIs raised during evaluation and routes them to the right engineer</li>
+          <li>Logs the outcome, win or loss, into the firm's record for future reference</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- IMPACT -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">draw</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Tender/Proposal Drafting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Cutting the time to a strong first draft, so senior engineers spend their time on the technical substance rather than reassembling boilerplate.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">rule_folder</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Authority Submission Prep</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Catching missing or outdated documents before a submission is rejected on a technicality, which costs a resubmission cycle that a checklist could have prevented.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">manage_search</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Document Search Across Projects</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Turning years of project archive from a place things go to be forgotten into a resource engineers actually use on new work.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT MAKES IT WORK -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Authority requirement awareness</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Familiarity with the specific submission requirements of the municipality, civil defence, and other authorities you regularly submit to.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Technical document handling</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">The ability to search and reference drawings and specs, not just plain-text documents, since most of the source material in this industry isn't plain text.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Version control &amp; audit trail</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A clear, timestamped record of every draft and revision, so there's never ambiguity about which version of a document was actually submitted.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Confidentiality/access control</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Strict, project-scoped access so one client's technical information never surfaces in a search related to another client's work.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DATA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1200&q=80&auto=format&fit=crop" alt="Engineering consultancy team at work" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="research-panel">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">We don't have a published, verifiable benchmark specific to tender turnaround times or authority resubmission rates in UAE engineering consultancy that we're confident citing here. What consistently comes up in conversations with firms in this space is that resubmissions caused by a missing document or an out-of-date certificate are one of the most avoidable sources of delay on a project, and a first-pass compliance check is one of the cheapest ways to remove that source of delay entirely.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for engineering consultancies</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Engineering Consultancy AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your tender and submission workflow, identify the highest-ROI automation opportunities, and show you exactly what we'd build. No obligation, most audits take 30 minutes.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="engineering_consultancies_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book a Free Engineering Consultancy AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+.num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+.research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+.apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+.eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+@media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+.journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+.journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>

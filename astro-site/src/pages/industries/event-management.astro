@@ -1,0 +1,326 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Will an AI proposal generator actually understand our specific event, or does it just fill in a generic template?", answer: "It works from your own past proposals and event data, not a generic library. You feed it your pricing structure, package tiers, and a set of previously delivered events, and it drafts a first version by matching the enquiry against the closest comparable jobs you've actually run. A planner still reviews and adjusts every proposal before it goes out. The AI removes the blank-page problem, not the judgment call." },
+  { question: "Can the RSVP bot handle a guest list in the hundreds without breaking down?", answer: "Yes, high volume is exactly where it earns its place. A human coordinator manually chasing 400 guests across WhatsApp, email, and phone calls is where things get missed. The bot sends invitations, logs responses as they come in, follows up automatically with non-responders on a schedule you set, and keeps a live headcount your team can check at any time, including dietary and plus-one details." },
+  { question: "How much of vendor coordination can actually be automated, versus needing a human to manage relationships?", answer: "The automation handles the repetitive coordination layer: sending confirmed requirements to caterers and AV suppliers, chasing outstanding confirmations, flagging timeline conflicts between vendors, and keeping everyone updated when a detail changes. Negotiating rates, choosing which vendor fits which client, and handling a supplier who's underperforming still needs a person. Think of it as removing the status-chasing, not the relationship management." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Automation for Event Management Companies in the UAE",
+    "url": "https://lenooai.com/industries/event-management",
+    "description": "Custom AI systems for UAE event management companies: enquiry intake bots, proposal generation, vendor coordination, and RSVP automation.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Event Management"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Event Management AI", "item": "https://lenooai.com/industries/event-management" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation for Event Management Companies in the UAE: The Complete Guide | Lenoo AI"
+  description="How UAE event management companies use AI for enquiry intake, proposal generation, vendor coordination, and RSVP automation. A Dubai AI agency's guide."
+  canonicalPath="/industries/event-management"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Event Management</div>
+    <h1>AI for Dubai<br><span class="gradient-text">Event Management Companies</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds custom AI systems for UAE event management companies: enquiry qualification bots, proposal generation from your own past events, vendor coordination, and RSVP automation that scales from 50 guests to 500. Bilingual, integrated with the tools you already use.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="event_management_hero" class="btn-primary">Book a Free Event Management AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1600&q=80&auto=format&fit=crop" alt="Elegant event venue set up for a Dubai corporate function" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 50%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "9×", caption: "more likely to convert when a lead is contacted within 5 minutes, not 30 (MIT)" },
+      { value: "24/7", caption: "enquiry coverage, including evenings and weekends when most enquiries actually land" },
+      { value: "1", caption: "place to see every RSVP, dietary note, and vendor confirmation, instead of five inboxes" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY EVERY EVENT DIFFERENT DOESN'T MEAN INTAKE HAS TO BE -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why "every event is different" doesn't mean the intake process has to be</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>No two events look the same, but every enquiry asks the same first questions.</strong> A corporate gala, a product launch, and a wedding are different jobs with different vendors and different budgets. But the first conversation with every one of them covers the same ground: date, guest count, budget range, venue preference, and timeline. That part of the process is repeatable, even when the event itself isn't.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Planners lose hours to enquiries that were never going to book.</strong> A DM on Instagram, a form fill on the website, a WhatsApp message from a referral, each one needs a reply, and each reply takes time a small team doesn't have during a busy season. Meanwhile the enquiry that actually has budget and a fixed date sits in the same queue as one that's just browsing prices, and the team finds out which is which only after a call.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>What changes after that first exchange is where the real planning work should start.</strong> Once budget, date, and scope are on the table, that's when a planner's judgment matters: matching a client to the right venue, sourcing the right vendor mix, building a concept that fits the brief. AI can own the repeatable front end of the funnel and leave the part that actually needs a person to the person.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&q=80&auto=format&fit=crop" alt="Event planning team reviewing a floor plan and vendor list" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for Dubai Event Management Companies</h2>
+      <p>Six specific systems our Dubai AI agency builds for event companies across the UAE, each connected to your existing CRM and communication channels.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">fact_check</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Enquiry Intake &amp; Qualification Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Answers every new enquiry within minutes on WhatsApp, Instagram, and your website form. Asks the date, budget range, guest count, and event type, then hands your team a qualified brief instead of a cold "tell me more."</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Leads contacted within 5 minutes are 9× more likely to convert (MIT)</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Proposal Generation Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Drafts a first-pass proposal from the qualified brief, pulling package structure, pricing, and inclusions from your own past events. A planner edits and sends. What used to take an evening now takes twenty minutes.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Built from your own proposal history, not a generic template library</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">handshake</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Vendor/Supplier Coordination</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends confirmed requirements to caterers, AV suppliers, and decor teams, chases outstanding confirmations automatically, and flags timeline clashes before they become a problem on event day.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Keeps every vendor on the same confirmed brief, no separate WhatsApp threads to track</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">how_to_reg</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Guest RSVP &amp; Communication Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends invitations, logs RSVPs as they arrive, collects dietary requirements and plus-ones, and follows up with non-responders on a schedule you set. A live headcount your team can check at any hour.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Handles guest lists in the hundreds without a manual chase</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">timeline</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Timeline &amp; Task Tracking</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Builds and maintains the event-day run sheet from your vendor confirmations and client requirements, and sends reminders to the right person before a deadline slips, not after.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">One live timeline instead of five versions in five different chats</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">reviews</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Post-event Feedback Collector</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends a short feedback request to the client and, where relevant, to guests, within a day of the event ending, while the experience is still fresh. Responses feed straight into your case study and testimonial library.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Captures feedback while it's still fresh, not weeks later when it's forgotten</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Every system is built around your own events, packages, and vendor list, not a generic template.</p>
+      <button onclick="openModal(this)" data-source="event_management_mid" class="btn-primary">Book a Free Event Management AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- ONE EVENT JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="journey-heading">One event, enquiry to wrap-up</h2>
+      <p>What the AI handles at each stage, so your planners spend their time on the parts that need a person.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Qualified with budget and date before a call</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A new enquiry lands on WhatsApp or Instagram late in the evening. The bot is already replying.</p>
+        <ul class="journey-list">
+          <li>Confirms event type, date, guest count, and budget range in the first exchange</li>
+          <li>Flags whether the date is realistic against your current booking calendar</li>
+          <li>Hands the planner a complete brief, not a cold lead they have to chase for basics</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Proposal drafted from a template and past events</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Once the brief is confirmed, the AI drafts the first version of the proposal, not from scratch.</p>
+        <ul class="journey-list">
+          <li>Matches the enquiry against your closest comparable past event</li>
+          <li>Pulls in current pricing, package inclusions, and vendor options automatically</li>
+          <li>Leaves the planner to review, adjust the concept, and add the personal touches that close the deal</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The RSVP list that manages itself</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Once the event is booked, guest communication starts, and it doesn't stop until the last RSVP is in.</p>
+        <ul class="journey-list">
+          <li>Invitations go out, responses are logged, dietary notes and plus-ones are captured automatically</li>
+          <li>Non-responders get a follow-up on a schedule you set, without a coordinator manually tracking who's replied</li>
+          <li>The team checks one live headcount instead of cross-referencing five separate chats</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BIGGEST IMPACT -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">fact_check</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Intake/qualification</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Event companies that respond to enquiries fastest tend to win the booking, because clients planning a wedding or a launch are almost always talking to more than one company at the same time. An AI qualification bot means the first reply comes in minutes, not the next morning, and it comes with the questions already answered instead of asking the client to repeat their brief on a call.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Leads contacted within 5 minutes are 9× more likely to convert (MIT)</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Proposal turnaround</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Proposal writing is one of the biggest time sinks for a small planning team, especially during peak wedding or corporate event season when several enquiries need one at once. Drafting from a matched past event instead of a blank document cuts the time from hours to minutes, and lets a company send a first proposal the same day the enquiry came in.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Same-day proposals are consistently the ones clients remember favorably</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">how_to_reg</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Guest communication</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">A 300-guest wedding or a 500-person corporate gala generates a volume of RSVP messages, dietary questions, and logistics queries that quickly overwhelms a small team working manually. Automating the RSVP flow means every guest gets a fast reply and the headcount stays accurate right up to the day of the event.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Scales the same way whether the guest list is 50 or 500</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT MAKES IT WORK -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Template-driven proposal generation from past events</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A proposal AI is only as good as the events it's trained on. It needs access to your actual delivered events, pricing, and package structure, not a generic industry template, so the draft it produces looks like something your company would actually send.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Multi-vendor coordination</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A single event usually involves a caterer, a venue, an AV team, and a decor supplier at minimum. Coordination that only tracks one vendor thread misses the point. The system needs to hold the full vendor list for an event and flag when one supplier's timeline conflicts with another's.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">High-volume guest communication</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A wedding invite list and a corporate attendee list behave differently: one needs warmth and personal touches, the other needs speed and clarity. The RSVP system needs to handle both tones without sounding like a mass broadcast.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Seasonal/peak load handling</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">UAE event season concentrates around cooler months, national holidays, and Ramadan-adjacent bookings. A system that works fine at low volume but buckles when ten enquiries land in one hour isn't built for how this industry actually runs.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT THE DATA SHOWS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&q=80&auto=format&fit=crop" alt="Event coordinator confirming final details with a client on site" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">9×</p>
+        <p style="color:#42474e; font-size:0.875rem;">more likely to convert when contacted within 5 minutes, not 30 (MIT)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">24/7</p>
+        <p style="color:#42474e; font-size:0.875rem;">coverage for enquiries that land outside office hours, which is when many first messages arrive</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">1</p>
+        <p style="color:#42474e; font-size:0.875rem;">live view of every RSVP and vendor confirmation, instead of scattered chats and spreadsheets</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Response Speed Wins the Booking</p>
+          <p style="color:#42474e; line-height:1.7;">MIT's widely cited lead-response research found leads contacted within 5 minutes convert at 9 times the rate of those contacted after 30 minutes. Event enquiries follow the same pattern: a client comparing three companies almost always books with whoever replies first and sounds like they already understand the brief.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Proposal Speed Signals Reliability</p>
+          <p style="color:#42474e; line-height:1.7;">Event companies we talk to consistently say the proposal is where deals stall, not the pricing. A client who's waited five days for a quote starts to wonder how reliable the company will be on event day. A same-day proposal, even a first draft, communicates operational competence before a single deliverable is produced.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Guest Volume Breaks Manual Processes</p>
+          <p style="color:#42474e; line-height:1.7;">Manual RSVP tracking works fine for a 40-person dinner and falls apart at 300 guests. Coordinators we've worked with describe the last week before a large event as a scramble to reconcile guest lists across WhatsApp, email, and a spreadsheet that's already out of date by the time it's checked.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for event management companies</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Event Management AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll map your enquiry flow, proposal process, and guest communication, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="event_management_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book a Free Event Management AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    /* Event journey list markers (reused inside static bento-grid-3 cards) */
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>
