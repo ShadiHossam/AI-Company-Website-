@@ -1,0 +1,297 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "How does the AI keep track of client revisions without losing earlier versions?", answer: "Every revision request, whether it comes in as a WhatsApp voice note, an email, or a marked-up PDF, gets logged against the project with a timestamp and linked to the specific room or item it applies to. Nothing overwrites the previous version silently; you can always see what changed, when, and who asked for it, which matters when a client insists they never approved a change that's sitting in their own message history." },
+  { question: "How accurate is AI-assisted BOQ (Bill of Quantities) generation?", answer: "It's accurate for pulling together a first-pass BOQ from your existing product and material database, quantities, standard rates, common line items, which is normally the slow, repetitive part of putting a quote together. It's not a substitute for a quantity surveyor's final sign-off on anything structurally significant or unusually specified. The AI speeds up the draft; a human still checks the number that goes out the door." },
+  { question: "Can multiple stakeholders (client, contractor, supplier) access project updates through the same system?", answer: "Yes, with different access levels for each. A client sees their own project's progress, revisions, and timeline. A contractor sees the technical scope and site instructions relevant to their trade. A supplier sees only the order details that concern them. Nobody sees more than they need to, which keeps the system usable for coordination without turning into an access-control headache." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Automation for Interior Design and Fit-Out Companies",
+    "url": "https://lenooai.com/industries/interior-fitout",
+    "description": "AI systems for UAE interior design and fit-out companies: lead qualification, quote and BOQ generation, client revision tracking, and progress reporting.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Interior Design and Fit-Out"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Interior Design & Fit-Out", "item": "https://lenooai.com/industries/interior-fitout" }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems.map((f) => ({
+      "@type": "Question",
+      "name": f.question,
+      "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+    }))
+  }
+];
+---
+
+<BaseLayout
+  title="AI for Interior Design & Fit-Out Companies in Dubai | Lenoo AI"
+  description="Lenoo AI builds AI systems for UAE interior design and fit-out companies: lead qualification, quote/BOQ generation, revision tracking, and progress reporting."
+  canonicalPath="/industries/interior-fitout"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/industries" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Interior Design &amp; Fit-Out</div>
+    <h1>AI for Dubai<br><span class="gradient-text">Interior Design &amp; Fit-Out</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI systems for UAE interior design and fit-out companies: enquiry qualification, quote and BOQ generation, revision tracking, and client updates across long, visual-heavy projects. Bilingual, UAE-compliant, and integrated with your existing tools.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="interior_fitout_hero" class="btn-primary">Book a Free Interior &amp; Fit-Out AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&q=80&auto=format&fit=crop" alt="Modern interior design and fit-out project showroom" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 55%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "Months", caption: "typical length of a fit-out sales cycle from first enquiry to signed contract" },
+      { value: "Visual", caption: "most communication is photos, moodboards, and marked-up drawings, not text" },
+      { value: "Many", caption: "revision rounds a typical residential or commercial project goes through" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY THIS FITS -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why the sales cycle is long, visual and revision-heavy, and where AI fits</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Fit-out sales cycles run for months, not days.</strong> An enquiry turns into a site visit, a concept, a quote, several rounds of revisions, and eventually a signed contract, with a hundred small decisions made along the way. Losing track of any one of those decisions costs real money once construction starts and a client insists they asked for something different.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Most communication is visual, not written.</strong> Clients send photos of inspiration, mark up drawings with a pen, or send a voice note describing a change they want. Text-only systems miss most of what's actually happening in a project, because the important information rarely arrives as a clean written instruction.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Quoting is repetitive underneath the bespoke surface.</strong> Every project looks unique to the client, but the underlying quoting and BOQ process draws on the same materials, rates, and line items every time. That repetition is exactly what AI is good at speeding up, without making the client-facing experience feel any less custom.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&q=80&auto=format&fit=crop" alt="Interior designer reviewing plans and materials with a client" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT WE BUILD -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for Interior &amp; Fit-Out Companies</h2>
+      <p>Six systems built for the pace and detail of a fit-out project, each integrated with your existing tools.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">fact_check</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Enquiry Qualification &amp; Budget Screening</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Screens new enquiries for budget range, timeline, and scope before a site visit gets booked, so your design team's time goes to projects that actually match what you take on.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">request_quote</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Quote/BOQ Generation Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Assembles a first-pass Bill of Quantities from your material and rate database, cutting the drafting time on a standard quote from hours to minutes, ready for a human to review and finalize.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">history</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Client Revision Tracker</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Logs every revision request against the specific room or item it applies to, with a timestamp, so nothing gets lost in an email thread or forgotten between site visits.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">update</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Project Timeline Update Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends clients scheduled progress updates on milestones and timeline, so they're not calling the project manager weekly just to ask what stage things are at.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">local_shipping</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Supplier/Vendor Coordination</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Tracks material orders, lead times, and delivery confirmations across multiple suppliers, flagging anything at risk of delaying the installation schedule.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">photo_camera</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Site Progress Photo Reporting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Site photos sent via WhatsApp get organized into a client-facing progress log automatically, keeping the paper trail intact without a site manager writing it up separately.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Bilingual, UAE-compliant, and integrated with your existing project management tools.</p>
+      <button onclick="openModal(this)" data-source="interior_fitout_mid" class="btn-primary">Book a Free Interior &amp; Fit-Out AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="journey-heading">One project, enquiry to handover</h2>
+      <p>What the AI handles at every stage of a fit-out project, while your designers focus on the design, not the admin.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Qualified before a site visit is booked</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A new enquiry arrives through the website or WhatsApp at any hour. The AI screens it before a designer's calendar gets involved.</p>
+        <ul class="journey-list">
+          <li>Asks budget range, timeline, and scope in a natural conversation, not a rigid form</li>
+          <li>Flags enquiries that don't match your typical project size or type</li>
+          <li>Books the site visit directly into the right designer's calendar once qualified</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Revision history that doesn't get lost in email</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Once a project starts, revisions come in constantly, and every one of them gets tracked properly.</p>
+        <ul class="journey-list">
+          <li>Logs every change request against the specific item or room</li>
+          <li>Keeps a clear version history so nobody argues about what was actually approved</li>
+          <li>Flags revisions that affect the BOQ so pricing stays accurate</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Progress updates sent without a site call</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">As the project moves through construction, the client stays informed without needing to chase anyone.</p>
+        <ul class="journey-list">
+          <li>Sends milestone updates on a set schedule, not only when something goes wrong</li>
+          <li>Turns site photos into an organized, dated progress log</li>
+          <li>Flags supplier delays early enough to manage client expectations proactively</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- IMPACT -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">filter_alt</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Lead Qualification</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Screening enquiries for budget and scope fit before committing a designer's time to a site visit, so the pipeline stays full of projects worth pursuing.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">edit_note</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Revision Management</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Keeping a clean, disputable-proof record of every change request over a project that can run for months, which protects both the client relationship and your margin.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">chat_bubble</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Client Communication Over Long Projects</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Regular, proactive updates reduce the "just checking in" calls that eat into a project manager's week and keep clients calmer through a long build.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT MAKES IT WORK -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Visual/attachment-heavy communication handling</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">The ability to accept, organize, and reference photos, moodboards, and marked-up drawings, not just plain text messages.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Project management tool integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Connecting to whatever system your team already tracks timelines and tasks in, rather than becoming a second, disconnected source of truth.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Multi-stakeholder coordination</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Handling client, contractor, and supplier communication in the same system without any one party seeing more than they should.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Timeline/milestone tracking</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Keeping an accurate, up-to-date picture of where a project stands against its planned schedule, so updates sent to clients are always current.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DATA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80&auto=format&fit=crop" alt="Completed interior fit-out project" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="research-panel">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">We don't have a published industry benchmark specific to fit-out revision cycles or BOQ turnaround times we're confident enough to cite here. What we hear consistently from clients in this space is qualitative but real: revision disputes and quote turnaround delays are the two things that most reliably cost them time and client trust on an otherwise well-run project, and both are the parts of the job that AI is best suited to tighten up.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for interior design and fit-out</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Interior &amp; Fit-Out AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your enquiry-to-handover workflow, identify the highest-ROI automation opportunities, and show you exactly what we'd build. No obligation, most audits take 30 minutes.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="interior_fitout_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book a Free Interior &amp; Fit-Out AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+.num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+.research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+.apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+.eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+@media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+.journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+.journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>
