@@ -23,6 +23,7 @@ interface DbPost {
   updated_at?: string | null;
   author_name?: string | null;
   og_image?: string | null;
+  noindex?: boolean | null;
 }
 
 interface RelatedPost {
@@ -35,7 +36,7 @@ interface RelatedPost {
 const supabase = getSupabaseAdmin();
 const { data: post, error } = await supabase
   .from('blog_posts')
-  .select('id, title, slug, ar_title, ar_description, ar_body_markdown, ar_meta_title, ar_meta_description, category, pub_date, updated_at, author_name, og_image')
+  .select('id, title, slug, ar_title, ar_description, ar_body_markdown, ar_meta_title, ar_meta_description, category, pub_date, updated_at, author_name, og_image, noindex')
   .eq('slug', slug!)
   .eq('status', 'published')
   .is('deleted_at', null)
@@ -98,6 +99,7 @@ const ldJson = [
   ogImage={post.og_image ?? '/assets/og-blog.jpg'}
   ogType="article"
   ldJson={ldJson}
+  noindex={post.noindex ?? false}
 >
 
 <div id="progress-bar" aria-hidden="true"></div>
