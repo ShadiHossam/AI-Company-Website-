@@ -1,0 +1,323 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Does this integrate with our existing fleet or routing system?", answer: "Yes, that's the starting point. We connect to whatever you're already dispatching from, whether that's a TMS, a custom-built dispatch tool, or a spreadsheet-and-driver-app combination. The AI reads live status from your routing system and writes updates back to it, so dispatchers see one picture instead of checking two systems. If your routing platform has an API, we'll use it. If it doesn't, we'll tell you that upfront before scoping anything." },
+  { question: "Can it handle the volume spike during sale season and peak shopping periods?", answer: "That's exactly when this pays off. WhatsApp-based status and rescheduling handles concurrent conversations without a queue, so a spike in order volume during White Friday, 11.11, or a retailer's own flash sale doesn't turn into a support backlog. The load that used to require temp call centre staff gets absorbed by the AI, with genuinely ambiguous cases still routed to a human." },
+  { question: "How granular can merchant reporting get?", answer: "As granular as the merchant needs. Most clients want per-order status, failed delivery reasons, and time-to-resolution at a minimum. Some want it broken down by driver, by zone, or by time-of-day pattern. We build the dashboard around what your merchants actually ask account managers for, not a generic template, and it updates from the same live data feeding the customer-facing bot." },
+  { question: "Does the WhatsApp bot work for drivers who don't speak English?", answer: "Yes. Driver-facing coordination and customer-facing status updates both run in Arabic, English, Urdu, and other languages common among UAE delivery fleets. The customer sees messages in whatever language they first messaged in, and dispatch instructions to drivers can run in their preferred language too." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Automation for Last-Mile Delivery Companies in the UAE",
+    "url": "https://lenooai.com/industries/last-mile-delivery",
+    "description": "AI systems for UAE last-mile delivery companies: WhatsApp delivery status and ETA bots, failed delivery rescheduling, driver dispatch coordination, and COD confirmation.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Automation for Last-Mile Delivery"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Last-Mile Delivery AI", "item": "https://lenooai.com/industries/last-mile-delivery" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation for Last-Mile Delivery Companies in the UAE | Lenoo AI"
+  description="Lenoo AI builds AI systems for UAE last-mile delivery companies: WhatsApp status bots, failed delivery rescheduling, driver dispatch, and COD confirmation."
+  canonicalPath="/industries/last-mile-delivery"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Last-Mile Delivery</div>
+    <h1>AI for UAE<br><span class="gradient-text">Last-Mile Delivery</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds WhatsApp-first AI systems for UAE last-mile delivery companies: status and ETA bots, failed delivery rescheduling, driver dispatch coordination, and COD confirmation. Built to handle sale-season volume without a bigger call centre.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="last_mile_delivery_hero" class="btn-primary">Book a Free Last-Mile Delivery AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=1600&q=80&auto=format&fit=crop" alt="Delivery driver checking a route on a mobile device in the UAE" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 45%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "24/7", caption: "delivery status and rescheduling, no call centre hours" },
+      { value: "9×", caption: "more likely a customer stays engaged when contacted within 5 minutes (MIT)" },
+      { value: "1 chat", caption: "handles ETA, failed delivery, and COD confirmation end to end" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY WHATSAPP NOT PHONE -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why failed deliveries belong in WhatsApp, not on the phone</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>A failed delivery is not an emergency, it's a scheduling problem.</strong> The customer wasn't home, the building access code didn't work, or the order needs to go to a different address. None of that requires a phone call. It requires a message the customer can answer on their own time, from a driver-facing team that isn't tied up making outbound calls to explain the same three reasons a delivery didn't land.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Call centres don't scale with order volume, WhatsApp threads do.</strong> A support agent can handle one phone call at a time. The same agent, backed by an AI system doing the first pass, can effectively be present in hundreds of WhatsApp conversations at once, because most of those conversations are the same handful of questions: where's my order, why was it missed, when will it come again.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Customers already expect it.</strong> Nobody wants to answer an unknown number mid-meeting to hear a delivery update. A WhatsApp message with a live ETA, or a simple "tap to reschedule" flow, fits into how people actually manage their day. Delivery companies that still default to outbound calls are asking customers to interrupt themselves for information that should have arrived as a message before they asked.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&q=80&auto=format&fit=crop" alt="Courier scanning a parcel before delivery in Dubai" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE Last-Mile Delivery Companies</h2>
+      <p>Six specific systems we've deployed for delivery operations across the UAE, each connected to your existing fleet and routing tools.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">pin_drop</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Delivery Status &amp; ETA Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends order status and a live ETA over WhatsApp automatically, from dispatch through to the door. Customers get the update before they think to ask, so "where's my order" stops being the top inbound message.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Pulls live status straight from your routing or dispatch system</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Failed Delivery Rescheduling Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">When a delivery attempt fails, the customer gets a message with a reason and a set of reschedule options, no call centre queue involved. They pick a time, and it's back in the routing system for the next attempt.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Turns a failed attempt into a confirmed reschedule in one chat</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">alt_route</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Driver Dispatch &amp; Route Coordination</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends drivers their next stop, access instructions, and any customer notes directly, and flags exceptions (locked gate, wrong address, customer requested a delay) back to dispatch instantly instead of at end of shift.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Works in Arabic, English, Urdu, and other driver-preferred languages</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">payments</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">COD Confirmation Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Confirms cash-on-delivery orders by message before the driver is dispatched, catching order changes, cancellations, and address issues before a driver wastes a trip on an order that was never going to complete.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reduces wasted trips on cancelled or unconfirmed COD orders</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">support_agent</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Customer Support Deflection</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Handles the repetitive questions (order status, delivery windows, return policy, address change requests) directly in chat, and hands off to a human agent only when the case genuinely needs one, with full context attached.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Absorbs the sale-season spike without adding temp support staff</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">monitoring</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Client (Merchant) Reporting Dashboard</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Gives merchants a live view of their delivery performance: success rate, failed delivery reasons, average time to resolution, broken down by zone or time window, without an account manager compiling it by hand.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Built from the same live data powering the customer-facing bot</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Integrated with your fleet and routing system, bilingual, and built for UAE order volumes.</p>
+      <button onclick="openModal(this)" data-source="last_mile_delivery_mid" class="btn-primary">Book a Free Last-Mile Delivery AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="journey-heading">One delivery, dispatch to doorstep</h2>
+      <p>What the AI handles at each stage, so support and dispatch teams work exceptions, not routine status.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">ETA sent before the customer asks</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">From the moment an order is dispatched, the customer is kept ahead of the delivery, not chasing it.</p>
+        <ul class="journey-list">
+          <li>Order dispatched status and a live ETA sent automatically over WhatsApp</li>
+          <li>ETA updates as the driver's route changes, not a fixed estimate set at dispatch</li>
+          <li>A short delivery window before arrival, so someone is actually there to receive it</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Failed delivery rescheduled without a call centre queue</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">If the first attempt doesn't land, the recovery happens in the same chat thread, not a new phone call.</p>
+        <ul class="journey-list">
+          <li>Failure reason and a set of reschedule times sent the moment the driver marks it failed</li>
+          <li>Customer picks a new window directly in WhatsApp, no hold music, no agent needed</li>
+          <li>Updated slot written straight back into the routing system for the next attempt</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">COD confirmed automatically before dispatch</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Cash-on-delivery orders are confirmed before a driver is ever assigned to them.</p>
+        <ul class="journey-list">
+          <li>Confirmation message sent ahead of dispatch, catching cancellations early</li>
+          <li>Address and order changes captured in chat instead of discovered at the door</li>
+          <li>Only confirmed, current orders make it onto a driver's route</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BIGGEST IMPACT -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Failed Delivery Recovery</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">A failed delivery that sits unresolved for a day usually turns into a cancelled order or a bad review. Getting a reschedule option in front of the customer within minutes of the failed attempt, while the order is still top of mind, is where AI recovery makes the clearest difference to completion rates.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">support_agent</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Customer Support Deflection</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Most inbound support volume in delivery is one question repeated thousands of times: where is my order. Handling that automatically, and only escalating genuine exceptions, is what lets support headcount stay flat while order volume grows through sale periods.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">alt_route</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Driver Coordination</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Drivers who can report an issue (locked gate, wrong unit, customer not answering) in one message and get a next step immediately spend less time idling and less time calling dispatch to ask what to do next. That compounds across a fleet running dozens of stops a day.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT MAKES IT WORK -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Fleet/routing system integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">The AI is only as good as the status data it can read and write. Without a live connection to your routing or dispatch system, it's guessing at ETAs instead of reporting the real one, and reschedules don't reach the driver's actual route.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Real-time status webhooks</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Status updates need to fire the moment something changes on the ground, not on a batch job that runs every few hours. A webhook from your dispatch system is what turns "the driver marked it failed" into a customer message within seconds instead of the next day.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">High-volume WhatsApp handling</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Sale season doesn't spread evenly across the day. The system needs to handle a burst of thousands of concurrent conversations without slowing down or dropping messages, which is a different engineering problem than handling steady, low daily volume.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Merchant-facing reporting</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">If you deliver on behalf of merchants, they want visibility into their own performance without asking your account managers for it. A dashboard built on the same live data as the customer bot keeps that reporting accurate without extra manual work.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT THE DATA SHOWS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1553413077-190dd305871c?w=1200&q=80&auto=format&fit=crop" alt="Delivery driver loading parcels into a van in an urban UAE setting" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:1.75rem; margin-bottom:4px;">Same-day</p>
+        <p style="color:#42474e; font-size:0.875rem;">reschedule turnaround when the offer reaches the customer right after a failed attempt</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:1.75rem; margin-bottom:4px;">No queue</p>
+        <p style="color:#42474e; font-size:0.875rem;">for status and rescheduling, even during concurrent sale-season order spikes</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:1.75rem; margin-bottom:4px;">One thread</p>
+        <p style="color:#42474e; font-size:0.875rem;">covers status, rescheduling, and COD confirmation for a single order</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Failed Delivery Recovery</p>
+          <p style="color:#42474e; line-height:1.7;">Operators we talk to consistently say a meaningful share of failed deliveries never get rescheduled at all, because the follow-up depends on someone calling the customer back. Moving that follow-up into an instant WhatsApp message, sent the moment the driver marks the attempt failed, removes the delay that lets a failed delivery quietly become a cancelled order.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Response Speed</p>
+          <p style="color:#42474e; line-height:1.7;">MIT research on lead response found contacting someone within 5 minutes produces dramatically better outcomes than waiting even 30 minutes. The same logic applies to a customer who just had a delivery fail: the faster they get a reschedule option, the more likely they follow through instead of abandoning the order.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Support Load During Peaks</p>
+          <p style="color:#42474e; line-height:1.7;">Sale-season order spikes are the single biggest driver of support volume for UAE delivery operators we speak with, and it's almost entirely status enquiries. Deflecting that volume automatically is less about cutting headcount and more about not needing to hire and train temporary staff every peak season.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for last-mile delivery</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Last-Mile Delivery AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll look at your current status, rescheduling, and support flow, and show you exactly what we'd automate first. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="last_mile_delivery_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book a Free Last-Mile Delivery AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>
