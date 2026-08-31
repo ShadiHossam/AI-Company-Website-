@@ -1,0 +1,297 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Does this integrate with our existing CAFM/CMMS system?", answer: "In most cases, yes. The AI sits alongside your Computer-Aided Facilities Management or Computer-Aided Maintenance Management system rather than replacing it, reading work orders in and writing status updates back through the system's API where one exists. If your platform doesn't expose a usable API, we'll tell you honestly before starting rather than promise an integration that isn't really there." },
+  { question: "How accurate is SLA penalty tracking against our actual contracts?", answer: "As accurate as the SLA terms we're given to work from. We build the specific response and resolution windows from your actual client contracts, not generic industry assumptions, so the system flags a breach risk based on the real clock your contract runs on, not a rough estimate." },
+  { question: "Can this handle a rollout across multiple sites with different teams?", answer: "Yes, that's the more common use case, not the exception. Each site's team sees its own work orders and technicians, while management gets a rolled-up view across every site and client. Multi-site is where this kind of system earns its keep fastest, since a single dispatcher trying to track five sites manually is exactly the bottleneck it's built to remove." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Automation for Facilities Management Companies",
+    "url": "https://lenooai.com/industries/facilities-management",
+    "description": "AI systems for UAE facilities management companies: work order triage, technician dispatch, SLA compliance monitoring, and preventive maintenance scheduling.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Facilities Management"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Facilities Management", "item": "https://lenooai.com/industries/facilities-management" }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems.map((f) => ({
+      "@type": "Question",
+      "name": f.question,
+      "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+    }))
+  }
+];
+---
+
+<BaseLayout
+  title="AI for Facilities Management Companies in the UAE | Lenoo AI"
+  description="Lenoo AI builds AI systems for UAE facilities management companies: work order triage, technician dispatch, SLA compliance monitoring, and preventive maintenance."
+  canonicalPath="/industries/facilities-management"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/industries" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Facilities Management</div>
+    <h1>AI for UAE<br><span class="gradient-text">Facilities Management</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI systems for UAE facilities management companies: work order triage, technician dispatch, SLA compliance tracking, and preventive maintenance scheduling across multiple sites and clients. Bilingual, mobile-first, and integrated with your CAFM/CMMS.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="facilities_management_hero" class="btn-primary">Book a Free Facilities Management AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=1600&q=80&auto=format&fit=crop" alt="Facilities maintenance technician on site" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 55%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "Multi-site", caption: "most FM companies coordinate technicians across several client sites at once" },
+      { value: "SLA-bound", caption: "every work order runs against a client contract's response clock" },
+      { value: "Mobile", caption: "the technician workforce is in the field, not at a desk" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY THIS FITS -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why dispatch is where FM companies bleed time and SLA penalties</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>A work order raised is not the same as a work order handled.</strong> Between a tenant reporting a broken AC unit and a technician actually arriving, there's a dispatcher manually reading the request, figuring out who's available and closest, and calling or messaging them, all while a client's SLA clock is already running.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>That manual middle step is where delays and penalties actually happen.</strong> The technician isn't the bottleneck once they're dispatched; the gap between the request coming in and someone actually being assigned to it is. A dispatcher juggling multiple sites and dozens of open orders will miss the one that's closest to breaching its SLA, not because they're careless, but because nothing is prioritizing it for them.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Preventive maintenance suffers from the same problem in slow motion.</strong> Scheduled maintenance that should happen on a fixed cadence gets pushed back to handle urgent reactive requests, until "preventive" maintenance is really just "eventual" maintenance, and the equipment failures that were supposed to be prevented start happening anyway.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&q=80&auto=format&fit=crop" alt="Facilities technician performing maintenance work" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT WE BUILD -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for Facilities Management Companies</h2>
+      <p>Six systems built around dispatch speed and SLA accountability, each integrated with your existing CAFM/CMMS.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">assignment</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Work Order Intake &amp; Triage Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Logs incoming requests from tenants, clients, or internal reports and categorizes them by urgency and trade automatically, so nothing sits in a shared inbox unread.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">engineering</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Technician Dispatch Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Matches the right technician to the right job based on skill, location, and current workload, and sends them the job details directly, cutting the manual phone-tree step out entirely.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">timer</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">SLA Compliance Monitoring</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Tracks every open work order against its contracted response and resolution window, and flags anything approaching breach before it actually happens.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">notifications</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Client/Tenant Status Updates</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends automatic status updates as a work order moves from logged to assigned to resolved, so tenants and clients aren't calling in just to ask what's happening.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Preventive Maintenance Scheduler</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Keeps scheduled maintenance on its actual cadence and flags when a recurring task keeps getting pushed back, before the equipment it's protecting fails.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">groups</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Vendor Coordination Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Manages requests to third-party specialist vendors, tracking quotes, approvals, and completion, so subcontracted work doesn't fall outside the main tracking system.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Built mobile-first for field technicians and integrated with your existing CAFM/CMMS.</p>
+      <button onclick="openModal(this)" data-source="facilities_management_mid" class="btn-primary">Book a Free Facilities Management AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="journey-heading">One work order, raised to closed</h2>
+      <p>What the AI handles at every stage, while your team focuses on the work itself, not the coordination.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Logged and triaged automatically</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A tenant reports an issue or a client raises a request. The AI logs it and categorizes it before a dispatcher even sees it.</p>
+        <ul class="journey-list">
+          <li>Captures the request through WhatsApp, email, or a portal, whichever the client used</li>
+          <li>Categorizes it by trade and urgency automatically</li>
+          <li>Starts the SLA clock against the correct contract terms immediately</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Technician dispatched with the right job details</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Once triaged, the AI finds the right technician and sends them everything they need to act immediately.</p>
+        <ul class="journey-list">
+          <li>Matches on skill, proximity, and current workload</li>
+          <li>Sends job details and access instructions directly to the technician's phone</li>
+          <li>Confirms acceptance and arrival, closing the loop without a phone call</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">SLA tracked so nothing slips through</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">The system keeps watching the clock until the job is actually closed out, not just assigned.</p>
+        <ul class="journey-list">
+          <li>Flags any job approaching its SLA deadline before it breaches</li>
+          <li>Sends the client a status update once resolved</li>
+          <li>Logs the full timeline for monthly SLA reporting</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- IMPACT -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">low_priority</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Work Order Triage</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Cutting the time between a request landing and a technician being assigned, which is where most SLA risk actually sits.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">verified</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">SLA Compliance</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Surfacing at-risk jobs early enough to actually act on them, instead of finding out about a breach after a client's already flagged it.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_available</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Preventive Maintenance Scheduling</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Keeping scheduled work on its actual cadence instead of being perpetually pushed back by reactive requests.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT MAKES IT WORK -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">CAFM/CMMS integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Reading and writing work orders through your existing platform rather than becoming a second, disconnected system your team has to check separately.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Mobile-first technician communication</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Built for technicians in the field on their phones, not desk-bound staff, since that's where the actual work happens.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Multi-site/multi-client coordination</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Handling several sites and client contracts at once without mixing up which SLA terms apply to which job.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Real-time SLA tracking</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Tracking against the actual clock in each client's contract, not a generic industry-average response time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DATA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=1200&q=80&auto=format&fit=crop" alt="Facilities management team coordinating maintenance work" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="research-panel">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">We don't have a published, verifiable benchmark specific to UAE FM dispatch times or SLA breach rates that we're confident citing here. What FM operators consistently tell us is that the gap between a work order being raised and a technician being assigned, not the repair work itself, is where SLA penalties are most often earned, and it's the part of the process a dispatch system can shrink the fastest.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for facilities management</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Facilities Management AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll assess your work order and dispatch workflow, identify the highest-ROI automation opportunities, and show you exactly what we'd build. No obligation, most audits take 30 minutes.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="facilities_management_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book a Free Facilities Management AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+.num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+.research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+.apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+.eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+@media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+.journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+.journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>

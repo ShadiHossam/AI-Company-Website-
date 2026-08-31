@@ -1,0 +1,327 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "How does payment failure recovery actually work, does it just retry the card?", answer: "It's more than a blind retry. The bot detects a failed payment, waits a short window in case it's a temporary bank decline, then retries automatically and messages the member with a simple link to update their card if the retry also fails. Most failed payments are expired cards or temporary insufficient-funds declines, not a member trying to cancel, so catching it early keeps the membership active instead of silently lapsing." },
+  { question: "What happens if two members try to book the same class slot at the same time?", answer: "The assistant reads live capacity from your class booking system before confirming anything, so it never oversells a class. If a class is full, it can offer the waitlist or suggest the next available session in the same time slot, rather than just saying no." },
+  { question: "What counts as an \"engagement signal\" for the churn/win-back triggers?", answer: "Typically check-in frequency, class booking patterns, and how long it's been since a member last visited. A member who checked in three times a week and drops to zero for two weeks looks very different from someone on a planned travel break, and the system is tuned to flag the pattern that actually predicts churn, not just any dip." },
+  { question: "Can this replace our front desk staff?", answer: "No, and that's not really the goal. It handles the repetitive, time-sensitive parts, trial follow-up, renewal reminders, payment retries, class booking, so your front desk and trainers spend their time coaching members and handling the conversations that actually need a person." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI for Gyms and Fitness Studios in the UAE",
+    "url": "https://lenooai.com/industries/fitness-gyms",
+    "description": "Custom AI systems for UAE gyms and fitness studios: trial-to-membership follow-up, renewal and win-back automation, class booking, and payment failure recovery.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Gyms and Fitness Studios"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Gyms & Fitness AI", "item": "https://lenooai.com/industries/fitness-gyms" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation for Gyms and Fitness Studios in the UAE: The Complete Guide | Lenoo AI"
+  description="AI for gyms in Dubai: trial-to-membership follow-up, renewal reminders, class booking, and payment failure recovery for UAE gyms and fitness studios."
+  canonicalPath="/industries/fitness-gyms"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Gyms & Fitness</div>
+    <h1>AI for Dubai<br><span class="gradient-text">Gyms & Fitness Studios</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI systems for UAE gyms and fitness studios: trial follow-up, renewal reminders, class booking, and payment recovery. Built around the two numbers that actually decide whether a gym grows: trial conversion and renewal rate.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="fitness_gyms_hero" class="btn-primary">Book a Free Gym & Studio AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1600&q=80&auto=format&fit=crop" alt="Modern gym floor in Dubai with training equipment" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 55%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "9x", caption: "more likely to convert when a lead is contacted within 5 minutes instead of 30 (MIT)" },
+      { value: "1st", caption: "week of a trial is usually where the whole membership decision gets made" },
+      { value: "24/7", caption: "renewal, booking, and payment reminders keep running, not just on shift" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY GYMS & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why membership renewal is the whole business model</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>A gym doesn't really sell one workout, it sells a habit.</strong> The entire economics of a gym or studio rest on members staying past their first month, and most of the decision happens quietly: whether someone comes back for a second and third class, whether they hear from anyone between visits, whether the renewal reminder lands before or after the card on file expires.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Trials convert or go cold fast.</strong> A free trial or intro offer creates a short window of real interest. If nobody follows up in that window, most people simply drift, not because they didn't like the class, but because life got in the way and no one reminded them to come back.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Payment failures look like cancellations if nobody catches them.</strong> An expired card or a temporary decline can quietly end a membership that the member never actually meant to cancel. Without a system chasing that failed payment immediately, the gym loses a paying member for a reason that had nothing to do with satisfaction.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&q=80&auto=format&fit=crop" alt="Fitness studio member checking in on a phone before a class" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE Gyms and Fitness Studios</h2>
+      <p>Six systems built around trial conversion, renewal, and retention, connected to your existing gym software.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">fitness_center</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Trial-to-Membership Follow-up Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Messages every trial member at the moments that matter: after the first class, mid-trial, and as the trial ends, with a simple path to sign up while interest is still high.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Follows up while interest is still fresh, not after it's gone cold</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Renewal Reminder & Win-back System</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Reaches out ahead of every renewal date, and re-engages members who've gone quiet, with a message that reads like a check-in, not a sales blast.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Every renewal date gets a reminder, every time, automatically</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">calendar_month</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Class Booking Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Books members into classes via WhatsApp or app message, checks real capacity before confirming, and manages the waitlist automatically when a class is full.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Never overbooks a class, checks live capacity every time</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">monitoring</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Attendance & Engagement Tracker</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Watches check-in frequency and class attendance patterns, and flags members whose visits are dropping off before they quietly stop coming altogether.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Flags a drop-off pattern early, while there's still time to act</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">groups</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Referral Program Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Asks engaged, consistent members for referrals at the right moment, tracks who referred whom, and follows up automatically on any reward or discount owed.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Asks the members most likely to say yes, not the whole list</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">credit_card</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Payment Failure Recovery</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Detects a failed membership payment, retries automatically, and messages the member with a simple update-card link before the membership lapses over an expired card.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Catches a failed payment before it silently becomes a cancellation</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Connects to Mindbody, Glofox, and most gym management software already in use, in Arabic and English.</p>
+      <button onclick="openModal(this)" data-source="fitness_gyms_mid" class="btn-primary">Book a Free Gym & Studio AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- ONE MEMBER JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="journey-heading">One member, trial to renewal</h2>
+      <p>What the AI handles from the first free class, to the renewal a year in.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The trial follow-up that converts before it goes cold</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A new trial member finishes their first class. What happens next decides whether they come back.</p>
+        <ul class="journey-list">
+          <li>Sends a message after the first class asking how it went, not a generic blast</li>
+          <li>Follows up again mid-trial with a simple next class to book</li>
+          <li>Reaches out as the trial ends with a clear, easy path to sign up</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The renewal reminder sent at the right moment</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Now a member, the relationship keeps getting managed automatically, not just at renewal time.</p>
+        <ul class="journey-list">
+          <li>Books classes on request, checking real capacity before confirming</li>
+          <li>Sends a renewal reminder ahead of the billing date, every cycle</li>
+          <li>Catches and recovers a failed payment before it becomes a lapse</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The lapsed member won back automatically</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">If check-ins start dropping off, the system notices before the membership quietly ends.</p>
+        <ul class="journey-list">
+          <li>Flags a drop in attendance against the member's usual pattern</li>
+          <li>Sends a check-in message, not a discount blast, to see what changed</li>
+          <li>Offers a specific class or time slot to make coming back easy</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BIGGEST IMPACT -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">trending_up</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Trial conversion</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Most of the decision to join happens in the first week of a trial. Consistent, well-timed follow-up during that window is one of the highest-leverage things a gym can automate, because a person left alone tends to just not come back.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">The follow-up matters more in week one than any other week</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Renewal rate</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">A renewal reminder sent consistently, every cycle, without depending on staff remembering, closes the gap between members who meant to renew and members who simply forgot the date passed.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Consistency across every cycle matters more than any single message</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">restore</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Churn and win-back</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Catching an attendance drop-off early, while a member's habit is only just breaking, gives a real chance to win them back. Waiting until after they've cancelled makes the same conversation far harder.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Earlier outreach means a genuine check-in, not a last-ditch offer</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT MAKES IT WORK -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Gym software integration (Mindbody, Glofox)</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Reads and writes directly to the platform you already run, so class capacity, membership status, and payment records shown to a member are always current, not a separate copy.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Class-capacity-aware booking</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Checks real, live spots remaining before confirming a booking, and handles the waitlist automatically, so a class never gets oversold or a member never shows up to a full room.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Payment retry automation</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Distinguishes a temporary decline from a genuine cancellation attempt, retries at sensible intervals, and only escalates to a human if the member still hasn't updated their card.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Engagement-based triggers</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Compares a member's current attendance against their own usual pattern, not a fixed rule, so a genuine drop-off gets flagged without falsely flagging someone on a planned break.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT THE DATA SHOWS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1546412414-e1885259563a?w=1200&q=80&auto=format&fit=crop" alt="Fitness studio class in session with a trainer" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">9x</p>
+        <p style="color:#42474e; font-size:0.875rem;">more likely to convert when contacted within 5 minutes instead of 30 (MIT)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">Wk 1</p>
+        <p style="color:#42474e; font-size:0.875rem;">the trial week where most of the join-or-drift decision actually happens</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">24/7</p>
+        <p style="color:#42474e; font-size:0.875rem;">renewal and payment-retry messages keep going without a staff shift</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Trial Conversion</p>
+          <p style="color:#42474e; line-height:1.7;">Gym operators consistently describe the same window: interest peaks right after the first class and fades fast if nothing follows. Studios that message trial members at each of those key points report noticeably more of them actually signing up, without changing the offer itself.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Renewal Behavior</p>
+          <p style="color:#42474e; line-height:1.7;">A lot of non-renewals aren't a decision to leave, they're a reminder that never landed or a card that quietly expired. Gyms that automate consistent renewal and payment-retry messaging tend to see fewer members lost to simple admin gaps.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Attendance and Churn</p>
+          <p style="color:#42474e; line-height:1.7;">A drop in check-ins is one of the clearest early signals a membership is at risk, well before a formal cancellation request. Catching that pattern early and reaching out with a genuine check-in, not a discount, is what studios report actually works.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for gyms and fitness studios</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Gym & Studio AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll look at where trials, renewals, and payments are actually leaking at your gym, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="fitness_gyms_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book a Free Gym & Studio AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    /* Journey list markers (reused inside static bento-grid-3 cards) */
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>
