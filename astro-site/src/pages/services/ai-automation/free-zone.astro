@@ -1,0 +1,268 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../components/ProcessSteps.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Does the automation differ depending on which free zone we're licensed in?", answer: "The underlying workflows, client communication, invoicing, compliance tracking, reporting, are similar across free zones, but the specific rules and renewal cadences differ. A DMCC trading license renews on a different cycle and paperwork than a JAFZA warehousing license or a DIFC financial services license. We build the compliance tracking around your specific free zone authority's requirements, not a generic template." },
+  { question: "What happens if we expand into mainland UAE alongside our free zone entity?", answer: "This is common as free zone companies grow, and it adds a layer of complexity worth planning for: mainland and free zone entities are taxed and invoiced differently, and VAT treatment on transactions between the two can differ from a standard free zone-to-free zone or free zone-to-export transaction. We build the invoicing automation to apply the correct treatment based on which entity and which counterparty is involved, so your team isn't manually deciding the VAT logic on every invoice." },
+  { question: "Can this handle reporting across multiple free zone entities under one group?", answer: "Yes. If your group has entities across more than one free zone, or a mix of free zone and mainland entities, we build the reporting automation to consolidate at the group level while keeping each entity's books and compliance tracking separate. That's a common structure for holding companies and multi-brand groups operating in the UAE." },
+  { question: "Do free zone companies need different VAT handling than mainland businesses?", answer: "In some cases, yes. Certain free zones are treated as Designated Zones for VAT purposes, which affects how transactions are taxed, particularly for goods moving in and out of the zone. We don't give tax advice, but we build the invoicing and reporting automation to apply the VAT treatment your accountant or tax advisor has confirmed applies to your specific free zone and transaction type." },
+  { question: "How does licence renewal tracking actually work?", answer: "We pull your licence, visa, and permit expiry dates into a single tracking workflow and set alerts well ahead of each renewal deadline, typically sixty and thirty days out, so nothing gets missed in the final week. For companies managing multiple licences or entities, this replaces a spreadsheet someone has to remember to check with a system that surfaces what's coming due on its own." },
+];
+
+const processSteps = [
+  { icon: "search", step: "Step 1", title: "Free Zone Workflow Audit", description: "We map how client communication, compliance tracking, and invoicing currently work across your entity or entities and identify where manual work is costing the most time." },
+  { icon: "edit", step: "Step 2", title: "Design & Plan", description: "We design the automation around your free zone authority's requirements and your existing tools, and get sign-off before building anything." },
+  { icon: "build", step: "Step 3", title: "Build & Test", description: "We build the automation and test it against real client inquiries, invoices, and renewal dates until the output matches what your team expects." },
+  { icon: "rocket_launch", step: "Step 4", title: "Go Live & Monitor", description: "Automation goes live alongside your existing process. We monitor it for 90 days and adjust as your business evolves." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI Automation for UAE Free Zone Companies',
+    url: 'https://lenooai.com/services/ai-automation/free-zone',
+    description: 'AI automation for UAE free zone companies: client and lead communication, licence renewal and compliance tracking, invoicing and VAT handling, and multi-entity reporting.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'AI automation projects for UAE free zone companies: pricing based on workflow complexity and scope. Book a free automation audit for a quote.' },
+    serviceType: 'AI Automation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Automation', item: 'https://lenooai.com/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'Free Zone', item: 'https://lenooai.com/services/ai-automation/free-zone' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI Automation for UAE Free Zone Companies | Lenoo AI"
+  description="AI automation for UAE free zone companies: client communication, licence renewal tracking, invoicing and VAT handling, and multi-entity reporting."
+  canonicalPath="/services/ai-automation/free-zone"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">AI Automation</a><span style="opacity:0.4;padding:0 4px;"> / </span>Free Zone</div>
+    <h1>AI Automation for <span class="gradient-text">UAE Free Zone Companies</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      Free zone companies run lean by design, which means the small back-office team that exists is usually stretched across client communication, licence renewals, invoicing, and reporting all at once. We build automation around those specific pressure points, tuned to your free zone authority's requirements.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">Post-launch monitoring included with every project</span>
+      <span class="tchip">Refund guarantee if you're not satisfied with what we deliver</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_automation_freezone_hero" class="btn-primary">Book a Free Automation Audit</button>
+      <a href="#freezone-roi" class="btn-outline">See Where the ROI Is ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1400&q=80&auto=format&fit=crop" alt="Dubai business district skyline, home to the UAE's free zone companies" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 55%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "40%", caption: "of work tasks in most lean back offices are automatable with existing AI. Compliance tracking and invoicing are usually first in line." },
+      { value: "90 days", caption: "post-launch monitoring included with every project" },
+      { value: "100%", caption: "refund guarantee if you're not satisfied with what we deliver" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHAT'S DIFFERENT -->
+<section class="section" aria-labelledby="different-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="different-heading" style="margin-bottom:1.5rem;">What's Actually Different About Free Zone Businesses</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Licensing sits at the center of everything.</strong> A free zone company's activity, invoicing, and even hiring are tied to what its licence permits, and that licence needs renewing on a fixed schedule with its own document set. Miss a renewal window and the disruption isn't abstract, it can affect visas, banking, and the ability to keep trading without interruption.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Trade focus shapes the workflow.</strong> Many free zone companies are set up specifically for cross-border trade, re-export, or a narrow professional service line, which means invoicing and VAT treatment often need to distinguish between free zone transactions, mainland transactions, and exports, each with different rules. A generic invoicing setup built for a standard mainland company misses that distinction entirely.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Teams are lean by design.</strong> Free zone structures are popular precisely because they let a small team run a real operation, one or two people often cover sales, compliance, and finance at once. That's efficient until renewal season or invoicing volume picks up, at which point the same small team is the bottleneck for everything.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&q=80&auto=format&fit=crop" alt="Small business owner managing compliance documents and licences at a desk" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHERE THE ROI IS -->
+<section id="freezone-roi" class="section" style="background:#e7eeff;" aria-labelledby="roi-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="roi-heading">Where Free Zone Companies Get the Fastest ROI</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Built around the specific pressure points a lean free zone team feels first. Every project includes post-launch monitoring.</p>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">forum</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Client &amp; Lead Communication</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Inquiries get answered and qualified automatically across WhatsApp, email, and your website, so a two-person sales function doesn't drop leads while handling everything else on their plate.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A trading company that used to reply to inquiries whenever someone had a free moment now has every lead acknowledged within minutes, any time of day.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">event_repeat</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Licence Renewal &amp; Compliance Tracking</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Licence, visa, and permit expiry dates get tracked in one place with alerts well ahead of each deadline, instead of living in someone's memory or a spreadsheet nobody checks until it's urgent.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A company that renewed its trade licence three days before expiry, twice, now gets flagged sixty days out, every cycle.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">receipt_long</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Invoicing &amp; VAT (Mainland vs. Free Zone Rules)</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Invoices apply the correct VAT treatment automatically based on whether the counterparty is inside the free zone, on the mainland, or outside the UAE, so your team isn't deciding the tax logic manually on every invoice.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A company invoicing both free zone and mainland clients used to double-check VAT treatment by hand on every invoice. Now it's applied consistently by rule.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">account_tree</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Multi-Entity/Multi-Jurisdiction Reporting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">For groups running more than one entity, whether across free zones or between free zone and mainland, reporting consolidates automatically at the group level while keeping each entity's books separate.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A group with entities in two different free zones used to build a combined report by hand each quarter. Now it compiles itself.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Every workflow is scoped around your specific free zone authority and entity structure, with 90 days of post-launch monitoring included.</p>
+      <button onclick="openModal(this)" data-source="ai_automation_freezone_mid" class="btn-primary">Book a Free Automation Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- COMPLIANCE CONSIDERATIONS -->
+<section class="section" aria-labelledby="compliance-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="compliance-heading" style="margin-bottom:1.5rem;">Free Zone-Specific Compliance Considerations</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        We are not a legal or tax advisory service, and the compliance automation we build doesn't replace your free zone authority's own requirements or your accountant's sign-off. What it does is make sure the deadlines and documentation your business is already responsible for don't slip because a small team got busy with something else.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Each free zone authority sets its own renewal cadence, document requirements, and activity restrictions, and those rules genuinely differ from one zone to another and from mainland requirements. We build the tracking workflow around the specific rules that apply to your licence, not a generic template, and we update it if your activity or licence type changes.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        VAT is the other area that needs care. Some free zones are treated as Designated Zones for VAT purposes, which changes how certain transactions are taxed, particularly the movement of goods in and out of the zone. Whatever treatment your accountant or tax advisor confirms applies to your specific situation, we build the invoicing automation to apply it consistently, rather than leaving it to be re-decided by hand on every transaction.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- COMMON SETUPS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="setups-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="setups-heading">Common Setups We've Worked With</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Free zone businesses tend to fall into a handful of recognizable patterns, each with its own automation priorities.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">local_shipping</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Trading &amp; Commodities (DMCC-Style)</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Companies licensed for trading and commodities activity, the kind of setup common in zones like DMCC, typically deal with high volumes of supplier and customer invoices across multiple currencies. The priority is usually invoicing automation with correct cross-border VAT handling and multi-currency support, alongside compliance tracking for the specific renewal cycle a trading licence carries.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">warehouse</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Logistics &amp; Warehousing (JAFZA-Style)</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Companies running logistics, distribution, or warehousing operations, the kind of activity common in zones like JAFZA, tend to prioritize document processing for shipping and customs paperwork, vendor and supplier management, and reporting that tracks inventory movement alongside financial data.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">account_balance</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Financial &amp; Professional Services (DIFC-Style)</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;">Companies offering financial, legal, or professional services, the kind of activity common in zones like DIFC, usually prioritize client communication and onboarding automation, along with compliance tracking that accounts for the additional regulatory reporting these activities often carry beyond standard free zone requirements.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">From Workflow Audit to Live Automation</h2>
+    </div>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" style="background:#f0f3ff;" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Tell us which back-office task eats the most of your small team's time.</p>
+    <button onclick="openModal(this)" data-source="ai_automation_freezone_mid2" class="btn-primary">Book a Free Zone Automation Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- CROSS-LINK -->
+<section class="section-sm" aria-labelledby="related-heading">
+  <div class="container">
+    <div style="max-width:720px; margin:0 auto; text-align:center;">
+      <h2 id="related-heading" style="font-size:1.375rem; margin-bottom:1rem;">Looking at Automation Across Your Whole Business?</h2>
+      <p style="color:#42474e; font-size:1rem; line-height:1.8;">
+        See our <a href="/services/ai-automation">AI automation hub</a> for the full range of workflows we automate across sales, finance, and operations, not just free zone-specific compliance.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Automation Audit</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Stop Chasing Renewals and Invoices by Hand?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Book a free automation audit for your free zone company. We'll identify the workflows costing your team the most time and estimate the savings.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_automation_freezone_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Automation Audit</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>

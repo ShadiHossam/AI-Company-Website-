@@ -1,0 +1,323 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "What does white-label actually mean here? Does the client know Lenoo built it?", answer: "White-label means the system runs entirely under your agency's brand: your logo, your domain, your team's name in every conversation. The end client sees your agency delivering the automation, not us. What happens behind the scenes between your agency and Lenoo is a separate conversation, one we're always straightforward about in the partner agreement." },
+  { question: "How does the margin structure work if we're reselling this to clients?", answer: "We price the build and ongoing support to your agency at a partner rate, and you set the price to your end client, keeping the difference as margin. Most partner agencies price it as a monthly retainer line item alongside their existing services. We'll walk through actual numbers on a call once we understand your typical client size and how many accounts you're planning to roll this out to." },
+  { question: "If we manage automation for multiple clients, is their data kept separate?", answer: "Yes, each client's automation runs in its own isolated environment: separate data stores, separate credentials, no shared context between accounts. This matters as much for your agency's liability as it does for the end client's trust, and it's a non-negotiable part of how we architect any multi-client deployment." },
+  { question: "Can we start with one client before rolling it out to our full roster?", answer: "That's how we recommend starting. Most partner agencies pilot with one or two clients, get comfortable with how it's positioned and priced, then roll it out more broadly once they've seen it work in a real account. We'll help you scope that first pilot so it's a genuine proof point, not a throwaway demo." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Automation for Marketing Agencies in the UAE",
+    "url": "https://lenooai.com/industries/marketing-agencies",
+    "description": "White-label AI automation for UAE marketing agencies: reselling AI to clients, content production pipelines, client reporting automation, and agency lead generation.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Automation for Marketing Agencies"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Marketing Agency AI", "item": "https://lenooai.com/industries/marketing-agencies" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation for Marketing Agencies in the UAE | Lenoo AI"
+  description="Lenoo AI partners with UAE marketing agencies on white-label AI automation: content pipelines, client reporting, lead gen, and reseller-ready pricing."
+  canonicalPath="/industries/marketing-agencies"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Marketing Agencies</div>
+    <h1>AI for Dubai<br><span class="gradient-text">Marketing Agencies</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI partners with UAE marketing agencies to build white-label AI automation you resell to clients: content pipelines, reporting, and lead qualification, priced so your margin holds.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="marketing_agencies_hero" class="btn-primary">Talk to Us About a Partner Arrangement</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&q=80&auto=format&fit=crop" alt="Marketing agency team reviewing campaign performance on a shared screen" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "White-label", caption: "runs entirely under your agency's brand, not ours" },
+      { value: "New line", caption: "a resellable AI service line, priced for your margin" },
+      { value: "Isolated", caption: "per-client data separation across every account you manage" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY AGENCIES ARE A DIFFERENT BUYER -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why agencies are a different kind of buyer: they resell what they automate</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>An agency isn't buying automation to use it once.</strong> A brand automating its own marketing wants efficiency for itself. An agency wants a service line it can put in front of every client on its roster, priced to hold a margin, and branded as the agency's own capability. That's a fundamentally different sales conversation, and it's the one this page is written for.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Client-facing work has to survive scrutiny.</strong> When an agency puts its name on an AI-driven reporting deck or a content pipeline, it's the agency's reputation on the line if it breaks or produces something off-brand. That raises the bar on reliability and on how cleanly the system can be handed off to an account manager who isn't technical.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Multi-client is the default, not the exception.</strong> An agency running automation for fifteen clients needs each account isolated, each report branded correctly, and none of it bleeding into another client's data. Tools built for a single company rarely hold up once an agency tries to run them across a real roster.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1552581234-26160f608093?w=800&q=80&auto=format&fit=crop" alt="Agency creative team planning content across multiple client accounts" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE Marketing Agencies</h2>
+      <p>Six specific systems we build with agency partners across the UAE, each set up to run white-label across your client roster.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">hub</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">White-label AI Automation for Clients</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">The core offer: chatbots, workflow automation, and reporting tools built to your spec and delivered under your agency's brand, so it reads as your capability to every client who sees it.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Deployed under your domain, your name, your account managers</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">edit_note</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Content Production Pipeline AI</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Drafts, briefs, and repurposes content across formats and client brand voices, so your creative team edits and approves instead of starting every asset from a blank page.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Trained on each client's brand guidelines, not one generic voice</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">summarize</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Client Reporting Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Pulls performance data from your ad platforms and analytics tools into a branded monthly report, written in plain language, ready to send without a strategist spending a day building slides.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Frees strategist hours for the work clients actually pay a premium for</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">person_search</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Lead Gen &amp; Qualification Bot (Agency's Own Pipeline)</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Qualifies and books calls with your agency's own inbound leads before they reach a business development rep, so your team spends time on prospects who are actually ready to talk.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Built for your agency's pipeline, not resold to clients</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">monitoring</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Campaign Performance Monitoring</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Watches live campaign metrics across accounts and flags underperformance or budget pacing issues to the account team immediately, instead of surfacing at the next scheduled check.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Catches a stalling campaign days before the client notices</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">handshake</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Client Onboarding Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Walks a new client through brand assets, access, and preferences via a guided chat flow, replacing the usual back-and-forth of kickoff calls and follow-up emails to collect the same information.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Gets a new account production-ready without three internal meetings</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">White-label, multi-client-ready, and priced so the margin is yours.</p>
+      <button onclick="openModal(this)" data-source="marketing_agencies_mid" class="btn-primary">Talk to Us About a Partner Arrangement</button>
+    </div>
+  </div>
+</section>
+
+<!-- JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="journey-heading">One client engagement, onboarding to reporting</h2>
+      <p>What the AI handles at each stage, so your account team manages the relationship, not the admin.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Onboarding that doesn't need three internal meetings</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A new client signs, and the setup starts moving before your team's next planning meeting.</p>
+        <ul class="journey-list">
+          <li>Guided intake flow collects brand assets, access, and preferences directly from the client</li>
+          <li>Account structure and reporting cadence configured automatically from the intake answers</li>
+          <li>Your account manager reviews and approves, instead of chasing each detail manually</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The reporting deck that builds itself monthly</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Once the account is live, performance data flows in continuously and reporting stops being a monthly scramble.</p>
+        <ul class="journey-list">
+          <li>Performance data pulled from ad platforms and analytics into one branded report</li>
+          <li>Written summaries in plain language, not just raw charts a client has to interpret</li>
+          <li>Sent on schedule, with the strategist reviewing for nuance before it goes out</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The client question answered without a status call</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Between formal check-ins, most client questions are routine and don't need a scheduled call.</p>
+        <ul class="journey-list">
+          <li>Campaign status and basic performance questions answered directly in chat</li>
+          <li>Genuine strategy questions routed to the account team with full context attached</li>
+          <li>Client gets an answer in minutes instead of waiting for the next scheduled sync</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BIGGEST IMPACT -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">hub</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Reselling AI as a Service Line</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Agencies that add AI automation as a new service line are able to grow revenue per client without adding proportional headcount, since the marginal cost of running the same system for another account is far lower than staffing another retainer.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">settings</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Internal Ops Efficiency</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Beyond what gets resold, agencies automate their own lead qualification, onboarding, and internal status updates. The time recovered there is often what actually funds the agency's own growth, not the resale margin.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">summarize</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Reporting Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Reporting is consistently the most time-consuming recurring task across client accounts, and the least differentiated. Automating it frees strategists to spend that time on the analysis and recommendations clients actually value.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT MAKES IT WORK -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">White-label/partner-friendly setup</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Every touchpoint, from the chatbot's name to the sender address on a report, needs to read as your agency, not a third-party vendor. That's a deliberate configuration decision, not an afterthought.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Multi-client account management</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Adding a new client should be a configuration step, not a new build. The system needs a structure that scales to your roster without re-engineering the setup for every account you add.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Integration with the agency's existing stack</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Your team already works in specific ad platforms, project management tools, and analytics dashboards. The automation needs to plug into that stack, not ask your team to learn a new one alongside it.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Margin-friendly pricing structure</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A reseller relationship only works long-term if the economics work for both sides. Pricing needs to leave your agency room to mark up and still stay competitive against what the client could shop elsewhere.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT THE DATA SHOWS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1200&q=80&auto=format&fit=crop" alt="Agency team collaborating around a table with laptops and campaign dashboards" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:1.75rem; margin-bottom:4px;">New revenue</p>
+        <p style="color:#42474e; font-size:0.875rem;">line added to existing retainers without new headcount per client</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:1.75rem; margin-bottom:4px;">Hours back</p>
+        <p style="color:#42474e; font-size:0.875rem;">reclaimed from reporting and onboarding admin each month</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:1.75rem; margin-bottom:4px;">Zero cross-talk</p>
+        <p style="color:#42474e; font-size:0.875rem;">between client accounts running on the same white-label setup</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">The Reseller Economics</p>
+          <p style="color:#42474e; line-height:1.7;">Agencies we work with consistently describe the appeal of reselling automation the same way: it's a service line that scales without a linear headcount increase, unlike adding another account manager or strategist for every new client won.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Where the Time Actually Goes</p>
+          <p style="color:#42474e; line-height:1.7;">Account teams we talk to say reporting and onboarding admin eat a disproportionate share of the week relative to the strategic work clients actually value. Automating those two alone tends to be the highest-leverage starting point.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Client Trust in White-Label Delivery</p>
+          <p style="color:#42474e; line-height:1.7;">Agencies that get white-label right report clients rarely ask who built the underlying system, because it never behaves like a bolted-on tool. That consistency is what makes the reseller relationship durable past the first quarter.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions from marketing agencies</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Partner Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Talk to Us About a Partner/Reseller Arrangement</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll walk through your client roster, what you'd want to resell first, and how the pricing and margin would actually work. No obligation. Most calls take 30 minutes.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="marketing_agencies_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Talk to Us About a Partner Arrangement</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>

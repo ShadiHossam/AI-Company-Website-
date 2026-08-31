@@ -1,0 +1,326 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Does the system actually track SIRA licence expiry, or just store the certificate as a file?", answer: "It tracks the expiry date as structured data, not just a scanned PDF sitting in a folder. The system flags renewals 30, 14, and 7 days out, and can block a guard from being rostered onto a site once their licence lapses, so an expired certification never quietly slips through onto a shift. Your operations manager sees the full renewal pipeline at a glance instead of chasing paperwork manually." },
+  { question: "How accurate is voice-to-report conversion when a guard is reporting from the field, possibly in noisy conditions or a second language?", answer: "Accuracy depends on audio quality and how the guard phrases the report, so we build in a structured prompt: the guard is guided through what to cover (what happened, when, where, who was involved) rather than freeform dictation. The draft report is always reviewed before it's finalized and sent to the client, so a misheard word gets caught before it reaches an SLA report, not after." },
+  { question: "Who can actually see the client-facing SLA reporting portal, and can a client see another client's data?", answer: "Access is scoped per client account, tied to your existing client roster, so each client only ever sees their own sites, incidents, and reports. Internally, access is role-based too: a site supervisor sees their sites, an account manager sees their portfolio, and only ops leadership sees everything. This mirrors how your existing client relationships are structured, it doesn't create a new access model from scratch." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Automation for Security and Manpower Companies in the UAE",
+    "url": "https://lenooai.com/industries/security-services",
+    "description": "Custom AI systems for UAE security and manpower companies: guard rostering, incident report automation, client SLA reporting, and SIRA licence tracking.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Security Services"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Security Services AI", "item": "https://lenooai.com/industries/security-services" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation for Security and Manpower Companies in the UAE: The Complete Guide | Lenoo AI"
+  description="How UAE security and manpower companies use AI for guard rostering, incident reports, client SLA reporting, and SIRA licence tracking. A Dubai AI agency's guide."
+  canonicalPath="/industries/security-services"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Security Services</div>
+    <h1>AI for Dubai<br><span class="gradient-text">Security &amp; Manpower Companies</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds custom AI systems for UAE security and manpower companies: guard rostering, incident report automation from voice or photo, client SLA reporting, and SIRA licence tracking. Built for multi-site, multi-shift operations.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="security_services_hero" class="btn-primary">Book a Free Security Services AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&q=80&auto=format&fit=crop" alt="Security team coordinating shift assignments at a UAE site" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 45%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "0", caption: "broadcast messages needed to fill a roster gap, the system finds who's available" },
+      { value: "24/7", caption: "incident reporting from the field, voice or photo, not paperwork after the shift" },
+      { value: "1", caption: "client portal where SLA reports build themselves from logged data" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY ROSTERING AND REPORTING ARE WHERE COMPANIES LOSE MARGIN -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why rostering and reporting are where security companies actually lose margin</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Rostering across multiple sites and shifts is a scheduling problem, not a communication problem, but most companies still run it as one.</strong> A supervisor broadcasting a shift gap to a WhatsApp group and hoping someone volunteers is slow, and it puts an uncovered site at risk while the message sits unread. The actual constraint is knowing who's certified, available, and close enough to the site, and matching that automatically.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Incident reports written hours after the fact lose accuracy, and accuracy is the entire point of an incident report.</strong> A guard who has to wait until end of shift to write up an incident on paper is reconstructing details from memory. A system that captures the report in the moment, from a voice note or a photo taken at the scene, keeps the record closer to what actually happened.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Client SLA reporting is manual admin work that eats account manager time every single month.</strong> Compiling attendance records, incident logs, and response times into a report for each client is repetitive, time-consuming, and exactly the kind of structured data-to-document task a system should be doing automatically instead of an account manager doing it by hand.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&q=80&auto=format&fit=crop" alt="Security supervisor reviewing site coverage on a tablet" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE Security and Manpower Companies</h2>
+      <p>Six specific systems our Dubai AI agency builds for security companies across the UAE, each built for multi-site, multi-shift operations.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">calendar_month</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Guard Rostering &amp; Shift Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Builds and fills the roster across every site and shift, matching guard certification and availability automatically, and fills last-minute gaps without a broadcast message to the whole team.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Matches certified, available guards to open shifts automatically</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">mic</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Incident Report Automation (voice/photo to report)</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">A guard records a voice note or takes a photo at the scene, and the system drafts a structured incident report in minutes, reviewed before it's finalized and shared with the client.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Captured at the scene, not reconstructed from memory hours later</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">monitoring</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Client SLA Reporting Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Generates the monthly SLA report for each client automatically from attendance, incident, and response-time data already logged in your system, no manual compilation needed.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Builds itself from logged data, not a spreadsheet assembled by hand</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">how_to_reg</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Attendance &amp; Site Check-in Verification</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Verifies a guard actually checked in at the correct site and time, using location and photo confirmation, so attendance records are accurate before they feed into payroll or client billing.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Verified attendance data feeds straight into payroll and billing</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">badge</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Licence/Certification Renewal Tracker</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Tracks SIRA licences and other certifications as structured data, flags upcoming renewals well in advance, and can block a guard from being rostered once a licence has lapsed.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Flags renewals at 30, 14, and 7 days out, before they lapse</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">forum</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Client Communication Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Handles routine client requests, coverage confirmations, schedule change requests, and status updates, through a channel your clients already use, freeing account managers for higher-value conversations.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Routine requests handled instantly, without an account manager on every thread</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Every system is built for multi-site, multi-shift operations, with SIRA licence tracking built in from day one.</p>
+      <button onclick="openModal(this)" data-source="security_services_mid" class="btn-primary">Book a Free Security Services AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- ONE SHIFT JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="journey-heading">One shift, roster to report</h2>
+      <p>What the AI handles at each stage, so supervisors spend less time chasing and more time managing sites.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Roster built and communicated without a broadcast storm</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Next week's roster gets built automatically, matched against certification and availability, before it ever reaches a group chat.</p>
+        <ul class="journey-list">
+          <li>Every guard sees their own shifts, sent individually, not buried in a group message</li>
+          <li>Last-minute gaps are filled by matching available, certified guards nearby, not a broadcast and a wait</li>
+          <li>Supervisors see full site coverage at a glance instead of cross-checking a spreadsheet</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Incident report filed from a voice note in the field</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Something happens on site. The guard reports it right there, not at the end of the shift.</p>
+        <ul class="journey-list">
+          <li>Guided voice or photo capture at the scene, structured around what, when, where, and who</li>
+          <li>Draft report generated in minutes, reviewed by a supervisor before it's finalized</li>
+          <li>Client notified immediately if the incident meets their SLA notification threshold</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Client report that generates itself monthly</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">At month end, the SLA report is already assembled from what was logged during the month.</p>
+        <ul class="journey-list">
+          <li>Attendance, incident counts, and response times pulled from logged data automatically</li>
+          <li>Account manager reviews and adds context before it goes to the client</li>
+          <li>Client can also check their portal directly, instead of waiting for the monthly email</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BIGGEST IMPACT -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">calendar_month</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Rostering</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Rostering across dozens of sites and shift patterns is where operational strain shows up first. A last-minute call-out that isn't filled fast enough means an uncovered site and a client conversation nobody wants to have. Automated matching against certification and availability closes that gap faster than a supervisor working a phone list.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Fills gaps by matching certified, available guards, not broadcast and hope</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">mic</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Incident reporting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Incident reports written from memory hours after the fact are consistently weaker than ones captured at the scene. Voice and photo capture in the field keeps details closer to what actually happened, and gets the report to the client faster when it matters most.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reports drafted in minutes from the scene, not hours later on paper</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">monitoring</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Client SLA reporting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Monthly SLA reports are the single most repetitive admin task an account manager handles, and they're exactly the kind of structured-data-to-document work a system does faster and more consistently than a person compiling from three different logs.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Frees account managers to manage relationships, not spreadsheets</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT MAKES IT WORK -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Multi-site/multi-shift complexity</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A security company running twenty sites across three shift patterns has a scheduling problem far more complex than a single-location business. The rostering system needs to hold every site, shift, and certification requirement at once, not just the next day's assignments.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Field-friendly input (voice, photo, low-literacy-friendly)</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Guards in the field aren't sitting at a desk, and not every guard is comfortable typing a detailed report in their second or third language. Voice and photo capture, guided by simple structured prompts, gets a usable report from someone who'd struggle to write one from a blank form.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">SIRA/regulatory licence tracking</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Operating with a lapsed SIRA licence on a rostered guard is a compliance risk the company carries, not just an administrative oversight. Renewal tracking needs to be built into the rostering logic itself, so an expired licence blocks a shift assignment automatically.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Client-facing reporting portal</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Clients increasingly expect to check coverage and incident status themselves, rather than waiting for a monthly email. A portal scoped strictly to each client's own sites and data builds trust and cuts the volume of status-check calls to your account team.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT THE DATA SHOWS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=1200&q=80&auto=format&fit=crop" alt="Security guard checking in at a site entrance in the UAE" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">0</p>
+        <p style="color:#42474e; font-size:0.875rem;">group broadcasts needed to fill a last-minute roster gap</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">30/14/7</p>
+        <p style="color:#42474e; font-size:0.875rem;">days-out flags on every SIRA licence renewal before it lapses</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">1</p>
+        <p style="color:#42474e; font-size:0.875rem;">monthly SLA report generated automatically per client, from logged data</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Roster Gaps Are a Margin Problem</p>
+          <p style="color:#42474e; line-height:1.7;">Security operations managers we talk to consistently point to last-minute shift coverage as the single biggest source of overtime cost and client friction. A broadcast-and-hope approach to filling a gap is slow precisely when speed matters most, right before a shift starts.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Report Quality Depends on Timing</p>
+          <p style="color:#42474e; line-height:1.7;">An incident report written immediately, while details are fresh, is consistently more useful to a client than one reconstructed from memory at the end of a shift. Field-friendly capture closes the gap between when something happens and when it's documented.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">SLA Reporting Is Repetitive Admin Work</p>
+          <p style="color:#42474e; line-height:1.7;">Account managers we've spoken with describe the days before a monthly SLA report deadline as a scramble to pull attendance and incident data from separate systems. Automating that compilation frees the same person to spend that time on the client relationship instead.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for security and manpower companies</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Security Services AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll map your rostering, incident reporting, and client SLA process and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="security_services_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book a Free Security Services AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    /* Shift journey list markers (reused inside static bento-grid-3 cards) */
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>

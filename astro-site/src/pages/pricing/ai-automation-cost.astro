@@ -1,0 +1,285 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Is there a cheaper DIY option instead of hiring an agency?", answer: "Yes, no-code platforms let a technically comfortable person build a basic chatbot or simple workflow themselves for the cost of a monthly subscription, often a few hundred dirhams a month. It works for genuinely simple, single-purpose bots. It stops working once you need real integrations, Arabic that actually sounds natural, multi-step logic, or anything that has to be reliable enough to represent your business unsupervised. Most businesses that start DIY end up hiring help once they hit that ceiling, so it's worth being honest with yourself about which side of it you're on before you commit weeks to a no-code build." },
+  { question: "Do we need a big budget to start, or can we begin small?", answer: "You can start small. A single well-chosen workflow, the one costing you the most missed leads or the most manual hours, often costs less than a mid-range chatbot build and proves the concept before you commit to anything larger. Most of our clients start with one system, see it working, and expand from there rather than trying to automate everything at once. Starting narrow and proving value is usually the better sequence, both financially and practically." },
+  { question: "What are typical payment terms?", answer: "Most builds are structured as a deposit to start (typically 40-50%), with the balance due on delivery or split across milestones for larger multi-agent projects. Retainers are billed monthly. We'll lay out the exact schedule in a written quote before any work starts, so there's no ambiguity about what's due and when." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Automation Pricing",
+    "url": "https://lenooai.com/pricing/ai-automation-cost",
+    "description": "Honest cost ranges for AI automation projects in the UAE, by project type: chatbots, WhatsApp automation, AI agents, multi-agent systems, voice agents, and custom development.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Automation Development"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Pricing", "item": "https://lenooai.com/pricing/ai-automation-cost" },
+      { "@type": "ListItem", "position": 3, "name": "AI Automation Cost", "item": "https://lenooai.com/pricing/ai-automation-cost" }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems.map((f) => ({
+      "@type": "Question",
+      "name": f.question,
+      "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+    }))
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation Cost UAE: Honest Pricing by Project Type | Lenoo AI"
+  description="What AI automation actually costs in the UAE: real dirham ranges for chatbots, WhatsApp automation, AI agents, multi-agent systems, voice agents, and custom builds."
+  canonicalPath="/pricing/ai-automation-cost"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/pricing/ai-automation-cost" style="color:inherit;text-decoration:none;opacity:0.65;">Pricing</a><span style="opacity:0.4;padding:0 4px;"> / </span>AI Automation Cost</div>
+    <h1>What AI Automation Actually <span class="gradient-text">Costs in the UAE</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Real dirham ranges by project type, what actually moves the price, and the costs most quotes leave out. No "contact us for pricing," just honest numbers.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="pricing_cost_hero" class="btn-primary">Get a Free, Itemized Quote</button>
+      <a href="#by-type" class="btn-outline">See Cost by Project Type ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1600&q=80&auto=format&fit=crop" alt="Business calculator and financial planning on a desk" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 50%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "6", caption: "project types below, each with a real dirham range, not a single vague number" },
+      { value: "40-50%", caption: "typical deposit to start a build, balance due on delivery or milestones" },
+      { value: "3", caption: "hidden costs almost every quote leaves out, covered further down" },
+    ]} />
+  </div>
+</div>
+
+<!-- INTRO -->
+<section class="section" aria-labelledby="intro-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="intro-heading" style="margin-bottom:1.5rem;">Why "how much does AI cost" has no single answer</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>"AI" covers everything from a five-question FAQ widget to a multi-agent system running your entire back office.</strong> Asking what AI costs is a bit like asking what a car costs: the honest answer depends entirely on what you're actually building, and anyone who gives you one number without asking what you need is either guessing or lowballing to get you on a call.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">What we can give you instead is real ranges, by project type, based on what we and other agencies in this market actually charge for comparable work. Not a rate card that pretends every project is identical, but enough to walk into a conversation with a provider knowing roughly what you should expect to pay, and to spot a quote that's wildly out of line in either direction.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">The ranges below are typical for a Dubai-based boutique agency doing custom work, not a global enterprise consultancy and not a freelancer working alone. Your actual number depends on the specifics covered further down this page.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=80&auto=format&fit=crop" alt="Person reviewing pricing and budget documents" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COST BY TYPE -->
+<section id="by-type" class="section" style="background:#e7eeff;" aria-labelledby="type-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="type-heading">Cost by project type</h2>
+      <p>Typical ranges we see in this market. One-time build cost, not counting ongoing retainer or API usage, both covered below.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">chat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Simple Chatbot</h3>
+        <p style="color:#006875; font-weight:700; font-size:1.125rem; margin-bottom:0.5rem;">AED 8,000–25,000</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">A website or WhatsApp bot answering FAQs and capturing leads, with a small, defined knowledge base and one or two integrations.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">forum</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">WhatsApp Automation</h3>
+        <p style="color:#006875; font-weight:700; font-size:1.125rem; margin-bottom:0.5rem;">AED 15,000–40,000</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Business API setup, lead capture, booking flows, and CRM integration, sized to how many workflows the bot needs to handle.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">smart_toy</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Single-Workflow AI Agent</h3>
+        <p style="color:#006875; font-weight:700; font-size:1.125rem; margin-bottom:0.5rem;">AED 20,000–60,000</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">An agent handling one specific job end to end, invoice processing, lead qualification, appointment scheduling, with real tool integrations, not just conversation.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">hub</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Multi-Agent System</h3>
+        <p style="color:#006875; font-weight:700; font-size:1.125rem; margin-bottom:0.5rem;">AED 50,000–150,000+</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Several agents coordinating across departments or workflows, often with custom orchestration logic. Price scales with the number of agents and integrations involved.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">record_voice_over</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Voice Agent/Receptionist</h3>
+        <p style="color:#006875; font-weight:700; font-size:1.125rem; margin-bottom:0.5rem;">AED 15,000–45,000</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Phone-answering AI with call routing, booking, and message-taking, priced up if it needs true bilingual Arabic/English handling.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">construction</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Custom AI Development</h3>
+        <p style="color:#006875; font-weight:700; font-size:1.125rem; margin-bottom:0.5rem;">AED 40,000+</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Bespoke systems built from scratch for a specific use case: proprietary tooling, fine-tuned models, or deep integration with legacy systems. Scoped project by project.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Every quote is itemized, so you can see exactly what you're paying for before you commit to anything.</p>
+      <button onclick="openModal(this)" data-source="pricing_cost_mid" class="btn-primary">Get a Free, Itemized Quote</button>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT DRIVES PRICE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="drivers-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="drivers-heading">What drives the price up or down</h2>
+      <p>Five factors that explain why two "chatbots" can cost five times apart.</p>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Integration complexity</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A bot that only answers questions is cheap. A bot that reads and writes to your CRM, calendar, and inventory system in real time costs meaningfully more, because each integration is its own piece of engineering.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Data readiness</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">If your product info, policies, and processes already live in a clean, structured place, the build is faster. If they're scattered across PDFs, spreadsheets, and someone's memory, getting the data ready is its own phase of work.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Number of workflows</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">One clear job costs less than five loosely related jobs bundled into the same agent. Each additional workflow is additional logic, additional testing, and additional edge cases to handle.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Arabic language coverage</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A system that genuinely handles Gulf Arabic, Arabizi, and code-switching well takes real testing to get right, not just a translated prompt. That extra QA time shows up in the price.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">5</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Compliance requirements</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Healthcare, finance, or anything handling sensitive data needs extra care around data residency, consent, and access control, which adds scope beyond the core build itself.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BUILD VS RETAINER -->
+<section class="section" aria-labelledby="build-vs-retainer-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto; text-align:center;">
+      <h2 id="build-vs-retainer-heading" style="margin-bottom:1.25rem;">One-time build cost vs. ongoing retainer</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">The numbers above are the one-time cost to design, build, and launch the system. That's separate from ongoing maintenance, monitoring, bug fixes, model updates, and support, which is billed monthly and typically runs from around AED 1,500 to AED 6,000+ a month depending on how many agents you're running and how much traffic they handle. Full breakdown on our <a href="/services/ai-maintenance" style="color:#006875;">maintenance retainer page</a>.</p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">Treat the build cost as buying the system, and the retainer as keeping it accurate and reliable month over month. Skipping the retainer to save money is one of the most common ways a good build quietly degrades, covered in more detail on that page.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HIDDEN COSTS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="hidden-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="hidden-heading">Hidden costs people forget</h2>
+      <p>Three costs that live outside the build quote and outside the retainer, and that a lot of first-time buyers don't budget for.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">API/token costs</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Every AI conversation costs a small amount to run against the underlying model. For most SME-scale deployments this is a modest monthly figure, but it's billed separately by the model provider, not included in the agency's fee, and it scales with volume, so it's worth asking your provider to estimate it upfront.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">WhatsApp fees</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Meta charges per conversation once you're past the free tier, and your Business Solution Provider typically adds its own platform fee on top. Covered in detail on our <a href="/services/whatsapp-ai-automation/business-api" style="color:#006875;">WhatsApp Business API page</a>, but budget for it separately from the build cost.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Maintenance</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Covered above, but worth repeating here because it's the cost most commonly left out of a first budget entirely: a system that isn't maintained degrades, and the degradation is invisible until a customer notices it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHEAP VS EXPENSIVE -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="cheap-vs-expensive-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto; text-align:center;">
+      <h2 id="cheap-vs-expensive-heading" style="margin-bottom:1.25rem;">Cheap vs. expensive providers: what the difference buys</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">A low quote usually means one of a few things: a template bot with minimal customization, a freelancer working alone with no ongoing support structure, or a scope that quietly excludes integrations you'll need and discover are "extra" once you're already committed. A high quote from an established provider usually buys real discovery work, tested edge cases, proper Arabic QA, and a support structure behind the build, not just the build itself.</p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">Neither extreme is automatically right for you. A simple, low-stakes FAQ bot doesn't need enterprise-grade engineering. A system representing your business to every customer who calls does. Match the spend to what's actually at stake if the system gets something wrong.</p>
+    </div>
+  </div>
+</section>
+
+<!-- REAL EXAMPLE -->
+<section class="section" aria-labelledby="example-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="example-heading">A real cost example, start to finish</h2>
+      <p>A composite, typical example, not a specific client, to show how the pieces actually add up.</p>
+    </div>
+    <div class="research-panel">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin-bottom:1rem;">A Dubai clinic wants a WhatsApp assistant that books appointments, sends reminders, and answers common insurance questions, in Arabic and English. That's a WhatsApp automation build with clinic-specific PMS integration: roughly <strong style="color:#00253b;">AED 28,000</strong> for the build, including discovery, flow design, PMS integration, and bilingual testing.</p>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin-bottom:1rem;">On top of that: Meta conversation fees and BSP platform fees, typically a few hundred to low thousands of dirhams a month depending on volume, and a Standard maintenance retainer at roughly <strong style="color:#00253b;">AED 4,000/month</strong> for monitoring, bug fixes, and monthly reporting.</p>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">Total first-year cost: roughly <strong style="color:#00253b;">AED 76,000–80,000</strong> including the build, twelve months of retainer, and estimated WhatsApp fees, against a clinic that was previously missing calls during peak hours and losing patients to no-shows. Most clients in this range see the system pay for itself well within the first year, though the exact payback depends entirely on your current missed-call and no-show volume, which is worth measuring honestly before you build anything.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI automation pricing</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Itemized Quote</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Get a Free, Itemized Quote</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Tell us what you're trying to automate. We'll give you a real number broken down by what it's actually for, not a single lump figure.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="pricing_cost_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Get a Free, Itemized Quote</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+.num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+.research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; }
+.apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+.eval-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:1.25rem; }
+@media(max-width:1100px) { .eval-grid { grid-template-columns:repeat(3,1fr); } }
+@media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+</style>

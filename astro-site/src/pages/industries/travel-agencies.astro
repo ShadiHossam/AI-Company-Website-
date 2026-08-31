@@ -1,0 +1,323 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Which GDS and supplier systems can the quoting assistant pull from?", answer: "We integrate with whatever your agency already books through, whether that's a GDS like Amadeus, Sabre, or Galileo, or direct supplier and DMC feeds for hotels, transfers, and packages. The assistant reads live availability and fares from those systems rather than working off a static price list, so quotes stay accurate as fares move." },
+  { question: "Who's liable if the AI gives an incorrect visa requirement?", answer: "The AI states visa and entry requirements based on the knowledge base we build with you, and every quote we set up includes a clear disclaimer directing travelers to verify with the relevant embassy or consulate before booking, exactly as a human agent's script normally would. We treat visa information as a starting point for the traveler, not a substitute for official confirmation, and we're upfront about that boundary during setup." },
+  { question: "Can it handle the volume during peak season without slowing down?", answer: "Yes, that's specifically what it's built for. Summer and holiday peaks are when itinerary enquiries spike hardest, and that's also when a manual quoting process breaks down the most visibly. The assistant handles concurrent enquiries without a backlog, so agents spend peak season closing bookings instead of typing out the same itinerary structure repeatedly." },
+  { question: "Does it work in languages other than English and Arabic?", answer: "Yes. Given how international UAE travel agencies' client bases are, we typically set this up to handle Arabic, English, and whichever other languages your enquiry volume actually comes in, commonly Russian, Hindi, or Urdu. The traveler gets a quote in the language they messaged in, without needing a bilingual agent free at that moment." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Automation for Travel Agencies in the UAE",
+    "url": "https://lenooai.com/industries/travel-agencies",
+    "description": "AI systems for UAE travel agencies: itinerary quoting assistants, WhatsApp booking bots, payment and document reminders, and visa requirement checkers.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Automation for Travel Agencies"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Travel Agency AI", "item": "https://lenooai.com/industries/travel-agencies" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation for Travel Agencies in the UAE | Lenoo AI"
+  description="Lenoo AI builds AI systems for UAE travel agencies: itinerary quoting assistants, WhatsApp booking bots, document reminders, and visa requirement checkers."
+  canonicalPath="/industries/travel-agencies"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Travel Agencies</div>
+    <h1>AI for Dubai<br><span class="gradient-text">Travel Agencies</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI systems for UAE travel agencies: itinerary quoting assistants, WhatsApp booking bots, document and payment reminders, and visa requirement checkers. GDS-connected, multilingual, and built for peak season volume.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="travel_agencies_hero" class="btn-primary">Book a Free Travel Agency AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&q=80&auto=format&fit=crop" alt="Travel agent reviewing an itinerary with a client" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "Minutes", caption: "not hours, to turn an enquiry into a quote" },
+      { value: "9×", caption: "more likely a traveler books when contacted within 5 minutes (MIT)" },
+      { value: "24/7", caption: "quoting and document reminders, including peak season" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY QUOTING IS THE BOTTLENECK -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why quoting the same itinerary structure a hundred times a week is the actual bottleneck</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Most enquiries follow the same shape.</strong> A 5-night Maldives package, a European multi-city trip, a family Umrah package: the destinations vary, but the structure of the quote (flights, hotel tier, transfers, optional add-ons) repeats constantly. Agents spend hours rebuilding the same quote template with different numbers instead of talking to travelers who are ready to book.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Speed decides who gets the booking.</strong> A traveler comparing three agencies on WhatsApp books whichever one replies first with a real quote. If your agency takes hours to turn an enquiry into pricing because an agent has to check fares, hotel rates, and availability manually, you're losing bookings to whoever answered faster, not whoever had the better price.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>The paperwork after booking is where trips fall apart.</strong> Passport copies, visa documents, deposit and balance payments, all chased manually by an agent who's also trying to quote new enquiries. A missed payment reminder or a passport detail submitted late can jeopardize a booking days before departure.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80&auto=format&fit=crop" alt="Traveler checking flight details on a phone before a trip" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE Travel Agencies</h2>
+      <p>Six specific systems we've deployed for travel agencies across the UAE, each connected to your booking and supplier systems.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">quiz</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Itinerary Enquiry &amp; Quoting Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Collects trip details (destination, dates, party size, budget) over WhatsApp or web chat and returns a structured quote pulling live fares and rates, instead of an agent building it from scratch.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Turns a routine enquiry into a quote in minutes, not hours</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">chat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">WhatsApp Booking Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Takes a traveler from a confirmed quote to a booked trip inside the same chat thread: payment link, confirmation, and booking reference sent automatically, no separate email chain.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Books directly in the channel the traveler already used to enquire</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">notifications_active</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Payment &amp; Document Reminder System</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Chases deposits, balance payments, and passport or visa documents automatically on a schedule tied to the trip date, so nothing gets missed because an agent is busy quoting other travelers.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Reminders scale to trip deadlines, not a fixed generic timeline</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">badge</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Visa Requirement Checker</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Answers visa and entry requirement questions by destination and nationality directly in chat, with a clear pointer to official verification, cutting the time agents spend answering the same requirement questions daily.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Built from your agency's own destination and nationality knowledge base</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">update</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Post-booking Update Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends flight changes, hotel confirmations, and pre-departure information automatically as they happen, so travelers hear it from your agency first, not from checking their airline app.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Keeps travelers informed without a dedicated check-in call</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">star</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Review &amp; Referral Request</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Times a review and referral request for after the trip has actually gone well, based on post-return check-in responses, protecting your agency's ratings while turning happy travelers into new enquiries.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Sent only after a positive post-trip signal, not on a blanket schedule</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">GDS-connected, multilingual, and built to handle peak season enquiry volume.</p>
+      <button onclick="openModal(this)" data-source="travel_agencies_mid" class="btn-primary">Book a Free Travel Agency AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="journey-heading">One trip, enquiry to booked</h2>
+      <p>What the AI handles at every stage, while your agents focus on the trips that need real judgment.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">A quote in minutes instead of hours</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A traveler messages with dates, destination, and budget. The AI already has the structure to respond with.</p>
+        <ul class="journey-list">
+          <li>Pulls live fares and rates instead of quoting from a stale price sheet</li>
+          <li>Builds a structured itinerary with flight, hotel, and transfer options ready to send</li>
+          <li>Escalates to an agent only when the request needs judgment a template can't provide</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Booking confirmed with documents chased automatically</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Once a quote is accepted, the AI keeps the booking moving without an agent chasing every step.</p>
+        <ul class="journey-list">
+          <li>Payment link sent and confirmed inside the same WhatsApp thread</li>
+          <li>Passport and visa document requests sent on a schedule tied to the departure date</li>
+          <li>Balance payment reminders sent automatically as the deadline approaches</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The traveler kept updated without a dedicated call</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Between booking and departure, and during the trip itself, the AI keeps the traveler informed.</p>
+        <ul class="journey-list">
+          <li>Flight and hotel changes relayed the moment they're confirmed by the supplier</li>
+          <li>Pre-departure information sent automatically a set number of days before travel</li>
+          <li>Post-trip check-in sent to catch issues early and time review requests well</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BIGGEST IMPACT -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">bolt</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Quote Turnaround Speed</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">The agency that quotes first usually wins the booking, especially on WhatsApp where a traveler is often messaging two or three agencies at once. Cutting quote time from hours to minutes is the single change with the most direct effect on conversion.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">notifications_active</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Document/Payment Chasing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">A booking that's confirmed but missing a passport copy or a balance payment close to departure is a genuine risk to the trip. Automated, deadline-aware reminders catch this before it becomes an urgent problem days before travel.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">update</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Post-booking Updates</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Travelers who hear about a flight change from their agency, not from discovering it at the airport, trust that agency with their next trip. Automated, real-time updates protect that relationship without needing a dedicated account manager per traveler.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT MAKES IT WORK -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">GDS/supplier integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A quote is only useful if the fares and rates behind it are live. Connecting to your GDS or supplier feeds, rather than a manually updated price sheet, is what keeps AI-generated quotes accurate enough to actually book from.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Multi-currency &amp; multilingual</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">UAE travel agencies quote in AED, USD, and often the traveler's home currency, and enquiries arrive in Arabic, English, and several other languages. The assistant needs to handle both without the traveler noticing a seam.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Visa/document requirement knowledge</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Visa rules vary by nationality and destination and change often. The knowledge base behind the checker needs regular review, and the assistant needs to be clear about pointing travelers to official verification, not presenting itself as the final word.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">High season volume handling</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Summer and holiday peaks bring enquiry volume that can outstrip what a manual team can quote in time. The system needs to hold up under concurrent conversations exactly when the business needs it most, not just on an average week.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT THE DATA SHOWS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&q=80&auto=format&fit=crop" alt="Traveler with a suitcase and boarding pass at an airport" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:1.75rem; margin-bottom:4px;">Fastest quote</p>
+        <p style="color:#42474e; font-size:0.875rem;">wins the booking when travelers are comparing agencies on WhatsApp in parallel</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:1.75rem; margin-bottom:4px;">No missed deadline</p>
+        <p style="color:#42474e; font-size:0.875rem;">document and payment reminders tied to each trip's actual departure date</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:1.75rem; margin-bottom:4px;">Peak-ready</p>
+        <p style="color:#42474e; font-size:0.875rem;">handles concurrent enquiry spikes without a quoting backlog</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Quote Speed and Conversion</p>
+          <p style="color:#42474e; line-height:1.7;">MIT research on lead response speed found contacting someone within 5 minutes produces dramatically better conversion than waiting even 30 minutes. Travel enquiries behave the same way: agencies we speak with consistently say the fastest quote, not necessarily the cheapest one, wins the booking when a traveler is messaging multiple agencies at once.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Document Chasing</p>
+          <p style="color:#42474e; line-height:1.7;">Agents we talk to describe passport and payment chasing as one of the most time-consuming, least valuable parts of their week, and also the part most likely to slip during a busy quoting period. Automated, deadline-based reminders remove that trade-off entirely.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Peak Season Load</p>
+          <p style="color:#42474e; line-height:1.7;">Summer and school holiday periods bring the sharpest enquiry spikes UAE travel agencies see all year. Agencies that can't quote fast enough during these windows lose bookings not to competitors with better prices, but to competitors who simply replied first.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for travel agencies</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Travel Agency AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll look at your current enquiry-to-booking flow and show you exactly what we'd automate first. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="travel_agencies_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book a Free Travel Agency AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>

@@ -1,0 +1,259 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "What's the actual response SLA on a retainer?", answer: "It depends on the tier, but every retainer we sell has a written response time attached to it, typically same-business-day for a full outage or a critical wrong answer, and within a few business days for smaller quality issues or new workflow requests. We agree the specific numbers with you in writing before you sign, so there's no ambiguity when something actually breaks." },
+  { question: "What happens if we want to cancel?", answer: "Retainers run month to month after an initial minimum term, usually three months, long enough for us to actually learn the system and for you to see whether the value is there. After that, you can cancel with notice, no long lock-in, no penalty for leaving. We'd rather earn the renewal every month than trap you in a contract you're unhappy with." },
+  { question: "What counts as a covered bug fix versus a paid new feature?", answer: "A bug is the agent not doing what it was built and agreed to do: a broken integration, a wrong answer on something it was trained to get right, a workflow that stopped triggering. That's covered under the retainer. A new feature is asking it to do something it was never built to do: a new workflow, a new channel, a new integration it didn't have before. That's scoped and quoted separately, and we'll always tell you clearly which category something falls into before doing the work." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Maintenance and Support Retainer",
+    "url": "https://lenooai.com/services/ai-maintenance",
+    "description": "Ongoing maintenance and support retainers for AI agents and automation deployed in the UAE: monitoring, bug fixes, prompt tuning, model updates, and monthly reporting.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Maintenance and Support"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://lenooai.com/services" },
+      { "@type": "ListItem", "position": 3, "name": "AI Maintenance", "item": "https://lenooai.com/services/ai-maintenance" }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems.map((f) => ({
+      "@type": "Question",
+      "name": f.question,
+      "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+    }))
+  }
+];
+---
+
+<BaseLayout
+  title="AI Maintenance Retainer UAE: What's Actually Included and What It Costs | Lenoo AI"
+  description="What a real AI maintenance retainer includes: monitoring, bug fixes, prompt tuning, model updates, and monthly reporting. Honest tiers and pricing for UAE businesses."
+  canonicalPath="/services/ai-maintenance"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services" style="color:inherit;text-decoration:none;opacity:0.65;">Services</a><span style="opacity:0.4;padding:0 4px;"> / </span>AI Maintenance</div>
+    <h1>What a Real AI <span class="gradient-text">Maintenance Retainer</span> Includes</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">An AI system you never touch again after launch is a system that quietly stops working. Here's what a real maintenance retainer covers, what it doesn't, and what it actually costs in the UAE.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_maintenance_hero" class="btn-primary">See Our Retainer Plans</button>
+      <a href="#tiers" class="btn-outline">See Pricing Tiers ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=1600&q=80&auto=format&fit=crop" alt="Developer reviewing system health and support tickets" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 50%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "3 mo", caption: "typical minimum term on our retainers, then month to month" },
+      { value: "6", caption: "things a real retainer covers, from monitoring to priority support" },
+      { value: "0", caption: "surprise scope, every retainer states in writing what's covered and what isn't" },
+    ]} />
+  </div>
+</div>
+
+<!-- INTRO -->
+<section class="section" aria-labelledby="intro-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="intro-heading" style="margin-bottom:1.5rem;">Why AI systems need ongoing maintenance</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Software you build once and never touch again is rare, and AI systems are worse candidates for it than most.</strong> A website can sit static for years and still render correctly. An AI agent can't, because three things underneath it keep moving whether you're watching or not.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Models change.</strong> The provider behind your agent updates the underlying model, sometimes without much warning, and behavior that was reliable last month can shift slightly this month. <strong>Businesses change.</strong> New products, new pricing, a new promotion, a new policy, and the agent needs to know about all of it or it starts giving confidently wrong answers. <strong>Data drifts.</strong> The questions customers actually ask shift over time, by season, by campaign, by whatever's trending, and an agent tuned for last quarter's questions handles this quarter's less well.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">None of this shows up as an error message. It shows up as a slow decline nobody notices until a customer does. A maintenance retainer is the mechanism that catches it first.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80&auto=format&fit=crop" alt="Team working together on a support and maintenance process" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT'S INCLUDED -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="included-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="included-heading">What's included in a real retainer</h2>
+      <p>Six things, all of them ongoing, none of them a one-time deliverable you tick off and forget.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">monitoring</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Monitoring &amp; Alerting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Continuous tracking of accuracy, cost, and uptime, with alerts set to the thresholds that matter for your specific system. Covered in full on our <a href="/services/agentops" style="color:#006875;">AgentOps page</a>.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">build</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Bug Fixes &amp; Prompt Tuning</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">When the agent gets something wrong that it was built to get right, we fix it. That includes prompt adjustments, knowledge base corrections, and integration repairs when something upstream changes.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">system_update</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Model/Version Updates</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">When the underlying model gets updated by its provider, we test your agent against the change and adjust before it affects your customers, instead of finding out the same way you would.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">summarize</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Monthly Reporting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">A written report every month: volume handled, cost trend, accuracy trend, and exactly what we changed and why. Evidence the system is working, not just an invoice.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">add_task</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">New Workflow Additions</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Higher tiers include a set amount of new-workflow work each month, small additions to what the agent handles, without a separate quote and invoice for every minor change.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">support_agent</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Priority Support SLA</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">A written response time for issues, agreed before launch, so when something breaks you know exactly how fast we're required to respond, not left waiting on a general support inbox.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Built and supported by the same team, no handoff to a stranger once the build is done.</p>
+      <button onclick="openModal(this)" data-source="ai_maintenance_mid" class="btn-primary">See Our Retainer Plans</button>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT'S NOT INCLUDED -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="excluded-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="excluded-heading">What's NOT included</h2>
+      <p>A retainer keeps what you already have running. It isn't a blank cheque for new work.</p>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">New builds</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">A brand new agent, a new channel the current system doesn't touch (voice, if you only have chat), or a project of meaningful size gets scoped and quoted on its own, the same way the original build was. The retainer keeps the existing system healthy, it doesn't fund building a second one.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Major scope changes</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Rearchitecting how the agent works, adding a large new set of workflows, or integrating a completely new system it never touched before is treated as a project, not a maintenance task. We'll always tell you clearly when something has crossed that line before doing the work.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TIERS -->
+<section id="tiers" class="section" aria-labelledby="tiers-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="tiers-heading">Retainer tiers and what they cost</h2>
+      <p>Rough ranges we typically see for a Dubai-based agency doing this work, not a rate card, since scope varies with how many agents you're running and how much traffic they handle. We'll give you an exact number once we know your setup.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Essential</h3>
+        <p style="color:#006875; font-weight:700; font-size:1.25rem; margin-bottom:0.75rem;">AED 1,500–3,000/mo</p>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Monitoring, bug fixes, and monthly reporting for a single agent handling moderate volume. No new-workflow budget included.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Standard</h3>
+        <p style="color:#006875; font-weight:700; font-size:1.25rem; margin-bottom:0.75rem;">AED 3,000–6,000/mo</p>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Everything in Essential, plus a monthly allowance for small new-workflow additions and a faster support SLA. The most common tier for a business running one to two agents.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Priority</h3>
+        <p style="color:#006875; font-weight:700; font-size:1.25rem; margin-bottom:0.75rem;">AED 6,000+/mo</p>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">For multi-agent deployments, higher volume, or systems where downtime is expensive: same-day response, deeper monthly reporting, and a larger new-workflow budget.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT HAPPENS WITHOUT -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="without-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="without-heading">What happens if you don't have one</h2>
+      <p>Real scenarios, not hypotheticals, that we see when a business skips maintenance to save on the monthly fee.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">A pricing update never reaches the agent</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Prices change, but nobody updates the agent's knowledge base because there's no process for it. The agent keeps quoting the old number until a customer catches the mismatch, which is an awkward conversation to have after the fact.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">An integration breaks quietly</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">A CRM or calendar API changes on the other end. Without monitoring, the agent keeps trying to book appointments that never actually land in the calendar, and nobody finds out until a client shows up for an appointment that was never real.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Cost climbs and nobody notices why</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">A prompt edit made to fix one issue quietly makes every conversation longer and more expensive. Without cost tracking, it just looks like a bigger bill next month, with no clear cause and no one accountable for finding it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATING VENDOR SUPPORT -->
+<section class="section" aria-labelledby="evaluate-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto; text-align:center;">
+      <h2 id="evaluate-heading" style="margin-bottom:1.25rem;">How to evaluate your current AI vendor's support</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">Ask three questions. Do they have a written SLA, or is support "best effort"? Have you ever received a report showing accuracy, cost, or drift, or do you just get an invoice? And when you last had an issue, how long did it actually take to get a real response, not an automated acknowledgment?</p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">If the honest answers are "no," "no," and "too long," you're paying for a retainer in name only. That's a fixable problem, and it's usually not a reason to rebuild the agent from scratch, just a reason to change who's watching it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI maintenance retainers</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Consultation</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">See Our Retainer Plans</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Tell us what you're running and how much traffic it handles, and we'll recommend a tier with a real number attached, not a sales call disguised as one.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="ai_maintenance_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">See Our Retainer Plans</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+.apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+@media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } }
+</style>

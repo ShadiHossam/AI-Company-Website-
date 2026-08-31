@@ -1,0 +1,327 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Which delivery aggregators does the AI actually connect to?", answer: "We build against Talabat, Deliveroo, and Zomato, the three aggregators that account for most delivery order volume in the UAE. Where an aggregator's API supports it, orders sync automatically into one consolidated view alongside your dine-in and WhatsApp orders. Where an aggregator only offers a tablet with no API access, we set up a monitored intake so those orders still land in the same queue instead of a separate screen your kitchen has to check." },
+  { question: "Can the AI handle peak-hour call and order volume without falling over?", answer: "Yes. Unlike a phone line with a fixed number of staff answering it, the AI scales with volume, a Friday dinner rush doesn't mean longer hold times or missed calls the way it would with a human host desk. The reservation bot and WhatsApp ordering assistant are built to handle concurrent conversations, not one at a time." },
+  { question: "Do we get to control how the AI replies to reviews, or does it just auto-post generic responses?", answer: "You set the tone and the boundaries. Positive reviews can get an automatic reply in your brand voice. Anything negative, or anything mentioning food safety, a health concern, or a serious complaint, gets drafted for your team to approve or gets escalated directly, it never posts something sensitive without a human looking at it first." },
+  { question: "Does the reservation bot integrate with our existing POS?", answer: "Yes, that's the point. A reservation or order that the AI takes needs to land in the same system your floor staff and kitchen are already using, not a separate app they have to check. We connect to the POS systems common across UAE restaurant groups so table status, order status, and staff scheduling all stay in sync." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Automation for Restaurants in the UAE",
+    "url": "https://lenooai.com/industries/restaurants",
+    "description": "Custom AI systems for independent and multi-branch UAE restaurants: reservation and waitlist bots, delivery aggregator order consolidation, WhatsApp ordering, and review response automation.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Restaurants"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Restaurant AI", "item": "https://lenooai.com/industries/restaurants" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation for Restaurants in the UAE: The Complete Guide | Lenoo AI"
+  description="AI for restaurants in Dubai and the UAE: reservation bots, delivery aggregator order consolidation, WhatsApp ordering and review response automation for independent restaurants."
+  canonicalPath="/industries/restaurants"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Restaurants</div>
+    <h1>AI Automation for<br><span class="gradient-text">Restaurants</span> in the UAE</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI systems for independent and multi-branch UAE restaurants: reservation bots, delivery aggregator order consolidation, WhatsApp ordering, and review response. Built for a business that runs on five channels at once.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="restaurants_hero" class="btn-primary">Book a Free Restaurant AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&q=80&auto=format&fit=crop" alt="Restaurant kitchen and dining service in the UAE" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 45%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "3+", caption: "channels a typical UAE restaurant juggles for one order: aggregators, WhatsApp, phone, walk-in" },
+      { value: "98%", caption: "typical WhatsApp message open rate, the channel diners actually respond to" },
+      { value: "24/7", caption: "reservation and order coverage, including the hours no host desk is staffed" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY FIVE CHANNELS FOR ONE ORDER -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why restaurants juggle five channels for one order</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>A single restaurant takes orders from everywhere at once.</strong> Talabat, Deliveroo, and Zomato each run their own tablet with their own notification sound. Add walk-ins, phone reservations, and a WhatsApp number customers already have saved, and the kitchen is watching five inputs to do one job: get food out correctly and on time.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Reviews move faster than staff can respond to them.</strong> A bad night on one platform, a missed order, a slow table, gets a review within the hour, and the review sits there unanswered while the next hundred people considering a booking read it. Independent restaurants without a dedicated marketing person fall behind on this by default, not by choice.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>No-shows cost a table that could have turned twice.</strong> A reservation taken by phone at 6pm for an 8pm booking, with no reminder sent, is a coin flip. For a restaurant with fixed seating and a kitchen sized to expected covers, an empty table at peak hours is lost revenue that doesn't come back that night.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&q=80&auto=format&fit=crop" alt="Restaurant host managing a reservation and table booking in Dubai" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE Restaurants</h2>
+      <p>Six specific systems we deploy for independent and multi-branch UAE restaurants, each integrated with your POS and existing ordering channels.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_seat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Reservation & Waitlist Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Takes bookings by phone or WhatsApp, checks real table availability against your POS, and manages the waitlist when you're full. Sends reminders to cut no-shows.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Books tables around the clock, not just when the host desk is staffed</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">restaurant</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Delivery Aggregator Order Consolidation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Pulls Talabat, Deliveroo, and Zomato orders into one queue alongside dine-in and WhatsApp orders, so the kitchen watches one screen instead of four tablets.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">One queue instead of a tablet per platform</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">chat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">WhatsApp Ordering Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Takes direct orders on WhatsApp, the channel customers already have your number saved on, without the commission an aggregator charges on every order.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Direct orders keep the margin an aggregator would otherwise take</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">reviews</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Review Response & Reputation Monitor</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Tracks new reviews across major platforms and drafts a same-day reply in your brand voice. Positive reviews get answered fast, anything sensitive routes to you first.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">A same-day reply instead of one that arrives a week late, if at all</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">forum</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Customer Feedback Collector</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends a short feedback message after a meal, dine-in or delivery, and routes anything negative to your manager immediately instead of it turning into a public review first.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Catches a bad experience before it becomes a public one</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">schedule</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Table/Staff Scheduling Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Matches expected covers from reservations and historical patterns to staffing needs, so shifts are built around actual demand instead of a fixed weekly rota.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Staffing built around expected demand, not a guess</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems UAE-compliant, bilingual Arabic &amp; English, and integrated with your POS and existing ordering channels.</p>
+      <button onclick="openModal(this)" data-source="restaurants_mid" class="btn-primary">Book a Free Restaurant AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="journey-heading">One reservation to review, handled end to end</h2>
+      <p>What the AI takes care of from the first booking message to the review that follows the meal.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The booking made without a phone call</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A guest messages on WhatsApp wanting a table for four on Friday night.</p>
+        <ul class="journey-list">
+          <li>Checks real table availability against your POS and confirms a time in seconds</li>
+          <li>Collects party size, occasion, and any dietary notes worth passing to the kitchen</li>
+          <li>Sends a reminder ahead of the booking so the table doesn't sit empty on a no-show</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The order that doesn't get missed in aggregator chaos</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A delivery order lands on Talabat while the kitchen is mid-rush on three other screens.</p>
+        <ul class="journey-list">
+          <li>Pulls the order into the same consolidated queue as every other channel, no separate tablet to check</li>
+          <li>Flags order timing conflicts before the kitchen falls behind on a promised delivery window</li>
+          <li>Confirms the order status back to the customer automatically if they follow up</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The review that gets a same-day reply</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A guest leaves a review that evening, good or bad.</p>
+        <ul class="journey-list">
+          <li>Drafts a reply in your brand voice within hours, not whenever someone remembers to check</li>
+          <li>Escalates anything serious, a health concern or a genuine complaint, to you before any public reply</li>
+          <li>Logs the feedback so recurring issues surface to management instead of getting lost in the noise</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BIGGEST IMPACT -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact for UAE restaurants</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">restaurant</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Aggregator order chaos</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Consolidating Talabat, Deliveroo, and Zomato into a single view removes the single biggest source of kitchen error: an order missed because the tablet it came in on wasn't the one someone happened to be watching.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">One queue, not one tablet per platform</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">reviews</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Review velocity</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Diners deciding between similar restaurants routinely check reviews before booking. A restaurant that replies fast and consistently reads as attentive; one with weeks of unanswered reviews reads as indifferent, whether or not that's true.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">A same-day reply, every time, not when someone remembers</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_seat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Reservation no-shows</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">A no-show at peak hours is a table that could have turned twice. Automatic confirmations and reminders sent at the right moment recover a meaningful share of bookings that would otherwise just not show up.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">A reminder sent automatically costs nothing and saves the table</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Talabat/Deliveroo/Zomato integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Order consolidation only works if it connects to the aggregators you actually use. We build against the three that carry most of the delivery volume in the UAE, so orders land in one queue instead of three separate tablets.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">POS integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Reservations, table status, and order data need to live in the same system your floor and kitchen staff already use. A reservation bot that doesn't check real POS availability books tables that don't actually exist.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Multilingual menu & ordering</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A UAE diner base moves between Arabic and English, and often expects a menu explained, not just listed. The ordering assistant needs to answer questions about dishes and ingredients in either language, not just process a fixed menu code.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Peak-hour load handling</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Friday and Saturday dinner service brings a spike in reservation requests, orders, and messages all at once. The system needs to hold up under that load without dropping a booking or missing an order, the exact moment a restaurant can least afford either.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1517840901100-8179e982acb7?w=1200&q=80&auto=format&fit=crop" alt="Restaurant staff preparing food orders during peak service" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">3+</p>
+        <p style="color:#42474e; font-size:0.875rem;">separate order channels a typical UAE restaurant reconciles manually every shift</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">98%</p>
+        <p style="color:#42474e; font-size:0.875rem;">typical WhatsApp message open rate, versus roughly 20% for email</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">24/7</p>
+        <p style="color:#42474e; font-size:0.875rem;">reservation coverage, including hours the host desk isn't staffed</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Aggregator Commission Pressure</p>
+          <p style="color:#42474e; line-height:1.7;">Delivery aggregators charge a commission on every order that runs through their platform, which is why restaurants that build a strong direct-ordering channel on WhatsApp consistently protect more margin per order than those relying on aggregators alone.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Review Response Timing</p>
+          <p style="color:#42474e; line-height:1.7;">Restaurants we talk to say the same thing: a review answered the same day feels like a restaurant that's paying attention, one answered a week later, or not at all, reads as indifference to the diners scrolling through before they book. Response speed is a reputation signal in itself.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">No-Show Recovery</p>
+          <p style="color:#42474e; line-height:1.7;">A confirmed reminder sent close to the reservation time is the standard fix hospitality operators use for no-shows across the industry. For a restaurant with fixed seating, recovering even a fraction of those tables at peak hours adds up over a month.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for UAE restaurants</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Restaurant AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll look at your reservation flow, your aggregator mix, and where reviews are going unanswered, then show you exactly what we'd build first. 30 minutes, no obligation.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="restaurants_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book a Free Restaurant AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    /* Journey list markers (reused inside static bento-grid-3 cards) */
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>

@@ -1,0 +1,245 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../components/ProcessSteps.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "How accurate is AI at comparing quotes from multiple suppliers?", answer: "Extracting price, quantity, lead time, and terms from a supplier quote is a well-defined data extraction task, and AI handles it reliably once it's been tuned to the format your suppliers actually send, whether that's a PDF, an emailed spreadsheet, or a structured RFQ portal response. Where quotes genuinely differ in scope, not just price, someone on your team still makes the final call, since that comparison needs to understand your business, not just match numbers on a page." },
+  { question: "Is our contract and supplier data secure?", answer: "Yes. The automation connects to your procurement or ERP system through the same access controls you already have, and we don't store contract data outside the systems you already use. Access is scoped to only what each workflow needs. If your business handles supplier data under specific confidentiality terms, we can sign an NDA before any discovery call." },
+  { question: "Do you integrate with the ERP or procurement platform we already use?", answer: "Yes. Most of our procurement automation work connects to ERP systems like SAP or Oracle, along with dedicated procurement platforms, through their APIs. If your team runs procurement out of spreadsheets and email today, we can still build the automation around that and help you move toward a more structured system if that makes sense for your volume." },
+  { question: "Can this replace our procurement team?", answer: "No. Automation handles the repetitive parts: comparing quotes on the criteria you specify, routing purchase orders for approval, flagging contract renewals. Negotiating with suppliers, deciding which vendor relationship is worth prioritizing, and making the final award decision on a significant contract stay with your team. That judgment is exactly what a procurement function is for." },
+  { question: "How long does it take to get a procurement workflow live?", answer: "A single workflow, RFQ comparison or PO matching on its own, usually goes from audit to live in two to four weeks. Projects that touch multiple systems, like connecting quote comparison to your ERP's approval routing, take longer. We give a specific timeline after the discovery call, once we know your actual supplier volume and tool stack." },
+];
+
+const processSteps = [
+  { icon: "search", step: "Step 1", title: "Procurement Audit", description: "We map how RFQs, purchase orders, and contracts currently move through your team and identify where manual work is costing the most time." },
+  { icon: "edit", step: "Step 2", title: "Design & Plan", description: "We design the automation around your existing ERP or procurement platform, and get sign-off before building anything." },
+  { icon: "build", step: "Step 3", title: "Build & Test", description: "We build the automation and test it against real RFQs, POs, and contracts until the output matches what your team expects." },
+  { icon: "rocket_launch", step: "Step 4", title: "Go Live & Monitor", description: "Automation goes live alongside your existing process. We monitor it for 90 days and adjust as your supplier base evolves." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'AI for Procurement and Supplier Management',
+    url: 'https://lenooai.com/services/ai-automation/procurement',
+    description: 'AI automation for UAE procurement teams: RFQ and quote comparison, supplier communication, PO matching and approval routing, contract review and renewal alerts, and spend analytics.',
+    provider: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    areaServed: 'United Arab Emirates',
+    offers: { '@type': 'Offer', description: 'AI automation projects for procurement teams: pricing based on workflow complexity and scope. Book a free procurement automation audit for a quote.' },
+    serviceType: 'AI Automation',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
+      { '@type': 'ListItem', position: 2, name: 'AI Automation', item: 'https://lenooai.com/services/ai-automation' },
+      { '@type': 'ListItem', position: 3, name: 'Procurement', item: 'https://lenooai.com/services/ai-automation/procurement' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="AI for Procurement and Supplier Management | Lenoo AI"
+  description="AI automation for UAE procurement teams: RFQ comparison, supplier communication, PO matching, contract renewal alerts, and spend analytics."
+  canonicalPath="/services/ai-automation/procurement"
+  ogImage="/assets/og-services.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">AI Automation</a><span style="opacity:0.4;padding:0 4px;"> / </span>Procurement</div>
+    <h1>AI for <span class="gradient-text">Procurement and Supplier Management</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 0; line-height:1.8;">
+      Procurement runs on documents: RFQs, quotes, purchase orders, contracts, invoices. We build automation that reads and moves those documents for you, connected to the ERP or procurement platform your team already uses, so buyers spend their time negotiating instead of formatting spreadsheets.
+    </p>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">Post-launch monitoring included with every project</span>
+      <span class="tchip">Refund guarantee if you're not satisfied with what we deliver</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ai_automation_procurement_hero" class="btn-primary">Book a Free Procurement Automation Audit</button>
+      <a href="#procurement-systems" class="btn-outline">See What We Automate ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1400&q=80&auto=format&fit=crop" alt="Procurement team reviewing supplier documents and purchase orders" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
+</div>
+
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
+  <div class="container">
+    <StatStrip stats={[
+      { value: "40%", caption: "of work tasks in most procurement functions are automatable with existing AI. Quote comparison and PO matching are usually first in line." },
+      { value: "90 days", caption: "post-launch monitoring included with every project" },
+      { value: "100%", caption: "refund guarantee if you're not satisfied with what we deliver" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY PROCUREMENT IS AUTOMATION-READY -->
+<section class="section" aria-labelledby="doc-heavy-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="doc-heavy-heading" style="margin-bottom:1.5rem;">Why Procurement Is a Document-Heavy, Automation-Ready Function</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">Almost every step of a procurement cycle produces or consumes a document. An RFQ goes out and quotes come back in different formats. A purchase order gets raised and needs to match against a quote and a budget line. A contract gets signed and needs its key terms tracked for the life of the relationship. None of that is judgment work in the way negotiating with a supplier is. It's reading, comparing, and routing, done the same way for every transaction.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">That's exactly the profile of work AI automation handles well. A quote comparison across five suppliers follows the same logic every time: extract price, quantity, lead time, and terms, then lay them side by side against the criteria your team already uses. A PO match against a quote either lines up or it doesn't. A contract renewal date either falls within the next sixty days or it doesn't. The rules are already clear. What's usually missing is the time to apply them consistently at volume.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">Procurement teams we talk to consistently describe the same bottleneck: not a shortage of good suppliers or good negotiators, but buyers spending hours a week reformatting quotes into a comparison sheet or chasing a PO through an approval chain. That's the part automation removes, so the negotiating and vendor relationship work, the part that actually needs a person, gets the attention it deserves.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&q=80&auto=format&fit=crop" alt="Procurement professional comparing supplier quotes and documents at a desk" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI SYSTEMS -->
+<section id="procurement-systems" class="section" style="background:#e7eeff;" aria-labelledby="systems-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="systems-heading">AI Systems for Procurement</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">Built on top of the ERP or procurement platform your team already uses. Every project includes post-launch monitoring.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">compare_arrows</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">RFQ &amp; Quote Comparison</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI reads incoming quotes in whatever format they arrive and lays them side by side on price, quantity, lead time, and terms, so buyers compare apples to apples instead of reformatting spreadsheets.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A buyer who used to spend an afternoon building a comparison sheet from five supplier quotes now has it ready before the last quote even lands.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">forum</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Supplier Communication Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">RFQs go out to your approved supplier list automatically, follow-up reminders chase quotes that haven't come in, and confirmations go out once an order is placed.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A team that used to chase quotes with individual follow-up emails now has reminders go out automatically to whoever hasn't responded.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">rule</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">PO Matching &amp; Approval Routing</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Purchase orders get matched against the original quote and budget line automatically, and route to the right approver based on amount and department without anyone chasing a signature.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A PO that used to sit in someone's inbox for three days now routes to the right approver the moment it's raised.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">gavel</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Contract Review &amp; Renewal Alerts</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">AI extracts key terms, pricing, and renewal dates from supplier contracts and flags upcoming renewals well before the window closes, so a contract never auto-renews unnoticed.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A supplier contract that quietly auto-renewed for two years now gets flagged sixty days ahead of its renewal date, every time.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">query_stats</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">Spend Analytics</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Spend across suppliers and categories gets aggregated into a live view your team can act on, surfacing where volume is concentrated and where a renegotiation might be worth having.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>Real example:</strong> A procurement lead who used to build a quarterly spend report by hand now checks a dashboard that updates as new POs are raised.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Every workflow is scoped around the ERP or procurement platform your team already uses, with 90 days of post-launch monitoring included.</p>
+      <button onclick="openModal(this)" data-source="ai_automation_procurement_mid" class="btn-primary">Book a Free Procurement Automation Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATION -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="integration-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="integration-heading" style="margin-bottom:1.5rem;">Integration With ERP and Procurement Platforms</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">Most of our procurement automation work connects to whatever your business already runs its purchasing through, typically an ERP system for larger organizations, or a dedicated procurement platform for teams that manage supplier relationships as a standalone function. The automation reads and writes through the same access your buyers already have, so POs, quotes, and contract records stay inside the system of record instead of scattering across spreadsheets.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">If your team currently manages procurement out of email and spreadsheets, that's a workable starting point too. We build the automation around the tools you actually use today and can help scope a path toward a more structured system if your volume justifies it. Either way, we design the integration during the discovery call once we know exactly what your team runs.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1611746869696-d09bce200020?w=800&q=80&auto=format&fit=crop" alt="Procurement professional reviewing spend analytics on a laptop screen" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="process-heading">From Procurement Audit to Live Automation</h2>
+    </div>
+    <ProcessSteps steps={processSteps} />
+  </div>
+</section>
+
+<!-- MID-PAGE CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container" style="text-align:center;">
+    <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto 1.25rem;">Tell us which part of your procurement cycle eats the most of your buyers' time.</p>
+    <button onclick="openModal(this)" data-source="ai_automation_procurement_mid2" class="btn-primary">Book a Procurement Automation Call</button>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- CROSS-LINK -->
+<section class="section-sm" aria-labelledby="related-heading">
+  <div class="container">
+    <div style="max-width:720px; margin:0 auto; text-align:center;">
+      <h2 id="related-heading" style="font-size:1.375rem; margin-bottom:1rem;">Looking at Automation Across Your Whole Business?</h2>
+      <p style="color:#42474e; font-size:1rem; line-height:1.8;">
+        See our <a href="/services/ai-automation">AI automation hub</a> for the full range of workflows we automate across finance, operations, and sales, not just procurement.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="Call to action">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">Free Procurement Automation Audit</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Ready to Get Your Buyers Out of Spreadsheets?</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">Book a free procurement automation audit with our Dubai team. We'll identify the workflows costing your team the most time and estimate the savings.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ 100% free</span>
+          <span class="cta-trust-badge">✓ No commitment</span>
+          <span class="cta-trust-badge">✓ Refund guarantee</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ai_automation_procurement_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Procurement Automation Audit</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.value-card { display:flex; flex-direction:column; }
+</style>

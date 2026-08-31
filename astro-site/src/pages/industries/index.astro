@@ -1,0 +1,316 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "My industry isn't listed here. Does that mean AI automation won't work for us?", answer: "No. The patterns below (missed inbound, manual follow-up, document bottlenecks, scheduling and no-shows) show up in almost every service business, regardless of whether we've written a dedicated guide for your specific vertical yet. Book a free audit and we'll tell you honestly what's worth automating first, whether or not your industry has its own page here." },
+  { question: "How is an industry-specific build different from a generic chatbot?", answer: "A generic chatbot answers questions. An industry-specific build understands your workflow: a clinic bot knows not to give clinical advice and hands off to staff correctly, a real estate bot knows RERA and DLD terminology, a restaurant bot knows how aggregator orders differ from direct ones. That context is what separates a system that actually works from one that technically responds." },
+  { question: "Can one AI system cover more than one part of my business, like both bookings and finance?", answer: "Yes, and for many businesses that's exactly the right shape: a single agent or small set of agents coordinating across functions, rather than a separate disconnected bot for every department. We'll usually recommend starting with the highest-leverage workflow first, then expanding once it's proven, rather than automating everything at once." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const industryGroups = [
+  {
+    label: "Real Estate, Property & Construction",
+    icon: "apartment",
+    items: [
+      { name: "Real Estate", href: "/industries/real-estate" },
+      { name: "Property Management", href: "/industries/property-management" },
+      { name: "Construction", href: "/industries/construction" },
+      { name: "Interior Design & Fit-Out", href: "/industries/interior-fitout" },
+      { name: "Engineering Consultancies", href: "/industries/engineering-consultancies" },
+    ],
+  },
+  {
+    label: "Healthcare & Wellness",
+    icon: "medical_services",
+    items: [
+      { name: "Healthcare", href: "/industries/healthcare" },
+      { name: "Medical Clinics", href: "/industries/healthcare-clinics" },
+      { name: "Dental Clinics", href: "/industries/dental-clinics" },
+      { name: "Aesthetic & Derma Clinics", href: "/industries/aesthetic-clinics" },
+      { name: "Pharmacies", href: "/industries/pharmacies" },
+      { name: "Gyms & Fitness Studios", href: "/industries/fitness-gyms" },
+      { name: "Salons & Spas", href: "/industries/beauty-salons" },
+    ],
+  },
+  {
+    label: "Retail, F&B & Consumer",
+    icon: "storefront",
+    items: [
+      { name: "Retail", href: "/industries/retail" },
+      { name: "E-Commerce", href: "/industries/ecommerce" },
+      { name: "Restaurants", href: "/industries/restaurants" },
+      { name: "Car Dealerships", href: "/industries/car-dealerships" },
+      { name: "Travel Agencies", href: "/industries/travel-agencies" },
+      { name: "Event Management", href: "/industries/event-management" },
+    ],
+  },
+  {
+    label: "Professional & Financial Services",
+    icon: "work",
+    items: [
+      { name: "Professional Services", href: "/industries/consulting" },
+      { name: "Legal", href: "/industries/legal" },
+      { name: "Finance & Banking", href: "/industries/finance-banking" },
+      { name: "Accounting Firms", href: "/industries/accounting-firms" },
+      { name: "Insurance", href: "/industries/insurance" },
+      { name: "Business Setup Consultancies", href: "/industries/coworking-business-setup" },
+      { name: "Marketing", href: "/industries/marketing" },
+      { name: "Marketing Agencies", href: "/industries/marketing-agencies" },
+      { name: "HR & Recruitment", href: "/industries/hr-recruitment" },
+    ],
+  },
+  {
+    label: "Field Service & Operations",
+    icon: "engineering",
+    items: [
+      { name: "Logistics", href: "/industries/logistics" },
+      { name: "Last-Mile Delivery", href: "/industries/last-mile-delivery" },
+      { name: "Facilities Management", href: "/industries/facilities-management" },
+      { name: "Cleaning Services", href: "/industries/cleaning-services" },
+      { name: "Auto Service Centres", href: "/industries/auto-service" },
+      { name: "Security & Manpower", href: "/industries/security-services" },
+      { name: "Trading & Distribution", href: "/industries/trading-distribution" },
+      { name: "Manufacturing", href: "/industries/manufacturing" },
+    ],
+  },
+  {
+    label: "Hospitality, Education & Tech Services",
+    icon: "school",
+    items: [
+      { name: "Hospitality", href: "/industries/hospitality" },
+      { name: "Education", href: "/industries/education" },
+      { name: "Training Institutes", href: "/industries/training-institutes" },
+      { name: "IT Service Providers", href: "/industries/it-msp" },
+    ],
+  },
+];
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "AI Automation by Industry",
+    "url": "https://lenooai.com/industries",
+    "description": "AI automation guides for UAE industries: real estate, healthcare, retail, professional services, field service, and more.",
+    "isPartOf": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems.map((f) => ({
+      "@type": "Question",
+      "name": f.question,
+      "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+    }))
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation by Industry: What Works in Each UAE Sector | Lenoo AI"
+  description="AI automation guides for every major UAE industry: real estate, healthcare, retail, professional services, field service, and more. Find your sector's playbook."
+  canonicalPath="/industries"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span>Industries</div>
+    <h1>AI Automation, <span class="gradient-text">by Industry</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">What actually works differs by sector, not just company size. Browse the UAE industries we build for below, each with its own playbook of systems, workflows, and what makes it work in that specific market.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="industries_hub_hero" class="btn-primary">Book a Free Audit</button>
+      <a href="#browse" class="btn-outline">Browse by Sector ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=1600&q=80&auto=format&fit=crop" alt="Dubai skyline representing the range of UAE industries" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 55%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "39", caption: "industry pages below, from real estate to security services" },
+      { value: "6", caption: "sector groups, so you can browse by function, not scroll a flat list" },
+      { value: "4", caption: "problems that repeat across almost every one of them, covered further down" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY INDUSTRY MATTERS -->
+<section class="section" aria-labelledby="why-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="why-heading" style="margin-bottom:1.5rem;">Why industry matters more than company size when choosing AI</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>A 20-person dental clinic and a 20-person accounting firm need almost nothing in common from an AI system.</strong> One needs appointment booking, insurance pre-approval, and DHA-compliant messaging. The other needs document collection, tax deadline tracking, and integration with Zoho Books. Company size tells you almost nothing about which workflow is worth automating first. Industry tells you a lot.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">That's why we build industry-specific guides instead of one generic "AI for business" page. Each one below is built around the systems that actually apply to that sector, the regulators and platforms that shape what an agent can and can't do, and a real customer or client journey showing what changes end to end.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">If you don't see your exact business type below, the patterns further down this page still apply to you. Book a free audit and we'll tell you what's actually worth automating in your specific case.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&q=80&auto=format&fit=crop" alt="Business owner reviewing operations across different departments" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BROWSE BY SECTOR -->
+<section id="browse" class="section" style="background:#e7eeff;" aria-labelledby="browse-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="browse-heading">Browse by sector</h2>
+      <p>Every industry guide we've published, grouped by function.</p>
+    </div>
+    <div class="industry-groups">
+      {industryGroups.map((group) => (
+        <div class="industry-group">
+          <div class="industry-group-head">
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:22px;">{group.icon}</span></div>
+            <h3>{group.label}</h3>
+          </div>
+          <div class="industry-link-list">
+            {group.items.map((item) => (
+              <a href={item.href} class="industry-link">{item.name}</a>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- REPEATING PATTERNS -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="patterns-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="patterns-heading">The patterns that repeat across every industry</h2>
+      <p>Four problems we see in almost every business we audit, regardless of sector.</p>
+    </div>
+    <div class="bento-grid bento-grid-4">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">phone_missed</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Missed Inbound</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Calls and DMs that arrive outside business hours, or during a busy period, and go unanswered until it's too late to matter.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">forward_to_inbox</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Manual Follow-Up</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Leads, clients, or patients who need a second and third touch that only happens if someone personally remembers to send it.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Document Bottlenecks</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Paperwork, approvals, and document chasing that slows down a process everyone agrees should move faster.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_busy</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Scheduling &amp; No-Shows</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Bookings made without a reminder system behind them, and the empty slots and lost revenue that follow.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SELF DIAGNOSTIC -->
+<section class="section" aria-labelledby="diagnostic-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="diagnostic-heading">How to find your industry's highest-leverage automation</h2>
+    </div>
+    <div class="research-panel">
+      <ul class="journey-list" style="gap:1rem;">
+        <li>What's the first thing a new customer or lead has to do to reach you, and how fast does that actually happen today?</li>
+        <li>Where does a task get stuck waiting on a person, not because it's hard, but because someone has to remember to do it?</li>
+        <li>What repeats every week or every month in exactly the same shape, a report, a reminder, a follow-up?</li>
+        <li>What's the most common reason a customer, patient, or client gets frustrated with your process specifically?</li>
+        <li>If you had to guess, what's costing you the most in missed revenue: slow response, no follow-up, or admin time?</li>
+      </ul>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8; margin-top:1.5rem;">Whichever answer comes fastest is usually where to start. A free audit does the same exercise with someone who's seen the pattern across dozens of businesses in your sector already.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT'S DIFFERENT ABOUT UAE -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="uae-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="uae-heading">What's different about UAE industries specifically</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Bilingual customers by default</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Any UAE-facing system that only works in English is missing a real share of its potential customers. Arabic isn't a nice-to-have add-on here, it's baseline coverage.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">WhatsApp-first, not email-first</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Across almost every sector on this page, WhatsApp is where customers actually expect to reach a business, not a contact form or a support email inbox.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Regulation density</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Healthcare, finance, real estate, and security all carry specific UAE regulatory requirements that a generic, imported AI playbook won't account for on its own.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about industry-specific AI</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Don't See Your Industry? Book a Free Audit Anyway.</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">The patterns above apply to almost every business. Tell us what you do, and we'll tell you honestly what's worth automating first.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="industries_hub_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book a Free Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; }
+.journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.journey-list li { position:relative; padding-left:1.75rem; color:#42474e; font-size:0.9375rem; line-height:1.7; }
+.journey-list li::before { content:''; position:absolute; left:0; top:0.55em; width:9px; height:9px; border-radius:50%; background:#00e3fd; }
+
+.industry-groups { display:grid; grid-template-columns:repeat(2,1fr); gap:1.5rem; }
+.industry-group { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:16px; padding:1.5rem 1.75rem; }
+.industry-group-head { display:flex; align-items:center; gap:0.75rem; margin-bottom:1.1rem; }
+.industry-group-head h3 { font-weight:700; font-size:1.0625rem; color:#00253b; }
+.industry-link-list { display:flex; flex-direction:column; gap:0.4rem; }
+.industry-link { color:#42474e; font-size:0.9375rem; text-decoration:none; padding:0.4rem 0; border-bottom:1px solid rgba(0,37,59,0.06); transition:color 0.15s; }
+.industry-link:last-child { border-bottom:none; }
+.industry-link:hover { color:#006875; }
+
+@media(max-width:900px) { .industry-groups { grid-template-columns:1fr; } }
+</style>

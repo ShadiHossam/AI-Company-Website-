@@ -1,0 +1,327 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Can the AI system integrate with Ejari and our property management software?", answer: "Yes. The renewal and Ejari reminder system is built to track each lease's registration and renewal dates and can pull that data from most common property management platforms used in the UAE, including exports and API connections where the software supports them. Where a direct integration isn't available, we build a sync layer so your team isn't maintaining two separate records." },
+  { question: "How does vendor dispatch handle SLA tracking?", answer: "Every dispatched job carries a timestamp and an expected response window based on the trade and urgency level you set (a burst pipe is not a squeaky door). The system tracks whether the vendor acknowledged and completed the job inside that window and flags jobs that are running late so a coordinator can step in before the tenant has to chase anyone." },
+  { question: "We manage hundreds of units across multiple buildings. Does this scale to a large portfolio?", answer: "This is exactly the workload the system is built for. Maintenance triage, renewal tracking, and tenant messaging all run per-unit and per-building, so a portfolio of 50 units or 5,000 gets the same consistent handling. The bottleneck most portfolios hit is coordinator headcount, not software, and that's the constraint this removes." },
+  { question: "Will tenants know they're messaging an AI assistant, and can they still reach a human?", answer: "Yes to both. We recommend being upfront that tenants are messaging an AI assistant first, and every conversation has a clear path to a human coordinator, either by the tenant asking directly or the AI recognizing it should escalate: complaints, disputes, anything involving safety, or anything it isn't confident answering correctly." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Automation for Property Management Companies in the UAE",
+    "url": "https://lenooai.com/industries/property-management",
+    "description": "Custom AI systems for UAE property management companies: maintenance triage, tenant WhatsApp assistants, renewal and Ejari reminders, vendor dispatch, and rent collection follow-up.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Property Management"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Property Management AI", "item": "https://lenooai.com/industries/property-management" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation for Property Management Companies in the UAE: The Complete Guide | Lenoo AI"
+  description="How UAE property management companies use AI for maintenance triage, tenant WhatsApp support, renewal and Ejari reminders, vendor dispatch, and rent collection follow-up."
+  canonicalPath="/industries/property-management"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Property Management</div>
+    <h1>AI Automation for UAE<br><span class="gradient-text">Property Management</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI systems for UAE property management companies: maintenance triage, tenant WhatsApp support, renewal and Ejari reminders, and vendor dispatch. Built for landlord-side operations, not sales, and backed by our 100% refund guarantee.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="property_management_hero" class="btn-primary">Book Free Property Management AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1502810190503-8303352d0dd1?w=1600&q=80&auto=format&fit=crop" alt="Residential apartment building managed by a UAE property management company" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 55%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "9×", caption: "more likely a tenant or lead responds when contacted within 5 minutes (MIT)" },
+      { value: "200+", caption: "nationalities live in the UAE, most defaulting to WhatsApp for everyday messages" },
+      { value: "24/7", caption: "AI coverage for maintenance requests, renewal reminders, and tenant messages" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY PROPERTY MANAGEMENT & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why maintenance and renewals eat every property manager's week</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>The maintenance backlog never clears itself.</strong> A property management team fields requests through phone calls, WhatsApp, email, and a tenant portal, often for the same issue reported three different ways. Without a system to log, categorize, and route each one, the coordinator's day becomes a triage exercise done from memory, and the requests that don't come with a loud complaint attached quietly sink to the bottom.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Renewals and Ejari admin arrive in bursts, not evenly.</strong> Lease expiries cluster around certain months, and each one carries its own Ejari registration deadline, rent increase notice period, and negotiation window. Missing a notice period or letting an Ejari registration lapse is not a minor paperwork slip in the UAE; it affects the enforceability of the tenancy contract itself.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Every additional unit adds its own stream of noise.</strong> A portfolio of 50 units generates a manageable volume of messages. A portfolio of 500 generates the same conversations 10 times over, at the same time, with the same coordinators. The work doesn't get more complex as a portfolio grows; it just gets louder, faster than most teams can hire for it.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1560184897-ae75f418493e?w=800&q=80&auto=format&fit=crop" alt="Apartment complex in a UAE residential community managed under a property portfolio" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for Property Management Companies</h2>
+      <p>Six specific systems our Dubai AI agency deploys for property managers across the UAE, each integrated with your property management software and vendor list.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">build</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Maintenance Request Triage Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Logs every request from phone, WhatsApp, or your tenant portal, categorizes it by trade and urgency, and routes it automatically. A burst pipe gets flagged for immediate dispatch instead of sitting in a shared inbox next to a request for a new light bulb.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">No request sits unread over a weekend or public holiday</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">chat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Tenant WhatsApp Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Answers routine tenant questions instantly, in Arabic and English: rent due dates, building rules, how to raise a request, parking allocation. Anything it isn't confident about gets escalated to your team with the full conversation attached.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Handles routine tenant messages without eating a coordinator's day</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Renewal &amp; Ejari Reminder System</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Tracks every lease's renewal date and the Ejari registration tied to it, sending tenants and owners reminders on a set schedule ahead of each deadline. Rent increase notices go out with the correct notice period built in, not guessed at.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Renewal dates and Ejari deadlines tracked automatically across the portfolio</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">local_shipping</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Vendor Dispatch Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Once a request is triaged, the right vendor from your approved list is notified with the job details and photos attached. No more calling three plumbers to find out who's actually free today.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Matches jobs to available vendors without a phone tree</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">payments</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Rent Collection Follow-up</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends payment reminders ahead of due dates and polite, escalating follow-ups when a payment is late, before it turns into a conversation your finance team has to start manually.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Follow-up starts before a payment is late, not after</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">checklist</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Move-in/Move-out Checklist Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Walks tenants and inspectors through the move-in and move-out checklist, collecting photos and sign-off at each step, then flags discrepancies between the two records for the deposit conversation.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Documentation ready before a deposit dispute even starts</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems are UAE-compliant, bilingual, and integrated with your existing property management software and vendor list.</p>
+      <button onclick="openModal(this)" data-source="property_management_mid" class="btn-primary">Book Free Property Management AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- MAINTENANCE JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="pm-journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="pm-journey-heading">One maintenance request, handled end to end</h2>
+      <p>What the AI takes care of from the first message to the closed ticket, while your team handles the judgment calls.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Logged and triaged in seconds</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A tenant messages about an issue at any hour, on WhatsApp or through the portal. The AI is already sorting it.</p>
+        <ul class="journey-list">
+          <li>Identifies the trade involved (AC, plumbing, electrical) and the urgency level from the description and any photos sent</li>
+          <li>Creates the ticket automatically and confirms receipt to the tenant in under a minute</li>
+          <li>Flags anything safety-related for immediate human review, no waiting for a morning triage meeting</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The vendor dispatched without a phone tree</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Once the ticket is categorized, the AI works your approved vendor list instead of your coordinator working the phone.</p>
+        <ul class="journey-list">
+          <li>Sends job details, unit access notes, and any photos to the right vendor automatically</li>
+          <li>Tracks acknowledgment and expected arrival window against the SLA you've set for that trade</li>
+          <li>Escalates to a backup vendor automatically if the first one doesn't respond in time</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The tenant kept updated automatically</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">The moment a job is dispatched, closed, or delayed, the tenant hears about it without having to ask.</p>
+        <ul class="journey-list">
+          <li>Sends the tenant a message when the vendor is on the way, not just after the job is done</li>
+          <li>Closes the loop with a completion confirmation and a short satisfaction check</li>
+          <li>Keeps a full record on the unit, so the next request doesn't start from zero context</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">build</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Maintenance Triage</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">The single biggest volume driver in property management is maintenance requests, and it's the area where AI triage pays off fastest. Categorizing by trade and urgency the moment a request lands means genuine emergencies get dispatched immediately instead of waiting behind routine requests logged earlier the same day.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Every request logged and categorized the moment it arrives</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Renewal &amp; Ejari Admin</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Renewal and Ejari tracking is repetitive, date-driven, and unforgiving when it slips. AI reminder systems track every lease's timeline against the correct notice periods and Ejari registration windows, so nothing depends on a coordinator remembering to check a spreadsheet.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Notice periods and Ejari deadlines calculated automatically, per lease</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">chat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Tenant Communication</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Most tenant messages are routine and repeat across the portfolio: rent dates, building rules, how a request is progressing. Handling these instantly on WhatsApp, in the tenant's language, removes the largest single source of interruption in a coordinator's day.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Routine questions answered instantly, in Arabic or English</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Property management software integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">An AI system that doesn't write back into your property management platform creates a second source of truth nobody trusts. Ticket status, tenant records, and lease dates need to live in one place, with the AI reading and updating it directly.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Ejari/RERA awareness</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Renewal reminders and rent increase notices aren't generic; they need to reflect the correct Ejari registration timelines and RERA-governed notice periods that apply to UAE tenancy contracts. Getting the timing wrong isn't a cosmetic error.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Vendor network coordination</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Dispatch automation is only as good as the vendor list behind it. It needs each vendor's trade, coverage area, and typical response time on file, plus a clear fallback when a first-choice vendor doesn't respond.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Multilingual tenant base</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A UAE portfolio houses tenants from dozens of nationalities. A tenant assistant that only replies in English misses a large share of the people actually messaging it, and forces them back to a phone call.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=1200&q=80&auto=format&fit=crop" alt="Property manager coordinating maintenance work in a UAE residential building" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">9×</p>
+        <p style="color:#42474e; font-size:0.875rem;">more likely a lead or tenant converts or responds when contacted within 5 minutes (MIT)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">200+</p>
+        <p style="color:#42474e; font-size:0.875rem;">nationalities living in the UAE, spanning the tenant base of most portfolios</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">24/7</p>
+        <p style="color:#42474e; font-size:0.875rem;">coverage for maintenance triage, tenant messages, and renewal reminders</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Response Speed</p>
+          <p style="color:#42474e; line-height:1.7;">The MIT finding that leads contacted within 5 minutes are 9 times more likely to convert applies just as much to a tenant reporting a leak as it does to a sales lead. Property managers we talk to consistently say the same requests get repeated two or three times over WhatsApp before anyone confirms they've been received, purely because there's no instant acknowledgment step.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Portfolio Growth Without Headcount Growth</p>
+          <p style="color:#42474e; line-height:1.7;">Property management companies scaling their unit count report that coordinator headcount is the real ceiling on growth, not the number of buildings they can technically manage. Automating the repetitive parts of the job, triage, reminders, routine tenant questions, changes what one coordinator can realistically cover.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Language and Channel Fit</p>
+          <p style="color:#42474e; line-height:1.7;">WhatsApp is the default channel most UAE residents use for everyday communication with businesses and building management alike. An assistant that lives where tenants already message, in the language they already use, removes the friction that pushes routine issues into phone calls and missed messages.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for property management</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Property Management AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll look at how your team handles maintenance, renewals, and tenant messages today, and show you exactly what we'd automate first. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="property_management_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Property Management AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    /* Maintenance journey list markers (reused inside static bento-grid-3 cards) */
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>

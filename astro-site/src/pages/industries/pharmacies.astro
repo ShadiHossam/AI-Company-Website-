@@ -1,0 +1,326 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "What can the AI actually say to a patient, and what is it not allowed to say?", answer: "It can confirm refill dates, tell a customer whether an item is in stock, explain delivery timing, and check insurance coverage against your PBM. It cannot recommend a medication, suggest a substitution, interpret symptoms, or answer any question that requires clinical judgment. Every build we deliver includes a hard-coded escalation rule: any message that touches dosage, side effects, or a substitution request routes straight to your pharmacist, with the conversation history attached so nothing has to be repeated." },
+  { question: "How does the bot verify a prescription sent as a photo over WhatsApp?", answer: "The bot reads the image well enough to extract the basics: patient name, medication name, and prescriber, then creates an order request for your pharmacist to verify against the original. It doesn't approve or dispense anything on its own. Think of it as digitizing the intake step, not replacing the verification a licensed pharmacist has to do before anything goes out." },
+  { question: "Can the insurance checker tell a customer their exact co-pay before they arrive?", answer: "For payers and PBMs your pharmacy already has an active connection with, yes, it can return an estimated coverage status and co-pay range before the customer leaves home. For less common insurers or where the PBM doesn't expose real-time eligibility data, it flags the enquiry for manual verification instead of guessing, since giving a customer a wrong number at the counter is worse than not answering instantly." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Automation for Pharmacies in the UAE",
+    "url": "https://lenooai.com/industries/pharmacies",
+    "description": "Custom AI systems for UAE pharmacies: refill reminders, stock enquiry bots, WhatsApp prescription upload, delivery updates, and insurance coverage checks, MOHAP-compliant messaging.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Pharmacies"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Pharmacy AI", "item": "https://lenooai.com/industries/pharmacies" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation for Pharmacies in the UAE: The Complete Guide | Lenoo AI"
+  description="How UAE pharmacies use AI for refill reminders, stock enquiries, WhatsApp prescription orders, and insurance checks, MOHAP-compliant and never giving medical advice."
+  canonicalPath="/industries/pharmacies"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Pharmacies</div>
+    <h1>AI for Dubai<br><span class="gradient-text">Pharmacies</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds custom AI systems for UAE pharmacies: refill reminders, stock enquiry bots, WhatsApp prescription ordering, delivery updates, and insurance checks. Built inside MOHAP messaging boundaries, with every clinical question routed to your pharmacist.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="pharmacies_hero" class="btn-primary">Book a Free Pharmacy AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1587293852726-70cdb56c2866?w=1600&q=80&auto=format&fit=crop" alt="Pharmacy shelves stocked with medication in a UAE branch" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 50%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "0", caption: "medical advice given by the bot, every clinical question routes to your pharmacist" },
+      { value: "24/7", caption: "refill and stock enquiry coverage, including after the branch has closed" },
+      { value: "1", caption: "WhatsApp thread from prescription photo to delivered order" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY PHARMACY AUTOMATION HAS TO WORK INSIDE HARD LINES -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why pharmacy automation has to work inside hard regulatory lines</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Most of what a pharmacy handles daily isn't clinical.</strong> Refill reminders, stock availability, delivery timing, and insurance checks make up the bulk of routine customer contact, and none of it requires a pharmacist's judgment. This is the part AI can take on cleanly, freeing pharmacists for what actually needs a licensed professional.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>The line between "logistics" and "clinical" has to be built in, not assumed.</strong> A well-built pharmacy bot is designed with a hard boundary: it can confirm a refill is ready or check if an item is in stock, but it cannot recommend a medication, suggest a substitute, or answer a symptom question. That boundary needs to be enforced in how the system is built, not left to hope the AI behaves.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Escalation has to be immediate and complete.</strong> The moment a conversation touches anything clinical, dosage, interactions, substitution, side effects, it needs to hand off to a pharmacist with the full conversation attached, so the customer never has to repeat themselves and the pharmacist never has to guess what was already discussed.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1580746738099-79dda9d4c98f?w=800&q=80&auto=format&fit=crop" alt="Pharmacist checking a prescription order at the counter" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE Pharmacies</h2>
+      <p>Six specific systems our Dubai AI agency builds for pharmacy groups across the UAE, each staying strictly inside logistics and never touching clinical advice.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">alarm</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Refill Reminder Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Tracks each patient's refill cycle from their order history and sends a reminder a few days before they're due to run out, on WhatsApp or SMS, with a one-tap option to reorder.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Sent before the patient runs out, not after they've already missed a dose</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">inventory_2</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Stock/Availability Enquiry Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Checks live stock across your branches and tells the customer instantly whether an item is available, and at which location, without a call to the branch during a busy shift.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Connected to your pharmacy management system's live stock data</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">upload_file</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Prescription Upload &amp; Order Bot (WhatsApp)</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">A customer photographs a prescription and sends it over WhatsApp. The bot extracts the basics and creates an order for pharmacist review and verification before anything is dispensed.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Digitizes intake, the pharmacist still verifies every order</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">local_shipping</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Delivery Status Updates</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends automatic updates from order confirmation to courier dispatch to delivery, so customers stop calling to ask "where is my order" and your team stops fielding the same question.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Cuts the "where's my order" calls that eat up front-desk time</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">verified</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Insurance Coverage Checker</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Checks a customer's coverage against connected payers and PBMs, and returns an estimated co-pay before they arrive. Anything the connected payer can't confirm gets flagged for manual verification instead of a guess.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">No guessed numbers at the counter, only confirmed coverage or a manual flag</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">loyalty</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Loyalty &amp; Reorder Follow-up</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Tracks loyalty points and sends timely reorder nudges for chronic medication and regular purchases, keeping repeat customers with your pharmacy instead of a competitor down the street.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Timed to your customers' actual reorder cycle, not a generic schedule</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Every system stays inside logistics and refill support. Clinical questions always go to your pharmacist.</p>
+      <button onclick="openModal(this)" data-source="pharmacies_mid" class="btn-primary">Book a Free Pharmacy AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- ONE REFILL JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="journey-heading">One refill, reminder to delivered</h2>
+      <p>What the AI handles at each step, staying inside logistics the whole way.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Refill reminder sent before the patient runs out</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A few days before a chronic medication is due to run out, the reminder goes out automatically.</p>
+        <ul class="journey-list">
+          <li>Timed against the patient's actual order history, not a fixed 30-day guess</li>
+          <li>Sent on WhatsApp or SMS with a one-tap reorder link</li>
+          <li>No pharmacist time spent on a routine reminder that a system can send on its own</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Stock enquiry answered without a call to the branch</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A customer asks whether an item is in stock before making the trip.</p>
+        <ul class="journey-list">
+          <li>Live stock check across branches, not a static answer that's out of date by the afternoon</li>
+          <li>Alternative branch suggested automatically if the nearest one is out</li>
+          <li>Front desk staff aren't pulled away from customers in the store to answer a phone enquiry</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Order placed from a prescription photo</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A customer sends a photo of a new prescription on WhatsApp instead of visiting the branch.</p>
+        <ul class="journey-list">
+          <li>Bot extracts patient and medication details and opens an order for review</li>
+          <li>Pharmacist verifies the prescription before anything is dispensed, exactly as required</li>
+          <li>Customer gets a delivery status update once the order is confirmed and moving</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BIGGEST IMPACT -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">alarm</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Refill/reorder reminders</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Patients on chronic medication forget to reorder more often than pharmacies would like to admit, and a missed refill is a lost sale that often goes to a competitor or a delivery app instead. A reminder sent a few days early, tied to the patient's actual usage pattern, catches the reorder before it's lost.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Keeps chronic medication customers ordering from the same pharmacy every cycle</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">inventory_2</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Stock enquiries</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Stock questions are one of the highest-volume, lowest-value calls a pharmacy fields, and they tend to spike right when staff are busiest at the counter. Answering them instantly through a bot connected to live inventory removes a constant interruption without making the customer wait.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Frees front-desk staff from the phone during peak in-store hours</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">local_shipping</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Delivery updates</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Delivery in the UAE is now the expectation, not the exception, for pharmacy orders. Customers who don't get a status update tend to call and ask, which pulls staff off other work. Automatic updates at each stage close that gap without anyone lifting a phone.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Fewer "where is my order" calls, same delivery timeline</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT MAKES IT WORK -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">MOHAP-compliant messaging</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">No medical advice, no unauthorized substitution suggestions, ever. The bot's allowed responses are scoped at build time to logistics: refills, stock, delivery, and coverage. Anything outside that scope is refused and escalated, not improvised.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Pharmacy management system integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Stock answers and refill timing are only useful if they're pulled from live data. The bot needs a real connection to your pharmacy management system, not a manually updated list that's already wrong by the next shift.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Insurance/PBM awareness</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A coverage checker is only trustworthy if it knows the limits of what it can confirm. It should return a confirmed answer where the payer connection supports it, and flag for manual check everywhere else, never a guessed co-pay figure.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Clear escalation to pharmacist for clinical questions</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">The escalation trigger has to be broad, not narrow. Anything that even touches dosage, interactions, or a substitution request routes to a pharmacist immediately, with full context attached, rather than the bot attempting a partial answer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT THE DATA SHOWS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1611746869696-d09bce200020?w=1200&q=80&auto=format&fit=crop" alt="Customer collecting a delivery order from a UAE pharmacy" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">0</p>
+        <p style="color:#42474e; font-size:0.875rem;">clinical recommendations made by the bot, by design, not by accident</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">24/7</p>
+        <p style="color:#42474e; font-size:0.875rem;">refill and stock coverage, including the hours the branch is closed</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">1</p>
+        <p style="color:#42474e; font-size:0.875rem;">connected thread from prescription photo through to delivery status</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Missed Refills Cost More Than They Look Like</p>
+          <p style="color:#42474e; line-height:1.7;">Pharmacies we talk to consistently say chronic medication patients who miss one reorder cycle often don't come back the following month, either forgetting entirely or ordering through a delivery app instead. A reminder sent a few days ahead of the expected reorder date closes that gap before it opens.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">WhatsApp Is Already the Default Channel</p>
+          <p style="color:#42474e; line-height:1.7;">WhatsApp is the dominant messaging platform across the UAE, and pharmacy customers already default to it for reorders and quick questions rather than calling the branch. Building the intake flow where the conversation already happens removes friction instead of adding a new app customers have to learn.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Escalation Discipline Builds Trust, Not Just Compliance</p>
+          <p style="color:#42474e; line-height:1.7;">Pharmacies that deploy AI with a visible, consistent handoff to a pharmacist for anything clinical report customers trust the system faster, not slower. Customers aren't looking for a bot that pretends to be a pharmacist. They're looking for one that's honest about what it can and can't answer.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for pharmacies</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Pharmacy AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll map your refill, stock, and delivery workflows and show you exactly what we'd build, staying inside every MOHAP messaging boundary. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="pharmacies_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book a Free Pharmacy AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    /* Refill journey list markers (reused inside static bento-grid-3 cards) */
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>

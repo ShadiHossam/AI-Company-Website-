@@ -1,0 +1,327 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Does the enquiry bot work with our existing LMS?", answer: "It's built to connect with the LMS or student management platform you're already running, reading course schedules and seat availability and writing enrolments back once a lead converts. Where a direct integration isn't available for your specific platform, we build a sync layer so course data and enrolment records stay in one place." },
+  { question: "Can it handle both individual learners and corporate training enquiries?", answer: "Yes, and it treats them differently. Individual enquiries get qualified on course interest, schedule fit, and payment preference. Corporate enquiries get qualified on group size, budget, timeline, and decision-maker contact, then routed to your B2B sales process rather than the standard enrolment flow, since the two rarely close the same way." },
+  { question: "What happens when a student misses a payment plan installment?", answer: "The payment plan reminder bot sends a reminder ahead of each due date and a follow-up sequence if a payment is missed, escalating to your finance team if it goes unresolved after a set number of attempts. This catches defaults early instead of a student quietly falling three installments behind before anyone notices." },
+  { question: "Is this relevant if we're KHDA-regulated?", answer: "For institutes under KHDA or another UAE regulator, the systems are built to respect your regulator's requirements around enrolment records, course accreditation disclosure, and student data handling. We review the specific compliance points with you before anything goes live, since requirements vary by institute type and regulator." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Automation for Training Institutes in the UAE",
+    "url": "https://lenooai.com/industries/training-institutes",
+    "description": "Custom AI systems for UAE training institutes: course enquiry qualification, WhatsApp enrolment, class reminders, certificate follow-up, and payment plan tracking.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Training Institutes"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Training Institute AI", "item": "https://lenooai.com/industries/training-institutes" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation for Training Institutes in the UAE: The Complete Guide | Lenoo AI"
+  description="How UAE training institutes use AI for course enquiry qualification, WhatsApp enrolment, class reminders, certificate follow-up, and payment plan tracking."
+  canonicalPath="/industries/training-institutes"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Training Institutes</div>
+    <h1>AI Automation for<br><span class="gradient-text">Training Institutes</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI systems for UAE training institutes: course enquiry qualification, WhatsApp enrolment, class reminders, and payment plan tracking. Bilingual, LMS-integrated, and backed by our 100% refund guarantee.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="training_institutes_hero" class="btn-primary">Book Free Training Institute AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1600&q=80&auto=format&fit=crop" alt="Training institute classroom in the UAE" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 45%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "9×", caption: "more likely an enquiry converts when answered within 5 minutes (MIT)" },
+      { value: "200+", caption: "nationalities live in the UAE, most defaulting to WhatsApp for enquiries" },
+      { value: "24/7", caption: "AI coverage for course enquiries, reminders, and payment follow-up" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY TRAINING INSTITUTES & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why course enquiries leak out before enrolment</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Most enquiries arrive when nobody's at a desk to answer them.</strong> A prospective student browses courses in the evening, sends a WhatsApp message or fills a form, and waits. If the reply comes the next morning, the moment of interest has already passed, and a chunk of the class-fill target has walked to a competitor who answered faster.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>The enquiry-to-enrolment funnel has more steps than it needs.</strong> Course details, schedule confirmation, fee structure, payment plan options, document collection: each step is a place a lead can go quiet, especially when it requires a call or a campus visit rather than a message they can answer from their phone.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Corporate and individual enquiries need completely different handling.</strong> A parent asking about a weekend course and an HR manager sourcing training for 30 employees are not the same conversation, and treating them the same way loses both: the individual wants a fast, simple answer, and the corporate lead needs a proper qualification and quote process.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80&auto=format&fit=crop" alt="Students in a UAE training institute classroom during a course session" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for Training Institutes</h2>
+      <p>Six specific systems our Dubai AI agency deploys for training institutes across the UAE, each integrated with your LMS and enrolment records.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">quiz</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Course Enquiry Qualification Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Answers course questions instantly and asks the qualifying questions a counselor would: schedule fit, budget, prior experience, start date preference, before routing the lead to enrolment or a human advisor.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Answered with the right course info instantly</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">chat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">WhatsApp Enrolment Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Walks a qualified lead through fee structure, payment plan options, and document collection over WhatsApp, so enrolment can be completed without a campus visit or a phone call.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Enrolment completed without a campus visit</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Class Reminder &amp; Attendance System</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends reminders ahead of every session, tracks attendance against enrolment records, and flags students falling behind on attendance before it becomes a drop-out risk.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Attendance drops caught early, not at the end of term</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">workspace_premium</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Certificate/Completion Follow-up</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Notifies graduates when certificates are ready, follows up on any outstanding requirements, and reaches back out later with relevant next-level courses based on what they completed.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Graduates hear from you again before they forget you exist</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">payments</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Payment Plan Reminder Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends reminders ahead of each installment due date and a follow-up sequence the moment a payment is missed, escalating to finance if it stays unresolved.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Missed payments caught after one installment, not three</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">business_center</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Corporate Training Lead Qualifier</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Routes B2B enquiries through a separate qualification flow: group size, budget, timeline, decision-maker contact, and hands a scoped brief to your corporate sales team instead of a generic lead.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Corporate enquiries reach sales with a real brief attached</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">All systems are bilingual and integrated with your LMS and enrolment records.</p>
+      <button onclick="openModal(this)" data-source="training_institutes_mid" class="btn-primary">Book Free Training Institute AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- ENQUIRY JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="ti-journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="ti-journey-heading">One enquiry, start to enrolled</h2>
+      <p>What the AI handles from the first question to the confirmed seat, while your team focuses on delivering the course.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Answered with the right course info instantly</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A prospective student sends a question about a course, at any hour, on any channel. The AI is already ready.</p>
+        <ul class="journey-list">
+          <li>Replies with accurate course details, schedule, and fees in Arabic or English</li>
+          <li>Asks the questions that qualify intent: timeline, prior experience, budget</li>
+          <li>Routes individual and corporate enquiries down the right path from the first message</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Enrolment completed without a campus visit</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Once interest is confirmed, the AI keeps momentum toward a booked seat instead of a stalled conversation.</p>
+        <ul class="journey-list">
+          <li>Shares payment plan options and collects required documents over WhatsApp</li>
+          <li>Confirms the seat and sends joining instructions the moment payment clears</li>
+          <li>Hands off to a human advisor immediately for anything outside the standard flow</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The reminder that keeps attendance up</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Enrolment isn't the finish line. The AI keeps working through the course itself.</p>
+        <ul class="journey-list">
+          <li>Sends a reminder ahead of every session, with joining details attached</li>
+          <li>Flags students with slipping attendance before it turns into a drop-out</li>
+          <li>Follows up on payment installments so finance isn't chasing balances manually</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">quiz</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Enquiry-to-Enrolment Conversion</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">This is the funnel where most institutes leak the most revenue. Every step that requires a phone call or a campus visit instead of a quick message is a step where a lead can quietly disappear. Closing that gap is the single highest-leverage change most institutes can make.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Every enquiry gets an instant, accurate answer, no exceptions</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Attendance</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Consistent reminders and early flags on slipping attendance make a measurable difference to how many enrolled students actually finish a course, which matters for both outcomes and for the institute's own completion figures.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Session reminders sent automatically, every class, every student</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">workspace_premium</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Repeat/Referral Business</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">A graduate who hears from the institute again, with a relevant next course or a referral incentive, is far more likely to enrol again or send someone else than a graduate who never hears from the institute after their certificate.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Graduates followed up automatically instead of falling off the list</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">LMS integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Course schedules, seat availability, and enrolment records need to live in your LMS, with the AI reading and writing directly into it. A booking system that runs separately from the LMS creates double entry and eventually gets ignored.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">KHDA/regulator awareness where relevant</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Institutes operating under KHDA or another UAE regulator need enrolment and record-keeping to reflect the specific requirements that regulator sets. The AI is configured around your institute's actual accreditation status, not a generic template.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Multilingual learner base</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A training institute's enquiries come from a genuinely mixed population in the UAE. A bot that only handles English enquiries loses a meaningful share of interest before it even gets qualified.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Payment plan tracking</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Many students enrol on installment plans. Tracking each plan's due dates and catching a missed payment after one installment, not three, is the difference between a recoverable situation and a written-off balance.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1200&q=80&auto=format&fit=crop" alt="Students studying at a UAE training institute" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">9×</p>
+        <p style="color:#42474e; font-size:0.875rem;">more likely an enquiry converts when answered within 5 minutes (MIT)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">200+</p>
+        <p style="color:#42474e; font-size:0.875rem;">nationalities living in the UAE, reflected in most institutes' learner base</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">24/7</p>
+        <p style="color:#42474e; font-size:0.875rem;">coverage for enquiries, class reminders, and payment follow-up</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">The Enquiry Leak</p>
+          <p style="color:#42474e; line-height:1.7;">Institutes we talk to consistently describe the same drop-off: strong ad or referral traffic into the enquiry stage, then a real fall-off before enrolment, concentrated at the exact points that require a phone call or a visit rather than a quick message. The MIT finding on 5-minute response speed maps directly onto this: interest that isn't answered fast fades before it converts.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Attendance and Completion</p>
+          <p style="color:#42474e; line-height:1.7;">Course completion rates track attendance closely, and attendance tracks reminders closely. Institutes running consistent, automated session reminders describe noticeably fewer students quietly disappearing mid-course compared to relying on students to remember their own schedule.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Channel Preference</p>
+          <p style="color:#42474e; line-height:1.7;">WhatsApp is the default channel most prospective students in the UAE reach for first, ahead of a phone call or an email form. Meeting enquiries on that channel, in the language they used first, removes a step most institutes don't realize is costing them leads.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for training institutes</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Training Institute AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll look at how enquiries, enrolment, and attendance are handled at your institute today, and show you exactly what we'd automate first. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="training_institutes_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book Free Training Institute AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    /* Enquiry journey list markers (reused inside static bento-grid-3 cards) */
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>

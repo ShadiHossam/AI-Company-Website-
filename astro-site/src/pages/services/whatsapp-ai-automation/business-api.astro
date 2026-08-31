@@ -1,0 +1,233 @@
+---
+export const prerender = false;
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Can we keep our existing WhatsApp number when we move to the API?", answer: "Usually, yes. Most businesses migrate their existing number from the free WhatsApp Business app to the API rather than starting over with a new one. The number gets deregistered from the app and registered on the API instead, and your existing chat history in the app does not carry over, but your published number, the one customers already have saved, stays the same." },
+  { question: "What happens if a template gets rejected twice?", answer: "Meta gives a rejection reason each time, usually pointing to specific wording, formatting, or category mismatch. A second rejection generally means the first fix didn't address the actual issue Meta flagged, so it's worth reading the rejection reason carefully rather than resubmitting a small variation of the same template. Persistent rejections are almost always fixable by rewriting the template to match the category more precisely." },
+  { question: "How hard is migrating from the WhatsApp Business app to the API?", answer: "The technical migration itself is straightforward: you deregister the number from the app and register it with your chosen BSP on the API. The larger effort is usually everything around it, getting business verification and display name approved, submitting your first templates, and rebuilding any automation you were running manually in the app as proper API-based flows." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "WhatsApp Business API Setup in the UAE",
+    "url": "https://lenooai.com/services/whatsapp-ai-automation/business-api",
+    "description": "WhatsApp Business API setup for UAE businesses: Meta approval process, common rejection reasons, real costs, and how to choose a BSP.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "WhatsApp Business API Setup"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://lenooai.com/services" },
+      { "@type": "ListItem", "position": 3, "name": "WhatsApp AI Automation", "item": "https://lenooai.com/services/whatsapp-ai-automation" },
+      { "@type": "ListItem", "position": 4, "name": "Business API", "item": "https://lenooai.com/services/whatsapp-ai-automation/business-api" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="WhatsApp Business API in the UAE: Setup, Costs, Approval | Lenoo AI"
+  description="WhatsApp Business API in the UAE: the approval process step by step, why applications get rejected, real costs, and how to choose a BSP."
+  canonicalPath="/services/whatsapp-ai-automation/business-api"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services" style="color:inherit;text-decoration:none;opacity:0.65;">Services</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/services/whatsapp-ai-automation" style="color:inherit;text-decoration:none;opacity:0.65;">WhatsApp AI Automation</a><span style="opacity:0.4;padding:0 4px;"> / </span>Business API</div>
+    <h1>WhatsApp Business API in the UAE<br><span class="gradient-text">Setup, Costs, Approval, and Common Rejections</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Everything that happens between deciding you need the API and actually sending your first automated message: the approval steps, why applications get rejected, and what it really costs.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="whatsapp-business-api_hero" class="btn-primary">Get Help With Your API Application</button>
+      <a href="#approval" class="btn-outline">See the Approval Steps ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1600&q=80&auto=format&fit=crop" alt="Business verification documents and a phone showing WhatsApp Business" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "4", caption: "approval steps between application and your first automated message" },
+      { value: "3", caption: "most common reasons template messages get rejected" },
+      { value: "2", caption: "cost lines that make up the real total: Meta fees and build cost" },
+    ]} />
+  </div>
+</div>
+
+<!-- API VS APP -->
+<section class="section" aria-labelledby="apivsapp-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="apivsapp-heading" style="margin-bottom:1.5rem;">API vs. Business App: Which One You Actually Need</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>The free WhatsApp Business app is built for one person, replying manually.</strong> It's a genuinely useful tool for a small operation where a single owner or staff member handles every conversation by hand. It has no automation, can't be shared reliably across a team, and doesn't connect to a CRM or any other business system.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>The API is a different product, built for exactly the automation this page covers.</strong> It allows multiple agents on one number, programmatic sending and receiving of messages, integration with your CRM or order system, and the template messaging that lets you reach customers outside the 24-hour reply window. If you're reading this page, you almost certainly need the API, not the app. This page walks through exactly what that involves.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=800&q=80&auto=format&fit=crop" alt="Team member reviewing a business verification checklist on a laptop" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- APPROVAL PROCESS -->
+<section id="approval" class="section" style="background:#e7eeff;" aria-labelledby="approval-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="approval-heading">The Approval Process, Step by Step</h2>
+    </div>
+    <div class="bento-grid bento-grid-4">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem; text-align:center;">Meta Business Verification</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Meta confirms your business is legitimate using your trade license and business details. This is the foundation step, and nothing else proceeds until it clears.</p>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem; text-align:center;">Display Name Approval</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">The name customers see when your business messages them needs its own approval, and it has to closely match your registered business name and branding.</p>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem; text-align:center;">Template Message Approval</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Every message you plan to send outside the 24-hour reply window needs Meta's approval in advance, reviewed against strict formatting and category rules.</p>
+      </div>
+      <div class="card">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem; text-align:center;">Phone Number Registration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Your number gets registered on the API, either a new number or your existing one migrated from the free app, after which it can no longer be used in the standard app.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY REJECTED -->
+<section class="section" aria-labelledby="rejected-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="rejected-heading">Why Applications Get Rejected</h2>
+      <p>Three reasons account for most of the rejections we see.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Display name mismatches</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">The display name you submit needs to clearly match your business, as registered and as customers would recognize it. A name that's too generic, includes promotional language, or doesn't match your trade license gets flagged.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Category misclassification</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Choosing the wrong business category, or submitting templates that don't match the category you selected, is a common and avoidable rejection reason. The category should reflect what your business actually does, not the broadest option available.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Template copy issues</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7;">Templates that read as pure marketing when submitted under a utility or transactional category, use unsupported formatting, or include vague placeholder text without context, get rejected on copy grounds far more often than businesses expect.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COST -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="cost-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="cost-heading">What It Costs</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="icon-box" style="margin:0 auto 1rem;"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">payments</span></div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Meta conversation fees</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Charged per conversation, categorized by type (marketing, utility, authentication, service), and billed directly by Meta regardless of which BSP you use.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="icon-box" style="margin:0 auto 1rem;"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">hub</span></div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">BSP/platform fees</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">A monthly or usage-based fee charged by the platform that gives you technical access to the API, on top of Meta's own conversation charges.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="icon-box" style="margin:0 auto 1rem;"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">build</span></div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Build cost</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">The one-time project cost of the actual automation: flow design, integration, and testing. See our <a href="/pricing/ai-automation-cost" style="color:#006875;">AI automation cost guide</a> for a full breakdown.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHOOSING A BSP -->
+<section class="section" aria-labelledby="bsp-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="bsp-heading" style="margin-bottom:1.5rem;">Choosing a BSP in the UAE</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        A BSP (Business Solution Provider) is the platform that gives you technical access to the WhatsApp Business API, since Meta doesn't sell direct access to most businesses. What actually matters when choosing one: transparent, predictable pricing rather than confusing bundled tiers, reliable uptime, straightforward access to the underlying API so a developer can build real automation rather than being boxed into the BSP's own limited chat interface, and responsive support during the approval process itself, since that's when things most often stall.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        We work across the established BSPs rather than pushing clients toward one specific platform, and recommend the one that fits your business's volume, budget, and integration needs during discovery, not a one-size answer.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TIMELINE -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="timeline-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="timeline-heading" style="margin-bottom:1.5rem;">Timeline: How Long Approval Realistically Takes</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        Business verification is usually the fastest step when your documents are in order, often clearing within a few business days. Display name approval and template approval can each take anywhere from a day to over a week, depending on Meta's review queue and whether the submission needs revisions after an initial rejection. Realistically, budget two to four weeks from starting the application to having an approved number sending approved templates, and treat anything faster as a pleasant surprise rather than the expectation.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        The single biggest lever a business has over this timeline is getting the display name and first templates right on the first submission. Rejections add days each time, so it's worth having someone who has been through the process before review the submission rather than guessing at what Meta wants.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions About the WhatsApp Business API</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Consultation</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Get Help With Your API Application</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll handle the business verification, display name, and template submissions, and build the automation behind it once you're approved. No obligation.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="whatsapp-business-api_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Get Help With Your API Application</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .eval-grid { grid-template-columns:1fr; } }
+</style>
