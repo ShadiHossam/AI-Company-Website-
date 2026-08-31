@@ -1,0 +1,325 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Can the AI discuss clinical matters or give medical advice?", answer: "No. The AI is scripted to stay within administrative territory: booking, reminders, insurance status, and general practice information. Any question that touches symptoms, diagnosis, or treatment is escalated to your clinical staff immediately, with the conversation handed off, not answered by the bot. This boundary is built into the script, not left to the model's judgment." },
+  { question: "How long does insurance pre-approval take once the AI is involved?", answer: "The AI doesn't shorten the payer's own turnaround time, insurers still set that. What it removes is the delay on your side: gathering the patient's policy details, procedure codes, and required documents before the request even goes out. Most clinics see requests leave the building the same day instead of sitting in a queue for staff to get to." },
+  { question: "Does this work with our existing PMS or EMR?", answer: "We integrate with the practice management and EMR systems already common in UAE clinics rather than asking you to switch platforms. Before we build anything, we scope your specific setup and confirm what's possible through your system's existing integration options. If your PMS has no API at all, we'll tell you upfront rather than promise something we can't deliver." },
+  { question: "Is this the same product as a hospital-grade AI system?", answer: "No. Hospital systems are usually built around large clinical IT stacks with dozens of departments and compliance layers. This is built for a single clinic or small group: one front desk, one or two PMS logins, a phone line and a WhatsApp number that both go quiet the moment staff are with a patient. The scope and the price reflect that." },
+  { question: "How fast can a single clinic actually get this running?", answer: "A call and WhatsApp receptionist with booking and reminders typically launches in three to five weeks. That includes connecting to your PMS, writing the DHA or DoH-appropriate script for your specialty, and testing it against real call patterns before it goes live. Insurance pre-approval assistance and recall automation are usually added in a second phase once the front desk system is proven." },
+];
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Automation for Medical Clinics in the UAE",
+    "url": "https://lenooai.com/industries/healthcare-clinics",
+    "description": "Lenoo AI builds AI call and WhatsApp receptionists, booking, insurance pre-approval, and recall systems for SME medical clinics in the UAE, DHA and DoH compliant.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Medical Clinics"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "Medical Clinics AI", "item": "https://lenooai.com/industries/healthcare-clinics" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation for Medical Clinics in the UAE: The Complete Guide | Lenoo AI"
+  description="AI for clinics in the UAE: call and WhatsApp receptionists, booking, insurance pre-approval, and recall systems for SME clinics, DHA and DoH-compliant, bilingual."
+  canonicalPath="/industries/healthcare-clinics"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>Medical Clinics</div>
+    <h1>AI for Medical Clinics<br><span class="gradient-text">in the UAE</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI receptionists, booking, insurance pre-approval, and recall systems for SME clinics across the UAE. Built for a single clinic front desk, not a hospital IT department, and scripted within DHA and DoH boundaries from day one.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="healthcare_clinics_hero" class="btn-primary">Book a Free Clinic AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE + STATS -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1600&q=80&auto=format&fit=crop" alt="Clinic reception desk where patients check in for appointments" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "30%", caption: "average no-show rate at outpatient clinics without automated reminders" },
+      { value: "2:1", caption: "hours spent on desk work for every hour spent with patients (Annals of Internal Medicine)" },
+      { value: "9×", caption: "more likely to book when contacted within 5 minutes instead of 30 (MIT)" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY THE FRONT DESK LOSES PATIENTS -->
+<section class="section" aria-labelledby="front-desk-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="front-desk-heading" style="margin-bottom:1.5rem;">Why the front desk is where clinics lose patients</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>The phone rings while staff are with a patient.</strong> A one or two-doctor clinic doesn't have a spare receptionist sitting idle for the quiet moments. When the front desk is checking someone in, drawing blood, or handling a payment, the next call goes to voicemail, and most callers don't leave one. They call the next clinic on the list instead.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>WhatsApp inquiries pile up faster than they get answered.</strong> Patients now message clinics the same way they message everyone else, expecting a fast reply. A single unanswered thread doesn't feel urgent in the moment, but by the end of the week a clinic can be sitting on dozens of unanswered questions about availability, pricing, and insurance coverage.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>Every clinic in the UAE operates inside DHA or DoH rules, and that shapes what's possible.</strong> Whatever answers a call or a WhatsApp message on behalf of a clinic has to stay inside strict boundaries: no diagnosis, no treatment advice, no clinical judgment. That's not a limitation you work around later, it's a constraint the system has to be built around from the first line of the script.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1758691461957-13aff0c37c6f?w=800&q=80&auto=format&fit=crop" alt="Clinician reviewing a patient chart on a tablet between appointments" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI SYSTEMS BUILT FOR CLINICS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for Clinics</h2>
+      <p>Six systems built specifically for SME clinics, scripted within DHA and DoH boundaries and connected to the PMS you already use.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">call</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">AI Call/WhatsApp Receptionist</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Answers the phone and WhatsApp when your desk is with a patient, in Arabic or English. Handles hours, location, pricing questions, and availability, then routes anything clinical straight to staff.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Never sends a caller to voicemail during peak hours again</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">calendar_month</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Appointment Booking &amp; Reminders</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Books directly into your PMS calendar, confirms by WhatsApp or SMS, and sends reminders ahead of the visit. Patients can reschedule themselves without a phone call.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Fills the slots that would otherwise sit empty on a full calendar</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">fact_check</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Insurance Pre-Approval Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Collects policy details and procedure information from the patient, checks them against your payer requirements, and prepares the pre-approval request for staff to send.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Requests leave the clinic the same day instead of sitting in a pile</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">schedule_send</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Patient Follow-up &amp; Recall</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Reaches out for review visits, chronic care check-ins, and recall appointments on the schedule your clinic sets, so patients don't quietly fall off the books.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Keeps recall patients on schedule without a staff member tracking a list</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_busy</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">No-show Reduction System</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Sends staged reminders before each appointment and asks for a quick confirmation. A slot that's likely to be missed gets flagged early enough to offer to another patient.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Turns empty slots into a chance to fill them, not a lost visit</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">translate</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Multilingual Intake Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Collects new patient details, medical history forms, and consent paperwork before the visit, in Arabic or English, so the first appointment starts with the exam, not the paperwork.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Cuts time spent on forms in the waiting room to almost nothing</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">Every system is scripted within DHA and DoH boundaries, bilingual, and connected to your existing PMS.</p>
+      <button onclick="openModal(this)" data-source="healthcare_clinics_mid" class="btn-primary">Book a Free Clinic AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- PATIENT JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="journey-heading">One patient journey, handled end to end</h2>
+      <p>What the AI handles at each stage while your clinicians stay focused on the patient in the room.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">The call that used to go to voicemail</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A patient calls or messages while your only receptionist is checking someone in.</p>
+        <ul class="journey-list">
+          <li>Answers immediately in Arabic or English, no voicemail, no missed inquiry</li>
+          <li>Answers hours, pricing, and availability questions without waiting for staff</li>
+          <li>Flags anything clinical and hands it to a staff member instead of guessing</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Booking without the back-and-forth</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">Once the patient wants an appointment, the AI keeps the booking moving without ten messages back and forth.</p>
+        <ul class="journey-list">
+          <li>Checks the PMS calendar in real time and proposes open slots</li>
+          <li>Confirms the booking by WhatsApp or SMS with a reminder attached</li>
+          <li>Collects insurance details up front so pre-approval can start early</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Follow-up that actually happens</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">After the visit, the AI keeps the relationship going instead of leaving it to whoever remembers to check the list.</p>
+        <ul class="journey-list">
+          <li>Sends recall reminders for reviews, chronic care check-ins, and screenings</li>
+          <li>Reaches out again if a patient doesn't rebook after being advised to</li>
+          <li>Keeps a record of every follow-up sent, so nothing relies on memory</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BIGGEST IMPACT -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="impact-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="impact-heading">Where AI is having the biggest impact</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">call</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Call/DM answering</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">The clinics we talk to consistently say the same thing: the front desk misses calls and WhatsApp messages during peak hours because there's one person handling patients in the room and everything else at once. This is the single highest-impact place to put an AI receptionist, because it's the point where a new or returning patient decides whether to keep trying or call the next clinic.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Every call and message gets a reply, even during the busiest hours</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">fact_check</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Insurance admin</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Insurance pre-approval is repetitive by nature: the same policy fields, the same procedure codes, the same payer forms, over and over. It's exactly the kind of work an AI system handles well, gathering the information and preparing the request so staff review and send instead of typing it from scratch each time.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Requests move from a pile at the end of the day to same-day submission</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Recall &amp; retention</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Recall lists are usually the first thing to slip when a clinic gets busy, because chasing patients for a review visit doesn't feel urgent next to the patients already in the waiting room. Automated recall keeps that revenue and that patient relationship from quietly disappearing.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Patients hear from the clinic again instead of drifting to a competitor</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT MAKES IT WORK -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes clinic AI actually work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">DHA/DoH-compliant scripting</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">The script is written to stay inside DHA and DoH boundaries from the first line: no diagnosis, no treatment advice, clear escalation rules. This is designed in before launch, not patched in afterward.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">PMS/EMR integration</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Booking, reminders, and recall only work if they read and write to the calendar your clinic already uses. A system that lives outside your PMS creates a second calendar nobody trusts.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Bilingual (Arabic/English)</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Patients switch between Arabic and English mid-conversation, and the AI needs to follow naturally, not default to whichever language it started in.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Human escalation for clinical questions</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Anything that touches symptoms, diagnosis, or treatment gets handed to staff, with the context already collected so nothing has to be repeated.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT THE DATA SHOWS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&q=80&auto=format&fit=crop" alt="Doctor and receptionist reviewing the clinic appointment schedule" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">2:1</p>
+        <p style="color:#42474e; font-size:0.875rem;">ratio of desk work to patient time reported by physicians (Annals of Internal Medicine)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">30%</p>
+        <p style="color:#42474e; font-size:0.875rem;">common outpatient no-show rate without an active reminder system</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">9×</p>
+        <p style="color:#42474e; font-size:0.875rem;">more likely to convert when contacted within 5 minutes instead of 30 (MIT)</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Missed calls</p>
+          <p style="color:#42474e; line-height:1.7;">There's no single official figure for how many calls a UAE clinic misses in a week, and any specific number quoted without a real source should be treated with suspicion. What clinic owners consistently describe is the same pattern: the front desk is busy exactly when the phone rings, and a caller who hits voicemail rarely calls back.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">No-shows</p>
+          <p style="color:#42474e; line-height:1.7;">Outpatient no-show rates commonly cited across healthcare settings run from roughly 15% to 30% when there's no active reminder system in place. Clinics that add automated, confirmed reminders consistently report fewer empty slots, even without a precise before-and-after figure to quote.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Response speed</p>
+          <p style="color:#42474e; line-height:1.7;">MIT research on lead response found contacts made within 5 minutes convert at far higher rates than those made after 30. The same logic applies to a patient deciding between clinics: the one that answers first usually gets the booking.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for medical clinics</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free Clinic AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll look at how your front desk handles calls, WhatsApp, and bookings today, and show you exactly what we'd build. No obligation. Most audits take 30 minutes and produce a clear plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="healthcare_clinics_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book a Free Clinic AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>

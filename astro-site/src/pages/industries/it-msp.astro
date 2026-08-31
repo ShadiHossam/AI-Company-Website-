@@ -1,0 +1,323 @@
+---
+export const prerender = false;
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import StatStrip from "../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "Which PSA/RMM platforms does this integrate with?", answer: "We integrate with the major PSA and RMM platforms MSPs run on, including ConnectWise and Autotask, reading ticket data, asset information, and alert feeds directly rather than duplicating it in a separate system. If you're on a less common platform, we'll check its API during the audit call and tell you upfront what's possible before scoping anything." },
+  { question: "How accurate is the tier-1 chatbot really, and what happens when it's wrong?", answer: "The chatbot handles known, repeatable issues from your knowledge base: password resets, common application errors, connectivity checks. It's built to escalate rather than guess when a request falls outside what it's confident about, with the full conversation handed to an engineer so nothing gets lost in translation. Accuracy on defined issue types is something we test against your historical ticket data before go-live, not something we estimate." },
+  { question: "We manage dozens of client environments, how does multi-tenant security work?", answer: "Each client environment is kept fully isolated: separate credentials, separate data access, no cross-tenant visibility in the triage or chatbot layer. This is standard practice for anything touching client infrastructure, and it's built into the architecture from day one, not bolted on after a security review flags it." },
+  { question: "Will this replace our engineers or just change what they work on?", answer: "It changes what they work on. The AI absorbs triage, routing, and the repetitive tier-1 questions that eat engineer time without needing engineer-level judgment. Engineers spend more time on actual technical work and escalations, less time on ticket admin. MSPs that try to use it to cut headcount before proving out the workflow tend to see the coverage gaps first." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "AI Automation for IT Service Providers in the UAE",
+    "url": "https://lenooai.com/industries/it-msp",
+    "description": "AI systems for UAE MSPs and IT service providers: ticket triage and routing AI, tier-1 support chatbots, SLA monitoring, and client reporting automation.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Automation for IT Service Providers"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://lenooai.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://lenooai.com/industries" },
+      { "@type": "ListItem", "position": 3, "name": "IT / MSP AI", "item": "https://lenooai.com/industries/it-msp" }
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="AI Automation for IT Service Providers in the UAE | Lenoo AI"
+  description="Lenoo AI builds AI systems for UAE MSPs and IT service providers: ticket triage, tier-1 support chatbots, SLA monitoring, and client reporting automation."
+  canonicalPath="/industries/it-msp"
+  ogImage="/assets/og-home.jpg"
+  ldJson={ldJson}
+>
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">Industries</a><span style="opacity:0.4;padding:0 4px;"> / </span>IT Service Providers</div>
+    <h1>AI for UAE<br><span class="gradient-text">IT Service Providers</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">Lenoo AI builds AI systems for UAE MSPs and IT service providers: ticket triage and routing, tier-1 support chatbots, SLA monitoring, and client reporting. PSA/RMM-integrated and built for multi-tenant environments.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="it_msp_hero" class="btn-primary">Book a Free MSP AI Audit</button>
+      <a href="#what-we-build" class="btn-outline">See What We Build ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden;">
+  <img src="https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=1600&q=80&auto=format&fit=crop" alt="IT support engineer monitoring systems on multiple screens" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "Auto-triaged", caption: "tickets routed and prioritized before an engineer opens them" },
+      { value: "24/7", caption: "tier-1 coverage on known, repeatable issues" },
+      { value: "Isolated", caption: "per-client data separation across every environment you manage" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHY MSPs DON'T AUTOMATE THEMSELVES -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">Why MSPs sell automation but rarely automate their own ticket queue</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>You've been busy selling the outcome to everyone else.</strong> MSPs pitch clients on efficiency, monitoring, and proactive support constantly, and rarely turn that same lens on their own service desk. The ticket queue that's grown alongside the client roster often still runs on the same manual triage process from three engineers ago.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>Every new client adds ticket volume, not automatically more engineers.</strong> Growth in an MSP means more environments to monitor, more tickets flowing in, and the same team trying to triage all of it manually before touching a single technical problem. That triage overhead compounds faster than headcount usually does.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>The meta-solution is the same thing you sell.</strong> If ticket triage, tier-1 deflection, and SLA monitoring are worth automating for your clients, they're worth automating for your own service desk first. It's the same architecture, pointed inward, and it's usually the fastest ROI an MSP will see from AI, because it's fixing a problem you already understand in detail.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80&auto=format&fit=crop" alt="IT engineer working through a support ticket queue on a laptop" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">AI Systems Built for UAE IT Service Providers</h2>
+      <p>Six specific systems we've deployed for MSPs across the UAE, each connected to your PSA and RMM stack.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">low_priority</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Ticket Triage &amp; Priority Routing AI</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Reads incoming tickets, classifies urgency and category, and routes to the right queue or engineer automatically, so nothing sits unassigned while a dispatcher works through a backlog.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Triaged and routed before a human opens the ticket</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">smart_toy</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Tier-1 Support Chatbot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Resolves known, repeatable issues (password resets, common application errors, connectivity checks) directly from your knowledge base, and escalates cleanly with full context when it's outside its confidence range.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Handles the questions engineers answer the same way every time</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">notifications_active</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">SLA Monitoring &amp; Alerting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Tracks every open ticket against its SLA clock and flags anything approaching breach to the right manager before the client has to ask what's happening with their ticket.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Flags a breach risk while there's still time to act on it</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">summarize</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Client Reporting Automation</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Builds monthly service reports from your PSA data automatically: tickets resolved, SLA performance, recurring issues, ready to send instead of assembled manually by an account manager.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Pulled straight from your PSA, not rebuilt by hand each month</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">badge</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Onboarding/Offboarding Workflow Bot</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Runs new employee and departing employee IT checklists across client environments automatically: accounts, access, hardware, licensing, so nothing gets missed on a manual list.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Consistent checklist execution across every client environment</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">menu_book</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Knowledge Base Assistant</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">Gives engineers instant answers pulled from your internal documentation and past resolved tickets, so junior engineers aren't reinventing a fix a senior engineer already documented six months ago.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">Turns past tickets into searchable, reusable resolution knowledge</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">Covered by our 100% refund guarantee</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">PSA/RMM-integrated, multi-tenant secure, and built for how your service desk actually runs.</p>
+      <button onclick="openModal(this)" data-source="it_msp_mid" class="btn-primary">Book a Free MSP AI Audit</button>
+    </div>
+  </div>
+</section>
+
+<!-- JOURNEY -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
+  <div class="container" style="max-width:1040px;">
+    <div class="section-header">
+      <h2 id="journey-heading">One ticket, submitted to resolved</h2>
+      <p>What the AI handles at every stage, so engineers work the technical problem, not the ticket admin around it.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Triaged and routed before a human touches it</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">A ticket lands from a client, and the AI is already classifying it before a dispatcher opens the queue.</p>
+        <ul class="journey-list">
+          <li>Urgency and category assigned automatically based on the ticket content</li>
+          <li>Routed to the right queue or on-call engineer without manual dispatch</li>
+          <li>Flagged as VIP or contract-priority automatically when the client warrants it</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">Tier-1 question resolved without an engineer</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">If it's a known, repeatable issue, the chatbot handles it directly from the knowledge base.</p>
+        <ul class="journey-list">
+          <li>Resolution steps sent immediately, matched against your documented fixes</li>
+          <li>Escalates with full context the moment it's outside a known pattern</li>
+          <li>Ticket closed or handed to an engineer, never left ambiguous in between</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">SLA breach flagged before the client notices</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">For tickets that need real engineering time, the SLA clock is watched continuously.</p>
+        <ul class="journey-list">
+          <li>Approaching-breach alerts sent to the responsible manager, not discovered after the fact</li>
+          <li>Escalation path triggered automatically if a ticket stalls near its deadline</li>
+          <li>Resolution data feeds directly into the next client report without manual entry</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BIGGEST IMPACT -->
+<section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">Where AI is having the biggest impact</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">low_priority</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Ticket Triage &amp; Deflection</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">The time engineers spend reading, classifying, and routing tickets before doing any actual technical work is pure overhead. Automating triage and deflecting the repeatable tier-1 volume is where MSPs see the fastest, most measurable time recovered.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">notifications_active</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">SLA Compliance</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">A missed SLA is a client trust problem, not just an internal metric. Automated monitoring that flags risk early, while there's still time to act, protects the relationship in a way a monthly SLA report after the fact never can.</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">summarize</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">Client Reporting</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">Monthly service reports built manually from PSA exports eat a predictable chunk of account manager time every single month. Automating that reporting is low-risk, high-frequency time savings that compounds across every client on the roster.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT MAKES IT WORK -->
+<section class="section" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">What makes it work</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">1</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">PSA/RMM integration (ConnectWise, Autotask, etc.)</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Triage and reporting are only as good as the ticket and asset data they can read. A live connection to your PSA and RMM, not a manual export process, is what keeps the system accurate as tickets move.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">2</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Multi-client environment handling</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Every client has different SLAs, different escalation contacts, and different systems. The AI needs to apply the right rules per client automatically, not treat every ticket the same way.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">3</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Technical knowledge base grounding</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">The tier-1 chatbot is only as reliable as the documentation and resolved-ticket history it's grounded on. A thin or outdated knowledge base means more escalations, not fewer, so this needs real upkeep.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">4</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">Escalation logic to engineers</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">Knowing when to stop and hand off is as important as resolving the routine cases. The escalation path needs to carry full ticket context, so an engineer never has to ask the client to repeat what they already said.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT THE DATA SHOWS -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">What the data shows</h2>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1200&q=80&auto=format&fit=crop" alt="IT engineers working in a network operations centre" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:1.75rem; margin-bottom:4px;">Triage-first</p>
+        <p style="color:#42474e; font-size:0.875rem;">every ticket classified and routed before an engineer picks it up</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:1.75rem; margin-bottom:4px;">Fewer misses</p>
+        <p style="color:#42474e; font-size:0.875rem;">SLA breach risk flagged while there's still time to act</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:1.75rem; margin-bottom:4px;">Report-ready</p>
+        <p style="color:#42474e; font-size:0.875rem;">monthly client reports built directly from live PSA data</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Where Triage Time Goes</p>
+          <p style="color:#42474e; line-height:1.7;">MSPs we talk to consistently describe ticket triage and classification as pure overhead: necessary work, but work that doesn't require the judgment an engineer is actually paid for. Removing that step is usually the fastest visible change after go-live.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">SLA Risk in Practice</p>
+          <p style="color:#42474e; line-height:1.7;">A ticket that quietly approaches its SLA deadline without anyone noticing is one of the more common ways MSPs damage client trust, not through a lack of technical ability but through a lack of visibility. Continuous monitoring closes that visibility gap directly.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">Reporting as Recurring Cost</p>
+          <p style="color:#42474e; line-height:1.7;">Account managers we speak with describe monthly reporting as a predictable, recurring time cost that scales linearly with the client roster, exactly the kind of repeatable task that's a strong first candidate for automation.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">Questions about AI for IT service providers</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">Free Discovery Call</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">Book a Free MSP AI Audit</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">We'll look at your current ticket flow and show you exactly what we'd automate first. No obligation. Most audits take 30 minutes and produce a clear action plan.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ 100% free</span>
+      <span class="cta-trust-badge">✓ No commitment</span>
+      <span class="cta-trust-badge">✓ Refund guarantee</span>
+    </div>
+    <button onclick="openModal(this)" data-source="it_msp_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">Book a Free MSP AI Audit</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">30-min call · No sales pressure</p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-left:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; left:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>
