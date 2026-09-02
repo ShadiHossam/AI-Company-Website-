@@ -1,0 +1,84 @@
+name: Daily page publish
+
+# Replaces the o2switch server crontab (daily-publish-en.sh / daily-publish-ar.sh)
+# with the same cloud-scheduling approach used by shadi-hossam-website's
+# daily-index.yml: run on GitHub's servers instead of depending on the host
+# staying reachable for cron. Unlike that project's static FTPS deploy, this
+# site is SSR (Astro on CloudLinux/Passenger), so the actual build still has
+# to happen over SSH on o2switch — this workflow only moves the *scheduling*
+# and *commit/push* off the server, the remote build+restart step is unchanged
+# from scripts/publish-batch.sh.
+#
+# EN and AR run as separate jobs so a failure in one doesn't block the other
+# (matching the old independent cron entries), but AR needs EN to finish first
+# (always(), not success()) since both commit/push to the same branch and
+# doing that from two runners at once would race.
+
+on:
+  schedule:
+    - cron: "17 7 * * *" # ~9:17am CEST / 11:17am Gulf time
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-publish
+  cancel-in-progress: false
+
+jobs:
+  publish-en:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Write astro-site/.env.local
+        run: printf '%s\n' "${{ secrets.ENV_LOCAL }}" > astro-site/.env.local
+
+      - name: Set up o2switch SSH key
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.O2SWITCH_SSH_KEY }}" > ~/.ssh/o2switch_key
+          chmod 600 ~/.ssh/o2switch_key
+          ssh-keyscan -H cuivre.o2switch.net >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Publish EN batch
+        run: |
+          export SSH_KEY_PATH="$HOME/.ssh/o2switch_key"
+          bash scripts/ci-daily-publish-en.sh
+
+  publish-ar:
+    needs: publish-en
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Write astro-site/.env.local
+        run: printf '%s\n' "${{ secrets.ENV_LOCAL }}" > astro-site/.env.local
+
+      - name: Set up o2switch SSH key
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.O2SWITCH_SSH_KEY }}" > ~/.ssh/o2switch_key
+          chmod 600 ~/.ssh/o2switch_key
+          ssh-keyscan -H cuivre.o2switch.net >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Publish AR batch
+        run: |
+          export SSH_KEY_PATH="$HOME/.ssh/o2switch_key"
+          bash scripts/ci-daily-publish-ar.sh
