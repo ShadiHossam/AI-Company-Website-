@@ -12,7 +12,7 @@ export const GET: APIRoute = async () => {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from('blog_posts')
-      .select('slug, pub_date, updated_date, ar_title')
+      .select('slug, pub_date, updated_at, ar_title')
       .eq('status', 'published')
       .eq('noindex', false)
       .is('deleted_at', null)
@@ -21,7 +21,7 @@ export const GET: APIRoute = async () => {
     if (!error && data) {
       for (const post of data) {
         seenSlugs.add(post.slug);
-        const lastmod = (post.updated_date ?? post.pub_date ?? new Date().toISOString())
+        const lastmod = (post.updated_at ?? post.pub_date ?? new Date().toISOString())
           .replace(/(\.\d+)?Z$/, '+00:00');
         const hreflang = post.ar_title
           ? `
