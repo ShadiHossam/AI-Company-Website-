@@ -47,7 +47,11 @@ jobs:
           mkdir -p ~/.ssh
           printf '%s\n' "${{ secrets.O2SWITCH_SSH_KEY }}" > ~/.ssh/o2switch_key
           chmod 600 ~/.ssh/o2switch_key
-          ssh-keyscan -H cuivre.o2switch.net >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -H -T 15 cuivre.o2switch.net >> ~/.ssh/known_hosts || echo "::warning::ssh-keyscan failed or timed out, continuing (per-connection accept-new still trusts the host key)"
+
+      - name: Test o2switch SSH connectivity
+        run: |
+          ssh -i ~/.ssh/o2switch_key -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 -o BatchMode=yes zash7309@cuivre.o2switch.net "echo CONNECTED as \$(whoami)"
 
       - name: Publish EN batch
         run: |
@@ -76,7 +80,11 @@ jobs:
           mkdir -p ~/.ssh
           printf '%s\n' "${{ secrets.O2SWITCH_SSH_KEY }}" > ~/.ssh/o2switch_key
           chmod 600 ~/.ssh/o2switch_key
-          ssh-keyscan -H cuivre.o2switch.net >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -H -T 15 cuivre.o2switch.net >> ~/.ssh/known_hosts || echo "::warning::ssh-keyscan failed or timed out, continuing (per-connection accept-new still trusts the host key)"
+
+      - name: Test o2switch SSH connectivity
+        run: |
+          ssh -i ~/.ssh/o2switch_key -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 -o BatchMode=yes zash7309@cuivre.o2switch.net "echo CONNECTED as \$(whoami)"
 
       - name: Publish AR batch
         run: |
