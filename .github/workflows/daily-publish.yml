@@ -1,13 +1,20 @@
 name: Daily page publish
 
-# Replaces the o2switch server crontab (daily-publish-en.sh / daily-publish-ar.sh)
-# with the same cloud-scheduling approach used by shadi-hossam-website's
-# daily-index.yml: run on GitHub's servers instead of depending on the host
-# staying reachable for cron. Unlike that project's static FTPS deploy, this
-# site is SSR (Astro on CloudLinux/Passenger), so the actual build still has
-# to happen over SSH on o2switch — this workflow only moves the *scheduling*
-# and *commit/push* off the server, the remote build+restart step is unchanged
-# from scripts/publish-batch.sh.
+# DISABLED 2026-09-03: o2switch's SSH (port 22) rejects connections from
+# GitHub Actions runner IPs entirely ("Connection timed out", not an auth
+# failure) — confirmed via a live test run, not a guess. This host only
+# allows SSH from allowlisted/known source IPs, and GitHub's rotating cloud
+# IPs were never on that list. shadi-hossam-website's daily-index.yml avoids
+# this same restriction by deploying a static build via FTPS (no SSH needed
+# at all); this site is SSR (Astro on CloudLinux/Passenger) and its build
+# has to run *on* the server, so it cannot avoid SSH the same way without a
+# real redesign (e.g. build here, FTPS-upload dist/, and trigger a Passenger
+# reload via tmp/restart.txt instead of `cloudlinux-selector restart` over
+# SSH — untested, not yet built). Scheduling reverted to the o2switch
+# crontab (daily-publish-en.sh / daily-publish-ar.sh), which was already
+# working reliably. Kept this workflow file for reference / as a base for
+# that redesign; `schedule` trigger removed so it can't run and fail daily,
+# workflow_dispatch left in for manual testing.
 #
 # EN and AR run as separate jobs so a failure in one doesn't block the other
 # (matching the old independent cron entries), but AR needs EN to finish first
@@ -15,8 +22,6 @@ name: Daily page publish
 # doing that from two runners at once would race.
 
 on:
-  schedule:
-    - cron: "17 7 * * *" # ~9:17am CEST / 11:17am Gulf time
   workflow_dispatch: {}
 
 permissions:
