@@ -1,97 +1,57 @@
 name: Daily page publish
 
-# DISABLED 2026-09-03: o2switch's SSH (port 22) rejects connections from
-# GitHub Actions runner IPs entirely ("Connection timed out", not an auth
-# failure) — confirmed via a live test run, not a guess. This host only
-# allows SSH from allowlisted/known source IPs, and GitHub's rotating cloud
-# IPs were never on that list. shadi-hossam-website's daily-index.yml avoids
-# this same restriction by deploying a static build via FTPS (no SSH needed
-# at all); this site is SSR (Astro on CloudLinux/Passenger) and its build
-# has to run *on* the server, so it cannot avoid SSH the same way without a
-# real redesign (e.g. build here, FTPS-upload dist/, and trigger a Passenger
-# reload via tmp/restart.txt instead of `cloudlinux-selector restart` over
-# SSH — untested, not yet built). Scheduling reverted to the o2switch
-# crontab (daily-publish-en.sh / daily-publish-ar.sh), which was already
-# working reliably. Kept this workflow file for reference / as a base for
-# that redesign; `schedule` trigger removed so it can't run and fail daily,
-# workflow_dispatch left in for manual testing.
+# Triggers the existing o2switch daily-publish pipeline over HTTPS instead of SSH.
 #
-# EN and AR run as separate jobs so a failure in one doesn't block the other
-# (matching the old independent cron entries), but AR needs EN to finish first
-# (always(), not success()) since both commit/push to the same branch and
-# doing that from two runners at once would race.
+# History: the first version of this workflow (2026-09-02/03) tried to run the whole
+# pipeline directly on the GitHub runner over SSH, mirroring shadi-hossam-website's
+# daily-index.yml. That failed — o2switch's firewall rejects SSH connections from
+# GitHub's runner IPs outright ("Connection timed out", confirmed via a live test run),
+# almost certainly an IP allowlist. Unlike shadi-hossam-website (a static build, deployed
+# via FTPS with no server-side execution needed), this site is SSR and its build has to
+# run on the server — so it can't avoid needing *some* connection to o2switch.
+#
+# The fix: outbound HTTPS to the site itself is not blocked (it's a public website), so
+# GitHub Actions now just POSTs to an authenticated webhook (astro-site/src/pages/api/
+# deploy/publish.ts) that runs the same publish-repo-scripts/daily-publish-{en,ar}.sh
+# locally on the server — no SSH hop needed, since the code runs there already. That
+# route fires the script detached and returns immediately (the actual commit/push/build
+# x2/restart x2/verify can take minutes); check /api/deploy/status for the log tail.
 
 on:
-  workflow_dispatch: {}
-
-permissions:
-  contents: write
+  schedule:
+    - cron: "17 7 * * *" # ~9:17am CEST / 11:17am Gulf time
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Which queue to publish"
+        required: false
+        default: both
+        type: choice
+        options:
+          - both
+          - en
+          - ar
 
 concurrency:
   group: daily-publish
   cancel-in-progress: false
 
 jobs:
-  publish-en:
+  trigger-publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Configure git identity
+      - name: Trigger EN publish
+        if: github.event.inputs.target != 'ar'
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          curl -sf -X POST https://aicompany.usine.site/api/deploy/publish \
+            -H "Authorization: Bearer ${{ secrets.DEPLOY_WEBHOOK_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{"target":"en"}'
 
-      - name: Write astro-site/.env.local
-        run: printf '%s\n' "${{ secrets.ENV_LOCAL }}" > astro-site/.env.local
-
-      - name: Set up o2switch SSH key
+      - name: Trigger AR publish
+        if: github.event.inputs.target != 'en'
         run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.O2SWITCH_SSH_KEY }}" > ~/.ssh/o2switch_key
-          chmod 600 ~/.ssh/o2switch_key
-          ssh-keyscan -H -T 15 cuivre.o2switch.net >> ~/.ssh/known_hosts || echo "::warning::ssh-keyscan failed or timed out, continuing (per-connection accept-new still trusts the host key)"
-
-      - name: Test o2switch SSH connectivity
-        run: |
-          ssh -i ~/.ssh/o2switch_key -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 -o BatchMode=yes zash7309@cuivre.o2switch.net "echo CONNECTED as \$(whoami)"
-
-      - name: Publish EN batch
-        run: |
-          export SSH_KEY_PATH="$HOME/.ssh/o2switch_key"
-          bash scripts/ci-daily-publish-en.sh
-
-  publish-ar:
-    needs: publish-en
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Configure git identity
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Write astro-site/.env.local
-        run: printf '%s\n' "${{ secrets.ENV_LOCAL }}" > astro-site/.env.local
-
-      - name: Set up o2switch SSH key
-        run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.O2SWITCH_SSH_KEY }}" > ~/.ssh/o2switch_key
-          chmod 600 ~/.ssh/o2switch_key
-          ssh-keyscan -H -T 15 cuivre.o2switch.net >> ~/.ssh/known_hosts || echo "::warning::ssh-keyscan failed or timed out, continuing (per-connection accept-new still trusts the host key)"
-
-      - name: Test o2switch SSH connectivity
-        run: |
-          ssh -i ~/.ssh/o2switch_key -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 -o BatchMode=yes zash7309@cuivre.o2switch.net "echo CONNECTED as \$(whoami)"
-
-      - name: Publish AR batch
-        run: |
-          export SSH_KEY_PATH="$HOME/.ssh/o2switch_key"
-          bash scripts/ci-daily-publish-ar.sh
+          curl -sf -X POST https://aicompany.usine.site/api/deploy/publish \
+            -H "Authorization: Bearer ${{ secrets.DEPLOY_WEBHOOK_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{"target":"ar"}'
