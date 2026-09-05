@@ -294,19 +294,27 @@ const enTwinOf = (r: string) => (r === '/ar' ? '/' : r.slice(3));
 function urlEntry(route: string): string {
   const enRoute = isArabic(route) ? enTwinOf(route) : route;
   const arRoute = isArabic(route) ? route : arTwinOf(route);
+
+  // Both sides are looked up independently. Deriving one of them from "am I an
+  // Arabic route" instead would make a page's own existence prove its twin's:
+  // an /ar/ page published before its English version would declare an en-ae
+  // alternate pointing at a 404, and Google drops a cluster that names a URL
+  // it cannot fetch. Every page today has both halves, so this only shows up
+  // the first time the two languages are published out of step.
+  const hasEn = ROUTE_SET.has(enRoute);
   const hasAr = ROUTE_SET.has(arRoute);
 
-  // An English page with no Arabic twin is its own only version, so it claims
-  // en-ae and x-default and nothing else. Emitting an ar-ae alternate that
-  // 404s would invalidate the whole hreflang cluster.
-  const alternates = hasAr
+  // x-default names the version to serve a searcher we have no better match
+  // for, which is the English page wherever one exists. A page that is its own
+  // only version names itself and claims no twin.
+  const alternates = hasEn && hasAr
     ? `
     <xhtml:link rel="alternate" hreflang="en-ae" href="${BASE}${enRoute}"/>
     <xhtml:link rel="alternate" hreflang="ar-ae" href="${BASE}${arRoute}"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}${enRoute}"/>`
     : `
-    <xhtml:link rel="alternate" hreflang="en-ae" href="${BASE}${enRoute}"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}${enRoute}"/>`;
+    <xhtml:link rel="alternate" hreflang="${isArabic(route) ? 'ar-ae' : 'en-ae'}" href="${BASE}${route}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}${route}"/>`;
 
   return `  <url>
     <loc>${BASE}${route}</loc>
