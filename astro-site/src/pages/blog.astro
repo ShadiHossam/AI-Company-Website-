@@ -2,6 +2,7 @@
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getSupabaseAdmin } from "../lib/supabase";
+import { isArabicOnlyPost } from "../lib/post-lang";
 
 // Set caching headers
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
@@ -30,7 +31,10 @@ try {
     .order('pub_date', { ascending: false });
 
   if (!error && data) {
-    dbPosts = data as DbPost[];
+    // Arabic-only posts live at /ar/blog/<slug> and are listed on /ar/blog.
+    // They were previously shown here too, filling the English index with
+    // Arabic headlines that linked to URLs that now 301 to the Arabic side.
+    dbPosts = (data as DbPost[]).filter(post => !isArabicOnlyPost(post));
   } else {
     dbError = true;
   }

@@ -13,10 +13,15 @@ Allow: /
 Disallow: /admin/
 Disallow: /api/
 Disallow: /maintenance
-Disallow: /_astro/
 
 Sitemap: https://lenooai.com/sitemap_index.xml
 `;
+
+// Note: /_astro/ is deliberately NOT disallowed. It holds the site's compiled
+// CSS and JS, and blocking it stops Googlebot from rendering pages the way a
+// visitor sees them, which costs mobile-usability and layout signals across
+// every URL. Blocking a static asset directory saves no crawl budget worth
+// having.
 
 // Staging deployments must not be crawled or indexed at all.
 const STAGING_ROBOTS = `User-agent: *

@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../lib/supabase';
 import { getCollection } from 'astro:content';
+import { isArabicOnlyPost } from '../lib/post-lang';
 
 const BASE = 'https://lenooai.com';
 
@@ -12,7 +13,7 @@ export const GET: APIRoute = async () => {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from('blog_posts')
-      .select('slug, pub_date, updated_at, ar_title')
+      .select('slug, title, pub_date, updated_at, ar_title')
       .eq('status', 'published')
       .eq('noindex', false)
       .is('deleted_at', null)
@@ -23,6 +24,21 @@ export const GET: APIRoute = async () => {
         seenSlugs.add(post.slug);
         const lastmod = (post.updated_at ?? post.pub_date ?? new Date().toISOString())
           .replace(/(\.\d+)?Z$/, '+00:00');
+
+        // An Arabic-only post has no English version, so /ar/blog/<slug> is its
+        // single canonical URL. Emitting /blog/<slug> as well listed the same
+        // Arabic article twice and labelled one copy as the English and
+        // x-default version. /blog/<slug> now 301s here, so it stays out of the
+        // sitemap entirely.
+        if (isArabicOnlyPost(post)) {
+          urlBlocks.push(`  <url>
+    <loc>${BASE}/ar/blog/${post.slug}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <xhtml:link rel="alternate" hreflang="ar-ae" href="${BASE}/ar/blog/${post.slug}"/>
+  </url>`);
+          continue;
+        }
+
         const hreflang = post.ar_title
           ? `
     <xhtml:link rel="alternate" hreflang="en-ae" href="${BASE}/blog/${post.slug}"/>

@@ -4,6 +4,7 @@ import ArBaseLayout from '../../../layouts/ArBaseLayout.astro';
 import { getSupabaseAdmin } from '../../../lib/supabase';
 import { marked } from 'marked';
 import { sanitizeRichText } from '../../../lib/sanitize';
+import { isArabicOnlyPost } from '../../../lib/post-lang';
 
 const { slug } = Astro.params;
 
@@ -45,6 +46,11 @@ const { data: post, error } = await supabase
 if (error || !post || !post.ar_title) {
   return Astro.redirect(`/blog/${slug}`, 302);
 }
+
+// An Arabic-only post has no English counterpart: /blog/<slug> 301s back here.
+// Advertising an English alternate would point hreflang at a redirect and make
+// the cluster invalid, so the page declares itself as the only version.
+const enPath = isArabicOnlyPost(post) ? null : `/blog/${slug}`;
 
 const bodyHtml = post.ar_body_markdown ? sanitizeRichText(await marked(post.ar_body_markdown)) : '';
 
@@ -95,7 +101,7 @@ const ldJson = [
   title={`${post.ar_meta_title ?? post.ar_title} | مدونة Lenoo AI`}
   description={post.ar_meta_description ?? post.ar_description ?? ''}
   canonicalPath={`/ar/blog/${slug}`}
-  enPath={`/blog/${slug}`}
+  enPath={enPath}
   ogImage={post.og_image ?? '/assets/og-blog.jpg'}
   ogType="article"
   ldJson={ldJson}
@@ -131,9 +137,11 @@ const ldJson = [
             <span id="share-btn-label">مشاركة</span>
           </button>
         </div>
-        <div style="margin-top:1rem;">
-          <a href={`/blog/${slug}`} style="font-size:0.875rem;color:#006875;font-weight:600;" lang="en">Read in English →</a>
-        </div>
+        {enPath && (
+          <div style="margin-top:1rem;">
+            <a href={enPath} style="font-size:0.875rem;color:#006875;font-weight:600;" lang="en">Read in English →</a>
+          </div>
+        )}
       </div>
 
       {post.og_image && post.og_image !== '/assets/og-blog.jpg' && (

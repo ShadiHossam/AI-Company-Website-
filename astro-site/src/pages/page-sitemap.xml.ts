@@ -2,164 +2,315 @@ import type { APIRoute } from 'astro';
 
 const BASE = 'https://lenooai.com';
 
-interface PageEntry {
-  url: string;
-  lastmod: string;
-  arUrl?: string;
+// Routes are discovered from the filesystem rather than listed by hand. The
+// previous hand-maintained array had drifted badly out of date: 123 live,
+// indexable pages (the whole /ar/industries and /ar/services trees, the
+// /services/ai-automation/tools tree, /privacy, /terms, and more) existed on
+// disk but were absent from the sitemap, and only 21 of the 116 EN pages that
+// actually have an Arabic twin declared one. Globbing removes both failure
+// modes permanently: a new .astro page is in the sitemap the moment it lands.
+const ROUTE_MODULES = import.meta.glob('./**/*.astro');
+
+// Not indexable, so never emitted.
+const EXCLUDE = new Set(['/404', '/maintenance']);
+
+// Real last-edit date per route, taken from `git log -1 --format=%cI` on the
+// page's source file and converted to UTC. Update a page's value when you
+// change its content. Do not replace these with a build-time `new Date()`:
+// that would make every URL claim it changed on every deploy, which trains
+// Google to ignore lastmod for the whole site.
+const LASTMOD: Record<string, string> = {
+  '/':                                                    '2026-07-20T20:07:25+00:00',
+  '/about':                                               '2026-07-19T12:51:47+00:00',
+  '/ar':                                                  '2026-07-19T12:51:47+00:00',
+  '/ar/about':                                            '2026-08-25T18:03:04+00:00',
+  '/ar/blog':                                             '2026-07-19T11:36:43+00:00',
+  '/ar/careers':                                          '2026-08-25T18:03:04+00:00',
+  '/ar/contact':                                          '2026-08-25T18:03:04+00:00',
+  '/ar/industries':                                       '2026-08-25T18:03:04+00:00',
+  '/ar/industries/accounting-firms':                      '2026-08-23T07:42:51+00:00',
+  '/ar/industries/aesthetic-clinics':                     '2026-08-25T18:03:04+00:00',
+  '/ar/industries/auto-service':                          '2026-08-25T18:03:04+00:00',
+  '/ar/industries/beauty-salons':                         '2026-08-25T18:03:04+00:00',
+  '/ar/industries/car-dealerships':                       '2026-08-25T18:03:04+00:00',
+  '/ar/industries/cleaning-services':                     '2026-08-25T18:03:04+00:00',
+  '/ar/industries/construction':                          '2026-08-25T18:03:04+00:00',
+  '/ar/industries/consulting':                            '2026-08-25T18:03:04+00:00',
+  '/ar/industries/coworking-business-setup':              '2026-08-25T18:03:04+00:00',
+  '/ar/industries/dental-clinics':                        '2026-08-25T18:03:04+00:00',
+  '/ar/industries/ecommerce':                             '2026-08-25T18:03:04+00:00',
+  '/ar/industries/education':                             '2026-08-25T18:03:04+00:00',
+  '/ar/industries/engineering-consultancies':             '2026-08-25T18:03:04+00:00',
+  '/ar/industries/event-management':                      '2026-08-25T18:03:04+00:00',
+  '/ar/industries/facilities-management':                 '2026-08-25T18:03:04+00:00',
+  '/ar/industries/finance-banking':                       '2026-08-25T18:03:04+00:00',
+  '/ar/industries/fitness-gyms':                          '2026-08-25T18:03:04+00:00',
+  '/ar/industries/healthcare':                            '2026-08-25T18:03:04+00:00',
+  '/ar/industries/healthcare-clinics':                    '2026-08-25T18:03:04+00:00',
+  '/ar/industries/hospitality':                           '2026-07-19T11:36:43+00:00',
+  '/ar/industries/hr-recruitment':                        '2026-08-25T18:03:04+00:00',
+  '/ar/industries/insurance':                             '2026-08-25T18:03:04+00:00',
+  '/ar/industries/interior-fitout':                       '2026-08-25T18:03:04+00:00',
+  '/ar/industries/it-msp':                                '2026-08-25T18:03:04+00:00',
+  '/ar/industries/last-mile-delivery':                    '2026-08-25T18:03:04+00:00',
+  '/ar/industries/legal':                                 '2026-08-25T18:03:04+00:00',
+  '/ar/industries/logistics':                             '2026-08-25T18:03:04+00:00',
+  '/ar/industries/manufacturing':                         '2026-08-25T18:03:04+00:00',
+  '/ar/industries/marketing':                             '2026-08-25T18:03:04+00:00',
+  '/ar/industries/marketing-agencies':                    '2026-08-25T18:03:04+00:00',
+  '/ar/industries/pharmacies':                            '2026-08-25T18:03:04+00:00',
+  '/ar/industries/property-management':                   '2026-08-25T18:03:04+00:00',
+  '/ar/industries/real-estate':                           '2026-07-19T11:36:43+00:00',
+  '/ar/industries/restaurants':                           '2026-08-25T18:03:04+00:00',
+  '/ar/industries/retail':                                '2026-07-19T12:51:47+00:00',
+  '/ar/industries/security-services':                     '2026-08-25T18:03:04+00:00',
+  '/ar/industries/trading-distribution':                  '2026-08-25T18:03:04+00:00',
+  '/ar/industries/training-institutes':                   '2026-08-25T18:03:04+00:00',
+  '/ar/industries/travel-agencies':                       '2026-08-25T18:03:04+00:00',
+  '/ar/privacy':                                          '2026-08-23T07:01:18+00:00',
+  '/ar/services':                                         '2026-07-19T11:36:43+00:00',
+  '/ar/services/agentops':                                '2026-08-25T18:03:04+00:00',
+  '/ar/services/agentops/what-is-agentops':               '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agent-security':                       '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents':                               '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents/abu-dhabi':                     '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents/agencies':                      '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents/architecture':                  '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents/customer-support':              '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents/development':                   '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents/dubai':                         '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents/for-real-estate':               '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents/receptionist':                  '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents/sales':                         '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents/templates':                     '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents/tools':                         '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents/tools/gumloop':                 '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents/tools/lindy':                   '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents/tools/n8n-ai-agent':            '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents/tools/pipedream':               '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents/tools/salesforce-agentforce':   '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents/use-cases':                     '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents/voice-agents':                  '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-agents/vs-agentic-ai':                 '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation':                           '2026-07-18T14:23:08+00:00',
+  '/ar/services/ai-automation/abu-dhabi':                 '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation/accounting':                '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation/agencies':                  '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation/business':                  '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation/dubai':                     '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation/finance':                   '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation/free-zone':                 '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation/operations':                '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation/procurement':               '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation/real-estate':               '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation/tools':                     '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation/tools/automation-anywhere': '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation/tools/boomi':               '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation/tools/make':                '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation/tools/mulesoft':            '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation/tools/n8n':                 '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation/tools/power-automate':      '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation/tools/uipath':              '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation/tools/workato':             '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-automation/tools/zapier':              '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-chatbot-development':                  '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-compliance-uae':                       '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-integration':                          '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-maintenance':                          '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-model-finetuning':                     '2026-07-18T14:23:08+00:00',
+  '/ar/services/ai-strategy':                             '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-strategy/data-readiness':              '2026-08-25T18:03:04+00:00',
+  '/ar/services/ai-training':                             '2026-08-25T18:03:04+00:00',
+  '/ar/services/arabic-ai':                               '2026-08-25T18:03:04+00:00',
+  '/ar/services/arabic-ai/chatbots':                      '2026-08-25T18:03:04+00:00',
+  '/ar/services/arabic-ai/voice-agents':                  '2026-08-25T18:03:04+00:00',
+  '/ar/services/claude-agent-builds':                     '2026-08-25T18:03:04+00:00',
+  '/ar/services/custom-ai-development':                   '2026-08-25T18:03:04+00:00',
+  '/ar/services/custom-gpt-development':                  '2026-08-25T18:03:04+00:00',
+  '/ar/services/internal-ai-tools':                       '2026-08-25T18:03:04+00:00',
+  '/ar/services/prompt-engineering':                      '2026-07-18T14:23:08+00:00',
+  '/ar/services/vibe-coding':                             '2026-08-25T18:03:04+00:00',
+  '/ar/services/vibe-coding/beginners':                   '2026-08-25T18:03:04+00:00',
+  '/ar/services/vibe-coding/game-development':            '2026-08-25T18:03:04+00:00',
+  '/ar/services/vibe-coding/risks-and-limitations':       '2026-08-25T18:03:04+00:00',
+  '/ar/services/vibe-coding/tools':                       '2026-08-25T18:03:04+00:00',
+  '/ar/services/vibe-coding/vs-traditional-coding':       '2026-08-25T18:03:04+00:00',
+  '/ar/services/whatsapp-ai-automation':                  '2026-08-25T18:03:04+00:00',
+  '/ar/services/whatsapp-ai-automation/business-api':     '2026-08-25T18:03:04+00:00',
+  '/ar/terms':                                            '2026-08-23T07:01:18+00:00',
+  '/blog':                                                '2026-07-19T06:21:05+00:00',
+  '/careers':                                             '2026-07-19T12:51:47+00:00',
+  '/contact':                                             '2026-07-21T19:48:27+00:00',
+  '/industries':                                          '2026-08-31T18:33:27+00:00',
+  '/industries/accounting-firms':                         '2026-08-21T18:24:41+00:00',
+  '/industries/aesthetic-clinics':                        '2026-08-21T18:24:41+00:00',
+  '/industries/auto-service':                             '2026-08-21T18:39:12+00:00',
+  '/industries/beauty-salons':                            '2026-08-21T18:39:12+00:00',
+  '/industries/car-dealerships':                          '2026-08-23T07:06:02+00:00',
+  '/industries/cleaning-services':                        '2026-08-23T07:06:02+00:00',
+  '/industries/construction':                             '2026-08-23T07:22:37+00:00',
+  '/industries/consulting':                               '2026-08-15T12:46:09+00:00',
+  '/industries/coworking-business-setup':                 '2026-08-23T07:22:37+00:00',
+  '/industries/dental-clinics':                           '2026-08-25T18:06:02+00:00',
+  '/industries/ecommerce':                                '2026-08-25T18:06:02+00:00',
+  '/industries/education':                                '2026-08-03T04:11:17+00:00',
+  '/industries/engineering-consultancies':                '2026-08-29T09:43:11+00:00',
+  '/industries/event-management':                         '2026-08-29T09:43:11+00:00',
+  '/industries/facilities-management':                    '2026-08-31T16:52:37+00:00',
+  '/industries/finance-banking':                          '2026-08-15T12:46:09+00:00',
+  '/industries/fitness-gyms':                             '2026-08-31T16:52:37+00:00',
+  '/industries/healthcare':                               '2026-08-15T12:46:09+00:00',
+  '/industries/healthcare-clinics':                       '2026-08-31T17:13:57+00:00',
+  '/industries/hospitality':                              '2026-07-19T06:21:05+00:00',
+  '/industries/hr-recruitment':                           '2026-08-15T12:46:09+00:00',
+  '/industries/insurance':                                '2026-08-03T18:08:05+00:00',
+  '/industries/interior-fitout':                          '2026-08-31T17:13:57+00:00',
+  '/industries/it-msp':                                   '2026-08-31T17:20:03+00:00',
+  '/industries/last-mile-delivery':                       '2026-08-31T17:20:03+00:00',
+  '/industries/legal':                                    '2026-08-03T18:55:47+00:00',
+  '/industries/logistics':                                '2026-07-19T06:21:05+00:00',
+  '/industries/manufacturing':                            '2026-08-04T04:08:56+00:00',
+  '/industries/marketing':                                '2026-08-04T04:22:01+00:00',
+  '/industries/marketing-agencies':                       '2026-08-31T18:33:27+00:00',
+  '/industries/marketing/analytics-attribution':          '2026-08-04T18:38:37+00:00',
+  '/industries/marketing/content-writing':                '2026-08-15T12:46:09+00:00',
+  '/industries/marketing/email-marketing':                '2026-08-08T09:34:38+00:00',
+  '/industries/marketing/image-generation':               '2026-08-08T21:16:49+00:00',
+  '/industries/marketing/influencer-marketing':           '2026-08-09T05:10:44+00:00',
+  '/industries/marketing/paid-ads':                       '2026-08-09T05:19:41+00:00',
+  '/industries/marketing/seo':                            '2026-08-09T05:54:35+00:00',
+  '/industries/marketing/social-media':                   '2026-08-09T06:23:28+00:00',
+  '/industries/marketing/video-generation':               '2026-08-09T12:03:15+00:00',
+  '/industries/marketing/voice-generation':               '2026-08-09T12:23:42+00:00',
+  '/industries/pharmacies':                               '2026-08-31T18:33:27+00:00',
+  '/industries/property-management':                      '2026-08-31T18:33:27+00:00',
+  '/industries/real-estate':                              '2026-07-19T06:21:05+00:00',
+  '/industries/restaurants':                              '2026-08-31T18:33:27+00:00',
+  '/industries/retail':                                   '2026-07-19T12:51:47+00:00',
+  '/industries/security-services':                        '2026-08-31T18:33:27+00:00',
+  '/industries/trading-distribution':                     '2026-08-31T18:33:27+00:00',
+  '/industries/training-institutes':                      '2026-08-31T18:33:27+00:00',
+  '/industries/travel-agencies':                          '2026-08-31T18:33:27+00:00',
+  '/pricing/ai-automation-cost':                          '2026-08-31T18:33:27+00:00',
+  '/privacy':                                             '2026-08-23T07:01:18+00:00',
+  '/services':                                            '2026-07-19T06:21:05+00:00',
+  '/services/agentops':                                   '2026-08-31T18:33:27+00:00',
+  '/services/agentops/what-is-agentops':                  '2026-08-31T18:33:27+00:00',
+  '/services/ai-agent-security':                          '2026-08-31T18:33:27+00:00',
+  '/services/ai-agents':                                  '2026-08-02T13:53:23+00:00',
+  '/services/ai-agents/abu-dhabi':                        '2026-08-02T13:39:32+00:00',
+  '/services/ai-agents/agencies':                         '2026-08-02T14:15:55+00:00',
+  '/services/ai-agents/architecture':                     '2026-08-02T13:52:02+00:00',
+  '/services/ai-agents/customer-support':                 '2026-08-02T14:15:55+00:00',
+  '/services/ai-agents/development':                      '2026-08-02T14:15:55+00:00',
+  '/services/ai-agents/dubai':                            '2026-08-02T13:39:32+00:00',
+  '/services/ai-agents/for-real-estate':                  '2026-08-02T14:15:55+00:00',
+  '/services/ai-agents/receptionist':                     '2026-08-31T18:33:27+00:00',
+  '/services/ai-agents/sales':                            '2026-08-02T14:15:55+00:00',
+  '/services/ai-agents/templates':                        '2026-08-02T13:52:02+00:00',
+  '/services/ai-agents/tools':                            '2026-08-02T13:36:29+00:00',
+  '/services/ai-agents/tools/gumloop':                    '2026-08-29T11:11:13+00:00',
+  '/services/ai-agents/tools/lindy':                      '2026-08-29T11:11:13+00:00',
+  '/services/ai-agents/tools/n8n-ai-agent':               '2026-08-29T15:04:47+00:00',
+  '/services/ai-agents/tools/pipedream':                  '2026-08-29T11:11:13+00:00',
+  '/services/ai-agents/tools/salesforce-agentforce':      '2026-08-29T11:11:13+00:00',
+  '/services/ai-agents/use-cases':                        '2026-08-02T14:15:55+00:00',
+  '/services/ai-agents/voice-agents':                     '2026-08-02T14:15:55+00:00',
+  '/services/ai-agents/vs-agentic-ai':                    '2026-08-02T14:15:55+00:00',
+  '/services/ai-automation':                              '2026-07-19T12:51:47+00:00',
+  '/services/ai-automation/abu-dhabi':                    '2026-08-09T12:44:11+00:00',
+  '/services/ai-automation/accounting':                   '2026-08-09T13:59:57+00:00',
+  '/services/ai-automation/agencies':                     '2026-08-09T18:21:45+00:00',
+  '/services/ai-automation/business':                     '2026-08-10T16:44:11+00:00',
+  '/services/ai-automation/dubai':                        '2026-08-10T17:14:12+00:00',
+  '/services/ai-automation/finance':                      '2026-08-31T18:33:27+00:00',
+  '/services/ai-automation/free-zone':                    '2026-08-31T18:33:27+00:00',
+  '/services/ai-automation/operations':                   '2026-08-31T18:33:27+00:00',
+  '/services/ai-automation/procurement':                  '2026-08-31T18:33:27+00:00',
+  '/services/ai-automation/real-estate':                  '2026-08-10T18:04:07+00:00',
+  '/services/ai-automation/tools':                        '2026-08-11T03:21:05+00:00',
+  '/services/ai-automation/tools/automation-anywhere':    '2026-08-29T11:11:13+00:00',
+  '/services/ai-automation/tools/boomi':                  '2026-08-29T11:11:13+00:00',
+  '/services/ai-automation/tools/make':                   '2026-08-29T15:04:47+00:00',
+  '/services/ai-automation/tools/mulesoft':               '2026-08-29T11:11:13+00:00',
+  '/services/ai-automation/tools/n8n':                    '2026-08-29T15:04:47+00:00',
+  '/services/ai-automation/tools/power-automate':         '2026-08-29T11:11:13+00:00',
+  '/services/ai-automation/tools/uipath':                 '2026-08-29T15:04:47+00:00',
+  '/services/ai-automation/tools/workato':                '2026-08-29T11:11:13+00:00',
+  '/services/ai-automation/tools/zapier':                 '2026-08-29T15:04:47+00:00',
+  '/services/ai-chatbot-development':                     '2026-08-31T18:33:27+00:00',
+  '/services/ai-compliance-uae':                          '2026-08-31T18:33:27+00:00',
+  '/services/ai-integration':                             '2026-07-19T12:51:47+00:00',
+  '/services/ai-maintenance':                             '2026-08-31T18:33:27+00:00',
+  '/services/ai-model-finetuning':                        '2026-07-19T12:51:47+00:00',
+  '/services/ai-strategy':                                '2026-07-19T06:21:05+00:00',
+  '/services/ai-strategy/data-readiness':                 '2026-08-31T18:33:27+00:00',
+  '/services/ai-training':                                '2026-07-19T06:21:05+00:00',
+  '/services/arabic-ai':                                  '2026-08-31T18:33:27+00:00',
+  '/services/arabic-ai/chatbots':                         '2026-08-31T18:33:27+00:00',
+  '/services/arabic-ai/voice-agents':                     '2026-08-31T18:33:27+00:00',
+  '/services/claude-agent-builds':                        '2026-07-19T12:51:47+00:00',
+  '/services/custom-ai-development':                      '2026-07-19T12:51:47+00:00',
+  '/services/custom-gpt-development':                     '2026-07-19T12:51:47+00:00',
+  '/services/internal-ai-tools':                          '2026-08-29T11:11:13+00:00',
+  '/services/prompt-engineering':                         '2026-07-19T12:51:47+00:00',
+  '/services/vibe-coding':                                '2026-08-29T11:11:13+00:00',
+  '/services/vibe-coding/beginners':                      '2026-08-15T11:57:13+00:00',
+  '/services/vibe-coding/game-development':               '2026-08-15T05:14:09+00:00',
+  '/services/vibe-coding/risks-and-limitations':          '2026-08-15T05:22:26+00:00',
+  '/services/vibe-coding/tools':                          '2026-08-02T21:35:53+00:00',
+  '/services/vibe-coding/vs-traditional-coding':          '2026-08-15T10:59:32+00:00',
+  '/services/whatsapp-ai-automation':                     '2026-08-31T18:33:27+00:00',
+  '/services/whatsapp-ai-automation/business-api':        '2026-08-31T18:33:27+00:00',
+  '/terms':                                               '2026-08-23T07:01:18+00:00',
+};
+
+// Fallback for a page added since LASTMOD was last regenerated. It is
+// deliberately a fixed date, not `now`, for the reason above.
+const DEFAULT_LASTMOD = '2026-08-31T18:33:27+00:00';
+
+/** './services/ai-agents.astro' -> '/services/ai-agents'; './index.astro' -> '/' */
+function toRoute(file: string): string | null {
+  if (file.includes('[')) return null; // dynamic route, handled elsewhere
+  let r = file.replace(/^\./, '').replace(/\.astro$/, '');
+  if (r.startsWith('/admin/') || r.startsWith('/api/')) return null;
+  if (r.endsWith('/index')) r = r.slice(0, -6);
+  return r === '' ? '/' : r;
 }
 
-// Each lastmod below is the real last-edit date of that page's source file
-// (from `git log -1 --format=%cI -- <file>`), converted to UTC. Update the
-// value for a page when you actually change its content — do not replace
-// these with a shared build-time "now", which would make every URL claim
-// it was modified on every deploy regardless of whether it changed.
-const PAGES: PageEntry[] = [
-  { url: '/',                                  lastmod: '2026-07-20T20:07:25+00:00', arUrl: '/ar' },
-  { url: '/services',                          lastmod: '2026-07-19T06:21:05+00:00', arUrl: '/ar/services' },
-  { url: '/services/custom-ai-development',   lastmod: '2026-07-19T12:51:47+00:00', arUrl: '/ar/services/custom-ai-development' },
-  { url: '/services/ai-agents',               lastmod: '2026-08-02T13:53:23+00:00', arUrl: '/ar/services/ai-agents' },
-  { url: '/services/ai-agents/dubai',                          lastmod: '2026-08-02T13:39:32+00:00' },
-  { url: '/services/ai-agents/abu-dhabi',                      lastmod: '2026-08-02T13:39:32+00:00' },
-  { url: '/services/ai-agents/agencies',                       lastmod: '2026-08-02T14:15:55+00:00' },
-  { url: '/services/ai-agents/development',                    lastmod: '2026-08-02T14:15:55+00:00' },
-  { url: '/services/ai-agents/for-real-estate',                lastmod: '2026-08-02T14:15:55+00:00' },
-  { url: '/services/ai-agents/voice-agents',                   lastmod: '2026-08-02T14:15:55+00:00' },
-  { url: '/services/ai-agents/customer-support',               lastmod: '2026-08-02T14:15:55+00:00' },
-  { url: '/services/ai-agents/sales',                          lastmod: '2026-08-02T14:15:55+00:00' },
-  { url: '/services/ai-agents/use-cases',                      lastmod: '2026-08-02T14:15:55+00:00' },
-  { url: '/services/ai-agents/templates',                      lastmod: '2026-08-02T13:52:02+00:00' },
-  { url: '/services/ai-agents/vs-agentic-ai',                  lastmod: '2026-08-02T14:15:55+00:00' },
-  { url: '/services/ai-agents/architecture',                   lastmod: '2026-08-02T13:52:02+00:00' },
-  { url: '/services/ai-agents/tools',                          lastmod: '2026-08-02T13:36:29+00:00' },
-  { url: '/services/ai-agents/tools/gumloop',                  lastmod: '2026-08-02T13:36:30+00:00' },
-  { url: '/services/ai-agents/tools/lindy',                    lastmod: '2026-08-02T13:36:30+00:00' },
-  { url: '/services/ai-agents/tools/pipedream',                lastmod: '2026-08-02T13:36:30+00:00' },
-  { url: '/services/ai-agents/tools/salesforce-agentforce',    lastmod: '2026-08-02T13:36:30+00:00' },
-  { url: '/services/ai-agents/tools/n8n-ai-agent',             lastmod: '2026-08-02T13:36:30+00:00' },
-  { url: '/services/ai-automation/tools/n8n',                  lastmod: '2026-08-02T21:13:59+00:00' },
-  { url: '/services/vibe-coding/tools',                        lastmod: '2026-08-02T21:35:53+00:00' },
-  { url: '/services/ai-automation',           lastmod: '2026-07-19T12:51:47+00:00', arUrl: '/ar/services/ai-automation' },
-  { url: '/services/ai-training',             lastmod: '2026-07-19T06:21:05+00:00', arUrl: '/ar/services/ai-training' },
-  { url: '/services/ai-strategy',             lastmod: '2026-07-19T06:21:05+00:00', arUrl: '/ar/services/ai-strategy' },
-  { url: '/services/ai-integration',         lastmod: '2026-07-19T12:51:47+00:00', arUrl: '/ar/services/ai-integration' },
-  { url: '/services/internal-ai-tools',       lastmod: '2026-07-19T12:51:47+00:00', arUrl: '/ar/services/internal-ai-tools' },
-  { url: '/services/custom-gpt-development', lastmod: '2026-07-19T12:51:47+00:00', arUrl: '/ar/services/custom-gpt-development' },
-  { url: '/services/vibe-coding',             lastmod: '2026-07-19T12:51:47+00:00', arUrl: '/ar/services/vibe-coding' },
-  { url: '/services/ai-model-finetuning',    lastmod: '2026-07-19T12:51:47+00:00' },
-  { url: '/services/claude-agent-builds',    lastmod: '2026-07-19T12:51:47+00:00' },
-  { url: '/services/prompt-engineering',     lastmod: '2026-07-19T12:51:47+00:00' },
-  { url: '/services/ai-chatbot-development',            lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/services/ai-agents/receptionist',            lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/services/whatsapp-ai-automation',            lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/services/whatsapp-ai-automation/business-api', lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/services/ai-agent-security',                 lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/services/agentops',                          lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/services/agentops/what-is-agentops',         lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/services/ai-maintenance',                    lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/services/ai-compliance-uae',                 lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/services/ai-automation/finance',             lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/services/ai-automation/operations',          lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/services/ai-automation/procurement',         lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/services/ai-automation/free-zone',           lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/services/arabic-ai',                         lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/services/arabic-ai/chatbots',                lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/services/arabic-ai/voice-agents',            lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/services/ai-strategy/data-readiness',        lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/pricing/ai-automation-cost',                 lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries',                       lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/real-estate',           lastmod: '2026-07-19T06:21:05+00:00', arUrl: '/ar/industries/real-estate' },
-  { url: '/industries/retail',                lastmod: '2026-07-19T12:51:47+00:00', arUrl: '/ar/industries/retail' },
-  { url: '/industries/hospitality',           lastmod: '2026-07-19T06:21:05+00:00', arUrl: '/ar/industries/hospitality' },
-  { url: '/industries/logistics',             lastmod: '2026-07-19T06:21:05+00:00', arUrl: '/ar/industries/logistics' },
-  { url: '/industries/consulting',            lastmod: '2026-08-02T20:59:59+00:00' },
-  { url: '/industries/education',             lastmod: '2026-08-03T04:11:17+00:00' },
-  { url: '/industries/finance-banking',       lastmod: '2026-08-03T04:27:00+00:00' },
-  { url: '/industries/healthcare',            lastmod: '2026-08-03T16:52:55+00:00' },
-  { url: '/industries/hr-recruitment',        lastmod: '2026-08-03T17:48:00+00:00' },
-  { url: '/industries/insurance',             lastmod: '2026-08-03T18:08:05+00:00' },
-  { url: '/industries/legal',                 lastmod: '2026-08-03T18:55:47+00:00' },
-  { url: '/industries/manufacturing',         lastmod: '2026-08-04T04:08:56+00:00' },
-  { url: '/industries/marketing',             lastmod: '2026-08-04T04:22:01+00:00' },
-  { url: '/industries/marketing/analytics-attribution', lastmod: '2026-08-04T18:38:37+00:00' },
-  { url: '/industries/marketing/content-writing',        lastmod: '2026-08-04T19:35:55+00:00' },
-  { url: '/industries/marketing/email-marketing',         lastmod: '2026-08-08T09:34:38+00:00' },
-  { url: '/industries/property-management',    lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/construction',           lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/interior-fitout',        lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/engineering-consultancies', lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/healthcare-clinics',     lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/dental-clinics',         lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/aesthetic-clinics',      lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/pharmacies',             lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/fitness-gyms',           lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/beauty-salons',          lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/ecommerce',              lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/restaurants',            lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/car-dealerships',        lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/travel-agencies',        lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/event-management',       lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/accounting-firms',       lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/coworking-business-setup', lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/marketing-agencies',     lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/last-mile-delivery',     lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/facilities-management',  lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/cleaning-services',      lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/auto-service',           lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/security-services',      lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/trading-distribution',   lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/training-institutes',    lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/industries/it-msp',                 lastmod: '2026-08-16T16:26:59+00:00' },
-  { url: '/about',                             lastmod: '2026-07-19T12:51:47+00:00', arUrl: '/ar/about' },
-  { url: '/blog',                              lastmod: '2026-07-19T06:21:05+00:00', arUrl: '/ar/blog' },
-  { url: '/contact',                           lastmod: '2026-07-21T19:48:27+00:00', arUrl: '/ar/contact' },
-  { url: '/careers',                           lastmod: '2026-07-19T12:51:47+00:00', arUrl: '/ar/careers' },
-];
+const ROUTES: string[] = Object.keys(ROUTE_MODULES)
+  .map(toRoute)
+  .filter((r): r is string => r !== null && !EXCLUDE.has(r))
+  .sort();
 
-const AR_ONLY: PageEntry[] = [
-  { url: '/ar',                                  lastmod: '2026-07-19T12:51:47+00:00' },
-  { url: '/ar/services',                         lastmod: '2026-07-19T11:36:43+00:00' },
-  { url: '/ar/services/custom-ai-development',  lastmod: '2026-07-18T14:23:08+00:00' },
-  { url: '/ar/services/ai-agents',              lastmod: '2026-07-19T11:36:43+00:00' },
-  { url: '/ar/services/ai-automation',          lastmod: '2026-07-18T14:23:08+00:00' },
-  { url: '/ar/services/ai-automation/accounting', lastmod: '2026-08-05T18:26:06+00:00' },
-  { url: '/ar/services/ai-automation/dubai',      lastmod: '2026-08-05T18:26:06+00:00' },
-  { url: '/ar/services/ai-training',            lastmod: '2026-07-18T14:23:08+00:00' },
-  { url: '/ar/services/ai-strategy',            lastmod: '2026-07-18T14:23:08+00:00' },
-  { url: '/ar/services/ai-integration',        lastmod: '2026-07-18T14:23:08+00:00' },
-  { url: '/ar/services/internal-ai-tools',      lastmod: '2026-07-19T11:36:43+00:00' },
-  { url: '/ar/services/custom-gpt-development', lastmod: '2026-07-18T14:23:08+00:00' },
-  { url: '/ar/services/vibe-coding',            lastmod: '2026-07-18T14:23:08+00:00' },
-  { url: '/ar/industries/real-estate',          lastmod: '2026-07-19T11:36:43+00:00' },
-  { url: '/ar/industries/retail',               lastmod: '2026-07-19T12:51:47+00:00' },
-  { url: '/ar/industries/hospitality',          lastmod: '2026-07-19T11:36:43+00:00' },
-  { url: '/ar/industries/logistics',            lastmod: '2026-07-19T11:36:43+00:00' },
-  { url: '/ar/about',                            lastmod: '2026-07-19T12:51:47+00:00' },
-  { url: '/ar/contact',                          lastmod: '2026-08-05T18:26:06+00:00' },
-  { url: '/ar/blog',                             lastmod: '2026-07-19T11:36:43+00:00' },
-  { url: '/ar/careers',                          lastmod: '2026-08-05T18:26:06+00:00' },
-];
+const ROUTE_SET = new Set(ROUTES);
 
-function urlEntry(page: PageEntry): string {
-  const hreflang = page.arUrl
+const isArabic = (r: string) => r === '/ar' || r.startsWith('/ar/');
+/** '/services' -> '/ar/services'; '/' -> '/ar' */
+const arTwinOf = (r: string) => (r === '/' ? '/ar' : `/ar${r}`);
+/** '/ar/services' -> '/services'; '/ar' -> '/' */
+const enTwinOf = (r: string) => (r === '/ar' ? '/' : r.slice(3));
+
+function urlEntry(route: string): string {
+  const enRoute = isArabic(route) ? enTwinOf(route) : route;
+  const arRoute = isArabic(route) ? route : arTwinOf(route);
+  const hasAr = ROUTE_SET.has(arRoute);
+
+  // An English page with no Arabic twin is its own only version, so it claims
+  // en-ae and x-default and nothing else. Emitting an ar-ae alternate that
+  // 404s would invalidate the whole hreflang cluster.
+  const alternates = hasAr
     ? `
-    <xhtml:link rel="alternate" hreflang="en-ae" href="${BASE}${page.url}"/>
-    <xhtml:link rel="alternate" hreflang="ar-ae" href="${BASE}${page.arUrl}"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}${page.url}"/>`
-    : '';
-  return `  <url>
-    <loc>${BASE}${page.url}</loc>
-    <lastmod>${page.lastmod}</lastmod>${hreflang}
-  </url>`;
-}
+    <xhtml:link rel="alternate" hreflang="en-ae" href="${BASE}${enRoute}"/>
+    <xhtml:link rel="alternate" hreflang="ar-ae" href="${BASE}${arRoute}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}${enRoute}"/>`
+    : `
+    <xhtml:link rel="alternate" hreflang="en-ae" href="${BASE}${enRoute}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}${enRoute}"/>`;
 
-function arUrlEntry(page: PageEntry): string {
-  const enUrl = page.url.replace(/^\/ar/, '') || '/';
   return `  <url>
-    <loc>${BASE}${page.url}</loc>
-    <lastmod>${page.lastmod}</lastmod>
-    <xhtml:link rel="alternate" hreflang="ar-ae" href="${BASE}${page.url}"/>
-    <xhtml:link rel="alternate" hreflang="en-ae" href="${BASE}${enUrl}"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}${enUrl}"/>
+    <loc>${BASE}${route}</loc>
+    <lastmod>${LASTMOD[route] ?? DEFAULT_LASTMOD}</lastmod>${alternates}
   </url>`;
 }
 
@@ -171,8 +322,7 @@ export const GET: APIRoute = async () => {
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
         xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-${PAGES.map(urlEntry).join('\n')}
-${AR_ONLY.map(arUrlEntry).join('\n')}
+${ROUTES.map(urlEntry).join('\n')}
 </urlset>`;
 
   return new Response(xml, {

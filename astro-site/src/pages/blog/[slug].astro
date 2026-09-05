@@ -4,6 +4,7 @@ import { getSupabaseAdmin } from '../../lib/supabase';
 import ArticleLayout from '../../layouts/ArticleLayout.astro';
 import { marked } from 'marked';
 import { sanitizeRichText } from '../../lib/sanitize';
+import { isArabicOnlyPost } from '../../lib/post-lang';
 
 const { slug } = Astro.params;
 
@@ -45,6 +46,11 @@ let pubDate = new Date();
 let updatedDate: Date | undefined;
 let relatedPosts: RelatedPost[] = [];
 
+// Set when the row turns out to be an Arabic-only article. The redirect is
+// issued after the try/catch rather than inside it so the DB fallback path
+// below can never run for a post we have already decided not to serve here.
+let arabicOnly = false;
+
 // 1. Try Supabase first
 try {
   const supabase = getSupabaseAdmin();
@@ -56,7 +62,9 @@ try {
     .is('deleted_at', null)
     .single();
 
-  if (!error && data) {
+  if (!error && data && isArabicOnlyPost(data)) {
+    arabicOnly = true;
+  } else if (!error && data) {
     dbPost = data as DbPost;
     bodyHtml = sanitizeRichText(await marked(dbPost.body_markdown ?? ''));
     pubDate = dbPost.pub_date ? new Date(dbPost.pub_date) : new Date();
@@ -79,6 +87,14 @@ try {
   }
 } catch {
   // fall through to content collection
+}
+
+// This post exists only in Arabic — the English columns hold the same Arabic
+// body as the ar_* ones. Serving it here published a second copy of the article
+// under an English URL. 301 (not 302) so the duplicate consolidates into
+// /ar/blog/<slug> and any links or rankings it picked up transfer there.
+if (arabicOnly) {
+  return Astro.redirect(`/ar/blog/${slug}`, 301);
 }
 
 // 2. Fall back to content collection
