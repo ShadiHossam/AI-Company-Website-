@@ -74,7 +74,7 @@ describe('POST /api/admin/auth/login', () => {
   });
 
   it('returns 401 on invalid credentials', async () => {
-    (supabaseBrowser.auth.signInWithPassword as ReturnType<typeof vi.fn>)
+    (supabaseBrowser!.auth.signInWithPassword as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce({ data: { session: null }, error: { message: 'Invalid' } });
 
     const ctx = makeLoginCtx({ email: 'admin@test.com', password: 'wrong' });
@@ -84,7 +84,7 @@ describe('POST /api/admin/auth/login', () => {
   });
 
   it('returns 200 and sets auth cookies on success', async () => {
-    (supabaseBrowser.auth.signInWithPassword as ReturnType<typeof vi.fn>)
+    (supabaseBrowser!.auth.signInWithPassword as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce({
         data: {
           session: {

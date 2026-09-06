@@ -50,7 +50,10 @@ export const GET: APIRoute = async ({ locals }) => {
     supabase.from('leads').select('page_source, utm_source').gte('created_at', thirtyDaysAgo),
   ]);
 
-  const pipelineAED = (pipeline ?? []).reduce((sum, l) => sum + (l.estimated_value_aed ?? 0), 0);
+  const pipelineAED = (pipeline ?? []).reduce(
+    (sum: number, l: { estimated_value_aed: number | null }) => sum + (l.estimated_value_aed ?? 0),
+    0,
+  );
   const stageBreakdown: Record<string, { count: number; aed: number }> = {};
   for (const l of pipeline ?? []) {
     if (!stageBreakdown[l.status]) stageBreakdown[l.status] = { count: 0, aed: 0 };
@@ -58,8 +61,8 @@ export const GET: APIRoute = async ({ locals }) => {
     stageBreakdown[l.status].aed += l.estimated_value_aed ?? 0;
   }
 
-  const published = (contentStats ?? []).filter(p => p.status === 'published').length;
-  const drafts    = (contentStats ?? []).filter(p => p.status === 'draft').length;
+  const published = (contentStats ?? []).filter((p: { status: string }) => p.status === 'published').length;
+  const drafts    = (contentStats ?? []).filter((p: { status: string }) => p.status === 'draft').length;
 
   // Funnel from all leads
   const funnelOrder = ['new', 'contacted', 'qualified', 'proposal_sent', 'closed_won'];

@@ -38,7 +38,10 @@ const [
   supabase.from('leads').select('page_source, utm_source').gte('created_at', thirtyDaysAgo),
 ]);
 
-const pipelineAED = (pipeline ?? []).reduce((s, l) => s + (l.estimated_value_aed ?? 0), 0);
+const pipelineAED = (pipeline ?? []).reduce(
+  (s: number, l: { estimated_value_aed: number | null }) => s + (l.estimated_value_aed ?? 0),
+  0,
+);
 
 const statusLabels: Record<string, string> = {
   new: 'New', contacted: 'Contacted', qualified: 'Qualified',
@@ -58,8 +61,8 @@ function timeAgo(date: string) {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-const publishedBlogs = (blogPosts ?? []).filter(p => p.status === 'published').length;
-const draftBlogs     = (blogPosts ?? []).filter(p => p.status === 'draft').length;
+const publishedBlogs = (blogPosts ?? []).filter((p: { status: string }) => p.status === 'published').length;
+const draftBlogs     = (blogPosts ?? []).filter((p: { status: string }) => p.status === 'draft').length;
 
 // Funnel
 const funnelOrder = ['new', 'contacted', 'qualified', 'proposal_sent', 'closed_won'];
@@ -159,7 +162,7 @@ const sourceValues = sourceEntries.map(([, v]) => v);
               </tr>
             </thead>
             <tbody>
-              {(recentLeads ?? []).map(lead => (
+              {(recentLeads ?? []).map((lead: { id: string; full_name: string; company_name: string | null; status: string; page_source: string | null; created_at: string; duplicate_email: boolean }) => (
                 <tr>
                   <td>
                     <a href={`/admin/leads/${lead.id}`} style="color:var(--text-primary); text-decoration:none; font-weight:600;">
@@ -197,7 +200,7 @@ const sourceValues = sourceEntries.map(([, v]) => v);
             </div>
           </div>
           <div style="display:flex; flex-direction:column; gap:0.75rem;">
-            {(hotLeads ?? []).map(lead => (
+            {(hotLeads ?? []).map((lead: { id: string; full_name: string; company_name: string | null; whatsapp: string | null; status: string }) => (
               <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.75rem; background:var(--bg-hover); border-radius:var(--radius);">
                 <div>
                   <a href={`/admin/leads/${lead.id}`} style="font-weight:600; color:var(--text-primary); text-decoration:none;">{lead.full_name}</a>

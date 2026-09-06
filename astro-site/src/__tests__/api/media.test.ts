@@ -174,7 +174,7 @@ function makeUploadRequest(
   origin = 'https://lenooai.com',
 ) {
   const fd = new FormData();
-  fd.append('file', new File([fileContent], filename, { type: mimeType }));
+  fd.append('file', new File([fileContent as BlobPart], filename, { type: mimeType }));
   if (altText) fd.append('alt_text', altText);
   return new Request('https://lenooai.com/api/admin/media/upload', {
     method: 'POST',

@@ -40,7 +40,7 @@ export const GET: APIRoute = async ({ locals }) => {
     return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 
-  const roles = (data ?? []).map(r => parseRole(r.key, r.value)).filter(Boolean);
+  const roles = (data ?? []).map((r: { key: string; value: string }) => parseRole(r.key, r.value)).filter(Boolean);
   return new Response(JSON.stringify({ data: roles }), { status: 200 });
 };
 

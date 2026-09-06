@@ -36,7 +36,7 @@ const { data: actionTypes } = await supabase
   .from('activity_log')
   .select('action')
   .order('action');
-const uniqueActions = [...new Set((actionTypes ?? []).map(r => r.action))];
+const uniqueActions: string[] = [...new Set(((actionTypes ?? []) as { action: string }[]).map((r) => r.action))];
 
 const { count: unreadNotifs } = await supabase
   .from('notifications')
@@ -98,7 +98,7 @@ function entityLink(type: string, id: string): string | null {
               <td colspan="6" style="text-align:center;padding:3rem;" class="text-muted">No activity recorded yet</td>
             </tr>
           ) : (
-            logs.map(log => {
+            logs.map((log: any) => {
               const link = entityLink(log.entity_type, log.entity_id);
               return (
                 <tr>

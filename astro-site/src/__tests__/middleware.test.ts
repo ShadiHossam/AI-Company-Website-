@@ -216,7 +216,7 @@ describe('admin auth guard', () => {
     const response = await onRequest(ctx, next);
 
     expect(ctx.redirect).not.toHaveBeenCalled();
-    expect(response.status).toBe(403);
+    expect((response as Response).status).toBe(403);
   });
 
   it('allows editor to access /admin/content', async () => {
@@ -250,7 +250,7 @@ describe('admin auth guard', () => {
     const response = await onRequest(ctx, next);
 
     expect(ctx.redirect).not.toHaveBeenCalled();
-    expect(response.status).toBe(403);
+    expect((response as Response).status).toBe(403);
   });
 
   it('allows sales to access /admin/leads', async () => {

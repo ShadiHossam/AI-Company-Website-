@@ -7,7 +7,10 @@ import { getSupabaseAdmin } from '../../lib/supabase';
 import { DELETE } from '../../pages/api/admin/users/delete';
 import { PATCH as ROLE_PATCH } from '../../pages/api/admin/users/role';
 
-function makeAdminSupabase(deleteResult = { error: null }, updateResult = { data: {}, error: null }) {
+function makeAdminSupabase(
+  deleteResult: { error: { message: string } | null } = { error: null },
+  updateResult: { data: {} | null; error: { message: string } | null } = { data: {}, error: null },
+) {
   const supabase = {
     from: vi.fn().mockReturnValue(makeChain({ data: { key: 'admin.role.editor' }, error: null })),
     auth: {

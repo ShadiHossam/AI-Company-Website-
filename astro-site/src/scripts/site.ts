@@ -1,5 +1,11 @@
 /* Behavioral JS only — no DOM injection, no placeholder hydration */
 
+// No runtime effect (both layouts already load this file via `import
+// '../scripts/site'`, so Vite already treats it as a module) — this just
+// makes it one as far as TypeScript is concerned too, which `declare global`
+// below requires.
+export {};
+
 function toggleServicesDropdown() {
   const btn = document.getElementById('services-btn');
   const menu = document.getElementById('services-menu');

@@ -125,9 +125,26 @@ export const POST: APIRoute = async ({ request }) => {
           'company.whatsapp',
         ]);
 
-      const cfg = Object.fromEntries((configRows ?? []).map(r => [r.key, r.value]));
+      const cfg = Object.fromEntries((configRows ?? []).map((r: { key: string; value: string }) => [r.key, r.value]));
       const adminEmail = cfg['integration.admin_notify_email'];
-      const lead = { ...leadRow, id: leadId };
+      // leadRow uses `null` for an unset optional DB column, which is the right
+      // convention for a Postgres insert; LeadData's optional fields are typed
+      // `string | undefined` since email templates just want "field omitted".
+      // Spreading leadRow straight in mixed the two conventions, so build the
+      // email-facing shape explicitly instead.
+      const lead = {
+        id: leadId,
+        full_name: leadRow.full_name,
+        company_name: leadRow.company_name,
+        work_email: leadRow.work_email,
+        whatsapp: leadRow.whatsapp,
+        industry: leadRow.industry ?? undefined,
+        budget_range: leadRow.budget_range ?? undefined,
+        meeting_format: leadRow.meeting_format ?? undefined,
+        preferred_date: leadRow.preferred_date ?? undefined,
+        preferred_time: leadRow.preferred_time ?? undefined,
+        page_source: leadRow.page_source ?? undefined,
+      };
 
       if (adminEmail) {
         await sendAdminNotification(lead, adminEmail);

@@ -391,21 +391,24 @@ const ldJson = [
     return true;
   }
 
-  function arContactStep(n) {
+  function arContactStep(n: number) {
     if (n > currentArContactStep && !validateArContactStep(currentArContactStep)) return;
-    document.getElementById('cf-step-' + currentArContactStep).classList.remove('active');
-    document.getElementById('cf-step-' + n).classList.add('active');
+    // Every id below is part of this same page's static markup (steps 1-3, their
+    // indicator dots, and the two connector lines between them), so it's always
+    // present for these fixed values of n and currentArContactStep.
+    document.getElementById('cf-step-' + currentArContactStep)!.classList.remove('active');
+    document.getElementById('cf-step-' + n)!.classList.add('active');
     for (let i = 1; i <= 3; i++) {
-      const dot = document.getElementById('cf-ind-' + i);
+      const dot = document.getElementById('cf-ind-' + i)!;
       dot.classList.remove('active', 'done');
       if (i < n) dot.classList.add('done');
       else if (i === n) dot.classList.add('active');
     }
     for (let i = 1; i <= 2; i++) {
-      document.getElementById('cf-conn-' + i).classList.toggle('done', i < n);
+      document.getElementById('cf-conn-' + i)!.classList.toggle('done', i < n);
     }
     currentArContactStep = n;
-    document.querySelector('.form-box').scrollIntoView({behavior:'smooth', block:'start'});
+    document.querySelector('.form-box')!.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
   // Submits the qualification data collected in steps 1-2, then reveals the Calendly

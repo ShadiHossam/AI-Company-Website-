@@ -101,13 +101,14 @@ describe('POST /api/admin/blog', () => {
     expect((await res.json()).error).toBe('Invalid JSON');
   });
 
-  it.each([
+  const incompleteBodies: Array<[Record<string, string>, string]> = [
     [{ slug: 'x', description: 'y', body_html: '<p>z</p>', category: 'c' }, 'title missing'],
     [{ title: 'x', description: 'y', body_html: '<p>z</p>', category: 'c' }, 'slug missing'],
     [{ title: 'x', slug: 'x', body_html: '<p>z</p>', category: 'c' }, 'description missing'],
     [{ title: 'x', slug: 'x', description: 'y', category: 'c' }, 'body_html missing'],
     [{ title: 'x', slug: 'x', description: 'y', body_html: '<p>z</p>' }, 'category missing'],
-  ])('returns 400 for incomplete body (%s)', async (body) => {
+  ];
+  it.each(incompleteBodies)('returns 400 for incomplete body (%s)', async (body) => {
     const ctx = { locals: makeLocals(), request: makeRequest(body) };
     const res = await POST(ctx as any);
     expect(res.status).toBe(400);

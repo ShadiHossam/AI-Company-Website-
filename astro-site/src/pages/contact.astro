@@ -416,21 +416,25 @@ const contactLdJson = [
     return !firstInvalid;
   }
 
-  function contactStep(n) {
+  function contactStep(n: number) {
     if (n > currentContactStep && !validateContactStep(currentContactStep)) return;
-    document.getElementById('step-' + currentContactStep).classList.remove('active');
-    document.getElementById('step-' + n).classList.add('active');
+    // Every id below is part of this same page's static markup (steps 1-3, their
+    // indicator dots, and the two connector lines between them), so it's always
+    // present for these fixed values of n and currentContactStep — same as the
+    // c-name/c-email/etc. casts a few lines down that assume the same thing.
+    document.getElementById('step-' + currentContactStep)!.classList.remove('active');
+    document.getElementById('step-' + n)!.classList.add('active');
     for (let i = 1; i <= 3; i++) {
-      const dot = document.getElementById('ind-' + i);
+      const dot = document.getElementById('ind-' + i)!;
       dot.classList.remove('active', 'done');
       if (i < n) dot.classList.add('done');
       else if (i === n) dot.classList.add('active');
     }
     for (let i = 1; i <= 2; i++) {
-      document.getElementById('conn-' + i).classList.toggle('done', i < n);
+      document.getElementById('conn-' + i)!.classList.toggle('done', i < n);
     }
     currentContactStep = n;
-    document.querySelector('.form-box').scrollIntoView({behavior:'smooth', block:'start'});
+    document.querySelector('.form-box')!.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
   // Submits the qualification data collected in steps 1-2, then reveals the Calendly

@@ -43,7 +43,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
     const { data } = await query.limit(10000);
     const cols = ['id','created_at','full_name','company_name','work_email','whatsapp','job_title','industry','company_size','main_challenge','budget_range','ai_experience','meeting_format','preferred_date','preferred_time','notes','source','page_source','utm_source','utm_medium','utm_campaign','status','assigned_to','internal_notes','next_action','next_action_date','estimated_value_aed','tags'];
     const header = cols.join(',');
-    const rows = (data ?? []).map(r =>
+    const rows = (data ?? []).map((r: Record<string, unknown>) =>
       cols.map(c => {
         const v = (r as Record<string, unknown>)[c];
         if (v === null || v === undefined) return '';
