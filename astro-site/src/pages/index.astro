@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { isArabicOnlyPost } from '../lib/post-lang';
 import { loadPageContent, getVal } from "../lib/page-content";
 import { getSupabaseAdmin } from "../lib/supabase";
 import "../styles/homepage-redesign.css";
@@ -32,9 +33,15 @@ try {
     .eq('status', 'published')
     .is('deleted_at', null)
     .order('pub_date', { ascending: false })
-    .limit(3);
+    // Over-fetch, because Arabic-only rows are dropped below and the homepage
+    // still wants three cards.
+    .limit(12);
   if (!error && data) {
-    latestPosts = data as HomeBlogPost[];
+    // Arabic-only posts live at /ar/blog/<slug>; their /blog/<slug> URL only
+    // 301s to the Arabic side. Listing them here put three Arabic headlines on
+    // the English homepage, linking to URLs that immediately redirect. Same
+    // filter the English blog index already applies.
+    latestPosts = (data as HomeBlogPost[]).filter(post => !isArabicOnlyPost(post)).slice(0, 3);
   }
 } catch {
   latestPosts = [];
@@ -160,7 +167,8 @@ const homeLdJson = [
 ---
 
 <BaseLayout
-  title="AI Agency in Dubai for UAE Businesses: Build, Train & Get Results | Lenoo AI"
+  preloadImage="https://images.unsplash.com/photo-1489516408517-0c0a15662682?w=1600&q=80&auto=format&fit=crop"
+  title="AI Agency in Dubai for UAE Businesses | Lenoo AI"
   description="Lenoo AI is an AI agency in Dubai helping UAE businesses adopt AI and get real results: development, training, strategy, automation. 100% refund guarantee."
   canonicalPath="/"
   ldJson={homeLdJson}
@@ -177,6 +185,7 @@ const homeLdJson = [
       src="https://images.unsplash.com/photo-1489516408517-0c0a15662682?w=1600&q=80&auto=format&fit=crop"
       alt=""
       loading="eager"
+      fetchpriority="high"
       width="1600"
       height="1000"
     />

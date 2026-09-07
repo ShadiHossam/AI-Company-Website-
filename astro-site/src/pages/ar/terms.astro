@@ -19,7 +19,10 @@ try {
   if (!error && data) {
     const arSections = Array.isArray(data.ar_sections) && data.ar_sections.length > 0 ? data.ar_sections : null;
     const enSections = Array.isArray(data.sections) && data.sections.length > 0 ? data.sections : null;
-    dynamicTitle = data.ar_title ?? data.title ?? null;
+    // Only an Arabic title from the CMS is usable here. Falling back to
+    // data.title put the English headline on the Arabic page, which is how
+    // /privacy and /ar/privacy ended up sharing one <title>.
+    dynamicTitle = data.ar_title ?? null;
     dynamicSections = arSections ?? enSections;
     dynamicLastUpdated = data.last_updated ?? null;
   }
@@ -55,12 +58,35 @@ const staticToc = [
 const tocItems = dynamicSections
   ? dynamicSections.map((s, i) => ({ id: `section-${i}`, label: stripHtml(s.heading) }))
   : staticToc.map((label, i) => ({ id: `section-${i}`, label }));
+
+// These were the only four pages on the site with no structured data at all.
+const legalLdJson = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'شروط الخدمة',
+    url: 'https://lenooai.com/ar/terms',
+    inLanguage: 'ar',
+    isPartOf: { '@type': 'WebSite', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    publisher: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
+      { '@type': 'ListItem', position: 2, name: 'شروط الخدمة', item: 'https://lenooai.com/ar/terms' },
+    ],
+  },
+];
+
 ---
 
 <ArBaseLayout
   title={dynamicTitle ? `${dynamicTitle} | Lenoo AI` : "شروط الخدمة | Lenoo AI"}
   description="شروط وأحكام Lenoo AI لخدمات تطوير الذكاء الاصطناعي المخصص والاستشارات والتدريب في دولة الإمارات."
   canonicalPath="/ar/terms"
+  ldJson={legalLdJson}
   enPath="/terms"
   ogImage="/assets/og-terms.jpg"
 >

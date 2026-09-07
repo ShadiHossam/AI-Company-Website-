@@ -12,7 +12,10 @@ export function sanitizeRichText(html: string): string {
     ],
     allowedAttributes: {
       a: ['href', 'rel', 'target'],
-      img: ['src', 'alt', 'title', 'loading'],
+      // width/height are allowed so body images can declare their intrinsic
+      // size and stop causing layout shift; stripping them was forcing every
+      // in-article image to reserve no space until it loaded.
+      img: ['src', 'alt', 'title', 'loading', 'width', 'height', 'decoding'],
       '*': ['class'],
     },
     allowedSchemes: ['http', 'https', 'mailto'],

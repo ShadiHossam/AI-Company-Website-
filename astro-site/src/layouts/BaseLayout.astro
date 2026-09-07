@@ -5,6 +5,7 @@ import RelatedPages from '../components/RelatedPages.astro';
 import Modal from '../components/Modal.astro';
 import WhatsAppButton from '../components/WhatsAppButton.astro';
 import { COMPANY } from '../config/company';
+import { arTwinFor } from '../lib/routes';
 import '../styles/global.css';
 
 interface Props {
@@ -15,7 +16,24 @@ interface Props {
   ogType?: string;
   ldJson?: object | object[];
   noindex?: boolean;
-  arPath?: string;
+  /**
+   * The Arabic twin of this page. Leave it out and it is looked up from the
+   * route table, which is the same source the sitemap uses — that keeps the two
+   * from drifting apart, which is how 76 pages ended up in a one-directional
+   * hreflang cluster that Google discards. Pass `null` to suppress the
+   * alternate on a page that has an Arabic file which is not a real translation.
+   */
+  arPath?: string | null;
+  /**
+   * A hero image URL to preload. Set it on pages whose LCP element is an image
+   * so the fetch starts with the document rather than after the parser reaches
+   * the tag. Leave it out on pages whose largest element is text.
+   */
+  preloadImage?: string;
+  /** Previous page in a paginated series, emitted as <link rel="prev">. */
+  prevPath?: string;
+  /** Next page in a paginated series, emitted as <link rel="next">. */
+  nextPath?: string;
 }
 
 const {
@@ -26,8 +44,15 @@ const {
   ogType = 'website',
   ldJson,
   noindex = false,
-  arPath,
+  arPath: arPathProp,
+  preloadImage,
+  prevPath,
+  nextPath,
 } = Astro.props;
+
+// `undefined` means "work it out"; an explicit `null` means "this page has no
+// twin", so only the former falls through to the lookup.
+const arPath = arPathProp === undefined ? arTwinFor(canonicalPath) : arPathProp;
 
 const canonicalURL = `https://${COMPANY.domain}${canonicalPath}`;
 const ogImageURL = ogImage.startsWith('http') ? ogImage : `https://${COMPANY.domain}${ogImage}`;
@@ -59,6 +84,7 @@ const effectiveNoindex = noindex || isStaging;
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:locale" content="en_AE" />
+  {arPath && <meta property="og:locale:alternate" content="ar_AE" />}
   <meta name="twitter:card" content="summary_large_image" />
   {COMPANY.twitter && <meta name="twitter:site" content={`@${COMPANY.twitter}`} />}
   <meta name="twitter:title" content={title} />
@@ -68,6 +94,8 @@ const effectiveNoindex = noindex || isStaging;
   <link rel="alternate" hreflang="en-ae" href={canonicalURL} />
   <link rel="alternate" hreflang="x-default" href={canonicalURL} />
   {arPath && <link rel="alternate" hreflang="ar-ae" href={`https://${COMPANY.domain}${arPath}`} />}
+  {prevPath && <link rel="prev" href={`https://${COMPANY.domain}${prevPath}`} />}
+  {nextPath && <link rel="next" href={`https://${COMPANY.domain}${nextPath}`} />}
   <link rel="sitemap" type="application/xml" href="/sitemap_index.xml" />
 
   {ldJson && (
@@ -75,6 +103,12 @@ const effectiveNoindex = noindex || isStaging;
   )}
 
   <!-- Material Symbols icon font — non-blocking; icons are decorative -->
+  <!-- Hero photography and tool logos are third-party. Without these the
+       browser cannot even open a connection to the image host until it has
+       parsed the markup, which delays the largest element on the page. -->
+  <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.simpleicons.org" crossorigin />
+  {preloadImage && <link rel="preload" as="image" href={preloadImage} fetchpriority="high" />}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" onload="this.onload=null;this.rel='stylesheet'" />

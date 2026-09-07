@@ -56,10 +56,74 @@ if (dbError || dbPosts.length === 0) {
 
 const useDb = !dbError && dbPosts.length > 0;
 
-// Collect unique categories for filter
-const allCategories = useDb
-  ? [...new Set(dbPosts.map(p => p.category).filter(Boolean))]
-  : [...new Set(collectionPosts.map(p => p.data.category).filter(Boolean))];
+// Both sources render the same card, so they are normalised here rather than
+// duplicated down the template.
+interface Card {
+  title: string;
+  slug: string;
+  description: string;
+  category: string;
+  date: Date | null;
+  image?: string;
+}
+
+const allCards: Card[] = useDb
+  ? dbPosts.map(post => ({
+      title: post.title,
+      slug: post.slug,
+      description: post.description,
+      category: post.category,
+      date: post.pub_date ? new Date(post.pub_date) : null,
+      image: post.og_image,
+    }))
+  : collectionPosts.map(post => ({
+      title: post.data.title,
+      slug: post.id,
+      description: post.data.description,
+      category: post.data.category,
+      date: post.data.pubDate,
+      image: post.data.ogImage,
+    }));
+
+// Search runs on the server so it works without JavaScript and, more to the
+// point, so the index no longer has to ship every post to every visitor.
+const query = (Astro.url.searchParams.get('q') ?? '').trim();
+const matches = query
+  ? allCards.filter(c =>
+      `${c.title} ${c.description} ${c.category}`.toLowerCase().includes(query.toLowerCase()),
+    )
+  : allCards;
+
+// The index used to render all 200 posts into a single 276KB document, four
+// times heavier than any other page on the site and growing by one post a day.
+const PAGE_SIZE = 24;
+const totalPages = Math.max(1, Math.ceil(matches.length / PAGE_SIZE));
+const requestedPage = Number.parseInt(Astro.url.searchParams.get('page') ?? '1', 10);
+const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+
+// A page past the end is not a thin page to index, it is a page that does not
+// exist. Saying so stops crawlers walking an unbounded ?page= series.
+if (page > totalPages) {
+  return await Astro.rewrite('/404');
+}
+
+const pageCards = matches.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+/** Preserves the active search when building a link to another page. */
+function pageHref(n: number): string {
+  const params = new URLSearchParams();
+  if (query) params.set('q', query);
+  if (n > 1) params.set('page', String(n));
+  const qs = params.toString();
+  return qs ? `/blog?${qs}` : '/blog';
+}
+
+const prevPath = page > 1 ? pageHref(page - 1) : undefined;
+const nextPath = page < totalPages ? pageHref(page + 1) : undefined;
+
+// Each page in the series is its own canonical. Search result views are not
+// indexed: they are an unbounded set of URLs with no content of their own.
+const canonicalPath = query ? '/blog' : pageHref(page);
 
 const blogLdJson = [
   {
@@ -85,10 +149,13 @@ const blogLdJson = [
 <BaseLayout
   title="AI Blog Dubai: Insights for UAE Businesses | Lenoo AI"
   description="AI insights, guides, and case studies from Lenoo AI, a Dubai AI agency, for UAE SMEs. Learn how to implement AI, calculate ROI, and grow your business."
-  canonicalPath="/blog"
+  canonicalPath={canonicalPath}
   ogImage="/assets/og-blog.jpg"
   arPath="/ar/blog"
   ldJson={blogLdJson}
+  prevPath={prevPath}
+  nextPath={nextPath}
+  noindex={query !== ''}
 >
 
 <header class="hero-section" style="padding:8rem 0 5rem;">
@@ -116,22 +183,33 @@ const blogLdJson = [
       <p>Practical guidance on adopting AI in your business, no jargon, no hype.</p>
     </div>
 
-    <!-- SEARCH -->
-    <div style="max-width:420px; margin:0 auto 2rem;">
+    <!-- SEARCH — a real GET form, so it works with JavaScript off and every
+         result set has its own shareable URL. -->
+    <form method="get" action="/blog" style="max-width:420px; margin:0 auto 2rem;" role="search">
       <div class="search-box">
         <span class="material-symbols-outlined search-icon" aria-hidden="true">search</span>
-        <input type="search" id="post-search" class="search-input" placeholder="Search articles..." aria-label="Search blog articles" />
+        <input type="search" name="q" id="post-search" class="search-input" placeholder="Search articles..." aria-label="Search blog articles" value={query} />
       </div>
-    </div>
+      <button type="submit" class="visually-hidden-submit">Search</button>
+    </form>
 
-    {useDb ? (
+    {query && (
+      <p style="text-align:center; color:#46545c; margin:-1rem 0 2rem;">
+        {matches.length === 0
+          ? `No articles match “${query}”.`
+          : `${matches.length} article${matches.length === 1 ? '' : 's'} matching “${query}”.`}
+        {' '}<a href="/blog" style="color:#006875; font-weight:600;">Clear search</a>
+      </p>
+    )}
+
+    {pageCards.length > 0 ? (
       <div>
         <div id="posts-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:28px;">
-          {dbPosts.map(post => (
+          {pageCards.map(post => (
             <article class="blog-card" data-category={post.category}>
-              {post.og_image ? (
+              {post.image ? (
                 <div class="blog-card-media">
-                  <img src={post.og_image} alt={post.title} class="blog-card-img" loading="lazy" />
+                  <img src={post.image} alt={post.title} class="blog-card-img" loading="lazy" decoding="async" width="1200" height="630" />
                 </div>
               ) : (
                 <div class="blog-card-placeholder">
@@ -141,9 +219,9 @@ const blogLdJson = [
               <div class="blog-card-body">
                 <div class="blog-card-meta">
                   <span class="tag tag-teal">{post.category}</span>
-                  {post.pub_date && (
+                  {post.date && (
                     <span class="blog-card-date">
-                      {new Date(post.pub_date).toLocaleDateString('en-AE', { year: 'numeric', month: 'short', day: 'numeric' })}
+                      {post.date.toLocaleDateString('en-AE', { year: 'numeric', month: 'short', day: 'numeric' })}
                     </span>
                   )}
                 </div>
@@ -158,37 +236,18 @@ const blogLdJson = [
             </article>
           ))}
         </div>
-      </div>
-    ) : collectionPosts.length > 0 ? (
-      <div id="posts-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:28px;">
-        {collectionPosts.map(post => (
-          <article class="blog-card" data-category={post.data.category}>
-            {post.data.ogImage ? (
-              <div class="blog-card-media">
-                <img src={post.data.ogImage} alt={post.data.title} class="blog-card-img" loading="lazy" />
-              </div>
-            ) : (
-              <div class="blog-card-placeholder">
-                <span class="material-symbols-outlined" aria-hidden="true" style="font-size:40px; color:#c2c7ce;">edit_note</span>
-              </div>
-            )}
-            <div class="blog-card-body">
-              <div class="blog-card-meta">
-                <span class="tag tag-teal">{post.data.category}</span>
-                <span class="blog-card-date">
-                  {post.data.pubDate.toLocaleDateString('en-AE', { year: 'numeric', month: 'short', day: 'numeric' })}
-                </span>
-              </div>
-              <h3 class="blog-card-title">
-                <a href={`/blog/${post.id}`}>{post.data.title}</a>
-              </h3>
-              <p class="blog-card-excerpt">{post.data.description}</p>
-              <a href={`/blog/${post.id}`} class="blog-card-link">
-                Read more →
-              </a>
-            </div>
-          </article>
-        ))}
+
+        {totalPages > 1 && (
+          <nav class="pagination" aria-label="Blog pages">
+            {prevPath
+              ? <a href={prevPath} rel="prev" class="pagination-step">← Newer</a>
+              : <span class="pagination-step is-disabled" aria-hidden="true">← Newer</span>}
+            <span class="pagination-count">Page {page} of {totalPages}</span>
+            {nextPath
+              ? <a href={nextPath} rel="next" class="pagination-step">Older →</a>
+              : <span class="pagination-step is-disabled" aria-hidden="true">Older →</span>}
+          </nav>
+        )}
       </div>
     ) : (
       <div>
@@ -218,7 +277,6 @@ const blogLdJson = [
       </div>
     )}
 
-    <p id="no-results" class="no-results">No articles match your search. Try a different keyword or category.</p>
 
   </div>
 </section>
@@ -289,46 +347,35 @@ const blogLdJson = [
 }
 .search-input::placeholder { color: #72787e; }
 .search-input:focus { border-color: #006875; box-shadow: 0 0 0 3px rgba(0,104,117,0.12); }
-.no-results { text-align: center; color: #72787e; padding: 3rem 1rem; display: none; }
-.no-results.show { display: block; }
+.no-results { text-align: center; color: #72787e; padding: 3rem 1rem; }
+
+/* The form still needs a submit control for keyboard and no-JS users; Enter in
+   the search field submits it, so the button only has to exist, not show. */
+.visually-hidden-submit {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.visually-hidden-submit:focus {
+  position: static; width: auto; height: auto; clip: auto;
+  margin: 0.5rem auto 0; display: block; padding: 0.5rem 1rem;
+  border: 1px solid #006875; border-radius: 6px; background: #fff; color: #006875;
+}
+
+.pagination {
+  display: flex; align-items: center; justify-content: center;
+  gap: 1.5rem; margin-top: 3.5rem;
+  padding-top: 2rem; border-top: 1px solid #dfe4e8;
+}
+.pagination-step {
+  font-weight: 600; font-size: 0.9375rem; text-decoration: none;
+  color: #006875; padding: 0.55rem 1.1rem;
+  border: 1px solid #cfdada; border-radius: 999px;
+  transition: background 0.15s, border-color 0.15s;
+}
+a.pagination-step:hover { background: rgba(0,104,117,0.08); border-color: #006875; }
+.pagination-step.is-disabled { color: #a6b0b4; border-color: #e6eaec; }
+.pagination-count { font-size: 0.875rem; color: #72787e; font-variant-numeric: tabular-nums; }
 </style>
 
-<script>
-  const filterBar   = document.getElementById('filter-bar');
-  const searchInput = document.getElementById('post-search') as HTMLInputElement | null;
-  const noResults   = document.getElementById('no-results');
-  let activeCategory = 'all';
 
-  function applyFilters() {
-    const grid = document.getElementById('posts-grid');
-    if (!grid) return;
-    const query = (searchInput?.value ?? '').trim().toLowerCase();
-    let visibleCount = 0;
-
-    grid.querySelectorAll<HTMLElement>('.blog-card').forEach(card => {
-      const categoryMatch = activeCategory === 'all' || card.dataset.category === activeCategory;
-      const text = (card.textContent ?? '').toLowerCase();
-      const searchMatch = query === '' || text.includes(query);
-      const match = categoryMatch && searchMatch;
-      card.style.display = match ? '' : 'none';
-      if (match) visibleCount++;
-    });
-
-    if (noResults) noResults.classList.toggle('show', visibleCount === 0);
-  }
-
-  if (filterBar) {
-    filterBar.addEventListener('click', (e) => {
-      const btn = (e.target as HTMLElement).closest('.filter-btn') as HTMLButtonElement | null;
-      if (!btn) return;
-      activeCategory = btn.dataset.filter ?? 'all';
-      filterBar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      applyFilters();
-    });
-  }
-
-  if (searchInput) {
-    searchInput.addEventListener('input', () => applyFilters());
-  }
-</script>

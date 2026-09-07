@@ -17,6 +17,9 @@ Disallow: /maintenance
 Sitemap: https://lenooai.com/sitemap_index.xml
 `;
 
+// llms.txt is served at /llms.txt for AI crawlers; it is generated from the
+// same route table as the sitemap, so it cannot drift out of date.
+
 // Note: /_astro/ is deliberately NOT disallowed. It holds the site's compiled
 // CSS and JS, and blocking it stops Googlebot from rendering pages the way a
 // visitor sees them, which costs mobile-usability and layout signals across
