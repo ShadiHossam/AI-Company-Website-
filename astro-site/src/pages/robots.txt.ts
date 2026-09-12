@@ -14,7 +14,7 @@ Disallow: /admin/
 Disallow: /api/
 Disallow: /maintenance
 
-Sitemap: https://lenooai.com/sitemap_index.xml
+Sitemap: https://lenooai.com/sitemap.xml
 `;
 
 // Note: /_astro/ is deliberately NOT disallowed. It holds the site's compiled

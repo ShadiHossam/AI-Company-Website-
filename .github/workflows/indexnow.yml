@@ -1,0 +1,56 @@
+name: IndexNow submit
+
+# Tells Bing (and the other IndexNow engines) about new or changed lenooai.com
+# URLs instead of waiting for them to be crawled. Runs 90 minutes after
+# daily-publish.yml, which fires its build detached and takes a few minutes, so
+# the day's new pages are live by the time this reads the sitemap.
+#
+# New URLs are found by comparing the sitemap with the URL list this workflow
+# saved on its previous run (kept in the Actions cache), plus any URL whose
+# lastmod is within 48h. If the cache was evicted, that run falls back to the
+# lastmod check alone and saves a fresh list. Use the "all" mode to resubmit
+# every URL in the sitemap.
+
+on:
+  schedule:
+    - cron: "47 8 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Which URLs to submit"
+        required: false
+        default: recent
+        type: choice
+        options:
+          - recent
+          - all
+
+concurrency:
+  group: indexnow
+  cancel-in-progress: false
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Restore URL list from the last run
+        uses: actions/cache/restore@v4
+        with:
+          path: .indexnow-state.json
+          key: indexnow-state-${{ github.run_id }}
+          restore-keys: indexnow-state-
+
+      - name: Submit URLs to IndexNow
+        run: node scripts/indexnow-submit.mjs --state=.indexnow-state.json ${{ github.event.inputs.mode == 'all' && '--all' || '' }}
+
+      - name: Save URL list for the next run
+        uses: actions/cache/save@v4
+        with:
+          path: .indexnow-state.json
+          key: indexnow-state-${{ github.run_id }}
