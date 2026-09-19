@@ -85,7 +85,7 @@ counterpart at the same path under /ar, where one is published.
 
 - [Blog](${BASE}/blog): guides and case studies on applying AI in the UAE
 - [Arabic blog](${BASE}/ar/blog)
-- [Sitemap index](${BASE}/sitemap_index.xml): every indexable URL with alternates
+- [Sitemap](${BASE}/sitemap.xml): every indexable URL with alternates
 `;
 
   return new Response(txt, {

@@ -13,8 +13,9 @@ Allow: /
 Disallow: /admin/
 Disallow: /api/
 Disallow: /maintenance
+Disallow: /cdn-cgi/
 
-Sitemap: https://lenooai.com/sitemap_index.xml
+Sitemap: https://lenooai.com/sitemap.xml
 `;
 
 // llms.txt is served at /llms.txt for AI crawlers; it is generated from the
