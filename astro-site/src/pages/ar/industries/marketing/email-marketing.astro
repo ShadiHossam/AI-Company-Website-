@@ -1,0 +1,380 @@
+---
+export const prerender = false;
+import ArBaseLayout from "../../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../../lib/supabase";
+import FaqAccordion from "../../../../components/FaqAccordion.astro";
+import StatStrip from "../../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "هل ستبدو الرسائل المكتوبة بالذكاء الاصطناعي عامة أو كرسائل مزعجة؟", answer: "فقط إذا دُرّب النظام على قوالب عامة بدل صوت علامتكم الفعلي وحملاتكم السابقة. نبني كتابة الرسائل حول نبرتكم الحالية، وكل حملة تمر بخطوة مراجعة قبل الإرسال، فلا يصل إلى قائمتكم أي شيء بنبرة عامة." },
+  { question: "هل يلتزم التسويق بالبريد الإلكتروني بالذكاء الاصطناعي بأنظمة الرسائل المزعجة في الإمارات ودولياً؟", answer: "الالتزام يعتمد على طريقة بناء قائمتكم وسجلات الموافقة، لا على الأداة التي تكتب النص. نبني الأتمتة حول بيانات الاشتراك والموافقة الحالية لديكم، وننبّه لأي ثغرات في نظافة القائمة قبل رفع حجم الإرسال." },
+  { question: "هل يحسّن اختيار وقت الإرسال معدلات الفتح فعلاً؟", answer: "نعم، وبشكل ملموس. المشتركون يفتحون البريد في أوقات مختلفة حسب عاداتهم، والنموذج المدرّب على سجل التفاعل الفعلي لقائمتكم يختار نافذة إرسال أفضل لكل مشترك من وقت إرسال واحد للقائمة كلها." },
+  { question: "كم يستغرق إعداد أتمتة البريد الإلكتروني بالذكاء الاصطناعي؟", answer: "كتابة الرسائل بالذكاء الاصطناعي واختبار A/B الأساسي يمكن إطلاقهما خلال ٢ إلى ٣ أسابيع. التقسيم السلوكي الكامل وأتمتة الحملات المرتبطة بالسلوك تأخذ وقتاً أطول، عادة ٤ إلى ٦ أسابيع، لأنها تتطلب الربط مع نظام إدارة العملاء أو بيانات المتجر الإلكتروني أولاً." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_marketing_email_marketing')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "أتمتة التسويق عبر البريد الإلكتروني بالذكاء الاصطناعي في الإمارات",
+    "url": "https://lenooai.com/ar/industries/marketing/email-marketing",
+    "description": "أنظمة تسويق عبر البريد الإلكتروني بالذكاء الاصطناعي مصممة للشركات في الإمارات: كتابة الرسائل، اختيار أفضل وقت إرسال، التقسيم، وحملات التغذية الآلية.",
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Email Marketing"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
+      { "@type": "ListItem", "position": 2, "name": "القطاعات", "item": "https://lenooai.com/ar/industries" },
+      { "@type": "ListItem", "position": 3, "name": "التسويق", "item": "https://lenooai.com/ar/industries/marketing" },
+      { "@type": "ListItem", "position": 4, "name": "التسويق بالبريد الإلكتروني بالذكاء الاصطناعي", "item": "https://lenooai.com/ar/industries/marketing/email-marketing" }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems.map((f: { question: string; answer: string }) => ({
+      "@type": "Question",
+      "name": f.question,
+      "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+    }))
+  }
+];
+---
+
+<ArBaseLayout
+  title="أتمتة التسويق بالبريد الإلكتروني بالذكاء الاصطناعي"
+  description="Lenoo AI، وكالة ذكاء اصطناعي في دبي، تبني أنظمة بريد تسويقي بالذكاء الاصطناعي للشركات في الإمارات: كتابة الرسائل، أفضل وقت إرسال، التقسيم، وحملات آلية."
+  canonicalPath="/ar/industries/marketing/email-marketing"
+  enPath="/industries/marketing/email-marketing"
+  ldJson={ldJson}
+>
+
+
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/industries/marketing" style="color:inherit;text-decoration:none;opacity:0.65;">التسويق</a><span style="opacity:0.4;padding:0 4px;"> / </span>التسويق بالبريد الإلكتروني</div>
+    <h1>أتمتة التسويق بالبريد الإلكتروني<br><span class="gradient-text">بالذكاء الاصطناعي في الإمارات</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">تبني Lenoo AI أنظمة تسويق بالبريد الإلكتروني بالذكاء الاصطناعي للشركات في الإمارات: كتابة الرسائل، اختيار أفضل وقت للإرسال، التقسيم حسب السلوك، وحملات تغذية آلية. مدرّبة على صوت علامتكم ومتصلة ببيانات عملائكم الفعلية.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <button onclick="openModal(this)" data-source="ar_marketing_email_hero" class="btn-primary">احجزوا تدقيقاً مجانياً لحملات البريد</button>
+      <a href="#what-we-build" class="btn-outline">شاهدوا ما نبنيه ↓</a>
+    </div>
+    <StatStrip stats={[
+      { value: "٣٦–٤٢$", caption: "متوسط العائد لكل ١$ يُنفَق على التسويق بالبريد الإلكتروني (DMA / Litmus)" },
+      { value: "٢٠–٣٠٪", caption: "ارتفاع معتاد في معدل الفتح مع عناوين وأوقات إرسال محسّنة بالذكاء الاصطناعي" },
+      { value: "٢٤/٧", caption: "حملات آلية تنطلق حسب سلوك العميل دون إرسال يدوي" },
+    ]} />
+  </div>
+</header>
+
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1599658880436-c61792e70672?w=1400&q=80&auto=format&fit=crop" alt="لوحة تسويق بالبريد الإلكتروني تعرض تحليلات الحملات على شاشة حاسوب محمول" loading="lazy" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 40%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
+</div>
+
+<!-- WHY EMAIL MARKETING & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
+  <div class="container">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">لماذا البريد الإلكتروني من أعلى القنوات عائداً مع الذكاء الاصطناعي</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>البريد الإلكتروني صاحب أعلى عائد في التسويق أصلاً، والذكاء الاصطناعي يرفعه أكثر.</strong> مؤشرات القطاع تضع عائد البريد بين ٣٦ و٤٢ دولاراً لكل دولار يُنفَق. التخصيص بالذكاء الاصطناعي واختيار وقت الإرسال يرفعانه أكثر بمطابقة المحتوى والتوقيت مع سلوك كل مشترك.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>وقت إرسال واحد لا يناسب قائمتكم كلها.</strong> كل مشترك يفتح بريده في وقته الخاص. نماذج وقت الإرسال بالذكاء الاصطناعي تتعلم نمط كل مشترك الفعلي بدل تخمين ساعة واحدة مثالية للجميع.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>التقسيم اليدوي يفوّت إشارات السلوك.</strong> سجل الشراء وسلوك التصفح وأنماط التفاعل يمكن أن تطلق الرسالة المناسبة تلقائياً، في اللحظة الأنسب، لا حسب جدول أسبوعي ثابت.</p>
+      </div>
+      <div class="split-media" style="display:flex; align-items:stretch;">
+        <div class="card" style="display:flex; flex-direction:column; justify-content:center; text-align:center; width:100%; padding:2.5rem;">
+          <p class="stat-number" style="font-size:3rem; margin-bottom:0.75rem;">٣٦–٤٢$</p>
+          <p style="color:#42474e; font-size:1rem; line-height:1.7;">متوسط العائد لكل ١$ يُنفَق على التسويق بالبريد الإلكتروني (DMA / Litmus)، وهو أصلاً الأعلى عائداً بين القنوات قبل أن يرفعه التخصيص بالذكاء الاصطناعي أكثر.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">أنظمة بريد إلكتروني بالذكاء الاصطناعي للشركات في الإمارات</h2>
+      <p>ستة أنظمة تبنيها وكالتنا في دبي للتسويق بالبريد الإلكتروني، متصلة بنظام إدارة العملاء ومنصة متجركم الإلكتروني.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px; direction:ltr;">edit_note</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">كتابة نصوص الرسائل وعناوينها بالذكاء الاصطناعي</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يكتب مسودات نصوص الرسائل ونسخاً متعددة من العناوين بصوت علامتكم، جاهزة لمراجعة سريعة بدل الكتابة من الصفر.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">مدرّب على حملاتكم السابقة، لا على قالب عام</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px; direction:ltr;">schedule</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">اختيار أفضل وقت للإرسال</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يتعلم نمط الفتح الفعلي لكل مشترك ويرسل في وقته الأنسب، بدل ساعة ثابتة واحدة للقائمة كلها.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">يرفع معدلات الفتح دون تغيير المحتوى</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px; direction:ltr;">group_work</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">التقسيم حسب السلوك والحملات المرتبطة به</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يرسل الرسالة المناسبة تلقائياً بناءً على التصفح أو الشراء أو التفاعل، في اللحظة الأنسب.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">يتصل مباشرة بنظام إدارة العملاء أو بيانات المتجر الإلكتروني</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px; direction:ltr;">science</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">أتمتة اختبار A/B</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يختبر العناوين والمحتوى وأوقات الإرسال تلقائياً عبر الحملات، ويوجّه الحجم نحو النسخة الرابحة دون متابعة يدوية.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">يلغي العمل اليدوي في تشغيل الاختبارات وقراءة نتائجها</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px; direction:ltr;">water_drop</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">بناء حملات التغذية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يبني سلاسل رسائل متعددة الخطوات للمشتركين الجدد والسلال المتروكة وحملات استعادة العملاء، تعمل باستمرار دون جدولة يدوية.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">تعمل باستمرار دون إعداد يدوي متكرر للحملات</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px; direction:ltr;">mark_email_read</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">متابعة وصول الرسائل وسلامة القائمة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يرصد المشتركين غير النشطين ومخاطر شكاوى الرسائل المزعجة ومشاكل الوصول قبل أن تضر بسمعة المُرسِل لديكم.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">يحمي وصول رسائلكم إلى صندوق الوارد في كل حملاتكم</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">مشمول بضمان استرداد ١٠٠٪</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">كل الأنظمة مبنية حول بيانات الموافقة والقوائم الحالية لديكم، ثنائية اللغة، ومتصلة بنظام إدارة العملاء.</p>
+      <button onclick="openModal(this)" data-source="ar_marketing_email_mid" class="btn-primary">احجزوا تدقيقاً مجانياً لحملات البريد</button>
+    </div>
+  </div>
+</section>
+
+<!-- MARKETER REVIEWING METRICS -->
+<section class="section" aria-labelledby="metrics-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="metrics-heading" style="margin-bottom:1.5rem;">أداء الحملات، تراجعونه في دقائق بدل إعادة بنائه يدوياً</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>قراءة النتائج لا يجب أن تستغرق وقتاً أطول من إرسال الحملة.</strong> معدلات الفتح والنقر والتحويلات وسلامة القائمة تكون عادة موزعة بين منصة البريد ونظام إدارة العملاء وجداول البيانات، وتُجمَع يدوياً قبل أن يتصرف أحد بناءً عليها.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">نظام ذكاء اصطناعي يعمل فوق بيانات حملاتكم يوضح ما تغيّر ولماذا، فيراجع المسوّق الأداء على الحاسوب أو الجهاز اللوحي بين مهامه الأخرى، بدل تخصيص وقت لإعادة بناء التقرير نفسه كل أسبوع.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1748609160056-7b95f30041f0?w=800&h=600&q=80&auto=format&fit=crop" alt="مسوّق يراجع مؤشرات أداء حملة بريد إلكتروني على جهاز لوحي" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY AI APPLICATIONS -->
+<section id="applications" class="section" aria-labelledby="apps-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="apps-heading">أين يُحدث الذكاء الاصطناعي أكبر أثر في التسويق بالبريد الإلكتروني</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px; direction:ltr;">edit_note</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">نصوص رسائل مكتوبة بالذكاء الاصطناعي</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">أدوات الكتابة التوليدية تتولى الآن المسودات الأولى لمعظم أنواع الحملات، فيركّز المسوّقون وقت المراجعة على الاستراتيجية وجودة العرض.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">من أكثر استخدامات الذكاء الاصطناعي انتشاراً في التسويق</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px; direction:ltr;">schedule</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">التنبؤ بأفضل وقت للإرسال</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">نماذج وقت الإرسال المدمجة في معظم منصات البريد الكبرى ترفع معدلات الفتح بمطابقة التسليم مع سلوك كل مشترك.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">ميزة أساسية في منصات البريد الكبرى</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px; direction:ltr;">person</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">تخصيص ديناميكي بأعداد كبيرة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">الذكاء الاصطناعي يتيح تخصيص المنتجات والمحتوى داخل الرسائل على مستوى كل مشترك، أبعد من مجرد إدراج الاسم.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">الرسائل المخصصة تتفوق باستمرار على الرسائل الجماعية العامة</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px; direction:ltr;">science</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">اختبار A/B آلي</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">الاختبار الذي يديره الذكاء الاصطناعي يحدد باستمرار العناوين ونسخ المحتوى الرابحة دون أن يُعِدّ المسوّق كل اختبار يدوياً.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">يزيل العبء اليدوي للاختبار بأعداد كبيرة</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px; direction:ltr;">restart_alt</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">حملات منع فقدان العملاء واستعادتهم</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">النماذج التنبؤية ترصد المشتركين الذين تظهر عليهم علامات الابتعاد، وتطلق سلاسل استعادة قبل أن يلغوا اشتراكهم نهائياً.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">يستعيد إيرادات من عملاء كانوا سيختفون</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px; direction:ltr;">mark_email_read</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">تحسين وصول الرسائل</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">أدوات الذكاء الاصطناعي تتابع إشارات سمعة المُرسِل وتنبّه لمشاكل نظافة القائمة قبل أن تُطلق فلاتر الرسائل المزعجة على كل حملاتكم.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">يحمي الوصول إلى صندوق الوارد مسبقاً بدل معالجة المشكلة بعد وقوعها</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION CRITERIA -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="eval-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="eval-heading">ما الذي يجعل التسويق بالبريد بالذكاء الاصطناعي يعمل فعلاً</h2>
+    </div>
+    <div class="eval-grid">
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">١</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">جودة القائمة والالتزام بالأنظمة</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">الأتمتة على قائمة بلا موافقات سليمة تسرّع شكاوى الرسائل المزعجة فقط. بيانات اشتراك نظيفة تأتي قبل أي تخصيص.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">٢</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">عمق التخصيص</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">إدراج الاسم الأول ليس تخصيصاً. الاستهداف الحقيقي بناءً على ما فعله المشترك فعلاً هو ما يصنع النتائج.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">٣</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">ثبات صوت العلامة</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">نصوص الذكاء الاصطناعي يجب أن تشبه علامتكم، مدرّبة على حملاتكم السابقة، لا نبرة افتراضية تشبه كل مُرسِل آخر.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="num-circle">٤</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">الربط مع نظام إدارة العملاء والبيانات</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">الحملات المرتبطة بالسلوك تعمل فقط عند ربطها ببيانات عملاء حقيقية. نموذج تقسيم معزول عن نظام إدارة العملاء يفوّت الإشارات المهمة.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MANUAL CAMPAIGNS VS AI -->
+<section class="section" aria-labelledby="email-toggle-heading">
+  <div class="container" style="max-width:800px;">
+    <div class="section-header">
+      <h2 id="email-toggle-heading">الحملات اليدوية مقابل الحملات بالذكاء الاصطناعي</h2>
+      <p>ما الذي يتغير في الكتابة وتوقيت الإرسال والتقسيم عندما يتولى الذكاء الاصطناعي الجولة الأولى المتكررة.</p>
+    </div>
+    <div class="email-toggle" role="tablist" aria-label="مقارنة طرق إدارة حملات البريد">
+      <button type="button" id="email-tier-manual" class="email-toggle-btn active" data-email-tier="manual" role="tab" aria-selected="true" aria-controls="email-panel-manual">الحملات اليدوية</button>
+      <button type="button" id="email-tier-ai" class="email-toggle-btn" data-email-tier="ai" role="tab" aria-selected="false" aria-controls="email-panel-ai">بالذكاء الاصطناعي</button>
+    </div>
+    <div class="card" id="email-panel-manual" data-email-tier-panel="manual" role="tabpanel" aria-labelledby="email-tier-manual">
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">المسوّق يكتب العناوين والنصوص من الصفر لكل إرسال، ويختار وقت إرسال واحداً للقائمة كلها، ويبني الشرائح يدوياً من الحقول الأسهل في الفلترة. اختبارات A/B تُعَد يدوياً وتُقرأ نتائجها بعد أيام، ونظافة القائمة لا تحظى بالاهتمام إلا بعد أن يبدأ وصول الرسائل بالتراجع.</p>
+    </div>
+    <div class="card" id="email-panel-ai" data-email-tier-panel="ai" role="tabpanel" aria-labelledby="email-tier-ai" hidden>
+      <p style="color:#42474e; font-size:0.9375rem; line-height:1.8;">الذكاء الاصطناعي يكتب مسودات النصوص ونسخ العناوين بصوت علامتكم ليراجعها المسوّق، ويرسل لكل مشترك في أفضل وقت له حسب سجله، ويبني الشرائح من السلوك الفعلي بدل حقول القائمة الثابتة. الاختبارات تعمل وتوجّه الحركة إلى النسخة الرابحة تلقائياً، وأي خلل في سلامة القائمة يُرصَد قبل أن يتحول إلى مشكلة في وصول الرسائل.</p>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRY RESEARCH -->
+<section class="section" aria-labelledby="research-heading">
+  <div class="container" style="max-width:860px;">
+    <div class="section-header">
+      <h2 id="research-heading">ما تقوله البيانات عن الذكاء الاصطناعي في التسويق بالبريد الإلكتروني</h2>
+    </div>
+    <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">٣٦–٤٢$</p>
+        <p style="color:#42474e; font-size:0.875rem;">متوسط العائد لكل ١$ يُنفَق على التسويق بالبريد الإلكتروني (DMA / Litmus)</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">٢٠–٣٠٪</p>
+        <p style="color:#42474e; font-size:0.875rem;">ارتفاع معتاد في معدل الفتح مع عناوين وأوقات إرسال محسّنة بالذكاء الاصطناعي</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">٢–٣ أسابيع</p>
+        <p style="color:#42474e; font-size:0.875rem;">المدة المعتادة لإطلاق كتابة الرسائل بالذكاء الاصطناعي واختبار A/B</p>
+      </div>
+    </div>
+    <div class="research-panel">
+      <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">عائد القناة</p>
+          <p style="color:#42474e; line-height:1.7;">البريد الإلكتروني يحتل باستمرار المرتبة الأولى في العائد بين قنوات التسويق الرقمي في دراسات القطاع، وأدوات التخصيص بالذكاء الاصطناعي تعزز هذا الموقع برفع ملاءمة الرسائل دون إضافة وقت إنتاج يدوي.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">أثر التوقيت</p>
+          <p style="color:#42474e; line-height:1.7;">دراسات اختيار وقت الإرسال تُظهر باستمرار تحسناً ملموساً في معدلات الفتح عندما يُطابَق التسليم مع سلوك كل مشترك، بدل وقت ثابت واحد للقائمة كلها.</p>
+        </div>
+        <div>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">قيمة التقسيم</p>
+          <p style="color:#42474e; line-height:1.7;">التقسيم حسب السلوك والحملات المرتبطة به تتفوق باستمرار على الرسائل الجماعية المجدولة في معدلات الفتح والتحويل معاً، لأن الرسالة تصل حين تكون أكثر ملاءمة للمستلم.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">أسئلة عن الذكاء الاصطناعي في التسويق بالبريد الإلكتروني</h2>
+    </div>
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">مكالمة تعارف مجانية</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">احجزوا تدقيقاً مجانياً لحملات البريد</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">نقيّم برنامج البريد الإلكتروني وبيانات قوائمكم، ونوضح بالضبط ما سنبنيه. بدون التزام. معظم جلسات التدقيق تستغرق ٣٠ دقيقة وتنتهي بخطة عمل واضحة.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+      <span class="cta-trust-badge">✓ بدون التزام</span>
+      <span class="cta-trust-badge">✓ ضمان استرداد</span>
+    </div>
+    <button onclick="openModal(this)" data-source="ar_marketing_email_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا تدقيقاً مجانياً لحملات البريد</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · بدون ضغط بيع</p>
+  </div>
+</div>
+
+</ArBaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
+    .email-toggle { display:flex; gap:0; justify-content:center; margin-bottom:1.5rem; background:#fff; border-radius:100px; padding:4px; border:1px solid rgba(0,37,59,0.1); max-width:420px; margin-left:auto; margin-right:auto; }
+    .email-toggle-btn { flex:1; padding:0.625rem 1.25rem; border-radius:100px; border:none; background:transparent; color:#42474e; font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+    .email-toggle-btn.active { background:#006875; color:#fff; }
+    .email-toggle-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+</style>
+
+<script>
+  const emailToggleWrap = document.querySelector('.email-toggle');
+  if (emailToggleWrap) {
+    const btns = emailToggleWrap.querySelectorAll('.email-toggle-btn');
+    const panels = document.querySelectorAll('[data-email-tier-panel]');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-email-tier');
+        btns.forEach((b) => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+        panels.forEach((p) => { (p as HTMLElement).hidden = p.getAttribute('data-email-tier-panel') !== key; });
+      });
+    });
+  }
+</script>
