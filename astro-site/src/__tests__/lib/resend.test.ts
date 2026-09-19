@@ -33,10 +33,9 @@ describe('leadAutoReplyEmail', () => {
     expect(html).toContain('tel:+971501951590');
   });
 
-  it('formats the meeting date and omits the row when there is no meeting', () => {
-    expect(reply({ meeting_format: 'Video call', preferred_date: '2026-09-22', preferred_time: '11:00' }).html)
-      .toMatch(/Video call · Tue 22 Sept?, 11:00/);
-    expect(reply().html).not.toContain('Your preferred meeting');
+  it('does not repeat the meeting details back to the customer', () => {
+    const { html } = reply({ meeting_format: 'Video call', preferred_date: '2026-09-22', preferred_time: '11:00' });
+    expect(html).not.toContain('Video call');
   });
 
   it('has no em dash in the subject', () => {
@@ -54,6 +53,11 @@ describe('adminNotificationEmail', () => {
     expect(subject).toBe('New lead: Sara Al Mansoori, Gulf Dental Group');
     expect(html).toContain('Front desk<br>chases insurance approvals');
     expect(html).toContain('submitted the form before');
+  });
+
+  it('formats the meeting date for the team', () => {
+    const { html } = adminNotificationEmail({ ...lead, meeting_format: 'Video call', preferred_date: '2026-09-22', preferred_time: '11:00' });
+    expect(html).toMatch(/Video call · Tue 22 Sept?, 11:00/);
   });
 
   it('drops empty fields instead of rendering dashes', () => {
