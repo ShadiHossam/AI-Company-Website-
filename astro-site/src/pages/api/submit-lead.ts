@@ -144,6 +144,11 @@ export const POST: APIRoute = async ({ request }) => {
         preferred_date: leadRow.preferred_date ?? undefined,
         preferred_time: leadRow.preferred_time ?? undefined,
         page_source: leadRow.page_source ?? undefined,
+        job_title: leadRow.job_title ?? undefined,
+        company_size: leadRow.company_size ?? undefined,
+        main_challenge: leadRow.main_challenge ?? undefined,
+        notes: leadRow.notes ?? undefined,
+        duplicate_email: isDuplicate,
       };
 
       if (adminEmail) {
