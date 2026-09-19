@@ -1,4 +1,5 @@
 ---
+import { authorPhoto } from '../lib/authors';
 import BaseLayout from './BaseLayout.astro';
 import { withBrand } from '../lib/titles';
 
@@ -22,6 +23,8 @@ interface Props {
   slug: string;
   ogImage?: string;
   coverImage?: string;
+  coverAlt?: string;
+  coverTitle?: string;
   authorName?: string;
   keyPoints?: KeyPoint[];
   relatedPosts?: RelatedPost[];
@@ -38,6 +41,8 @@ const {
   slug,
   ogImage,
   coverImage,
+  coverAlt,
+  coverTitle,
   authorName = 'Lenoo AI',
   keyPoints = [],
   relatedPosts = [],
@@ -53,6 +58,7 @@ const dateStr = displayDate.toLocaleDateString('en-AE', {
   year: 'numeric',
 });
 
+const authorImg = authorPhoto(authorName);
 const initials = authorName
   .split(' ')
   .map((w: string) => w[0] ?? '')
@@ -155,7 +161,9 @@ const cardGradients = [
         <h1 class="hero-title">{title}</h1>
         <p class="hero-desc">{description}</p>
         <div class="author-row">
-          <div class="author-avatar" aria-hidden="true">{initials}</div>
+          {authorImg
+            ? <img class="author-avatar author-avatar--photo" src={authorImg} alt={authorName} width="38" height="38" loading="eager" decoding="async" />
+            : <div class="author-avatar" aria-hidden="true">{initials}</div>}
           <div class="author-info">
             <span class="author-name">{authorName}</span>
             <span class="author-date">{dateLabel} {dateStr}</span>
@@ -173,7 +181,7 @@ const cardGradients = [
 
       {coverImage && (
         <div class="hero-cover">
-          <img src={coverImage} alt="" role="presentation" width="840" height="630" loading="eager" fetchpriority="high" />
+          <img src={coverImage} alt={coverAlt ?? ''} title={coverTitle} role={coverAlt ? undefined : 'presentation'} width="840" height="630" loading="eager" fetchpriority="high" />
         </div>
       )}
 
@@ -336,6 +344,7 @@ const cardGradients = [
 
 /* Author row */
 .author-row { display: flex; align-items: center; gap: 11px; }
+.author-avatar--photo { object-fit: cover; padding: 0; background: #e6eef1; }
 .author-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #00e3fd, #006875); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; color: #fff; box-shadow: 0 2px 8px rgba(0,104,117,0.3); }
 .author-info { flex: 1; }
 .author-name { font-size: 0.9rem; font-weight: 700; color: #00253b; display: block; }
@@ -425,6 +434,8 @@ const cardGradients = [
 .prose :global(figure img) { width: 100%; border-radius: 14px; display: block; box-shadow: var(--shadow-card); border: 1px solid rgba(0,37,59,0.06); }
 .prose :global(figcaption) { margin-top: 0.625rem; font-size: 0.8125rem; color: #72787e; text-align: center; line-height: 1.5; }
 .prose :global(img:not(figure img)) { max-width: 100%; border-radius: 14px; box-shadow: var(--shadow-card); border: 1px solid rgba(0,37,59,0.06); margin: 1.5rem 0; display: block; }
+.prose :global(img.article-img) { width: 100%; height: auto; margin-bottom: 0.4rem; }
+.prose :global(.img-credit) { display: block; font-size: 0.75rem; color: #6b7a86; margin-bottom: 1.5rem; }
 .prose :global(blockquote) {
   border-left: 3px solid #00e3fd;
   background: linear-gradient(135deg, rgba(0,227,253,0.06), rgba(0,104,117,0.03));
@@ -564,9 +575,18 @@ const cardGradients = [
   }
 
   // Share URLs built at runtime from current page URL
-  const pageUrl = window.location.href;
+  // Prefer the canonical URL so query strings and #hash fragments never get shared
+  const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.href;
+  const pageUrl = canonical || window.location.origin + window.location.pathname;
   const liHref = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`;
-  const waHref = `https://wa.me/?text=${encodeURIComponent(document.title + ' ' + pageUrl)}`;
+  // wa.me lands desktop users on an "open the app / download" interstitial, so send
+  // desktop straight to WhatsApp Web; mobile uses api.whatsapp.com which opens the app.
+  // URL goes on its own line so WhatsApp renders the link preview.
+  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  const waText = encodeURIComponent(`${document.title}\n${pageUrl}`);
+  const waHref = isMobile
+    ? `https://api.whatsapp.com/send?text=${waText}`
+    : `https://web.whatsapp.com/send?text=${waText}`;
   (['share-li', 'ms-li'] as string[]).forEach(id => {
     const el = document.getElementById(id);
     if (el) el.setAttribute('href', liHref);
