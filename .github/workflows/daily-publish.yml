@@ -53,7 +53,7 @@ jobs:
             code=$(curl -s -o body.txt -w "%{http_code}" --max-time 20 -X POST "$url/api/deploy/publish" \
               -H "Authorization: Bearer $WEBHOOK_SECRET" -H "Content-Type: application/json" \
               -d '{"target":"probe"}') || code="curl-exit-$?"
-            echo "$url -> $code $(head -c 300 body.txt 2>/dev/null)"
+            echo "$url -> $code | title: $(grep -o '<title>[^<]*' body.txt | head -1 | cut -c8-) | $(sed 's/<[^>]*>/ /g' body.txt | tr -s ' \n' ' ' | grep -oiE '(o2switch|tiger|protect|captcha|firewall|blocked|bot)[^.]{0,120}' | head -3 | tr '\n' ' ')"
           done
 
       - uses: actions/checkout@v4
