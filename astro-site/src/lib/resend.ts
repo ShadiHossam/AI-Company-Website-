@@ -76,15 +76,14 @@ function heroBlock(h: Hero): string {
       </td></tr>`;
 }
 
-// The same three promises the site makes in its hero and footer.
+// The same promises the site makes in its hero and footer.
 function trustStrip(): string {
   const items = [
     ['100% refund', 'guarantee'],
     ['90 days', 'of support'],
-    ['Arabic', 'and English'],
   ];
   const cells = items.map(([a, b], i) => `
-        <td width="33%" align="center" valign="top" style="padding:18px 8px; font-family:${FONT}; ${i ? `border-left:1px solid ${LINE};` : ''}">
+        <td width="${Math.floor(100 / items.length)}%" align="center" valign="top" style="padding:18px 8px; font-family:${FONT}; ${i ? `border-left:1px solid ${LINE};` : ''}">
           <div style="font-size:14px; line-height:1.3; font-weight:800; color:${NAVY};"><span style="color:${TEAL};">&#10022;</span> ${a}</div>
           <div style="font-size:13px; line-height:1.4; color:${MUTED};">${b}</div>
         </td>`).join('');
