@@ -1,11 +1,26 @@
 ---
 import { COMPANY } from '../config/company';
 import SafeLink from './SafeLink.astro';
+import { isReleased } from '../lib/arRollout';
 
 interface Props {
   enPath?: string | null;
 }
 const { enPath } = Astro.props;
+
+// Marketing sub-pages go live one a day (see arRollout.ts); only link the live ones.
+const marketingPages = [
+  { href: '/ar/industries/marketing/seo',                   label: 'تحسين محركات البحث' },
+  { href: '/ar/industries/marketing/social-media',          label: 'السوشيال ميديا' },
+  { href: '/ar/industries/marketing/image-generation',      label: 'توليد الصور' },
+  { href: '/ar/industries/marketing/video-generation',      label: 'توليد الفيديو' },
+  { href: '/ar/industries/marketing/voice-generation',      label: 'توليد الصوت' },
+  { href: '/ar/industries/marketing/email-marketing',       label: 'التسويق بالبريد الإلكتروني' },
+  { href: '/ar/industries/marketing/content-writing',       label: 'كتابة المحتوى' },
+  { href: '/ar/industries/marketing/analytics-attribution', label: 'التحليلات والإسناد' },
+  { href: '/ar/industries/marketing/influencer-marketing',  label: 'تسويق المؤثرين' },
+  { href: '/ar/industries/marketing/paid-ads',              label: 'تحسين الإعلانات المدفوعة' },
+].filter((page) => isReleased(page.href));
 ---
 
 <nav id="navbar" role="navigation" aria-label="التنقل الرئيسي">
@@ -65,10 +80,9 @@ const { enPath } = Astro.props;
           <div class="services-divider"></div>
           <div class="services-col">
             <a href="/ar/industries/marketing" class="nav-dropdown-item" role="menuitem" style="font-weight:700;">التسويق</a>
-            <a href="/ar/industries/marketing/seo"              class="nav-dropdown-item" role="menuitem" style="padding-inline-start:1.4rem; font-size:0.8125rem;">تحسين محركات البحث</a>
-            <a href="/ar/industries/marketing/social-media"     class="nav-dropdown-item" role="menuitem" style="padding-inline-start:1.4rem; font-size:0.8125rem;">السوشيال ميديا</a>
-            <a href="/ar/industries/marketing/image-generation" class="nav-dropdown-item" role="menuitem" style="padding-inline-start:1.4rem; font-size:0.8125rem;">توليد الصور</a>
-            <a href="/ar/industries/marketing/video-generation" class="nav-dropdown-item" role="menuitem" style="padding-inline-start:1.4rem; font-size:0.8125rem;">توليد الفيديو</a>
+            {marketingPages.slice(0, 4).map((page) => (
+              <a href={page.href} class="nav-dropdown-item" role="menuitem" style="padding-inline-start:1.4rem; font-size:0.8125rem;">{page.label}</a>
+            ))}
             <a href="/ar/industries/marketing" class="nav-dropdown-item" role="menuitem" style="padding-inline-start:1.4rem; font-size:0.8125rem; color:#006875;">المزيد في التسويق ←</a>
           </div>
           <div style="height:1px;background:#E2E8F0;margin:.4rem .9rem;grid-column:1/-1;"></div>
@@ -127,16 +141,9 @@ const { enPath } = Astro.props;
           <a href="/ar/industries/consulting"      onclick="toggleMenu()">الخدمات المهنية</a>
           <a href="/ar/industries/hr-recruitment"  onclick="toggleMenu()">الموارد البشرية والتوظيف</a>
           <a href="/ar/industries/marketing"       onclick="toggleMenu()" style="font-weight:700;">التسويق</a>
-          <a href="/ar/industries/marketing/seo"                   onclick="toggleMenu()" style="padding-inline-start:1rem;">تحسين محركات البحث</a>
-          <a href="/ar/industries/marketing/social-media"          onclick="toggleMenu()" style="padding-inline-start:1rem;">السوشيال ميديا</a>
-          <a href="/ar/industries/marketing/image-generation"      onclick="toggleMenu()" style="padding-inline-start:1rem;">توليد الصور</a>
-          <a href="/ar/industries/marketing/video-generation"      onclick="toggleMenu()" style="padding-inline-start:1rem;">توليد الفيديو</a>
-          <a href="/ar/industries/marketing/voice-generation"      onclick="toggleMenu()" style="padding-inline-start:1rem;">توليد الصوت</a>
-          <a href="/ar/industries/marketing/email-marketing"       onclick="toggleMenu()" style="padding-inline-start:1rem;">التسويق بالبريد الإلكتروني</a>
-          <a href="/ar/industries/marketing/content-writing"       onclick="toggleMenu()" style="padding-inline-start:1rem;">كتابة المحتوى</a>
-          <a href="/ar/industries/marketing/analytics-attribution" onclick="toggleMenu()" style="padding-inline-start:1rem;">التحليلات والإسناد</a>
-          <a href="/ar/industries/marketing/influencer-marketing"  onclick="toggleMenu()" style="padding-inline-start:1rem;">تسويق المؤثرين</a>
-          <a href="/ar/industries/marketing/paid-ads"              onclick="toggleMenu()" style="padding-inline-start:1rem;">تحسين الإعلانات المدفوعة</a>
+          {marketingPages.map((page) => (
+            <a href={page.href} onclick="toggleMenu()" style="padding-inline-start:1rem;">{page.label}</a>
+          ))}
           <SafeLink href="/ar/industries" onclick="toggleMenu()" style="color:#006875; font-weight:700;">عرض جميع القطاعات ←</SafeLink>
         </div>
       </div>

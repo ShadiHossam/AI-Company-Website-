@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { ROUTES, isArabicRoute, arTwinOf, enTwinOf, routeExists } from '../lib/routes';
+import { releaseAt } from '../lib/arRollout';
 
 const BASE = 'https://lenooai.com';
 
@@ -273,6 +274,16 @@ const LASTMOD: Record<string, string> = {
 // deliberately a fixed date, not `now`, for the reason above.
 const DEFAULT_LASTMOD = '2026-08-31T18:33:27+00:00';
 
+/**
+ * A page in the staged Arabic rollout first appears on its release day, so that
+ * is its real last-edit date, not the day the batch was committed.
+ */
+function lastmodFor(route: string): string {
+  const released = releaseAt(route);
+  if (released) return released.toISOString().replace(/\.\d{3}Z$/, '+00:00');
+  return LASTMOD[route] ?? DEFAULT_LASTMOD;
+}
+
 function urlEntry(route: string): string {
   const enRoute = isArabicRoute(route) ? enTwinOf(route) : route;
   const arRoute = isArabicRoute(route) ? route : arTwinOf(route);
@@ -300,7 +311,7 @@ function urlEntry(route: string): string {
 
   return `  <url>
     <loc>${BASE}${route}</loc>
-    <lastmod>${LASTMOD[route] ?? DEFAULT_LASTMOD}</lastmod>${alternates}
+    <lastmod>${lastmodFor(route)}</lastmod>${alternates}
   </url>`;
 }
 
@@ -312,7 +323,7 @@ export const GET: APIRoute = async () => {
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
         xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-${ROUTES.map(urlEntry).join('\n')}
+${ROUTES.filter(routeExists).map(urlEntry).join('\n')}
 </urlset>`;
 
   return new Response(xml, {
