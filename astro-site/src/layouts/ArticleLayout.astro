@@ -376,13 +376,17 @@ const cardGradients = [
 .toc-acc-body.open { display: block; }
 
 /* ─── ToC links (shared between sidebar + mobile) ─── */
-.toc-link { display: flex; align-items: flex-start; gap: 9px; padding: 6px 8px; border-radius: 8px; text-decoration: none; transition: background 0.15s; margin-bottom: 2px; }
-.toc-link:hover { background: rgba(0,104,117,0.06); }
-.toc-link.active { background: rgba(0,227,253,0.10); }
-.toc-pip { width: 6px; height: 6px; border-radius: 50%; background: #d0d5dd; flex-shrink: 0; margin-top: 5px; transition: background 0.2s, transform 0.2s; }
-.toc-link.active .toc-pip { background: #00e3fd; transform: scale(1.3); }
-.toc-text { font-size: 0.8125rem; color: #72787e; line-height: 1.45; }
-.toc-link.active .toc-text { color: #00253b; font-weight: 600; }
+/* Links are injected by the script below, so they never get Astro's scoped
+   attribute; these rules must be :global (anchored to the scoped containers). */
+#toc-sidebar :global(.toc-link), .toc-acc-body :global(.toc-link) { display: flex; align-items: flex-start; gap: 9px; padding: 6px 8px; border-radius: 8px; text-decoration: none; transition: background 0.15s; margin-bottom: 2px; }
+#toc-sidebar :global(.toc-link:hover), .toc-acc-body :global(.toc-link:hover) { background: rgba(0,104,117,0.06); }
+#toc-sidebar :global(.toc-link:hover .toc-text), .toc-acc-body :global(.toc-link:hover .toc-text) { color: #00253b; }
+#toc-sidebar :global(.toc-link:focus-visible), .toc-acc-body :global(.toc-link:focus-visible) { outline: 2px solid #006875; outline-offset: 1px; }
+#toc-sidebar :global(.toc-link.active), .toc-acc-body :global(.toc-link.active) { background: rgba(0,227,253,0.10); }
+#toc-sidebar :global(.toc-pip), .toc-acc-body :global(.toc-pip) { width: 6px; height: 6px; border-radius: 50%; background: #d0d5dd; flex-shrink: 0; margin-top: 7px; transition: background 0.2s, transform 0.2s; }
+#toc-sidebar :global(.toc-link.active .toc-pip), .toc-acc-body :global(.toc-link.active .toc-pip) { background: #00e3fd; transform: scale(1.3); }
+#toc-sidebar :global(.toc-text), .toc-acc-body :global(.toc-text) { font-size: 0.8125rem; color: #72787e; line-height: 1.45; transition: color 0.15s; }
+#toc-sidebar :global(.toc-link.active .toc-text), .toc-acc-body :global(.toc-link.active .toc-text) { color: #00253b; font-weight: 600; }
 
 /* ─── Key Takeaways ─── */
 .key-points {
@@ -608,7 +612,7 @@ const cardGradients = [
     h2s.forEach((h2, idx) => {
       if (!h2.id) h2.id = slugify(h2.textContent ?? '') || `section-${idx}`;
       h2.setAttribute('data-toc', h2.id);
-      const text = h2.textContent ?? '';
+      const text = (h2.textContent ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       const linkHtml = `<a class="toc-link" href="#${h2.id}" data-section="${h2.id}"><span class="toc-pip"></span><span class="toc-text">${text}</span></a>`;
       if (tocSidebar) tocSidebar.insertAdjacentHTML('beforeend', linkHtml);
       if (tocMobile) tocMobile.insertAdjacentHTML('beforeend', linkHtml);
