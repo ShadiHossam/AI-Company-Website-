@@ -62,9 +62,38 @@ jobs:
           sparse-checkout: .github/scripts
 
       - name: Trigger EN publish
+        id: en
         if: github.event.inputs.target != 'ar' && github.event.inputs.target != 'probe'
+        continue-on-error: true
         run: ./.github/scripts/trigger-publish.sh en
 
       - name: Trigger AR publish
+        id: ar
         if: github.event.inputs.target != 'en' && github.event.inputs.target != 'probe'
+        continue-on-error: true
+        run: ./.github/scripts/trigger-publish.sh ar
+    outputs:
+      en: ${{ steps.en.outcome }}
+      ar: ${{ steps.ar.outcome }}
+
+  # A blocked runner tends to stay blocked, so retry only the failed queues from a
+  # fresh runner, which usually gets a different IP. A queue that already
+  # succeeded is never re-triggered, so it can't publish twice.
+  retry-on-new-runner:
+    needs: trigger-publish
+    if: needs.trigger-publish.outputs.en == 'failure' || needs.trigger-publish.outputs.ar == 'failure'
+    runs-on: ubuntu-latest
+    env:
+      WEBHOOK_SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+
+      - name: Retry EN publish
+        if: needs.trigger-publish.outputs.en == 'failure'
+        run: ./.github/scripts/trigger-publish.sh en
+
+      - name: Retry AR publish
+        if: always() && needs.trigger-publish.outputs.ar == 'failure'
         run: ./.github/scripts/trigger-publish.sh ar
