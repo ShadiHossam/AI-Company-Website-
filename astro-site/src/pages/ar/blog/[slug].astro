@@ -5,10 +5,13 @@ import { getSupabaseAdmin } from '../../../lib/supabase';
 import { marked } from 'marked';
 import { sanitizeRichText } from '../../../lib/sanitize';
 import { isArabicOnlyPost } from '../../../lib/post-lang';
+import { pruneUnpublishedLinks, buildLiveBlogPaths, localiseBlogLinks } from '../../../lib/deadLinks';
+import { withBrand } from '../../../lib/titles';
+import { getCollectionBlogPaths } from '../../../lib/collectionSlugs';
 
 const { slug } = Astro.params;
 
-Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+Astro.response.headers.set('Cache-Control', 's-maxage=1800, stale-while-revalidate=86400');
 
 interface DbPost {
   id: string;
@@ -43,7 +46,14 @@ const { data: post, error } = await supabase
   .is('deleted_at', null)
   .single();
 
-if (error || !post || !post.ar_title) {
+// A row that exists but has no Arabic version belongs on the English side, so
+// that stays a redirect. A slug that matches no published row at all is simply
+// missing, and used to bounce to /blog/<slug>, which then bounced again — two
+// hops to reach a soft 404. It now answers 404 directly.
+if (error || !post) {
+  return await Astro.rewrite('/404');
+}
+if (!post.ar_title) {
   return Astro.redirect(`/blog/${slug}`, 302);
 }
 
@@ -52,7 +62,30 @@ if (error || !post || !post.ar_title) {
 // the cluster invalid, so the page declares itself as the only version.
 const enPath = isArabicOnlyPost(post) ? null : `/blog/${slug}`;
 
-const bodyHtml = post.ar_body_markdown ? sanitizeRichText(await marked(post.ar_body_markdown)) : '';
+// Same treatment as the English route: article bodies link posts that are
+// still queued for publishing, and those links would otherwise resolve to a
+// soft 404.
+const { data: publishedRows } = await supabase
+  .from('blog_posts')
+  .select('slug, title, ar_title')
+  .eq('status', 'published')
+  .is('deleted_at', null);
+const livePaths = buildLiveBlogPaths(publishedRows ?? [], isArabicOnlyPost);
+// Collection-backed posts are live too, and are not in blog_posts.
+for (const path of await getCollectionBlogPaths()) livePaths.add(path);
+
+// Localise first, then prune: a link moved to the reader's own language still
+// has to be checked against what is actually published.
+const bodyHtml = post.ar_body_markdown
+  ? pruneUnpublishedLinks(
+      localiseBlogLinks(
+        sanitizeRichText(await marked(post.ar_body_markdown)),
+        'ar',
+        (path) => livePaths.has(path),
+      ),
+      (path) => livePaths.has(path),
+    )
+  : '';
 
 const pubDate = post.pub_date ? new Date(post.pub_date) : new Date();
 const updatedDate = post.updated_at ? new Date(post.updated_at) : undefined;
@@ -81,9 +114,23 @@ const ldJson = [
     datePublished: pubDate.toISOString(),
     dateModified: (updatedDate ?? pubDate).toISOString(),
     author: { '@type': 'Person', name: post.author_name ?? 'Lenoo AI' },
-    publisher: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Lenoo AI',
+      url: 'https://lenooai.com',
+      // Required for Article rich results; see the same block in ArticleLayout.
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://lenooai.com/favicon-192.png',
+        width: 192,
+        height: 192,
+      },
+    },
     mainEntityOfPage: { '@type': 'WebPage', '@id': `https://lenooai.com/ar/blog/${slug}` },
-    ...(post.og_image ? { image: post.og_image.startsWith('http') ? post.og_image : `https://lenooai.com${post.og_image}` } : {}),
+    image: (() => {
+      const img = post.og_image ?? '/assets/og-blog.jpg';
+      return img.startsWith('http') ? img : `https://lenooai.com${img}`;
+    })(),
   },
   {
     '@context': 'https://schema.org',
@@ -98,7 +145,7 @@ const ldJson = [
 ---
 
 <ArBaseLayout
-  title={`${post.ar_meta_title ?? post.ar_title} | مدونة Lenoo AI`}
+  title={withBrand(post.ar_meta_title ?? post.ar_title, ' | مدونة Lenoo AI')}
   description={post.ar_meta_description ?? post.ar_description ?? ''}
   canonicalPath={`/ar/blog/${slug}`}
   enPath={enPath}

@@ -5,10 +5,12 @@ import ArticleLayout from '../../layouts/ArticleLayout.astro';
 import { marked } from 'marked';
 import { sanitizeRichText } from '../../lib/sanitize';
 import { isArabicOnlyPost } from '../../lib/post-lang';
+import { pruneUnpublishedLinks, buildLiveBlogPaths, localiseBlogLinks } from '../../lib/deadLinks';
+import { getCollectionBlogPaths } from '../../lib/collectionSlugs';
 
 const { slug } = Astro.params;
 
-Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+Astro.response.headers.set('Cache-Control', 's-maxage=1800, stale-while-revalidate=86400');
 
 interface KeyPoint {
   heading: string;
@@ -51,6 +53,17 @@ let relatedPosts: RelatedPost[] = [];
 // below can never run for a post we have already decided not to serve here.
 let arabicOnly = false;
 
+/**
+ * An unknown slug used to redirect to /blog. Google reads a redirect to an
+ * index page as a soft 404: the URL is reported as indexable, the crawler keeps
+ * coming back, and any links pointing at it are silently wasted. Rendering the
+ * real 404 page with a real 404 status tells both crawlers and visitors the
+ * truth.
+ */
+function notFound(): Promise<Response> {
+  return Astro.rewrite('/404');
+}
+
 // 1. Try Supabase first
 try {
   const supabase = getSupabaseAdmin();
@@ -66,7 +79,30 @@ try {
     arabicOnly = true;
   } else if (!error && data) {
     dbPost = data as DbPost;
-    bodyHtml = sanitizeRichText(await marked(dbPost.body_markdown ?? ''));
+
+    // Article bodies cross-link posts that are still in the publishing queue.
+    // Left alone those render as real links to URLs that do not exist, which
+    // cost crawl budget and leak link equity into soft 404s, so anything not
+    // actually published is rendered as plain text instead.
+    const { data: publishedRows } = await supabase
+      .from('blog_posts')
+      .select('slug, title, ar_title')
+      .eq('status', 'published')
+      .is('deleted_at', null);
+    const livePaths = buildLiveBlogPaths(publishedRows ?? [], isArabicOnlyPost);
+    // Collection-backed posts are live too, and are not in blog_posts.
+    for (const path of await getCollectionBlogPaths()) livePaths.add(path);
+
+    // Localise first, then prune: a link moved to the reader's own language
+    // still has to be checked against what is actually published.
+    bodyHtml = pruneUnpublishedLinks(
+      localiseBlogLinks(
+        sanitizeRichText(await marked(dbPost.body_markdown ?? '')),
+        'en',
+        (path) => livePaths.has(path),
+      ),
+      (path) => livePaths.has(path),
+    );
     pubDate = dbPost.pub_date ? new Date(dbPost.pub_date) : new Date();
     updatedDate = dbPost.updated_at ? new Date(dbPost.updated_at) : undefined;
 
@@ -134,10 +170,10 @@ if (!dbPost) {
         .slice(0, 3)
         .map(p => ({ title: p.data.title, slug: p.id, category: p.data.category }));
     } else {
-      return Astro.redirect('/blog');
+      return await notFound();
     }
   } catch {
-    return Astro.redirect('/blog');
+    return await notFound();
   }
 }
 ---

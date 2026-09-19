@@ -1,19 +1,12 @@
 import type { APIRoute } from 'astro';
+import { ROUTES, isArabicRoute, arTwinOf, enTwinOf, routeExists } from '../lib/routes';
 
 const BASE = 'https://lenooai.com';
 
-// Routes are discovered from the filesystem rather than listed by hand. The
-// previous hand-maintained array had drifted badly out of date: 123 live,
-// indexable pages (the whole /ar/industries and /ar/services trees, the
-// /services/ai-automation/tools tree, /privacy, /terms, and more) existed on
-// disk but were absent from the sitemap, and only 21 of the 116 EN pages that
-// actually have an Arabic twin declared one. Globbing removes both failure
-// modes permanently: a new .astro page is in the sitemap the moment it lands.
-const ROUTE_MODULES = import.meta.glob('./**/*.astro');
-
-// Not indexable, so never emitted.
-const EXCLUDE = new Set(['/404', '/maintenance']);
-
+// Routes come from the shared route table in src/lib/routes.ts, which globs
+// src/pages. The page <head> reads that same table, so a page and its sitemap
+// entry can no longer disagree about whether a translated twin exists — they
+// used to, on 76 URLs, because hreflang was typed by hand at each call site.
 // Real last-edit date per route, taken from `git log -1 --format=%cI` on the
 // page's source file and converted to UTC. Update a page's value when you
 // change its content. Do not replace these with a build-time `new Date()`:
@@ -269,31 +262,9 @@ const LASTMOD: Record<string, string> = {
 // deliberately a fixed date, not `now`, for the reason above.
 const DEFAULT_LASTMOD = '2026-08-31T18:33:27+00:00';
 
-/** './services/ai-agents.astro' -> '/services/ai-agents'; './index.astro' -> '/' */
-function toRoute(file: string): string | null {
-  if (file.includes('[')) return null; // dynamic route, handled elsewhere
-  let r = file.replace(/^\./, '').replace(/\.astro$/, '');
-  if (r.startsWith('/admin/') || r.startsWith('/api/')) return null;
-  if (r.endsWith('/index')) r = r.slice(0, -6);
-  return r === '' ? '/' : r;
-}
-
-const ROUTES: string[] = Object.keys(ROUTE_MODULES)
-  .map(toRoute)
-  .filter((r): r is string => r !== null && !EXCLUDE.has(r))
-  .sort();
-
-const ROUTE_SET = new Set(ROUTES);
-
-const isArabic = (r: string) => r === '/ar' || r.startsWith('/ar/');
-/** '/services' -> '/ar/services'; '/' -> '/ar' */
-const arTwinOf = (r: string) => (r === '/' ? '/ar' : `/ar${r}`);
-/** '/ar/services' -> '/services'; '/ar' -> '/' */
-const enTwinOf = (r: string) => (r === '/ar' ? '/' : r.slice(3));
-
 function urlEntry(route: string): string {
-  const enRoute = isArabic(route) ? enTwinOf(route) : route;
-  const arRoute = isArabic(route) ? route : arTwinOf(route);
+  const enRoute = isArabicRoute(route) ? enTwinOf(route) : route;
+  const arRoute = isArabicRoute(route) ? route : arTwinOf(route);
 
   // Both sides are looked up independently. Deriving one of them from "am I an
   // Arabic route" instead would make a page's own existence prove its twin's:
@@ -301,8 +272,8 @@ function urlEntry(route: string): string {
   // alternate pointing at a 404, and Google drops a cluster that names a URL
   // it cannot fetch. Every page today has both halves, so this only shows up
   // the first time the two languages are published out of step.
-  const hasEn = ROUTE_SET.has(enRoute);
-  const hasAr = ROUTE_SET.has(arRoute);
+  const hasEn = routeExists(enRoute);
+  const hasAr = routeExists(arRoute);
 
   // x-default names the version to serve a searcher we have no better match
   // for, which is the English page wherever one exists. A page that is its own
@@ -313,7 +284,7 @@ function urlEntry(route: string): string {
     <xhtml:link rel="alternate" hreflang="ar-ae" href="${BASE}${arRoute}"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}${enRoute}"/>`
     : `
-    <xhtml:link rel="alternate" hreflang="${isArabic(route) ? 'ar-ae' : 'en-ae'}" href="${BASE}${route}"/>
+    <xhtml:link rel="alternate" hreflang="${isArabicRoute(route) ? 'ar-ae' : 'en-ae'}" href="${BASE}${route}"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}${route}"/>`;
 
   return `  <url>

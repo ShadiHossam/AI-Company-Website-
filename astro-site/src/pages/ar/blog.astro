@@ -3,7 +3,7 @@ export const prerender = false;
 import ArBaseLayout from '../../layouts/ArBaseLayout.astro';
 import { getSupabaseAdmin } from '../../lib/supabase';
 
-Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+Astro.response.headers.set('Cache-Control', 's-maxage=900, stale-while-revalidate=3600');
 
 interface DbPost {
   id: string;
@@ -33,6 +33,44 @@ try {
   posts = [];
 }
 
+// Search runs on the server so it works without JavaScript, and so the index
+// no longer has to ship every article to every visitor.
+const query = (Astro.url.searchParams.get('q') ?? '').trim();
+const matches = query
+  ? posts.filter(p =>
+      `${p.ar_title} ${p.ar_description} ${p.category}`.toLowerCase().includes(query.toLowerCase()),
+    )
+  : posts;
+
+// The index used to render all 202 articles into one 259KB document.
+const PAGE_SIZE = 24;
+const totalPages = Math.max(1, Math.ceil(matches.length / PAGE_SIZE));
+const requestedPage = Number.parseInt(Astro.url.searchParams.get('page') ?? '1', 10);
+const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+
+// A page past the end does not exist; saying so stops crawlers walking an
+// unbounded ?page= series.
+if (page > totalPages) {
+  return await Astro.rewrite('/404');
+}
+
+const pagePosts = matches.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+/** Preserves the active search when linking to another page. */
+function pageHref(n: number): string {
+  const params = new URLSearchParams();
+  if (query) params.set('q', query);
+  if (n > 1) params.set('page', String(n));
+  const qs = params.toString();
+  return qs ? `/ar/blog?${qs}` : '/ar/blog';
+}
+
+const prevPath = page > 1 ? pageHref(page - 1) : undefined;
+const nextPath = page < totalPages ? pageHref(page + 1) : undefined;
+
+// Each page in the series is its own canonical; search views are not indexed.
+const canonicalPath = query ? '/ar/blog' : pageHref(page);
+
 const blogLdJson = [
   {
     '@context': 'https://schema.org',
@@ -55,12 +93,15 @@ const blogLdJson = [
 ---
 
 <ArBaseLayout
-  title="مدونة الذكاء الاصطناعي في دبي: رؤى للشركات في الإمارات | Lenoo AI"
-  description="رؤى وأدلة ودراسات حالة في الذكاء الاصطناعي من Lenoo AI، وكالة الذكاء الاصطناعي في دبي، لشركات الإمارات الصغيرة والمتوسطة. تعلّم كيف تطبق الذكاء الاصطناعي وتحسب العائد على الاستثمار."
-  canonicalPath="/ar/blog"
+  title="مدونة الذكاء الاصطناعي في دبي: رؤى للشركات في الإمارات"
+  description="رؤى وأدلة ودراسات حالة في الذكاء الاصطناعي من Lenoo AI، وكالة الذكاء الاصطناعي في دبي، لشركات الإمارات الصغيرة والمتوسطة."
+  canonicalPath={canonicalPath}
   enPath="/blog"
   ogImage="/assets/og-blog.jpg"
   ldJson={blogLdJson}
+  prevPath={prevPath}
+  nextPath={nextPath}
+  noindex={query !== ''}
 >
 
 <header class="hero-section" style="padding:8rem 0 5rem;">
@@ -88,22 +129,33 @@ const blogLdJson = [
       <p>إرشادات عملية لتبني الذكاء الاصطناعي في شركتك، بلا مصطلحات معقدة وبلا مبالغة.</p>
     </div>
 
-    <!-- SEARCH -->
-    <div style="max-width:420px; margin:0 auto 2rem;">
+    <!-- SEARCH — a real GET form, so it works with JavaScript off and every
+         result set has its own shareable URL. -->
+    <form method="get" action="/ar/blog" style="max-width:420px; margin:0 auto 2rem;" role="search">
       <div class="search-box">
         <span class="material-symbols-outlined search-icon" style="direction:ltr;" aria-hidden="true">search</span>
-        <input type="search" id="post-search" class="search-input" placeholder="ابحث في المقالات..." aria-label="ابحث في مقالات المدونة" />
+        <input type="search" name="q" id="post-search" class="search-input" placeholder="ابحث في المقالات..." aria-label="ابحث في مقالات المدونة" value={query} />
       </div>
-    </div>
+      <button type="submit" class="visually-hidden-submit">ابحث</button>
+    </form>
 
-    {posts.length > 0 ? (
+    {query && (
+      <p style="text-align:center; color:#46545c; margin:-1rem 0 2rem;">
+        {matches.length === 0
+          ? `لا توجد مقالات مطابقة لـ «${query}».`
+          : `${matches.length} مقالاً مطابقاً لـ «${query}».`}
+        {' '}<a href="/ar/blog" style="color:#006875; font-weight:600;">مسح البحث</a>
+      </p>
+    )}
+
+    {pagePosts.length > 0 ? (
       <div>
         <div id="posts-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:28px;">
-          {posts.map(post => (
+          {pagePosts.map(post => (
             <article class="blog-card" data-category={post.category}>
               {post.og_image ? (
                 <div class="blog-card-media">
-                  <img src={post.og_image} alt={post.ar_title} class="blog-card-img" loading="lazy" />
+                  <img src={post.og_image} alt={post.ar_title} class="blog-card-img" loading="lazy" decoding="async" width="1200" height="630" />
                 </div>
               ) : (
                 <div class="blog-card-placeholder">
@@ -130,6 +182,18 @@ const blogLdJson = [
             </article>
           ))}
         </div>
+
+        {totalPages > 1 && (
+          <nav class="pagination" aria-label="صفحات المدونة">
+            {nextPath
+              ? <a href={nextPath} rel="next" class="pagination-step">← الأقدم</a>
+              : <span class="pagination-step is-disabled" aria-hidden="true">← الأقدم</span>}
+            <span class="pagination-count">صفحة {page} من {totalPages}</span>
+            {prevPath
+              ? <a href={prevPath} rel="prev" class="pagination-step">الأحدث →</a>
+              : <span class="pagination-step is-disabled" aria-hidden="true">الأحدث →</span>}
+          </nav>
+        )}
       </div>
     ) : (
       <div>
@@ -159,7 +223,6 @@ const blogLdJson = [
       </div>
     )}
 
-    <p id="no-results" class="no-results">لا توجد مقالات مطابقة لبحثك. جرّب كلمة أو تصنيفاً مختلفاً.</p>
 
   </div>
 </section>
@@ -222,31 +285,32 @@ const blogLdJson = [
 }
 .search-input::placeholder { color: #72787e; }
 .search-input:focus { border-color: #006875; box-shadow: 0 0 0 3px rgba(0,104,117,0.12); }
-.no-results { text-align: center; color: #72787e; padding: 3rem 1rem; display: none; }
-.no-results.show { display: block; }
+.no-results { text-align: center; color: #72787e; padding: 3rem 1rem; }
+
+.visually-hidden-submit {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.visually-hidden-submit:focus {
+  position: static; width: auto; height: auto; clip: auto;
+  margin: 0.5rem auto 0; display: block; padding: 0.5rem 1rem;
+  border: 1px solid #006875; border-radius: 6px; background: #fff; color: #006875;
+}
+
+.pagination {
+  display: flex; align-items: center; justify-content: center;
+  gap: 1.5rem; margin-top: 3.5rem;
+  padding-top: 2rem; border-top: 1px solid #dfe4e8;
+}
+.pagination-step {
+  font-weight: 600; font-size: 0.9375rem; text-decoration: none;
+  color: #006875; padding: 0.55rem 1.1rem;
+  border: 1px solid #cfdada; border-radius: 999px;
+  transition: background 0.15s, border-color 0.15s;
+}
+a.pagination-step:hover { background: rgba(0,104,117,0.08); border-color: #006875; }
+.pagination-step.is-disabled { color: #a6b0b4; border-color: #e6eaec; }
+.pagination-count { font-size: 0.875rem; color: #72787e; font-variant-numeric: tabular-nums; }
 </style>
 
-<script>
-  const searchInput = document.getElementById('post-search') as HTMLInputElement | null;
-  const noResults   = document.getElementById('no-results');
-
-  function applyFilters() {
-    const grid = document.getElementById('posts-grid');
-    if (!grid) return;
-    const query = (searchInput?.value ?? '').trim().toLowerCase();
-    let visibleCount = 0;
-
-    grid.querySelectorAll<HTMLElement>('.blog-card').forEach(card => {
-      const text = (card.textContent ?? '').toLowerCase();
-      const match = query === '' || text.includes(query);
-      card.style.display = match ? '' : 'none';
-      if (match) visibleCount++;
-    });
-
-    if (noResults) noResults.classList.toggle('show', visibleCount === 0);
-  }
-
-  if (searchInput) {
-    searchInput.addEventListener('input', () => applyFilters());
-  }
-</script>
