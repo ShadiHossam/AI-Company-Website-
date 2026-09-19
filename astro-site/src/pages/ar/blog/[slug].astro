@@ -1,4 +1,5 @@
 ---
+import { authorPhoto } from '../../../lib/authors';
 export const prerender = false;
 import ArBaseLayout from '../../../layouts/ArBaseLayout.astro';
 import { getSupabaseAdmin } from '../../../lib/supabase';
@@ -27,6 +28,8 @@ interface DbPost {
   updated_at?: string | null;
   author_name?: string | null;
   og_image?: string | null;
+  og_image_alt?: string | null;
+  og_image_title?: string | null;
   noindex?: boolean | null;
 }
 
@@ -40,7 +43,7 @@ interface RelatedPost {
 const supabase = getSupabaseAdmin();
 const { data: post, error } = await supabase
   .from('blog_posts')
-  .select('id, title, slug, ar_title, ar_description, ar_body_markdown, ar_meta_title, ar_meta_description, category, pub_date, updated_at, author_name, og_image, noindex')
+  .select('id, title, slug, ar_title, ar_description, ar_body_markdown, ar_meta_title, ar_meta_description, category, pub_date, updated_at, author_name, og_image, og_image_alt, og_image_title, noindex')
   .eq('slug', slug!)
   .eq('status', 'published')
   .is('deleted_at', null)
@@ -177,7 +180,9 @@ const ldJson = [
           <p style="font-size:1.125rem;color:#42474e;line-height:1.8;max-width:700px;margin-bottom:1.5rem;">{post.ar_description}</p>
         )}
         <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
-          <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,104,117,0.12);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.875rem;color:#006875;" aria-hidden="true">AI</div>
+          {authorPhoto(post.author_name)
+            ? <img src={authorPhoto(post.author_name)} alt={post.author_name} width="36" height="36" loading="eager" decoding="async" style="width:36px;height:36px;border-radius:50%;object-fit:cover;box-shadow:0 2px 8px rgba(0,104,117,0.3);" />
+            : <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,104,117,0.12);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.875rem;color:#006875;" aria-hidden="true">AI</div>}
           <span style="font-size:0.9rem;color:#42474e;font-weight:600;">{post.author_name ?? 'Lenoo AI'}</span>
           <button id="share-btn" type="button" class="share-inline-btn" aria-label="مشاركة المقال">
             <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;">ios_share</span>
@@ -193,7 +198,7 @@ const ldJson = [
 
       {post.og_image && post.og_image !== '/assets/og-blog.jpg' && (
         <div class="hero-cover">
-          <img src={post.og_image} alt={post.ar_title} width="560" height="420" loading="eager" fetchpriority="high" />
+          <img src={post.og_image} alt={post.og_image_alt ?? post.ar_title} title={post.og_image_title ?? undefined} width="560" height="420" loading="eager" fetchpriority="high" />
         </div>
       )}
     </div>
@@ -320,6 +325,8 @@ const ldJson = [
   .prose a { color: #006875; text-decoration: underline; }
   .prose strong { font-weight: 700; }
   .prose img { max-width: 100%; border-radius: 12px; margin: 1.5rem 0; }
+  .prose :global(img.article-img) { width: 100%; height: auto; margin-bottom: 0.4rem; }
+  .prose :global(.img-credit) { display: block; font-size: 0.75rem; color: #6b7a86; margin-bottom: 1.5rem; }
   .prose table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
   .prose th,.prose td { border: 1px solid rgba(0,37,59,0.12); padding: 0.625rem 0.875rem; }
   .prose th { background: rgba(0,37,59,0.05); font-weight: 700; }
