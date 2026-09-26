@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { ROUTES, isArabicRoute, arTwinOf, enTwinOf, routeExists } from '../lib/routes';
+import { releaseAt } from '../lib/arRollout';
 
 const BASE = 'https://lenooai.com';
 
@@ -49,7 +50,17 @@ const LASTMOD: Record<string, string> = {
   '/ar/industries/legal':                                 '2026-08-25T18:03:04+00:00',
   '/ar/industries/logistics':                             '2026-08-25T18:03:04+00:00',
   '/ar/industries/manufacturing':                         '2026-08-25T18:03:04+00:00',
-  '/ar/industries/marketing':                             '2026-08-25T18:03:04+00:00',
+  '/ar/industries/marketing':                             '2026-09-19T14:19:40+00:00',
+  '/ar/industries/marketing/analytics-attribution':       '2026-09-19T14:19:40+00:00',
+  '/ar/industries/marketing/content-writing':             '2026-09-19T14:19:40+00:00',
+  '/ar/industries/marketing/email-marketing':             '2026-09-19T14:19:40+00:00',
+  '/ar/industries/marketing/image-generation':            '2026-09-19T14:19:40+00:00',
+  '/ar/industries/marketing/influencer-marketing':        '2026-09-19T14:19:40+00:00',
+  '/ar/industries/marketing/paid-ads':                    '2026-09-19T14:19:40+00:00',
+  '/ar/industries/marketing/seo':                         '2026-09-19T14:19:40+00:00',
+  '/ar/industries/marketing/social-media':                '2026-09-19T14:19:40+00:00',
+  '/ar/industries/marketing/video-generation':            '2026-09-19T14:19:40+00:00',
+  '/ar/industries/marketing/voice-generation':            '2026-09-19T14:19:40+00:00',
   '/ar/industries/marketing-agencies':                    '2026-08-25T18:03:04+00:00',
   '/ar/industries/pharmacies':                            '2026-08-25T18:03:04+00:00',
   '/ar/industries/property-management':                   '2026-08-25T18:03:04+00:00',
@@ -60,6 +71,7 @@ const LASTMOD: Record<string, string> = {
   '/ar/industries/trading-distribution':                  '2026-08-25T18:03:04+00:00',
   '/ar/industries/training-institutes':                   '2026-08-25T18:03:04+00:00',
   '/ar/industries/travel-agencies':                       '2026-08-25T18:03:04+00:00',
+  '/ar/pricing/ai-automation-cost':                       '2026-09-19T14:19:40+00:00',
   '/ar/privacy':                                          '2026-08-23T07:01:18+00:00',
   '/ar/services':                                         '2026-07-19T11:36:43+00:00',
   '/ar/services/agentops':                                '2026-08-25T18:03:04+00:00',
@@ -262,6 +274,16 @@ const LASTMOD: Record<string, string> = {
 // deliberately a fixed date, not `now`, for the reason above.
 const DEFAULT_LASTMOD = '2026-08-31T18:33:27+00:00';
 
+/**
+ * A page in the staged Arabic rollout first appears on its release day, so that
+ * is its real last-edit date, not the day the batch was committed.
+ */
+function lastmodFor(route: string): string {
+  const released = releaseAt(route);
+  if (released) return released.toISOString().replace(/\.\d{3}Z$/, '+00:00');
+  return LASTMOD[route] ?? DEFAULT_LASTMOD;
+}
+
 function urlEntry(route: string): string {
   const enRoute = isArabicRoute(route) ? enTwinOf(route) : route;
   const arRoute = isArabicRoute(route) ? route : arTwinOf(route);
@@ -289,7 +311,7 @@ function urlEntry(route: string): string {
 
   return `  <url>
     <loc>${BASE}${route}</loc>
-    <lastmod>${LASTMOD[route] ?? DEFAULT_LASTMOD}</lastmod>${alternates}
+    <lastmod>${lastmodFor(route)}</lastmod>${alternates}
   </url>`;
 }
 
@@ -301,7 +323,7 @@ export const GET: APIRoute = async () => {
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
         xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-${ROUTES.map(urlEntry).join('\n')}
+${ROUTES.filter(routeExists).map(urlEntry).join('\n')}
 </urlset>`;
 
   return new Response(xml, {
