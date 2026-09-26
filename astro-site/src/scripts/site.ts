@@ -333,35 +333,6 @@ if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   targets.forEach((el) => { el.classList.add('js-reveal'); io.observe(el); });
 })();
 
-function subscribeToMailchimp(email: string, onSuccess: () => void) {
-  // Mailchimp URL is stored in site_config and rendered into the page as a data attribute
-  const mailchimpURL = document.getElementById('newsletter-mailchimp-url')?.dataset?.url ?? '';
-  if (mailchimpURL && mailchimpURL !== 'YOUR_MAILCHIMP_AUDIENCE_POST_URL') {
-    const data = new FormData();
-    data.append('EMAIL', email);
-    fetch(mailchimpURL, { method: 'POST', body: data, mode: 'no-cors' }).catch(() => {});
-  }
-  onSuccess();
-}
-
-function handleNewsletterSubmit(event: Event) {
-  event.preventDefault();
-  const email = (document.getElementById('newsletter-email') as HTMLInputElement)?.value;
-  subscribeToMailchimp(email, () => {
-    document.getElementById('newsletter-form-wrap')?.classList.add('hidden');
-    document.getElementById('newsletter-success')?.classList.remove('hidden');
-  });
-}
-
-function handleFooterNewsletterSubmit(event: Event) {
-  event.preventDefault();
-  const email = (document.getElementById('footer-newsletter-email') as HTMLInputElement)?.value;
-  subscribeToMailchimp(email, () => {
-    document.getElementById('footer-newsletter-form')?.classList.add('hidden');
-    document.getElementById('footer-newsletter-success')?.classList.remove('hidden');
-  });
-}
-
 function toggleFaq(btn: HTMLElement) {
   const body = btn.nextElementSibling as HTMLElement | null;
   const icon = btn.querySelector('.faq-icon');
@@ -384,8 +355,6 @@ declare global {
     handleOverlayClick: typeof handleOverlayClick;
     goToStep: typeof goToStep;
     continueToSchedule: typeof continueToSchedule;
-    handleNewsletterSubmit: typeof handleNewsletterSubmit;
-    handleFooterNewsletterSubmit: typeof handleFooterNewsletterSubmit;
     toggleFaq: typeof toggleFaq;
   }
 }
@@ -401,7 +370,5 @@ Object.assign(window, {
   handleOverlayClick,
   goToStep,
   continueToSchedule,
-  handleNewsletterSubmit,
-  handleFooterNewsletterSubmit,
   toggleFaq,
 });

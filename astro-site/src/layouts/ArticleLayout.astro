@@ -287,6 +287,7 @@ const cardGradients = [
           <p class="nl-sub">Practical AI guides and UAE market data. One email per month, zero fluff.</p>
           <form id="nl-form" novalidate>
             <input class="nl-input" type="email" name="email" placeholder="your@email.com" autocomplete="email" required aria-label="Email address" />
+            <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" />
             <button class="nl-btn" type="submit">Subscribe Free</button>
           </form>
           <p class="nl-note">No spam · Unsubscribe any time</p>
@@ -660,17 +661,33 @@ const cardGradients = [
     h2s[1].insertAdjacentHTML('beforebegin', ctaHtml);
   }
 
-  // Newsletter form — optimistic success state
+  // Newsletter form — adds the email to the Resend newsletter segment
   const nlForm = document.getElementById('nl-form');
   if (nlForm) {
-    nlForm.addEventListener('submit', (e) => {
+    nlForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = nlForm.querySelector<HTMLButtonElement>('button');
-      const input = nlForm.querySelector<HTMLInputElement>('input');
-      if (btn && input && input.value) {
+      const input = nlForm.querySelector<HTMLInputElement>('input[type="email"]');
+      const honeypot = nlForm.querySelector<HTMLInputElement>('input[name="website"]');
+      if (!btn || !input) return;
+      if (!input.checkValidity()) {
+        input.reportValidity();
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = 'Subscribing…';
+      try {
+        const res = await fetch('/api/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: input.value.trim(), website: honeypot?.value ?? '' }),
+        });
+        if (!res.ok) throw new Error(String(res.status));
         btn.textContent = 'Subscribed ✓';
-        btn.disabled = true;
         input.disabled = true;
+      } catch {
+        btn.textContent = 'Try again';
+        btn.disabled = false;
       }
     });
   }

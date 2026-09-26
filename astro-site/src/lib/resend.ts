@@ -352,6 +352,54 @@ export function staleLeadDigestEmail(leads: LeadData[]): { subject: string; html
   };
 }
 
+export function subscriberNotificationEmail(email: string, pageUrl: string): { subject: string; html: string } {
+  const page = pageUrl.startsWith(SITE) ? pageUrl.slice(SITE.length) || '/' : pageUrl;
+  const body = `
+    ${sectionLabel('Subscriber details')}
+    ${detailsTable([
+      ['Email', `<a href="mailto:${esc(email)}" style="color:${TEAL}; font-weight:600;">${esc(email)}</a>`],
+      ['Signed up on', pageUrl ? `<a href="${esc(pageUrl)}" style="color:${TEAL}; font-weight:600;">${esc(page)}</a>` : ''],
+    ])}
+    <div>
+      ${button('https://resend.com/audiences', 'Open contacts in Resend')}
+      ${button(`mailto:${esc(email)}`, 'Email', 'secondary')}
+    </div>`;
+  return {
+    subject: `New newsletter subscriber: ${email}`,
+    html: shell({
+      preheader: `${email} just subscribed to the newsletter.`,
+      hero: { eyebrow: 'New subscriber', title: esc(email), intro: 'Added to the General list in Resend.' },
+      body,
+      footerNote: 'Sent by the lenooai.com newsletter form. The subscriber already received the welcome email.',
+    }),
+  };
+}
+
+export function newsletterWelcomeEmail(): { subject: string; html: string } {
+  const body = `
+    ${para('Thanks for signing up. You\'ll get practical AI guides and UAE market data from our team in Dubai, written for business owners, not engineers.')}
+    ${para('While you wait for the first one, the blog has everything we\'ve published so far.')}
+    <div>
+      ${button(`${SITE}/blog`, 'Read the blog')}
+      ${button(`${SITE}/services`, 'See what we build', 'secondary')}
+    </div>
+    <p style="margin:18px 0 0; font-size:15px; line-height:1.65; color:${MUTED};">Have a question about AI in your business? Reply to this email. A person reads every reply.</p>`;
+  return {
+    subject: `You're on the list: AI Insights from Lenoo AI`,
+    html: shell({
+      preheader: `Thanks for subscribing. Practical AI guides and UAE market data, from our team in Dubai.`,
+      hero: {
+        eyebrow: 'Subscribed',
+        title: 'Welcome to Lenoo AI.',
+        highlight: `You're on the list.`,
+        intro: 'Practical AI guides and UAE market data. No spam, and you can unsubscribe any time.',
+      },
+      body,
+      footerNote: 'You are getting this because you subscribed at lenooai.com.',
+    }),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Senders
 // ---------------------------------------------------------------------------
@@ -396,6 +444,29 @@ export async function sendStaleLeadDigest(leads: LeadData[], adminEmail: string)
   await getResend().emails.send({
     from: 'Lenoo AI <noreply@lenooai.com>',
     to: adminEmail,
+    subject,
+    html,
+  });
+}
+
+export async function sendSubscriberNotification(email: string, pageUrl: string, adminEmail: string): Promise<void> {
+  const { subject, html } = subscriberNotificationEmail(email, pageUrl);
+  await getResend().emails.send({
+    from: 'Lenoo AI Newsletter <noreply@lenooai.com>',
+    to: adminEmail,
+    replyTo: email,
+    subject,
+    html,
+  });
+}
+
+export async function sendNewsletterWelcome(email: string, companyEmail = 'info@lenooai.com'): Promise<void> {
+  const { subject, html } = newsletterWelcomeEmail();
+  await getResend().emails.send({
+    from: 'Lenoo AI <hello@lenooai.com>',
+    to: email,
+    // Replies should land in the inbox people actually read.
+    replyTo: companyEmail,
     subject,
     html,
   });

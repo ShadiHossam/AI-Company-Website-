@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../lib/supabase';
 import { sendAdminNotification, sendLeadAutoReply } from '../../lib/resend';
 import { isTrustedOrigin } from '../../lib/trusted-origin';
+import { COMPANY } from '../../config/company';
 
 export const prerender = false;
 
@@ -156,9 +157,9 @@ export const POST: APIRoute = async ({ request }) => {
       }
       await sendLeadAutoReply(
         lead,
-        cfg['company.phone'] ?? '+971 4 321 8888',
-        cfg['company.email'] ?? 'hello@lenooai.com',
-        cfg['company.whatsapp'] ?? '971501234567',
+        cfg['company.phone'] || COMPANY.phone,
+        cfg['company.email'] || COMPANY.email,
+        cfg['company.whatsapp'] || COMPANY.whatsapp,
       );
 
       // Mark auto_reply_sent
