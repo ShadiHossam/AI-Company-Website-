@@ -3,6 +3,7 @@ export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getSupabaseAdmin } from "../lib/supabase";
 import { isArabicOnlyPost } from "../lib/post-lang";
+import { BLOG_CATEGORIES, categoryBySlug, categoryGroup, categoryLabel } from "../lib/blogCategories";
 
 // Set caching headers
 Astro.response.headers.set('Cache-Control', 's-maxage=900, stale-while-revalidate=3600');
@@ -85,14 +86,30 @@ const allCards: Card[] = useDb
       image: post.data.ogImage,
     }));
 
+// Category filter: ?category=<group slug>. An unknown slug is a page that does
+// not exist, not an empty listing.
+const categoryParam = (Astro.url.searchParams.get('category') ?? '').trim();
+const activeCategory = categoryBySlug(categoryParam);
+if (categoryParam && !activeCategory) {
+  return await Astro.rewrite('/404');
+}
+
+// Only offer chips for groups that currently have posts.
+const groupsWithPosts = new Set(allCards.map(c => categoryGroup(c.category)?.slug).filter(Boolean));
+const filterChips = BLOG_CATEGORIES.filter(c => groupsWithPosts.has(c.slug));
+
+const inCategory = activeCategory
+  ? allCards.filter(c => categoryGroup(c.category)?.slug === activeCategory.slug)
+  : allCards;
+
 // Search runs on the server so it works without JavaScript and, more to the
 // point, so the index no longer has to ship every post to every visitor.
 const query = (Astro.url.searchParams.get('q') ?? '').trim();
 const matches = query
-  ? allCards.filter(c =>
-      `${c.title} ${c.description} ${c.category}`.toLowerCase().includes(query.toLowerCase()),
+  ? inCategory.filter(c =>
+      `${c.title} ${c.description} ${c.category} ${categoryLabel(c.category, 'en')}`.toLowerCase().includes(query.toLowerCase()),
     )
-  : allCards;
+  : inCategory;
 
 // The index used to render all 200 posts into a single 276KB document, four
 // times heavier than any other page on the site and growing by one post a day.
@@ -109,10 +126,11 @@ if (page > totalPages) {
 
 const pageCards = matches.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-/** Preserves the active search when building a link to another page. */
-function pageHref(n: number): string {
+/** Preserves the active category and search when building a link. */
+function pageHref(n: number, category = activeCategory?.slug, q = query): string {
   const params = new URLSearchParams();
-  if (query) params.set('q', query);
+  if (category) params.set('category', category);
+  if (q) params.set('q', q);
   if (n > 1) params.set('page', String(n));
   const qs = params.toString();
   return qs ? `/blog?${qs}` : '/blog';
@@ -123,7 +141,12 @@ const nextPath = page < totalPages ? pageHref(page + 1) : undefined;
 
 // Each page in the series is its own canonical. Search result views are not
 // indexed: they are an unbounded set of URLs with no content of their own.
-const canonicalPath = query ? '/blog' : pageHref(page);
+// A category view is a real listing and keeps its own canonical.
+const canonicalPath = query ? pageHref(1, activeCategory?.slug, '') : pageHref(page);
+
+const pageTitle = activeCategory
+  ? `${activeCategory.en} Articles for UAE Businesses | Lenoo AI Blog`
+  : 'AI Blog Dubai: Insights for UAE Businesses | Lenoo AI';
 
 const blogLdJson = [
   {
@@ -147,7 +170,7 @@ const blogLdJson = [
 ---
 
 <BaseLayout
-  title="AI Blog Dubai: Insights for UAE Businesses | Lenoo AI"
+  title={pageTitle}
   description="AI insights, guides, and case studies from Lenoo AI, a Dubai AI agency, for UAE SMEs. Learn how to implement AI, calculate ROI, and grow your business."
   canonicalPath={canonicalPath}
   ogImage="/assets/og-blog.jpg"
@@ -186,6 +209,7 @@ const blogLdJson = [
     <!-- SEARCH — a real GET form, so it works with JavaScript off and every
          result set has its own shareable URL. -->
     <form method="get" action="/blog" style="max-width:420px; margin:0 auto 2rem;" role="search">
+      {activeCategory && <input type="hidden" name="category" value={activeCategory.slug} />}
       <div class="search-box">
         <span class="material-symbols-outlined search-icon" aria-hidden="true">search</span>
         <input type="search" name="q" id="post-search" class="search-input" placeholder="Search articles..." aria-label="Search blog articles" value={query} />
@@ -198,8 +222,17 @@ const blogLdJson = [
         {matches.length === 0
           ? `No articles match “${query}”.`
           : `${matches.length} article${matches.length === 1 ? '' : 's'} matching “${query}”.`}
-        {' '}<a href="/blog" style="color:#006875; font-weight:600;">Clear search</a>
+        {' '}<a href={pageHref(1, activeCategory?.slug, '')} style="color:#006875; font-weight:600;">Clear search</a>
       </p>
+    )}
+
+    {filterChips.length > 0 && (
+      <nav class="filter-bar" aria-label="Filter articles by category">
+        <a href={pageHref(1, '')} class:list={['filter-btn', { active: !activeCategory }]} aria-current={!activeCategory ? 'page' : undefined}>All</a>
+        {filterChips.map(c => (
+          <a href={pageHref(1, c.slug)} class:list={['filter-btn', { active: activeCategory?.slug === c.slug }]} aria-current={activeCategory?.slug === c.slug ? 'page' : undefined}>{c.en}</a>
+        ))}
+      </nav>
     )}
 
     {pageCards.length > 0 ? (
@@ -218,7 +251,7 @@ const blogLdJson = [
               )}
               <div class="blog-card-body">
                 <div class="blog-card-meta">
-                  <span class="tag tag-teal">{post.category}</span>
+                  <span class="tag tag-teal">{categoryLabel(post.category, 'en')}</span>
                   {post.date && (
                     <span class="blog-card-date">
                       {post.date.toLocaleDateString('en-AE', { year: 'numeric', month: 'short', day: 'numeric' })}
@@ -325,7 +358,9 @@ const blogLdJson = [
 .tag { display:inline-flex; align-items:center; padding:3px 12px; border-radius:100px; font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; }
 .tag-coming { background:rgba(245,158,11,0.12); color:#d97706; border:1px solid rgba(245,158,11,0.25); }
 .tag-teal { background:rgba(0,104,117,0.10); color:#004f58; border:1px solid rgba(0,104,117,0.20); }
+.filter-bar { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; max-width:900px; margin:0 auto 2.5rem; }
 .filter-btn {
+  display:inline-block; text-decoration:none; white-space:nowrap;
   padding:7px 18px; border-radius:100px; font-size:0.8125rem; font-weight:600; cursor:pointer;
   border:1px solid rgba(0,37,59,0.16); background:#fff; color:#42474e;
   box-shadow:0 1px 2px rgba(0,37,59,0.04);

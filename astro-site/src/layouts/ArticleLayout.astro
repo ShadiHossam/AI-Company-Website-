@@ -2,6 +2,7 @@
 import { authorPhoto } from '../lib/authors';
 import BaseLayout from './BaseLayout.astro';
 import { withBrand } from '../lib/titles';
+import { categoryGroup, categoryLabel } from '../lib/blogCategories';
 
 interface KeyPoint {
   heading: string;
@@ -151,7 +152,9 @@ const cardGradients = [
           <span class="cur">{title}</span>
         </nav>
         <div class="hero-meta">
-          <span class="article-tag">{category}</span>
+          {categoryGroup(category)
+            ? <a class="article-tag" href={`/blog?category=${categoryGroup(category)!.slug}`}>{categoryLabel(category, 'en')}</a>
+            : <span class="article-tag">{category}</span>}
           <span class="meta-dot" aria-hidden="true"></span>
           <span class="read-time">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
@@ -267,7 +270,7 @@ const cardGradients = [
                     {post.image && <img src={post.image} alt={post.imageAlt ?? post.title} width="400" height="130" loading="lazy" decoding="async" />}
                   </div>
                   <div class="rcard-body">
-                    <span class="rcard-tag">{post.category}</span>
+                    <span class="rcard-tag">{categoryLabel(post.category, 'en')}</span>
                     <div class="rcard-title">{post.title}</div>
                     <div class="rcard-read">Read article →</div>
                   </div>
@@ -340,7 +343,7 @@ const cardGradients = [
 
 /* Hero meta */
 .hero-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 1.125rem; }
-.article-tag { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 100px; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; background: rgba(0,104,117,0.10); color: #004f58; border: 1px solid rgba(0,104,117,0.18); }
+.article-tag { text-decoration: none; display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 100px; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; background: rgba(0,104,117,0.10); color: #004f58; border: 1px solid rgba(0,104,117,0.18); }
 .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #d0d5dd; flex-shrink: 0; }
 .read-time { font-size: 0.8rem; color: #72787e; display: flex; align-items: center; gap: 5px; }
 

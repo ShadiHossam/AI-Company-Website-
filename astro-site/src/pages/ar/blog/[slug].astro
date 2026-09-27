@@ -8,6 +8,7 @@ import { sanitizeRichText } from '../../../lib/sanitize';
 import { isArabicOnlyPost } from '../../../lib/post-lang';
 import { pruneUnpublishedLinks, buildLiveBlogPaths, localiseBlogLinks, stripTrailingSlashes } from '../../../lib/deadLinks';
 import { withBrand } from '../../../lib/titles';
+import { categoryGroup, categoryLabel } from '../../../lib/blogCategories';
 import { getCollectionBlogPaths } from '../../../lib/collectionSlugs';
 
 const { slug } = Astro.params;
@@ -172,7 +173,7 @@ const ldJson = [
           <span style="color:#42474e;">{post.ar_title}</span>
         </nav>
         <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.25rem;">
-          <span style="display:inline-flex;align-items:center;background:rgba(0,104,117,0.1);border-radius:8px;padding:4px 12px;font-size:0.8125rem;font-weight:700;color:#006875;text-transform:uppercase;">{post.category}</span>
+          <a href={categoryGroup(post.category) ? `/ar/blog?category=${categoryGroup(post.category)!.slug}` : '/ar/blog'} style="display:inline-flex;align-items:center;background:rgba(0,104,117,0.1);border-radius:8px;padding:4px 12px;font-size:0.8125rem;font-weight:700;color:#006875;text-transform:uppercase;text-decoration:none;">{categoryLabel(post.category, 'ar')}</a>
           <span style="color:#72787e;font-size:0.875rem;">{dateStr}</span>
         </div>
         <h1 style="font-size:clamp(1.75rem,4vw,2.75rem);font-weight:900;color:#00253b;line-height:1.25;margin-bottom:1.25rem;">{post.ar_title}</h1>
@@ -217,7 +218,7 @@ const ldJson = [
             {relatedPosts.map(r => (
               <a href={`/ar/blog/${r.slug}`} style="display:block;padding:0.75rem 0;border-bottom:1px solid rgba(0,37,59,0.08);text-decoration:none;">
                 <div style="font-size:0.875rem;font-weight:700;color:#00253b;line-height:1.4;margin-bottom:4px;">{r.ar_title ?? r.title}</div>
-                <div style="font-size:0.75rem;color:#72787e;">{r.category}</div>
+                <div style="font-size:0.75rem;color:#72787e;">{categoryLabel(r.category, 'ar')}</div>
               </a>
             ))}
           </div>
