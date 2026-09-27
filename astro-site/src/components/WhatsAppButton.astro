@@ -37,6 +37,24 @@ const formLabel = lang === 'ar' ? 'احجز استشارة مجانية' : 'Book
   </a>
 )}
 
+{COMPANY.whatsapp && (
+  <script is:inline define:vars={{ waNumber: COMPANY.whatsapp, lang }}>
+    // Prefill every WhatsApp link to our number with the page the visitor clicked from,
+    // so incoming chats say which page they came from. Rewritten at click time so it
+    // always reflects the current URL and title.
+    document.addEventListener('click', function (e) {
+      var link = e.target.closest && e.target.closest('a[href*="wa.me/' + waNumber + '"]');
+      if (!link) return;
+      var page = document.title.split(' | ')[0].trim();
+      var url = location.origin + location.pathname;
+      var text = lang === 'ar'
+        ? 'مرحباً، أود معرفة المزيد عن: ' + page + '\n' + url
+        : "Hi, I'd like to know more about: " + page + '\n' + url;
+      link.href = 'https://wa.me/' + waNumber + '?text=' + encodeURIComponent(text);
+    }, true);
+  </script>
+)}
+
 <style>
   #whatsapp-float {
     position: fixed;
