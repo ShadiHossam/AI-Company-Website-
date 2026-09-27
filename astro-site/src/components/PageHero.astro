@@ -1,0 +1,172 @@
+---
+/**
+ * Shared top-of-page hero for every inner page (EN + AR).
+ *
+ * With an `image`, the hero renders as a split: copy on the start side,
+ * a framed photo on the end side (flips automatically under dir="rtl").
+ * Without one it stays the classic centered dark header, used by legal,
+ * job and tool-logo pages.
+ *
+ * The page's own breadcrumb / h1 / lede / chips / CTAs go in the default
+ * slot untouched; stats (StatStrip or a custom grid) go in slot="stats".
+ */
+interface HeroImage {
+  src: string;
+  alt: string;
+  /** CSS object-position, e.g. "center 40%" */
+  position?: string;
+}
+
+interface Props {
+  image?: HeroImage;
+  as?: 'header' | 'section';
+  class?: string;
+}
+
+const { image, as: Tag = 'header', class: extraClass = '' } = Astro.props;
+const hasStats = Astro.slots.has('stats');
+
+const WIDTHS = [480, 720, 960, 1200];
+
+/** Build a srcset for CDNs that resize on a `w` query param. */
+function srcsetFor(src: string): string | undefined {
+  let url: URL;
+  try { url = new URL(src); } catch { return undefined; }
+  const host = url.hostname;
+  if (host === 'images.unsplash.com') {
+    return WIDTHS.map((w) => {
+      const u = new URL(url);
+      u.searchParams.set('w', String(w));
+      u.searchParams.delete('h');
+      u.searchParams.set('fit', 'crop');
+      u.searchParams.set('auto', 'format');
+      u.searchParams.set('q', '70');
+      return `${u.toString()} ${w}w`;
+    }).join(', ');
+  }
+  if (host === 'images.pexels.com') {
+    return WIDTHS.map((w) => {
+      const u = new URL(url);
+      u.searchParams.set('auto', 'compress');
+      u.searchParams.set('cs', 'tinysrgb');
+      u.searchParams.set('w', String(w));
+      u.searchParams.delete('h');
+      return `${u.toString()} ${w}w`;
+    }).join(', ');
+  }
+  return undefined;
+}
+
+function defaultSrc(src: string): string {
+  const set = srcsetFor(src);
+  return set ? set.split(', ')[2].split(' ')[0] : src;
+}
+
+const layout = image ? 'ph-split' : 'ph-center';
+const srcset = image ? srcsetFor(image.src) : undefined;
+---
+
+<Tag class={`hero-section ph ${layout} ${extraClass}`.trim()}>
+  <div class="container ph-inner">
+    <div class="ph-copy">
+      <slot />
+    </div>
+    {image && (
+      <figure class="ph-media">
+        <img
+          src={defaultSrc(image.src)}
+          srcset={srcset}
+          sizes={srcset ? '(max-width: 960px) 92vw, 560px' : undefined}
+          alt={image.alt}
+          width="1200"
+          height="900"
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+          style={image.position ? `object-position:${image.position};` : undefined}
+        />
+      </figure>
+    )}
+  </div>
+  {hasStats && (
+    <div class="container ph-stats">
+      <slot name="stats" />
+    </div>
+  )}
+</Tag>
+
+<style>
+  .ph { padding: 7.5rem 0 5rem; }
+  .ph-inner { position: relative; z-index: 1; }
+
+  /* ── Centered (no image) ── */
+  .ph-center .ph-inner { text-align: center; }
+
+  /* ── Split (copy + photo) ── */
+  .ph-split { padding: 7rem 0 4.5rem; }
+  .ph-split::after { display: none; }
+  .ph-split .ph-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+    gap: 3.5rem;
+    align-items: center;
+  }
+  .ph-split .ph-copy { text-align: start; }
+  /* Page markup was written for a centered hero; pull it to the start edge. */
+  .ph-split .ph-copy > :global(*) { margin-inline: 0 !important; }
+  .ph-split .ph-copy > :global([style*="justify-content"]),
+  .ph-split .ph-copy :global(.trust-chips) { justify-content: flex-start !important; }
+  .ph-split .ph-copy :global(h1) {
+    font-size: clamp(2rem, 3.7vw, 3.25rem);
+    max-width: 18ch;
+  }
+  .ph-split .ph-copy :global(p) { max-width: 56ch; }
+
+  .ph-media {
+    position: relative;
+    margin: 0;
+    border-radius: 28px;
+    aspect-ratio: 4 / 3.4;
+    overflow: hidden;
+    background: rgba(255,255,255,0.06);
+    box-shadow: 0 30px 60px -20px rgba(0,10,20,0.55), 0 0 0 1px rgba(168,242,255,0.18);
+  }
+  .ph-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  /* Soft brand tint at the bottom edge so photos sit inside the navy palette. */
+  .ph-media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,37,59,0.35) 0%, rgba(0,37,59,0) 45%);
+    pointer-events: none;
+  }
+  /* Accent frame offset behind the photo. */
+  .ph-media::before {
+    content: '';
+    position: absolute;
+    inset: auto -1px -1px auto;
+    width: 38%;
+    height: 6px;
+    background: linear-gradient(90deg, rgba(0,227,253,0) 0%, #00e3fd 100%);
+    z-index: 1;
+  }
+  :global([dir="rtl"]) .ph-media::before {
+    inset: auto auto -1px -1px;
+    background: linear-gradient(270deg, rgba(0,227,253,0) 0%, #00e3fd 100%);
+  }
+
+  .ph-stats { position: relative; z-index: 1; margin-top: 3.5rem; }
+
+  @media (max-width: 960px) {
+    .ph, .ph-split { padding: 6.5rem 0 3.5rem; }
+    .ph-split .ph-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+    .ph-split .ph-copy :global(h1) { max-width: none; }
+    .ph-media { aspect-ratio: 16 / 10; border-radius: 20px; }
+    .ph-stats { margin-top: 2.5rem; }
+  }
+</style>
