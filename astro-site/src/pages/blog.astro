@@ -144,9 +144,16 @@ const nextPath = page < totalPages ? pageHref(page + 1) : undefined;
 // A category view is a real listing and keeps its own canonical.
 const canonicalPath = query ? pageHref(1, activeCategory?.slug, '') : pageHref(page);
 
+// Category titles were "<name> Articles for UAE Businesses | Lenoo AI Blog",
+// which ran past ~560px and got cut off in results. Page 2+ of a series gets
+// its page number so it does not share page 1's title.
+const pageSuffix = page > 1 ? ` (Page ${page})` : '';
 const pageTitle = activeCategory
-  ? `${activeCategory.en} Articles for UAE Businesses | Lenoo AI Blog`
-  : 'AI Blog Dubai: Insights for UAE Businesses | Lenoo AI';
+  ? `${activeCategory.en}: UAE Guides${pageSuffix} | Lenoo AI Blog`
+  : `AI Blog Dubai: Insights for UAE Businesses${pageSuffix} | Lenoo AI`;
+const pageDescription = activeCategory
+  ? activeCategory.enDescription
+  : 'AI insights, guides, and case studies from Lenoo AI, a Dubai AI agency, for UAE SMEs. Learn how to implement AI, calculate ROI, and grow your business.';
 
 const blogLdJson = [
   {
@@ -171,7 +178,7 @@ const blogLdJson = [
 
 <BaseLayout
   title={pageTitle}
-  description="AI insights, guides, and case studies from Lenoo AI, a Dubai AI agency, for UAE SMEs. Learn how to implement AI, calculate ROI, and grow your business."
+  description={pageDescription}
   canonicalPath={canonicalPath}
   ogImage="/assets/og-blog.jpg"
   arPath="/ar/blog"
@@ -184,10 +191,17 @@ const blogLdJson = [
 <header class="hero-section" style="padding:8rem 0 5rem;">
   <div class="container" style="text-align:center;">
     <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="Breadcrumb"><a href="/" style="color:inherit;text-decoration:none;opacity:0.65;">Home</a><span style="opacity:0.4;padding:0 4px;"> / </span>Blog</div>
-    <h1>AI Blog: <span class="gradient-text">UAE Edition</span></h1>
-    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:560px; margin:1rem auto 0;">
-      Practical guides, case studies, and AI strategy insights, built for Dubai's SMEs, written in plain English (and Arabic).
-    </p>
+    {activeCategory ? (
+      <h1>{activeCategory.en}: <span class="gradient-text">UAE Guides</span></h1>
+      <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:560px; margin:1rem auto 0;">
+        {activeCategory.enDescription}
+      </p>
+    ) : (
+      <h1>AI Blog: <span class="gradient-text">UAE Edition</span></h1>
+      <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:560px; margin:1rem auto 0;">
+        Practical guides, case studies, and AI strategy insights, built for Dubai's SMEs, written in plain English (and Arabic).
+      </p>
+    )}
   </div>
 </header>
 
