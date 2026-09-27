@@ -56,3 +56,22 @@ export function isReleased(
   const at = releaseAt(route, start);
   return at !== null && now.getTime() >= at.getTime();
 }
+
+/**
+ * Where an unreleased page sends visitors until its day: the marketing hub for
+ * the marketing pages, the services page for the pricing page.
+ */
+export function holdingPath(route: string): string {
+  return route.startsWith('/ar/industries/marketing/') ? '/ar/industries/marketing' : '/ar/services';
+}
+
+/**
+ * The response an unreleased page serves: a temporary redirect rather than a
+ * 404, marked no-store so a cache cannot keep redirecting after release day.
+ */
+export function unreleasedResponse(route: string): Response {
+  return new Response(null, {
+    status: 302,
+    headers: { Location: holdingPath(route), 'Cache-Control': 'no-store' },
+  });
+}

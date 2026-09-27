@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { RELEASE_ORDER, releaseAt, isReleased } from '../../lib/arRollout';
+import { RELEASE_ORDER, releaseAt, isReleased, holdingPath, unreleasedResponse } from '../../lib/arRollout';
 import { ROUTES } from '../../lib/routes';
 
 const START = '2026-10-01';
@@ -39,5 +39,19 @@ describe('Arabic rollout schedule', () => {
     expect(isReleased('/ar/industries/marketing', new Date(0), null)).toBe(true);
     expect(isReleased('/industries/marketing/seo', new Date(0), null)).toBe(true);
     expect(releaseAt('/ar/services', START)).toBeNull();
+  });
+});
+
+describe('unreleased pages', () => {
+  it('send marketing pages to the hub and the pricing page to services', () => {
+    expect(holdingPath('/ar/industries/marketing/seo')).toBe('/ar/industries/marketing');
+    expect(holdingPath('/ar/pricing/ai-automation-cost')).toBe('/ar/services');
+  });
+
+  it('answer with an uncacheable temporary redirect, not a 404', () => {
+    const res = unreleasedResponse('/ar/industries/marketing/paid-ads');
+    expect(res.status).toBe(302);
+    expect(res.headers.get('Location')).toBe('/ar/industries/marketing');
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
   });
 });

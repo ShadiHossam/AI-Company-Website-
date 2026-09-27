@@ -86,12 +86,12 @@ const allCards: Card[] = useDb
       image: post.data.ogImage,
     }));
 
-// Category filter: ?category=<group slug>. An unknown slug is a page that does
-// not exist, not an empty listing.
+// Category filter: ?category=<group slug>. An unknown or retired slug sends
+// the visitor to the full blog rather than a 404.
 const categoryParam = (Astro.url.searchParams.get('category') ?? '').trim();
 const activeCategory = categoryBySlug(categoryParam);
 if (categoryParam && !activeCategory) {
-  return await Astro.rewrite('/404');
+  return Astro.redirect('/blog', 301);
 }
 
 // Only offer chips for groups that currently have posts.
