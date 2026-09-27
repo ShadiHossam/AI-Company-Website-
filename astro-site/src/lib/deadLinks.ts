@@ -122,3 +122,26 @@ export function localiseBlogLinks(
     return whole.replace(HREF, `href="${target}"`);
   });
 }
+
+/** Site-relative or own-domain href whose path ends in a slash, e.g. `/blog/rag/#faq`. */
+const SLASHED_INTERNAL = /^((?:https:\/\/lenooai\.com)?\/[^?#]*[^/?#])\/([?#].*)?$/;
+
+/**
+ * Drops the trailing slash from internal links in an article body. The site
+ * serves slash-free URLs and 301s the slashed form, and the linking scripts
+ * wrote hundreds of slashed links into stored bodies, so every one of those
+ * clicks cost a redirect.
+ */
+export function stripTrailingSlashes(html: string): string {
+  if (!html) return html;
+
+  return html.replace(ANCHOR, (whole, attrs: string) => {
+    const m = HREF.exec(attrs);
+    if (!m) return whole;
+
+    const hit = SLASHED_INTERNAL.exec(m[1] ?? m[2] ?? '');
+    if (!hit) return whole;
+
+    return whole.replace(HREF, `href="${hit[1]}${hit[2] ?? ''}"`);
+  });
+}

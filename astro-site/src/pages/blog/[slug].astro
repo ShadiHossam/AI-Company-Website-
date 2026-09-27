@@ -5,7 +5,7 @@ import ArticleLayout from '../../layouts/ArticleLayout.astro';
 import { marked } from 'marked';
 import { sanitizeRichText } from '../../lib/sanitize';
 import { isArabicOnlyPost } from '../../lib/post-lang';
-import { pruneUnpublishedLinks, buildLiveBlogPaths, localiseBlogLinks } from '../../lib/deadLinks';
+import { pruneUnpublishedLinks, buildLiveBlogPaths, localiseBlogLinks, stripTrailingSlashes } from '../../lib/deadLinks';
 import { getCollectionBlogPaths } from '../../lib/collectionSlugs';
 
 const { slug } = Astro.params;
@@ -99,7 +99,7 @@ try {
     // still has to be checked against what is actually published.
     bodyHtml = pruneUnpublishedLinks(
       localiseBlogLinks(
-        sanitizeRichText(await marked(dbPost.body_markdown ?? '')),
+        stripTrailingSlashes(sanitizeRichText(await marked(dbPost.body_markdown ?? ''))),
         'en',
         (path) => livePaths.has(path),
       ),

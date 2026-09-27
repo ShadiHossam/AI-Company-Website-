@@ -6,7 +6,7 @@ import { getSupabaseAdmin } from '../../../lib/supabase';
 import { marked } from 'marked';
 import { sanitizeRichText } from '../../../lib/sanitize';
 import { isArabicOnlyPost } from '../../../lib/post-lang';
-import { pruneUnpublishedLinks, buildLiveBlogPaths, localiseBlogLinks } from '../../../lib/deadLinks';
+import { pruneUnpublishedLinks, buildLiveBlogPaths, localiseBlogLinks, stripTrailingSlashes } from '../../../lib/deadLinks';
 import { withBrand } from '../../../lib/titles';
 import { getCollectionBlogPaths } from '../../../lib/collectionSlugs';
 
@@ -82,7 +82,7 @@ for (const path of await getCollectionBlogPaths()) livePaths.add(path);
 const bodyHtml = post.ar_body_markdown
   ? pruneUnpublishedLinks(
       localiseBlogLinks(
-        sanitizeRichText(await marked(post.ar_body_markdown)),
+        stripTrailingSlashes(sanitizeRichText(await marked(post.ar_body_markdown))),
         'ar',
         (path) => livePaths.has(path),
       ),

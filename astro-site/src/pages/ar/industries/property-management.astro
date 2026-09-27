@@ -1,15 +1,29 @@
 ---
 export const prerender = false;
-import ArBaseLayout from '../../../layouts/ArBaseLayout.astro';
+import ArBaseLayout from "../../../layouts/ArBaseLayout.astro";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "هل يتكامل نظام الذكاء الاصطناعي مع إيجاري وبرنامج إدارة العقارات لدينا؟", answer: "نعم. نظام تذكير التجديد وإيجاري مبني ليتابع تواريخ تسجيل كل عقد إيجار وتجديده، ويستطيع سحب هذه البيانات من معظم منصات إدارة العقارات الشائعة في الإمارات، عبر ملفات التصدير واتصالات API حيث يدعمها البرنامج. وحيث لا يتوفر ربط مباشر، نبني طبقة مزامنة حتى لا يحتفظ فريقكم بسجلين منفصلين." },
+  { question: "كيف يتعامل إرسال المقاولين مع متابعة اتفاقيات مستوى الخدمة؟", answer: "كل مهمة مُرسلة تحمل ختماً زمنياً ونافذة استجابة متوقعة حسب نوع العمل ومستوى الإلحاح الذي تحددونه (أنبوب منفجر ليس كباب يصدر صريراً). يتابع النظام إن كان المقاول قد أكد المهمة وأنجزها ضمن تلك النافذة، وينبّه إلى المهام المتأخرة ليتدخل المنسق قبل أن يضطر المستأجر لملاحقة أي أحد." },
+  { question: "ندير مئات الوحدات عبر عدة مبانٍ. هل يتوسع هذا لمحفظة كبيرة؟", answer: "هذا بالضبط عبء العمل الذي بُني له النظام. فرز طلبات الصيانة، ومتابعة التجديدات، ومراسلة المستأجرين تعمل كلها لكل وحدة ولكل مبنى، فتحصل محفظة من ٥٠ وحدة أو ٥٠٠٠ وحدة على نفس التعامل الثابت. العائق الذي تصطدم به معظم المحافظ هو عدد المنسقين، لا البرمجيات، وهذا هو القيد الذي يزيله النظام." },
+  { question: "هل سيعرف المستأجرون أنهم يراسلون مساعد ذكاء اصطناعي، وهل يستطيعون الوصول إلى إنسان؟", answer: "نعم للأمرين. نوصي بالوضوح في أن المستأجرين يراسلون مساعد ذكاء اصطناعي أولاً، ولكل محادثة مسار واضح إلى منسق بشري، إما بطلب المستأجر مباشرة أو بإدراك الذكاء الاصطناعي أنه يجب أن يصعّد: الشكاوى، والنزاعات، وأي شيء يتعلق بالسلامة، أو أي شيء لا يثق بقدرته على الإجابة عنه بشكل صحيح." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 
 const ldJson = [
   {
     "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "الذكاء الاصطناعي لشركات إدارة العقارات في الإمارات | Lenoo AI",
+    "@type": "Service",
+    "name": "الأتمتة بالذكاء الاصطناعي لشركات إدارة العقارات في الإمارات",
     "url": "https://lenooai.com/ar/industries/property-management",
+    "description": "أنظمة ذكاء اصطناعي مخصصة لشركات إدارة العقارات في الإمارات: فرز طلبات الصيانة، ومساعدو المستأجرين عبر واتساب، وتذكيرات التجديد وإيجاري، وإرسال المقاولين، ومتابعة تحصيل الإيجار.",
     "inLanguage": "ar",
-    "isPartOf": { "@type": "WebSite", "url": "https://lenooai.com" }
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Property Management"
   },
   {
     "@context": "https://schema.org",
@@ -17,134 +31,112 @@ const ldJson = [
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
       { "@type": "ListItem", "position": 2, "name": "القطاعات", "item": "https://lenooai.com/ar/industries" },
-      { "@type": "ListItem", "position": 3, "name": "إدارة العقارات", "item": "https://lenooai.com/ar/industries/property-management" }
-    ]
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "name": "الذكاء الاصطناعي لشركات إدارة العقارات في الإمارات",
-    "description": "فرز طلبات صيانة، مساعد مستأجرين عبر واتساب، تذكير تجديد وإيجاري، توزيع موردين، ومتابعة تحصيل إيجار لشركات إدارة العقارات في الإمارات.",
-    "areaServed": {"@type": "Country", "name": "United Arab Emirates"},
-    "provider": { "name": "Lenoo AI", "url": "https://lenooai.com" }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "هل يتكامل النظام مع إيجاري وبرنامج إدارة العقارات لدينا؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نعم. نظام تذكير التجديد وإيجاري مبني ليتابع تاريخ تسجيل وتجديد كل عقد إيجار، ويستطيع سحب هذه البيانات من معظم منصات إدارة العقارات الشائعة في الإمارات." }
-      },
-      {
-        "@type": "Question",
-        "name": "كيف يتعامل توزيع الموردين مع متابعة اتفاقية مستوى الخدمة؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "كل عمل مُوزَّع يحمل ختماً زمنياً ونافذة استجابة متوقعة بناءً على التخصص ومستوى الإلحاح الذي تحددونه. النظام يتابع إن أكّد المورّد واستكمل العمل ضمن تلك النافذة." }
-      },
-      {
-        "@type": "Question",
-        "name": "ندير مئات الوحدات عبر مبانٍ متعددة. هل يتوسّع هذا لمحفظة كبيرة؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "هذا بالضبط عبء العمل الذي بُني له النظام. فرز الصيانة، متابعة التجديد، ومراسلة المستأجرين تعمل جميعها لكل وحدة ومبنى، فمحفظة ٥٠ وحدة أو ٥٠٠٠ تحصل على نفس المعالجة الثابتة." }
-      },
-      {
-        "@type": "Question",
-        "name": "هل سيعرف المستأجرون أنهم يراسلون مساعداً ذكياً، وهل يستطيعون الوصول لإنسان؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نعم لكلا السؤالين. نُوصي بالوضوح منذ البداية أن المستأجرين يراسلون مساعداً ذكياً، وكل محادثة لها مسار واضح لمنسق بشري، سواء بطلب المستأجر مباشرة أو بتقدير الذكاء الاصطناعي لضرورة التصعيد." }
-      }
+      { "@type": "ListItem", "position": 3, "name": "الذكاء الاصطناعي لإدارة العقارات", "item": "https://lenooai.com/ar/industries/property-management" }
     ]
   }
 ];
 ---
 
 <ArBaseLayout
-  title="الذكاء الاصطناعي لشركات إدارة العقارات في الإمارات"
-  description="Lenoo AI، وكالة الذكاء الاصطناعي في دبي، تبني فرز طلبات صيانة ومساعد مستأجرين عبر واتساب وتذكير تجديد وإيجاري لشركات إدارة العقارات في الإمارات."
+  title="الأتمتة بالذكاء الاصطناعي لإدارة العقارات في الإمارات"
+  description="كيف تستخدم شركات إدارة العقارات في الإمارات الذكاء الاصطناعي لفرز طلبات الصيانة، ودعم المستأجرين عبر واتساب، وتذكيرات التجديد وإيجاري، وإرسال المقاولين."
   canonicalPath="/ar/industries/property-management"
   enPath="/industries/property-management"
+  ogImage="/assets/og-home.jpg"
   ldJson={ldJson}
 >
 
-<!-- HERO -->
-<header class="page-hero">
-  <div class="container">
-    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التنقل"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">القطاعات</a><span style="opacity:0.4;padding:0 4px;"> / </span>إدارة العقارات</div>
-    <div class="badge badge-cyan" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">apartment</span>
-      إدارة العقارات
-    </div>
-    <h1>ذكاء اصطناعي لشركات إدارة العقارات في الإمارات<br><span class="gradient-text">الصيانة والتجديدات تستهلك أسبوع كل مدير عقارات</span></h1>
-    <p style="max-width:640px;margin:1.5rem auto;line-height:1.8;color:rgba(255,255,255,0.72);">
-      طلب صيانة واحد يصل بثلاث طرق مختلفة، وتجديد إيجار يحمل موعد تسجيل إيجاري لا يجب تفويته. نبني لك بوتاً يفرز طلبات الصيانة، يوزّع الموردين، ويتابع مواعيد التجديد وإيجاري عبر محفظتكم كاملة.
-    </p>
-    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-      <button onclick="openModal(this)" data-source="ar_property_management_hero" class="btn-primary">احجز استشارة مجانية ←</button>
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">القطاعات</a><span style="opacity:0.4;padding:0 4px;"> / </span>إدارة العقارات</div>
+    <h1>الأتمتة بالذكاء الاصطناعي<br><span class="gradient-text">لإدارة العقارات في الإمارات</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">تبني Lenoo AI أنظمة ذكاء اصطناعي لشركات إدارة العقارات في الإمارات: فرز طلبات الصيانة، ودعم المستأجرين عبر واتساب، وتذكيرات التجديد وإيجاري، وإرسال المقاولين. مبنية لعمليات جانب المالك، لا للمبيعات، ومدعومة بضمان الاسترداد ١٠٠٪.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_property_management_hero" class="btn-primary">احجزوا تدقيقاً مجانياً لذكاء إدارة العقارات</button>
+      <a href="#what-we-build" class="btn-outline">شاهدوا ما نبنيه ↓</a>
     </div>
   </div>
 </header>
 
-<!-- IMAGE BANNER + STATS -->
+<!-- HERO IMAGE -->
 <div style="position:relative; overflow:hidden;">
-  <img src="https://images.unsplash.com/photo-1502810190503-8303352d0dd1?w=1600&q=80&auto=format&fit=crop" alt="مبنى سكني تُديره شركة إدارة عقارات إماراتية" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 55%;" />
-  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.18) 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.40));"></div>
-  <div style="position:relative; padding:3rem 2rem;">
-    <div class="glass-dark hosp-stats-grid" style="max-width:920px; margin:0 auto; border-radius:20px; padding:2rem 2.5rem;">
-      <div class="stat-item">
-        <p class="stat-num">×٩</p>
-        <p class="stat-lbl">فرصة رد أعلى للمستأجر عند التواصل خلال ٥ دقائق</p>
-      </div>
-      <div class="stat-item">
-        <p class="stat-num">+٢٠٠</p>
-        <p class="stat-lbl">جنسية في الإمارات، أغلبها يفضّل واتساب</p>
-      </div>
-      <div class="stat-item">
-        <p class="stat-num">٢٤/٧</p>
-        <p class="stat-lbl">تغطية لطلبات الصيانة وتذكيرات التجديد ورسائل المستأجرين</p>
-      </div>
-      <div class="stat-item">
-        <p class="stat-num">١٠٠٪</p>
-        <p class="stat-lbl">ضمان استرداد إذا لم ترضَ</p>
-      </div>
-    </div>
+  <img src="https://images.unsplash.com/photo-1502810190503-8303352d0dd1?w=1600&q=80&auto=format&fit=crop" alt="مبنى شقق سكنية تديره شركة إدارة عقارات في الإمارات" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 55%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "٩×", caption: "احتمال أعلى لتجاوب المستأجر أو العميل المحتمل عند التواصل خلال ٥ دقائق (MIT)" },
+      { value: "+٢٠٠", caption: "جنسية تعيش في الإمارات، ومعظمهم يلجؤون إلى واتساب للرسائل اليومية" },
+      { value: "٢٤/٧", caption: "تغطية بالذكاء الاصطناعي لطلبات الصيانة وتذكيرات التجديد ورسائل المستأجرين" },
+    ]} />
   </div>
 </div>
 
-<!-- AI USE CASES -->
-<section class="section">
+<!-- WHY PROPERTY MANAGEMENT & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
   <div class="container">
-    <h2 style="text-align:center;margin-bottom:0.75rem;">ما يفعله الذكاء الاصطناعي في شركة إدارة العقارات</h2>
-    <p style="text-align:center;color:#42474e;margin-bottom:3rem;max-width:560px;margin-inline:auto;">ستة أنظمة متصلة ببرنامج إدارة العقارات وقائمة الموردين لديكم.</p>
-    <div class="feature-ledger">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">لماذا تستهلك الصيانة والتجديدات أسبوع كل مدير عقارات</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>تراكم طلبات الصيانة لا يُصفّى من تلقاء نفسه.</strong> فريق إدارة العقارات يتلقى الطلبات عبر المكالمات وواتساب والبريد وبوابة المستأجرين، وكثيراً ما تُبلَّغ نفس المشكلة بثلاث طرق مختلفة. دون نظام يسجل كل طلب ويصنفه ويوجهه، يتحول يوم المنسق إلى فرز يعتمد على الذاكرة، والطلبات التي لا تأتي مع شكوى صاخبة تغرق بصمت إلى أسفل القائمة.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>التجديدات وإجراءات إيجاري تصل دفعات، لا بشكل متساوٍ.</strong> انتهاء عقود الإيجار يتركز في أشهر معينة، ولكل عقد موعد تسجيل في إيجاري، وفترة إشعار بزيادة الإيجار، ونافذة تفاوض. تفويت فترة الإشعار أو ترك تسجيل إيجاري ينتهي ليس خطأً ورقياً بسيطاً في الإمارات، بل يؤثر على قابلية تنفيذ عقد الإيجار نفسه.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>كل وحدة إضافية تضيف تدفقها الخاص من الضجيج.</strong> محفظة من ٥٠ وحدة تولّد حجماً قابلاً للإدارة من الرسائل. ومحفظة من ٥٠٠ تولّد نفس المحادثات عشرة أضعاف، في نفس الوقت، مع نفس المنسقين. العمل لا يصبح أكثر تعقيداً مع نمو المحفظة، بل أكثر صخباً، وأسرع مما تستطيع معظم الفرق التوظيف لمواكبته.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1560184897-ae75f418493e?w=800&q=80&auto=format&fit=crop" alt="مجمع شقق في مجتمع سكني بالإمارات يُدار ضمن محفظة عقارية" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">أنظمة ذكاء اصطناعي مبنية لشركات إدارة العقارات</h2>
+      <p>ستة أنظمة محددة تنشرها وكالتنا للذكاء الاصطناعي في دبي لمديري العقارات في أنحاء الإمارات، كل منها مربوط ببرنامج إدارة العقارات وقائمة المقاولين لديكم.</p>
+    </div>
+    <div class="apps-grid">
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">build</span>
-        <h3>بوت فرز طلبات الصيانة</h3>
-        <p style="color:#42474e;line-height:1.7;">يُسجّل كل طلب من الهاتف أو واتساب أو بوابة المستأجرين، يُصنّفه حسب التخصص والإلحاح، ويُوجّهه تلقائياً.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">build</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">روبوت فرز طلبات الصيانة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يسجل كل طلب من الهاتف أو واتساب أو بوابة المستأجرين، ويصنفه حسب نوع العمل والإلحاح، ويوجهه تلقائياً. أنبوب منفجر يُنبَّه إليه للإرسال الفوري بدلاً من أن يبقى في صندوق بريد مشترك بجانب طلب لمبة جديدة.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">لا يبقى أي طلب دون قراءة خلال عطلة نهاية الأسبوع أو العطل الرسمية</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">chat</span>
-        <h3>مساعد مستأجرين عبر واتساب</h3>
-        <p style="color:#42474e;line-height:1.7;">يجيب فوراً عن أسئلة المستأجرين الروتينية: مواعيد الإيجار، قواعد المبنى، كيفية رفع طلب، تخصيص المواقف.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">chat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">مساعد المستأجرين عبر واتساب</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يجيب فوراً عن أسئلة المستأجرين الروتينية، بالعربية والإنجليزية: مواعيد استحقاق الإيجار، وقواعد المبنى، وطريقة تقديم الطلبات، وتخصيص المواقف. وأي شيء لا يثق به يُصعَّد إلى فريقكم مع المحادثة كاملة.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">يتولى رسائل المستأجرين الروتينية دون أن يستهلك يوم المنسق</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">event_repeat</span>
-        <h3>نظام تذكير التجديد وإيجاري</h3>
-        <p style="color:#42474e;line-height:1.7;">يتابع موعد تجديد كل عقد إيجار وتسجيل إيجاري المرتبط به، مُرسلاً تذكيرات للمستأجرين والملاك.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">نظام تذكير التجديد وإيجاري</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يتابع تاريخ تجديد كل عقد إيجار وتسجيل إيجاري المرتبط به، ويرسل تذكيرات للمستأجرين والملاك وفق جدول محدد قبل كل موعد نهائي. إشعارات زيادة الإيجار تُرسل بفترة الإشعار الصحيحة مدمجة، لا مخمّنة.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">تواريخ التجديد ومواعيد إيجاري تُتابع تلقائياً في كامل المحفظة</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">local_shipping</span>
-        <h3>أتمتة توزيع الموردين</h3>
-        <p style="color:#42474e;line-height:1.7;">بمجرد فرز الطلب، يُبلَّغ المورّد المناسب من قائمتكم المعتمدة بتفاصيل العمل والصور.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">local_shipping</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">أتمتة إرسال المقاولين</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">بمجرد فرز الطلب، يُبلَّغ المقاول المناسب من قائمتكم المعتمدة بتفاصيل المهمة مع الصور المرفقة. لا مزيد من الاتصال بثلاثة سباكين لمعرفة من المتاح اليوم فعلاً.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">يطابق المهام مع المقاولين المتاحين دون سلسلة مكالمات</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">payments</span>
-        <h3>متابعة تحصيل الإيجار</h3>
-        <p style="color:#42474e;line-height:1.7;">يرسل تذكيرات دفع قبل موعد الاستحقاق ومتابعات متصاعدة مهذبة عند تأخر الدفع.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">payments</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">متابعة تحصيل الإيجار</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يرسل تذكيرات الدفع قبل مواعيد الاستحقاق، ومتابعات مهذبة ومتدرجة عند تأخر الدفع، قبل أن يتحول الأمر إلى محادثة يضطر فريق المالية لبدئها يدوياً.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">المتابعة تبدأ قبل تأخر الدفع، لا بعده</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">checklist</span>
-        <h3>بوت قائمة تحقق الانتقال</h3>
-        <p style="color:#42474e;line-height:1.7;">يُرشد المستأجرين والمفتشين عبر قائمة تحقق الدخول والخروج، جامعاً صوراً وتوقيعاً في كل خطوة.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">checklist</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">روبوت قوائم الاستلام والتسليم</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يرشد المستأجرين والمفتشين خلال قائمة الاستلام والتسليم، ويجمع الصور والتوقيع في كل خطوة، ثم ينبّه إلى الاختلافات بين السجلين لمحادثة التأمين.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">التوثيق جاهز قبل أن يبدأ أي نزاع على التأمين</p>
       </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">مشمول بضمان الاسترداد ١٠٠٪</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">كل الأنظمة متوافقة مع أنظمة الإمارات، ثنائية اللغة، ومربوطة ببرنامج إدارة العقارات وقائمة المقاولين الحالية لديكم.</p>
+      <button onclick="openModal(this)" data-source="ar_property_management_mid" class="btn-primary">احجزوا تدقيقاً مجانياً لذكاء إدارة العقارات</button>
     </div>
   </div>
 </section>
@@ -153,38 +145,38 @@ const ldJson = [
 <section class="section" style="background:#f0f3ff;" aria-labelledby="pm-journey-heading">
   <div class="container" style="max-width:1040px;">
     <div class="section-header">
-      <h2 id="pm-journey-heading">طلب صيانة واحد، من البداية للنهاية</h2>
-      <p>ما يتولاه الذكاء الاصطناعي من أول رسالة حتى إغلاق التذكرة، بينما يتولى فريقكم قرارات الحكم.</p>
+      <h2 id="pm-journey-heading">طلب صيانة واحد، من البداية إلى النهاية</h2>
+      <p>ما يتولاه الذكاء الاصطناعي من أول رسالة حتى إغلاق التذكرة، بينما يتولى فريقكم القرارات التقديرية.</p>
     </div>
     <div class="bento-grid bento-grid-3">
       <div class="card">
-        <div class="num-circle">1</div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">تسجيل وفرز خلال ثوانٍ</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">مستأجر يُراسل عن مشكلة بأي ساعة، عبر واتساب أو البوابة. الذكاء الاصطناعي يُصنّفها بالفعل.</p>
+        <div class="num-circle">١</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">مسجّل ومفروز في ثوانٍ</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">مستأجر يراسل عن مشكلة في أي ساعة، عبر واتساب أو البوابة. والذكاء الاصطناعي يصنّفها بالفعل.</p>
         <ul class="journey-list">
-          <li>يحدد التخصص (تكييف، سباكة، كهرباء) ومستوى الإلحاح من الوصف والصور المُرسلة</li>
-          <li>يُنشئ التذكرة تلقائياً ويؤكد الاستلام للمستأجر خلال أقل من دقيقة</li>
-          <li>يُنبّه لأي شيء متعلق بالسلامة لمراجعة بشرية فورية</li>
+          <li>يحدد نوع العمل (تكييف، سباكة، كهرباء) ومستوى الإلحاح من الوصف وأي صور مرسلة</li>
+          <li>ينشئ التذكرة تلقائياً ويؤكد الاستلام للمستأجر خلال أقل من دقيقة</li>
+          <li>ينبّه إلى أي شيء يتعلق بالسلامة لمراجعة بشرية فورية، دون انتظار اجتماع فرز صباحي</li>
         </ul>
       </div>
       <div class="card">
-        <div class="num-circle">2</div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">المورّد يُوزَّع دون سلسلة مكالمات</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">بمجرد تصنيف التذكرة، يعمل الذكاء الاصطناعي مع قائمة الموردين المعتمدين بدل عمل منسقكم على الهاتف.</p>
+        <div class="num-circle">٢</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">إرسال المقاول دون سلسلة مكالمات</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">بمجرد تصنيف التذكرة، يعمل الذكاء الاصطناعي على قائمة المقاولين المعتمدين لديكم بدلاً من أن يعمل المنسق على الهاتف.</p>
         <ul class="journey-list">
-          <li>يرسل تفاصيل العمل وملاحظات الوصول والصور للمورّد المناسب تلقائياً</li>
-          <li>يتابع التأكيد ووقت الوصول المتوقع مقابل اتفاقية مستوى الخدمة لذلك التخصص</li>
-          <li>يُصعّد لمورّد احتياطي تلقائياً إن لم يرد الأول في الوقت</li>
+          <li>يرسل تفاصيل المهمة وملاحظات الدخول إلى الوحدة وأي صور إلى المقاول المناسب تلقائياً</li>
+          <li>يتابع تأكيد الاستلام ونافذة الوصول المتوقعة مقابل اتفاقية مستوى الخدمة المحددة لنوع العمل</li>
+          <li>يصعّد إلى مقاول احتياطي تلقائياً إذا لم يستجب الأول في الوقت المحدد</li>
         </ul>
       </div>
       <div class="card">
-        <div class="num-circle">3</div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">المستأجر يُبقى مُحدَّثاً تلقائياً</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">لحظة توزيع أو إغلاق أو تأخير عمل، يسمع المستأجر عنه دون أن يسأل.</p>
+        <div class="num-circle">٣</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">المستأجر على اطلاع تلقائياً</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">لحظة إرسال المهمة أو إغلاقها أو تأخرها، يعرف المستأجر دون أن يسأل.</p>
         <ul class="journey-list">
-          <li>يرسل رسالة للمستأجر عند تحرك المورّد، لا فقط بعد إنجاز العمل</li>
-          <li>يُغلق الحلقة بتأكيد إنجاز وفحص رضا قصير</li>
-          <li>يحتفظ بسجل كامل للوحدة، فالطلب التالي لا يبدأ من صفر</li>
+          <li>يرسل للمستأجر رسالة عندما يكون المقاول في الطريق، لا بعد إنجاز العمل فقط</li>
+          <li>يغلق الدائرة بتأكيد الإنجاز واستطلاع رضا قصير</li>
+          <li>يحتفظ بسجل كامل للوحدة، فلا يبدأ الطلب التالي من دون سياق</li>
         </ul>
       </div>
     </div>
@@ -195,26 +187,26 @@ const ldJson = [
 <section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
   <div class="container">
     <div class="section-header">
-      <h2 id="apps-heading">أين يُحدث الذكاء الاصطناعي أكبر أثر</h2>
+      <h2 id="apps-heading">أين يحقق الذكاء الاصطناعي أكبر أثر</h2>
     </div>
     <div class="bento-grid bento-grid-3">
       <div class="card">
-        <div class="icon-box"><span class="material-symbols-outlined" style="direction:ltr;color:#006875; font-size:24px;" aria-hidden="true">build</span></div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">فرز الصيانة</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">أكبر محرّك حجم واحد في إدارة العقارات هو طلبات الصيانة، وهو المجال الذي يُثمر فيه الفرز بالذكاء الاصطناعي أسرع.</p>
-        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">كل طلب يُسجَّل ويُصنَّف لحظة وصوله</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">build</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">فرز طلبات الصيانة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">أكبر مصدر للحجم في إدارة العقارات هو طلبات الصيانة، وهو المجال الذي يؤتي فيه الفرز بالذكاء الاصطناعي ثماره أسرع. التصنيف حسب نوع العمل والإلحاح لحظة وصول الطلب يعني أن حالات الطوارئ الحقيقية تُرسل فوراً بدلاً من الانتظار خلف طلبات روتينية سُجلت في وقت أبكر من نفس اليوم.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">كل طلب يُسجل ويُصنف لحظة وصوله</p>
       </div>
       <div class="card">
-        <div class="icon-box"><span class="material-symbols-outlined" style="direction:ltr;color:#006875; font-size:24px;" aria-hidden="true">event_repeat</span></div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">إدارة التجديد وإيجاري</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">متابعة التجديد وإيجاري متكررة ومرتبطة بتواريخ صارمة. أنظمة التذكير بالذكاء الاصطناعي تتابع الجدول الزمني لكل عقد مقابل فترات الإشعار الصحيحة.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_repeat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">إجراءات التجديد وإيجاري</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">متابعة التجديد وإيجاري عمل متكرر تحكمه التواريخ ولا يسامح عند التعثر. أنظمة التذكير بالذكاء الاصطناعي تتابع الجدول الزمني لكل عقد مقابل فترات الإشعار الصحيحة ونوافذ تسجيل إيجاري، فلا يعتمد شيء على تذكّر المنسق مراجعة جدول بيانات.</p>
         <p style="font-size:0.8125rem; font-weight:600; color:#006875;">فترات الإشعار ومواعيد إيجاري تُحسب تلقائياً لكل عقد</p>
       </div>
       <div class="card">
-        <div class="icon-box"><span class="material-symbols-outlined" style="direction:ltr;color:#006875; font-size:24px;" aria-hidden="true">chat</span></div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">تواصل المستأجرين</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">معظم رسائل المستأجرين روتينية ومتكررة عبر المحفظة: مواعيد الإيجار، قواعد المبنى، تقدّم طلب. التعامل معها فوراً على واتساب يُزيل أكبر مصدر مقاطعة.</p>
-        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">أسئلة روتينية تُجاب فوراً، بالعربي أو الإنجليزي</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">chat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">التواصل مع المستأجرين</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">معظم رسائل المستأجرين روتينية وتتكرر عبر المحفظة: مواعيد الإيجار، وقواعد المبنى، وتقدم الطلبات. التعامل معها فوراً على واتساب، بلغة المستأجر، يزيل أكبر مصدر منفرد للمقاطعة في يوم المنسق.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">الأسئلة الروتينية تُجاب فوراً، بالعربية أو الإنجليزية</p>
       </div>
     </div>
   </div>
@@ -224,28 +216,28 @@ const ldJson = [
 <section class="section" aria-labelledby="eval-heading">
   <div class="container">
     <div class="section-header">
-      <h2 id="eval-heading">ما الذي يجعله يعمل</h2>
+      <h2 id="eval-heading">ما يجعلها تنجح</h2>
     </div>
     <div class="eval-grid">
       <div class="card" style="text-align:center;">
-        <div class="num-circle">1</div>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">تكامل مع برنامج إدارة العقارات</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">نظام لا يكتب مرة أخرى في منصتكم يخلق مصدر حقيقة ثانياً لا يثق به أحد. حالة التذكرة وسجلات المستأجرين وتواريخ العقود يجب أن تعيش في مكان واحد.</p>
+        <div class="num-circle">١</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">الربط مع برنامج إدارة العقارات</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">نظام ذكاء اصطناعي لا يكتب مرة أخرى في منصة إدارة العقارات لديكم يخلق مصدراً ثانياً للحقيقة لا يثق به أحد. حالة التذاكر وسجلات المستأجرين وتواريخ العقود يجب أن تكون في مكان واحد، والذكاء الاصطناعي يقرأ منه ويحدّثه مباشرة.</p>
       </div>
       <div class="card" style="text-align:center;">
-        <div class="num-circle">2</div>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">وعي بإيجاري ومؤسسة التنظيم العقاري</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">تذكيرات التجديد وإشعارات زيادة الإيجار ليست عامة؛ يجب أن تعكس الجداول الزمنية الصحيحة لإيجاري وفترات الإشعار المنظَّمة.</p>
+        <div class="num-circle">٢</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">مراعاة إيجاري ومؤسسة التنظيم العقاري</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">تذكيرات التجديد وإشعارات زيادة الإيجار ليست عامة، بل تحتاج أن تعكس الجداول الزمنية الصحيحة لتسجيل إيجاري وفترات الإشعار التي تحكمها مؤسسة التنظيم العقاري على عقود الإيجار في الإمارات. الخطأ في التوقيت ليس خطأً شكلياً.</p>
       </div>
       <div class="card" style="text-align:center;">
-        <div class="num-circle">3</div>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">تنسيق شبكة الموردين</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">أتمتة التوزيع جيدة بقدر قائمة الموردين خلفها. تحتاج تخصص كل مورّد ومنطقة تغطيته ووقت استجابته المعتاد مسجَّلاً.</p>
+        <div class="num-circle">٣</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">تنسيق شبكة المقاولين</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">أتمتة الإرسال جيدة بقدر قائمة المقاولين التي تقف خلفها. تحتاج أن تتوفر لكل مقاول بيانات نوع عمله ومنطقة تغطيته ووقت استجابته المعتاد، إضافة إلى بديل واضح عندما لا يستجيب المقاول الأول.</p>
       </div>
       <div class="card" style="text-align:center;">
-        <div class="num-circle">4</div>
+        <div class="num-circle">٤</div>
         <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">قاعدة مستأجرين متعددة اللغات</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">محفظة إماراتية تضم مستأجرين من عشرات الجنسيات. مساعد يردّ بالإنجليزية فقط يُفوّت حصة كبيرة من المستأجرين الفعليين.</p>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">محفظة في الإمارات تضم مستأجرين من عشرات الجنسيات. مساعد مستأجرين لا يرد إلا بالإنجليزية يفوت حصة كبيرة ممن يراسلونه فعلاً، ويعيدهم إلى المكالمات الهاتفية.</p>
       </div>
     </div>
   </div>
@@ -255,144 +247,83 @@ const ldJson = [
 <section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
   <div class="container" style="max-width:860px;">
     <div class="section-header">
-      <h2 id="research-heading">ما تُظهره البيانات</h2>
+      <h2 id="research-heading">ما تقوله البيانات</h2>
     </div>
     <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
-      <img src="https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=1200&q=80&auto=format&fit=crop" alt="مدير عقارات ينسّق أعمال صيانة في مبنى سكني إماراتي" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+      <img src="https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=1200&q=80&auto=format&fit=crop" alt="مدير عقارات ينسّق أعمال صيانة في مبنى سكني بالإمارات" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
     </div>
     <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
       <div class="card" style="text-align:center;">
-        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">×٩</p>
-        <p style="color:#42474e; font-size:0.875rem;">فرصة رد أو تحويل أعلى عند التواصل خلال ٥ دقائق (MIT)</p>
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">٩×</p>
+        <p style="color:#42474e; font-size:0.875rem;">احتمال أعلى لتحوّل العميل المحتمل أو تجاوب المستأجر عند التواصل خلال ٥ دقائق (MIT)</p>
       </div>
       <div class="card" style="text-align:center;">
         <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">+٢٠٠</p>
-        <p style="color:#42474e; font-size:0.875rem;">جنسية تعيش في الإمارات، تمتد عبرها قاعدة مستأجري معظم المحافظ</p>
+        <p style="color:#42474e; font-size:0.875rem;">جنسية تعيش في الإمارات، وتمتد عبر قاعدة المستأجرين في معظم المحافظ</p>
       </div>
       <div class="card" style="text-align:center;">
         <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">٢٤/٧</p>
-        <p style="color:#42474e; font-size:0.875rem;">تغطية لفرز الصيانة ورسائل المستأجرين وتذكيرات التجديد</p>
+        <p style="color:#42474e; font-size:0.875rem;">تغطية لفرز طلبات الصيانة ورسائل المستأجرين وتذكيرات التجديد</p>
       </div>
     </div>
     <div class="research-panel">
       <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
         <div>
-          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">سرعة الرد</p>
-          <p style="color:#42474e; line-height:1.7;">نتيجة MIT بأن التواصل خلال ٥ دقائق يُحوّل بمعدل ٩ أضعاف تنطبق على مستأجر يُبلغ عن تسرّب بقدر ما تنطبق على عميل محتمل. مدراء العقارات يقولون إن نفس الطلبات تُكرَّر مرتين أو ثلاثاً عبر واتساب قبل تأكيد استلامها.</p>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">سرعة الاستجابة</p>
+          <p style="color:#42474e; line-height:1.7;">نتيجة MIT بأن العملاء المحتملين الذين يُتواصل معهم خلال ٥ دقائق أكثر احتمالاً للتحول بـ ٩ مرات تنطبق على مستأجر يبلغ عن تسرب مياه بقدر ما تنطبق على عميل مبيعات محتمل. مديرو العقارات الذين نتحدث معهم يقولون باستمرار إن نفس الطلبات تتكرر مرتين أو ثلاثاً على واتساب قبل أن يؤكد أحد استلامها، فقط لغياب خطوة تأكيد فورية.</p>
         </div>
         <div>
-          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">نمو المحفظة دون نمو الموظفين</p>
-          <p style="color:#42474e; line-height:1.7;">شركات إدارة العقارات التي تُوسّع عدد وحداتها تُبلغ أن عدد المنسقين هو السقف الحقيقي للنمو، لا عدد المباني التي تستطيع إدارتها تقنياً.</p>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">نمو المحفظة دون نمو عدد الموظفين</p>
+          <p style="color:#42474e; line-height:1.7;">شركات إدارة العقارات التي توسع عدد وحداتها تذكر أن عدد المنسقين هو السقف الحقيقي للنمو، لا عدد المباني التي تستطيع إدارتها تقنياً. أتمتة الأجزاء المتكررة من العمل، من الفرز إلى التذكيرات وأسئلة المستأجرين الروتينية، تغيّر ما يستطيع منسق واحد تغطيته واقعياً.</p>
         </div>
         <div>
           <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">ملاءمة اللغة والقناة</p>
-          <p style="color:#42474e; line-height:1.7;">واتساب هو القناة الافتراضية التي يستخدمها معظم سكان الإمارات للتواصل اليومي مع الشركات وإدارة المباني معاً. مساعد يعيش حيث يُراسل المستأجرون بالفعل يُزيل الاحتكاك.</p>
+          <p style="color:#42474e; line-height:1.7;">واتساب هو القناة الافتراضية التي يستخدمها معظم سكان الإمارات للتواصل اليومي مع الشركات وإدارات المباني على حد سواء. مساعد يعمل حيث يراسل المستأجرون أصلاً، وباللغة التي يستخدمونها أصلاً، يزيل العقبات التي تدفع المشكلات الروتينية إلى المكالمات الهاتفية والرسائل الفائتة.</p>
         </div>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- GUARANTEE -->
-<section class="section" style="background:#e7eeff;padding:4rem 0;text-align:center;">
-  <div class="container">
-    <div class="guarantee-badge" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:18px;direction:ltr;" aria-hidden="true">shield</span>
-      ضمان الاسترداد الكامل، الوحيد في الإمارات
-    </div>
-    <h2 style="margin-bottom:1rem;">إذا لم تكن راضياً، لا تدفع أي شيء.</h2>
-    <p style="color:#42474e;max-width:560px;margin:0 auto 2rem;line-height:1.8;">نبني، تختبر، وإذا لم تكن راضياً تماماً نردّ ١٠٠٪ خلال ٣٠ يوماً من التسليم. بدون أسئلة.</p>
-    <button onclick="openModal(this)" data-source="ar_property_management_guarantee" class="btn-primary">ابدأ بدون مخاطرة</button>
   </div>
 </section>
 
 <!-- FAQ -->
-<section class="section">
-  <div class="container" style="max-width:760px;">
-    <h2 style="text-align:center;margin-bottom:2.5rem;">أسئلة شائعة</h2>
-    <div class="faq-list">
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل يتكامل النظام مع إيجاري وبرنامج إدارة العقارات لدينا؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نعم. نظام تذكير التجديد وإيجاري مبني ليتابع تاريخ تسجيل وتجديد كل عقد إيجار، ويستطيع سحب هذه البيانات من معظم منصات إدارة العقارات الشائعة في الإمارات.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          كيف يتعامل توزيع الموردين مع اتفاقية مستوى الخدمة؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">كل عمل مُوزَّع يحمل ختماً زمنياً ونافذة استجابة متوقعة بناءً على التخصص ومستوى الإلحاح. النظام يتابع إن أكّد المورّد واستكمل العمل ضمن تلك النافذة.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل يتوسّع هذا لمحفظة كبيرة؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">هذا بالضبط عبء العمل الذي بُني له النظام. فرز الصيانة ومتابعة التجديد ومراسلة المستأجرين تعمل لكل وحدة ومبنى، فمحفظة ٥٠ وحدة أو ٥٠٠٠ تحصل على نفس المعالجة الثابتة.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل يعرف المستأجرون أنهم يراسلون مساعداً ذكياً؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نعم. نُوصي بالوضوح منذ البداية، وكل محادثة لها مسار واضح لمنسق بشري، سواء بطلب المستأجر مباشرة أو تقدير الذكاء الاصطناعي لضرورة التصعيد.</div>
-      </div>
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">أسئلة حول الذكاء الاصطناعي لإدارة العقارات</h2>
     </div>
+    <FaqAccordion items={faqItems} />
   </div>
 </section>
 
 <!-- FINAL CTA -->
-<section class="cta-band" style="border-radius:24px;margin:2rem 2rem 4rem;">
-  <div class="container" style="text-align:center;">
-    <h2 style="margin-bottom:1rem;">جاهز لإيقاف مواعيد التجديد الفائتة؟</h2>
-    <p style="margin-bottom:2rem;max-width:500px;margin-inline:auto;line-height:1.7;">احجز جلسة تشخيص مجانية، نراجع كيف يتعامل فريقكم مع الصيانة والتجديدات ورسائل المستأجرين اليوم. بدون التزام.</p>
-    <button onclick="openModal(this)" data-source="ar_property_management_cta" class="btn-primary">ابدأ الآن ←</button>
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">احجزوا تدقيقاً مجانياً لذكاء إدارة العقارات</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">سننظر في طريقة تعامل فريقكم مع الصيانة والتجديدات ورسائل المستأجرين اليوم، ونريكم بالضبط ما سنؤتمته أولاً. دون أي التزام. معظم عمليات التدقيق تأخذ ٣٠ دقيقة وتنتج خطة عمل واضحة.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+      <span class="cta-trust-badge">✓ دون أي التزام</span>
+      <span class="cta-trust-badge">✓ ضمان الاسترداد</span>
+    </div>
+    <button onclick="openModal(this)" data-source="ar_property_management_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا تدقيقاً مجانياً لذكاء إدارة العقارات</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
   </div>
-</section>
-
-<style>
-  .hosp-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
-    text-align: center;
-  }
-  .stat-num {
-    font-size: 1.375rem;
-    font-weight: 800;
-    color: #00e3fd;
-    margin: 0 0 0.25rem;
-  }
-  .stat-lbl {
-    color: rgba(255,255,255,0.72);
-    font-size: 0.875rem;
-    margin: 0;
-    line-height: 1.5;
-  }
-  .stat-item { padding: 0 .25rem; }
-  .faq-list {
-    display: grid;
-    gap: 0.75rem;
-  }
-  @media (max-width: 900px) {
-    .hosp-stats-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 580px) {
-    .hosp-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-  }
-
-  /* Applications / evaluation / research sections */
-  .icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
-  .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
-  .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
-  .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
-  .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
-  .journey-list li { position:relative; padding-right:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
-  .journey-list li::before { content:''; position:absolute; right:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
-  @media(max-width:900px) { .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
-  @media(max-width:600px) { .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
-</style>
+</div>
 
 </ArBaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    /* Maintenance journey list markers (reused inside static bento-grid-3 cards) */
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-inline-start:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; inset-inline-start:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>

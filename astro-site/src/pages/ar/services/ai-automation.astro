@@ -1,437 +1,321 @@
 ---
 export const prerender = false;
-import ArBaseLayout from '../../../layouts/ArBaseLayout.astro';
+import ArBaseLayout from "../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../components/ProcessSteps.astro";
+import StatStrip from "../../../components/StatStrip.astro";
 
-const ldJson = [
-  {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "أتمتة الأعمال بالذكاء الاصطناعي في الإمارات | Lenoo AI",
-    "url": "https://lenooai.com/ar/services/ai-automation",
-    "inLanguage": "ar",
-    "isPartOf": { "@type": "WebSite", "url": "https://lenooai.com" }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
-      { "@type": "ListItem", "position": 2, "name": "الخدمات", "item": "https://lenooai.com/ar/services" },
-      { "@type": "ListItem", "position": 3, "name": "أتمتة الأعمال بالذكاء الاصطناعي", "item": "https://lenooai.com/ar/services/ai-automation" }
-    ]
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "name": "أتمتة الأعمال بالذكاء الاصطناعي",
-    "description": "تحويل العمليات اليدوية المتكررة في الشركات إلى أتمتة ذكية: تقارير، مراسلات، تحديث بيانات، ومتابعة عملاء.",
-    "areaServed": {"@type": "Country", "name": "United Arab Emirates"},
-    "provider": { "name": "Lenoo AI", "url": "https://lenooai.com" }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "ما العمليات التي يمكن أتمتتها في شركتي؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "أي عملية متكررة يؤديها موظفك بنفس الطريقة كل مرة هي مرشحة للأتمتة. التقارير الدورية، متابعة العملاء، تحديث البيانات بين أنظمة مختلفة، معالجة الفواتير، إرسال إشعارات، كلها أمثلة شائعة. نحدد الأفضل معاً في جلسة التشخيص." }
-      },
-      {
-        "@type": "Question",
-        "name": "هل الأتمتة ستُلغي وظائف موظفينا؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "لا. الأتمتة تُحرّر فريقك من المهام المتكررة لكي يركّزوا على ما يحتاج حكماً وإبداعاً وعلاقات بشرية. معظم عملاءنا لا يُقلّصون فريقهم، بل يُوظّفون طاقته في مكان أعلى قيمة." }
-      },
-      {
-        "@type": "Question",
-        "name": "كم يستغرق بناء أتمتة وإطلاقها؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نبدأ دائماً بأعلى نقطة تأثير لترى نتيجة سريعة. الجدول الزمني يعتمد على تعقيد العمليات وعددها، ونحدده معك بدقة في جلسة التشخيص." }
-      },
-      {
-        "@type": "Question",
-        "name": "ماذا لو تغيّرت عمليات الشركة لاحقاً؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نبني الأتمتة بمرونة وقابلية للتعديل. تغيير خطوة أو إضافة شرط جديد لا يحتاج إعادة بناء من الصفر، وتوفر لك وثائق واضحة لإدارة التعديلات البسيطة بنفسك." }
-      },
-      {
-        "@type": "Question",
-        "name": "هل يمكن الأتمتة مع الأنظمة التي نستخدمها حالياً؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نعم. نعمل مع معظم الأنظمة الشائعة. حتى الأنظمة القديمة التي لا تحتوي على API يمكن في الغالب دمجها بطرق بديلة." }
-      }
-    ]
-  }
+const fallbackFaqs = [
+  { question: "ما أنواع العمليات التي تستطيعون أتمتتها بالذكاء الاصطناعي؟", answer: "نؤتمت أي سير عمل يتضمن معالجة بيانات متكررة، أو موافقات، أو تواصل، أو توجيه، بما في ذلك معالجة البريد الإلكتروني، واستخراج بيانات الفواتير، ومتابعة العملاء المحتملين، وإعداد التقارير، وإدخال البيانات بين الأنظمة، وسلاسل الموافقة متعددة الخطوات. إذا كان فريقكم يؤديه يدوياً ويتبع نمطاً، نستطيع أتمتته." },
+  { question: "هل نحتاج لاستبدال برامجنا الحالية؟", answer: "لا. نبني الأتمتة فوق ما تستخدمونه أصلاً. يبقى نظام CRM وERP والبريد الإلكتروني وتطبيقات الأعمال لديكم كما هي، ونضيف فوقها طبقة أتمتة بالذكاء الاصطناعي عبر API. الهدف جعل أدواتكم الحالية أذكى، لا استبدالها." },
+  { question: "كم يستغرق مشروع الأتمتة؟", answer: "كل مشروع يُحدَّد نطاقه بشكل منفصل. نعطيكم جدولاً زمنياً دقيقاً بعد جلسة الاكتشاف، بناءً على عدد سير العمل، وعمليات الربط، وتعقيد البيانات." },
+  { question: "ماذا لو تعطلت الأتمتة أو احتاجت تحديثاً؟", answer: "كل مشاريع الأتمتة تشمل دعماً لمدة ٩٠ يوماً بعد الإطلاق. نراقب سير العمل، ونصلح أي مشكلات، ونجري تعديلات بسيطة مع تطور عملياتكم. بعد ذلك، نقدم عقود صيانة مستمرة." },
+  { question: "كيف تختلف الأتمتة بالذكاء الاصطناعي عن أدوات مثل Zapier أو Make؟", answer: "Zapier وMake قائمان على القواعد: ينقلان البيانات من (أ) إلى (ب) عند حدوث محفز معين. وينهاران لحظة أن تكون البيانات غير مرتبة، أو يتغير التنسيق، أو تتطلب المهمة أي تقدير. الأتمتة بالذكاء الاصطناعي تضيف طبقة استدلال: تقرأ المحتوى غير المنظم وتفهمه، وتتعامل مع الاستثناءات، وتتخذ قرارات حسب السياق، وتتكيف عندما تتغير المدخلات. تستطيعون أتمتة مهام لا يستطيع أي مسار في Zapier التعامل معها." },
+  { question: "نحن فريق صغير. هل تستحق الأتمتة بالذكاء الاصطناعي العناء بحجمنا؟", answer: "نعم، وغالباً أكثر. الفرق الصغيرة تشعر بعبء العمل اليدوي المتكرر أكثر من غيرها لأنه لا يوجد من تفوّضه إليه. أتمتة ٣ إلى ٥ سير عمل أساسية لفريق من ١٠ أشخاص يمكن أن توفر ما يعادل موظفاً بدوام كامل. نحدد نطاق المشاريع لتناسب ميزانيتكم، ونعطي الأولوية للأتمتة التي تسترد تكلفتها أسرع." },
+  { question: "ما المعلومات التي تحتاجونها لتحديد نطاق مشروع أتمتة؟", answer: "وصف لسير العمل الحالي (كيف يُنفَّذ اليوم، ومن ينفذه، وكم مرة)، والأدوات المستخدمة، وشكل المخرجات المطلوبة. لا تحتاجون وثائق تقنية أو خريطة لواجهات API مسبقاً. نجمع كل ذلك أثناء جلسة الاكتشاف ونحوّله إلى نطاق تقني للموافقة عليه." },
 ];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_automation')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+const faqLdJson = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+
+const processSteps = [
+  { icon: "search", step: "الخطوة ١", title: "تدقيق العمليات", description: "نرسم خريطة سير عملكم الحالي، ونحدد أعلى فرص الأتمتة قيمة، ونرتبها حسب العائد." },
+  { icon: "edit", step: "الخطوة ٢", title: "التصميم والتخطيط", description: "نصمم منطق الأتمتة، ونحدد المحفزات والمخرجات، ونحصل على موافقتكم قبل البناء." },
+  { icon: "build", step: "الخطوة ٣", title: "البناء والاختبار", description: "نبني الأتمتة، ونشغّلها على بيانات حقيقية في بيئة تجريبية، ونحسّنها حتى تصبح موثوقة." },
+  { icon: "rocket_launch", step: "الخطوة ٤", title: "التشغيل والمراقبة", description: "تبدأ الأتمتة العمل. نراقبها ٩٠ يوماً، ونصلح أي مشكلات، ونتوسع إلى سير عمل إضافي." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
 
 <ArBaseLayout
-  title="خدمات أتمتة الأعمال بالذكاء الاصطناعي للشركات في الإمارات"
-  description="Lenoo AI وكالة ذكاء اصطناعي في دبي تحوّل العمليات اليدوية المتكررة في شركتك إلى أتمتة ذكية: تقارير، مراسلات، تحديث بيانات، ومتابعة عملاء."
+  title="خدمات الأتمتة بالذكاء الاصطناعي للشركات في الإمارات | Lenoo AI"
+  description="توقفوا عن العمل اليدوي. كوكالة ذكاء اصطناعي في دبي، نبني أتمتة بالذكاء الاصطناعي للشركات في الإمارات تلغي العمل المتكرر في المبيعات والعمليات والإدارة."
   canonicalPath="/ar/services/ai-automation"
   enPath="/services/ai-automation"
-  ldJson={ldJson}
+  ogImage="/assets/og-services.jpg"
+  ldJson={[faqLdJson]}
 >
 
-<!-- 1. Page Hero -->
-<header class="page-hero">
-  <div class="container">
-    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التنقل"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services" style="color:inherit;text-decoration:none;opacity:0.65;">الخدمات</a><span style="opacity:0.4;padding:0 4px;"> / </span>أتمتة الأعمال بالذكاء الاصطناعي</div>
-    <div class="badge badge-cyan" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">autorenew</span>
-      أتمتة ذكية
-    </div>
-    <h1>أتمتة الأعمال بالذكاء الاصطناعي<br><span class="gradient-text">وفّر ساعات يومياً</span></h1>
-    <p style="color:rgba(255,255,255,0.72);font-size:1.125rem;max-width:620px;margin:1.5rem auto 2.5rem;line-height:1.8;">
-      كل مهمة متكررة يؤديها موظفك يدوياً هي وقت ومال يُهدَران. نُحوّل هذه العمليات إلى أتمتة ذكية، تعمل وحدها، بدقة أعلى، وبلا تعب.
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services" style="color:inherit;text-decoration:none;opacity:0.65;">الخدمات</a><span style="opacity:0.4;padding:0 4px;"> / </span>الأتمتة بالذكاء الاصطناعي</div>
+    <h1>توقفوا عن العمل اليدوي. <span class="gradient-text">دعوا الذكاء الاصطناعي يتولى العمل المتكرر.</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:620px; margin:1.5rem auto 0; line-height:1.8;">
+      كل ساعة يقضيها فريقكم في إدخال البيانات، أو توجيه الرسائل، أو الموافقات اليدوية، هي ساعة لا يقضيها في عمل يدفع الشركة للأمام فعلاً. نؤتمت هذا النوع من سير العمل حتى لا يضطروا لذلك.
     </p>
-    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
-      <button onclick="openModal(this)" data-source="ar_ai-automation_hero" class="btn-primary">احجز استشارة مجانية</button>
-      <a href="/ar/services" class="btn-outline">جميع الخدمات</a>
+    <div class="trust-chips" style="justify-content:center; margin:1.75rem 0 2rem;">
+      <span class="tchip">مراقبة بعد الإطلاق مشمولة في كل مشروع</span>
+      <span class="tchip">ضمان استرداد إذا لم تكونوا راضين عما نقدمه</span>
+    </div>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_automation_hero" class="btn-primary">احجزوا مكالمة اكتشاف مجانية</button>
+      <a href="#what-we-automate" class="btn-outline">شاهدوا ما نؤتمته ↓</a>
     </div>
   </div>
 </header>
 
-<!-- IMAGE BANNER -->
-<div style="width:100%; height:260px; overflow:hidden; position:relative;">
-  <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1400&q=80&auto=format&fit=crop" alt="أتمتة سير العمل بالذكاء الاصطناعي وتحسين العمليات" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 30%;" />
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1400&q=80&auto=format&fit=crop" alt="أتمتة سير العمل وتحسين العمليات بالذكاء الاصطناعي" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center 30%;" />
   <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.25),rgba(0,37,59,0.40));"></div>
 </div>
 
-<!-- 2. Stats Strip -->
-<section style="background:#f8fafc;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:2.5rem 0;">
+<!-- STAT BANNER -->
+<div style="background:linear-gradient(135deg,#00253b,#006875); padding:4rem 0;">
   <div class="container">
-    <div class="stats-strip">
-      <div class="stat-item">
-        <div class="stat-number">٣+ ساعات</div>
-        <div class="stat-label">متوسط الوفر اليومي</div>
+    <StatStrip stats={[
+      { value: "٤٠٪", caption: "من مهام العمل في معظم الشركات قابلة للأتمتة بالذكاء الاصطناعي المتاح حالياً. ومعظم الفرق لم تبدأ بعد." },
+      { value: "٩٠ يوماً", caption: "من المراقبة بعد الإطلاق مشمولة في كل مشروع" },
+      { value: "١٠٠٪", caption: "ضمان استرداد إذا لم تكونوا راضين عما نقدمه" },
+    ]} />
+  </div>
+</div>
+
+<!-- WHAT IS AI AUTOMATION -->
+<section class="section" aria-labelledby="explain-heading">
+  <div class="container">
+    <div style="max-width:800px; margin:0 auto;">
+      <h2 id="explain-heading" style="margin-bottom:1.5rem;">ما هي الأتمتة بالذكاء الاصطناعي، ولماذا تتفوق على الأتمتة التقليدية؟</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+        الأتمتة التقليدية تربط الأنظمة وتنقل البيانات بينها وفق جدول ثابت أو محفز محدد. تعمل جيداً عندما تكون البيانات نظيفة، والتنسيقات لا تتغير، ولا يحدث شيء غير متوقع. المشكلة أن معظم سير العمل الحقيقي في الشركات يتضمن بيانات غير مرتبة، وقرارات بشرية في منتصف العملية، ومدخلات تختلف من حالة لأخرى. هذه بالضبط سير العمل التي لا تستطيع الأتمتة التقليدية التعامل معها، وحيث يغيّر الذكاء الاصطناعي المعادلة بالكامل.
+      </p>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+        الأتمتة بالذكاء الاصطناعي تضيف طبقة استدلال فوق طبقة الربط. بدلاً من "إذا حدث (أ) فافعل (ب)"، تصبح: "اقرأ هذه الرسالة، وافهم ما يطلبه العميل، وحدد إن كان طلب إرجاع أو شكوى أو سؤالاً عن منتج، ثم وجّهه بناءً على ذلك." تستطيع قراءة المستندات غير المنظمة، وفهم المقصود، واتخاذ القرارات حسب السياق، والتعامل مع الاستثناءات دون أن تتعطل.
+      </p>
+    </div>
+
+    <div class="tools-strip">
+      <p class="tools-strip-label">نعمل مع الأدوات التي تستخدمونها أصلاً</p>
+      <div class="tools-strip-row">
+        <div class="tools-strip-logo"><img src="https://cdn.simpleicons.org/zapier/FF4A00" alt="Zapier" width="28" height="28" loading="lazy" /></div>
+        <div class="tools-strip-logo"><img src="https://cdn.simpleicons.org/make/6D00CC" alt="Make" width="28" height="28" loading="lazy" /></div>
+        <div class="tools-strip-logo"><img src="https://cdn.simpleicons.org/n8n/EA4B71" alt="n8n" width="28" height="28" loading="lazy" /></div>
+        <div class="tools-strip-logo"><img src="https://cdn.simpleicons.org/uipath/FA4616" alt="UiPath" width="28" height="28" loading="lazy" /></div>
+        <div class="tools-strip-logo"><img src="https://cdn.simpleicons.org/ifttt/000000" alt="IFTTT" width="28" height="28" loading="lazy" /></div>
+        <div class="tools-strip-logo"><img src="https://cdn.simpleicons.org/appian/2322F2" alt="Appian" width="28" height="28" loading="lazy" /></div>
       </div>
-      <div class="stat-item">
-        <div class="stat-number">-٣٠٪</div>
-        <div class="stat-label">تكاليف تشغيلية</div>
+    </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:2rem auto 0;">
+      المبرر التجاري واضح. تقدّر McKinsey أن ٦٠ إلى ٧٠ بالمئة من مهام العمل في معظم الشركات قابلة للأتمتة بالتقنيات المتاحة حالياً. ومعظم الشركات أتمتت أقل من ٢٠ بالمئة من هذه الإمكانية. كل ساعة يقضيها موظف في إدخال البيانات، أو توجيه الرسائل، أو إعداد التقارير، أو النسخ واللصق بين الأدوات، هي ساعة لا تُقضى في المبيعات أو الخدمة أو الاستراتيجية أو النمو. الأتمتة بالذكاء الاصطناعي لا تحل محل الموظفين، بل تعيد لهم الساعات التي تضيع في عمل لا يحتاج أحد لأدائه يدوياً.
+    </p>
+  </div>
+</section>
+
+<!-- WHAT WE AUTOMATE -->
+<section id="what-we-automate" class="section" aria-labelledby="automate-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="automate-heading">الأتمتة بالذكاء الاصطناعي التي نبنيها عادةً</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">أنواع شائعة، وليست قائمة كاملة. كلها مبنية على أدواتكم الحالية ومدعومة بعد الإطلاق. إذا كان سير عملكم مختلفاً عن أي منها، ما زلنا نرغب في سماعه.</p>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">mail</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">أتمتة البريد الإلكتروني والتواصل</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يقرأ الذكاء الاصطناعي الرسائل ويصنفها ويوجهها. يصيغ الردود، ويصعّد الرسائل العاجلة، ويسجل كل شيء تلقائياً.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> صندوق بريد للدعم كان يأخذ من الفريق ساعتين يومياً لفرزه، أصبح يُفرز وتُصاغ ردوده في الخلفية، طوال اليوم، كل يوم.</p>
       </div>
-      <div class="stat-item">
-        <div class="stat-number">١٠٠٪</div>
-        <div class="stat-label">ضمان الاسترداد</div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">description</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">معالجة المستندات والفواتير</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">العقود والفواتير والنماذج تُعالَج في ثوانٍ. يستخرج الذكاء الاصطناعي البيانات، ويتحقق منها، ويدفعها إلى أنظمتكم دون إدخال يدوي.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> فريق عمليات توقف عن إدخال فواتير الموردين يدوياً. يقرأ الذكاء الاصطناعي كل فاتورة، ويطابقها مع أمر الشراء، ويرحّلها مباشرة.</p>
       </div>
-      <div class="stat-item">
-        <div class="stat-number">سريع</div>
-        <div class="stat-label">وقت التنفيذ حسب المشروع</div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">route</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">توجيه العملاء المحتملين ومتابعتهم</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">كل عميل محتمل وارد يُقيَّم، ويُسند إلى المندوب المناسب، ويُتابَع تلقائياً. لا مزيد من العملاء المحتملين الضائعين.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> فريق مبيعات انتقل من متوسط يومين لأول رد إلى أقل من ١٠ دقائق، دون أي موظف إضافي.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">task_alt</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">سير عمل الموافقات والمراجعة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">موافقات متعددة الخطوات تنتقل تلقائياً من التقديم إلى الاعتماد، مع تذكيرات ذكية وتصعيدات وسجلات تدقيق مدمجة.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> موافقات المصروفات التي كانت تبقى في بريد أحدهم أسبوعاً، أصبحت تُوجَّه وتُذكِّر وتُصعَّد بنفسها.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">sync_alt</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">مزامنة البيانات بين الأنظمة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">حافظوا على تزامن نظام CRM وERP وأدوات إدارة المشاريع والتواصل تلقائياً. لا مزيد من النسخ واللصق بين المنصات.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> فريق كان يحدّث ٣ أنظمة منفصلة يدوياً بعد كل صفقة، أصبح يحدّث نظاماً واحداً، والباقي يتزامن تلقائياً.</p>
+      </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">bar_chart</span></div>
+        <h3 style="font-size:1.0625rem; font-weight:700; margin-bottom:0.625rem;">التقارير التلقائية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">تقارير حالة أسبوعية، وملخصات مسار المبيعات، ولوحات أداء تُكتب وتُرسل بنفسها، محدّثة دائماً ولا تتأخر أبداً.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin:0;"><strong>مثال حقيقي:</strong> تصل الإدارة ملخص مسار المبيعات إلى بريدها كل يوم اثنين الساعة ٨ صباحاً، مُجمَّعاً ومكتوباً دون أن يلمس أحد جدول بيانات.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 3. What We Build -->
-<section class="section">
+<!-- INDUSTRY EXAMPLES -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="examples-heading">
   <div class="container">
-    <div style="text-align:center;margin-bottom:3rem;">
-      <h2>ما نؤتمته في شركتك</h2>
-      <p style="color:#42474e;max-width:560px;margin:1rem auto 0;line-height:1.8;">بصفتنا وكالة الذكاء الاصطناعي في دبي، نُغطي كل عملية متكررة في شركتك: من التقارير إلى متابعة العملاء.</p>
-    </div>
-    <div class="auto-tabs" id="auto-tabs" role="tablist" aria-label="تصفية الأتمتة حسب القسم">
-      <button class="auto-tab active" data-cat="all" type="button">الكل</button>
-      <button class="auto-tab" data-cat="sales" type="button">المبيعات والعملاء</button>
-      <button class="auto-tab" data-cat="finance" type="button">المالية والعمليات</button>
-      <button class="auto-tab" data-cat="stock" type="button">المخزون والمستندات</button>
-    </div>
-    <div class="feature-grid">
-      <div class="card feature-card" data-cat="finance">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">summarize</span>
-        <h3>أتمتة التقارير</h3>
-        <p>تقارير المبيعات والأداء والمخزون تُنشأ وتُرسل تلقائياً في الوقت المحدد، دون أن يلمسها أحد.</p>
-      </div>
-      <div class="card feature-card" data-cat="sales">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">forward_to_inbox</span>
-        <h3>أتمتة المراسلات</h3>
-        <p>ردود ومتابعات ورسائل تذكير مُرسَلة بالتوقيت الصحيح ولكل عميل بحسب وضعه، دون تدخل يدوي.</p>
-      </div>
-      <div class="card feature-card" data-cat="finance">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">sync_alt</span>
-        <h3>مزامنة البيانات</h3>
-        <p>بيانات شركتك متزامنة تلقائياً بين CRM وERP وجداول البيانات، لا إدخال مزدوج ولا أخطاء يدوية.</p>
-      </div>
-      <div class="card feature-card" data-cat="sales">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">person_search</span>
-        <h3>متابعة العملاء</h3>
-        <p>كل عميل محتمل يحصل على متابعة في الوقت المناسب تلقائياً، لا أحد يسقط من الشبكة.</p>
-      </div>
-      <div class="card feature-card" data-cat="stock">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">receipt_long</span>
-        <h3>معالجة الفواتير</h3>
-        <p>استلام الفواتير، مطابقتها، وتحديثها في النظام تلقائياً. توفير ساعات من العمل الورقي أسبوعياً.</p>
-      </div>
-      <div class="card feature-card" data-cat="stock">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">inventory_2</span>
-        <h3>تحديث المخزون</h3>
-        <p>مستويات المخزون تُحدَّث في الوقت الحقيقي، وتنبيهات إعادة الطلب تُرسَل تلقائياً عند الوصول للحد الأدنى.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Industry examples -->
-<section class="section" style="background:#f0f3ff;">
-  <div class="container">
-    <div style="text-align:center;margin-bottom:2.5rem;">
-      <h2>الأتمتة في العمل، بحسب القطاع</h2>
-      <p style="color:#42474e;max-width:560px;margin:1rem auto 0;line-height:1.8;">صورتان من مشاريع حقيقية: مستودع توزيع ومتجر تجزئة، كلاهما يُدار جزئياً بالأتمتة اليوم.</p>
-    </div>
-    <div class="industry-imgs">
-      <div class="industry-img">
-        <img src="https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&q=80&auto=format&fit=crop" alt="مستودع توزيع في الإمارات يعتمد على تحديث المخزون الآلي" loading="lazy" width="800" height="480" />
-        <div class="industry-img-cap">مستودع توزيع، مزامنة مخزون آلية</div>
-      </div>
-      <div class="industry-img">
-        <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80&auto=format&fit=crop" alt="موظف تجزئة يخدم عميلاً بينما تعمل الأتمتة في الخلفية" loading="lazy" width="800" height="480" />
-        <div class="industry-img-cap">متجر تجزئة، فواتير ومتابعة عملاء آلية</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- 4. Results Card -->
-<section class="section" style="background:#f8fafc;">
-  <div class="container" style="max-width:860px;">
-    <div style="text-align:center;margin-bottom:2.5rem;">
-      <h2>نتيجة حقيقية من الإمارات</h2>
+    <div class="section-header">
+      <h2 id="examples-heading">ما تؤتمته الشركات الآن</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">هذه أنواع أتمتة حقيقية بنيناها في قطاعات مختلفة. التفاصيل تختلف من شركة لأخرى، لكن الفئات ثابتة.</p>
     </div>
     <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
-      <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&q=80&auto=format&fit=crop" alt="فريق عمل أثناء تشغيل الأتمتة الذكية" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+      <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&q=80&auto=format&fit=crop" alt="فريق يعمل على حواسيب محمولة بينما يعمل سير العمل المؤتمت في الخلفية" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
     </div>
-    <div class="card results-card">
-      <div class="results-badge">
-        <span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">store</span>
-        سلسلة متاجر تجزئة، ١٢ فرع
+    <div class="bento-grid bento-grid-4">
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">trending_up</span></div>
+        <h3 style="font-size:1rem; font-weight:700; color:#00253b; margin-bottom:0.875rem;">فرق المبيعات والإيرادات</h3>
+        <ul style="color:#42474e; font-size:0.8125rem; line-height:1.75; padding-inline-start:1.1rem; margin:0;">
+          <li>تأهيل العملاء المحتملين الواردين وتقييمهم</li>
+          <li>إثراء بيانات CRM من LinkedIn ومصادر الأخبار</li>
+          <li>تسلسلات متابعة تلقائية حسب سلوك العميل المحتمل</li>
+          <li>إعداد العروض من ملاحظات مكالمات المبيعات</li>
+          <li>تقارير حالة مسار المبيعات تُرسل إلى الإدارة تلقائياً</li>
+        </ul>
       </div>
-      <div class="results-row">
-        <div class="results-col">
-          <div class="results-label">المشكلة</div>
-          <p>تحديث مخزون ١٢ فرع يدوياً عبر جداول البيانات. موظف كامل يقضي ٣ ساعات يومياً في الإدخال، مع أخطاء متكررة تؤدي لإفراط أو نقص في المخزون.</p>
-        </div>
-        <div class="results-divider" aria-hidden="true">←</div>
-        <div class="results-col">
-          <div class="results-label">الحل</div>
-          <p>لوحة تحكم في الوقت الحقيقي مع أتمتة كاملة لتحديث المخزون عبر جميع الفروع، وتنبيهات تلقائية لإعادة الطلب قبل النفاد.</p>
-        </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">description</span></div>
+        <h3 style="font-size:1rem; font-weight:700; color:#00253b; margin-bottom:0.875rem;">المالية والعمليات</h3>
+        <ul style="color:#42474e; font-size:0.8125rem; line-height:1.75; padding-inline-start:1.1rem; margin:0;">
+          <li>معالجة الفواتير والمطابقة الثلاثية</li>
+          <li>جمع تقارير المصروفات وتوجيه الموافقات</li>
+          <li>قوائم مراجعة الإغلاق الشهري تُنفَّذ ويُتحقق منها تلقائياً</li>
+          <li>مراقبة انتهاء عقود الموردين وتنبيهات التجديد</li>
+          <li>ملخصات التدفق النقدي تُسلَّم للمدير المالي وفق جدول</li>
+        </ul>
       </div>
-      <div class="results-metrics">
-        <div class="metric">
-          <div class="metric-number">٣ ساعات</div>
-          <div class="metric-label">وُفّرت يومياً من العمل اليدوي</div>
-        </div>
-        <div class="metric">
-          <div class="metric-number">-٣٠٪</div>
-          <div class="metric-label">تكاليف الإفراط في المخزون</div>
-        </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">support_agent</span></div>
+        <h3 style="font-size:1rem; font-weight:700; color:#00253b; margin-bottom:0.875rem;">خدمة العملاء</h3>
+        <ul style="color:#42474e; font-size:0.8125rem; line-height:1.75; padding-inline-start:1.1rem; margin:0;">
+          <li>فرز البريد: التصنيف وتحديد الأولوية والتوجيه للفريق المناسب</li>
+          <li>صياغة تلقائية للردود على أنواع الاستفسارات الشائعة</li>
+          <li>إنشاء التذاكر وتحديث حالتها بناءً على رسائل العملاء</li>
+          <li>مراقبة التقييمات وصياغة ردود جاهزة</li>
+          <li>تنبيهات تصعيد عندما يتحول انطباع العميل إلى سلبي</li>
+        </ul>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- 5. How It Works -->
-<section class="section">
-  <div class="container" style="max-width:760px;">
-    <div style="text-align:center;margin-bottom:3rem;">
-      <h2>كيف يسير العمل</h2>
-    </div>
-    <div class="process-steps">
-      <div class="process-step">
-        <div class="step-number">١</div>
-        <div class="step-content">
-          <h3>رسم خريطة العمليات</h3>
-          <p>نجلس مع فريقك لتوثيق العمليات المتكررة وحساب الوقت المهدر في كل منها. نُرتّب الأولويات بناء على العائد الأعلى والتعقيد الأدنى.</p>
-        </div>
-      </div>
-      <div class="process-step">
-        <div class="step-number">٢</div>
-        <div class="step-content">
-          <h3>بناء وتكامل</h3>
-          <p>نبني الأتمتة ونربطها بأنظمتك الحالية. نبدأ بالعملية الأعلى تأثيراً لتشعر بالنتيجة سريعاً، ثم نوسّع تدريجياً.</p>
-        </div>
-      </div>
-      <div class="process-step">
-        <div class="step-number">٣</div>
-        <div class="step-content">
-          <h3>تشغيل وقياس</h3>
-          <p>الأتمتة تعمل، أنت تتابع النتائج. نُوفّر لوحة بيانات تُظهر كم ساعة وُفّرت وكم خطأ تجنّبته، حتى تُقيس العائد بالضبط.</p>
-        </div>
+      <div class="value-card">
+        <div class="service-icon"><span class="material-symbols-outlined" aria-hidden="true">group</span></div>
+        <h3 style="font-size:1rem; font-weight:700; color:#00253b; margin-bottom:0.875rem;">الموارد البشرية والعمليات الداخلية</h3>
+        <ul style="color:#42474e; font-size:0.8125rem; line-height:1.75; padding-inline-start:1.1rem; margin:0;">
+          <li>فرز السير الذاتية وإعداد القوائم المختصرة وفق معايير الوظيفة</li>
+          <li>قوائم إجراءات تعيين الموظفين الجدد تبدأ تلقائياً</li>
+          <li>جمع جداول الدوام ورصد الحالات غير الطبيعية</li>
+          <li>إشعارات تحديث السياسات تُرسل للفرق المعنية</li>
+          <li>جمع استبيانات الموظفين وتقارير تحليل الانطباعات</li>
+        </ul>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 6. Guarantee -->
-<section class="section" style="background:#e7eeff;padding:4rem 0;text-align:center;">
+<!-- PROCESS -->
+<section class="section" aria-labelledby="process-heading">
   <div class="container">
-    <div class="guarantee-badge" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:18px;direction:ltr;" aria-hidden="true">shield</span>
-      ضمان الاسترداد الكامل، الوحيد في الإمارات
+    <div class="section-header">
+      <h2 id="process-heading">من الاكتشاف إلى أتمتة تعمل فعلياً</h2>
     </div>
-    <h2 style="margin-bottom:1rem;">إذا لم تكن راضياً، لا تدفع أي شيء.</h2>
-    <p style="color:#42474e;max-width:560px;margin:0 auto 2rem;line-height:1.8;">نبني، تختبر، وإذا لم تكن راضياً تماماً نردّ ١٠٠٪ خلال ٣٠ يوماً من التسليم. بدون أسئلة.</p>
-    <button onclick="openModal(this)" data-source="ar_ai-automation_guarantee" class="btn-primary">ابدأ بدون مخاطرة</button>
+    <div style="border-radius:20px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 20px 48px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&q=80&auto=format&fit=crop" alt="محلل يرسم سير عمل أتمتة على مكتبه في دبي" loading="lazy" width="1200" height="320" style="width:100%; height:clamp(180px, 26vw, 320px); object-fit:cover; display:block;" />
+    </div>
+    <ProcessSteps steps={processSteps} />
   </div>
 </section>
 
-<!-- 7. FAQ -->
-<section class="section">
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
   <div class="container" style="max-width:720px;">
-    <div style="text-align:center;margin-bottom:3rem;">
-      <h2>أسئلة شائعة</h2>
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
     </div>
-    <div class="faq-list">
+    <FaqAccordion items={faqItems} />
+  </div>
+</section>
 
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          ما العمليات التي يمكن أتمتتها في شركتي؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">أي عملية متكررة يؤديها موظفك بنفس الطريقة كل مرة هي مرشحة للأتمتة. التقارير الدورية، متابعة العملاء، تحديث البيانات بين أنظمة مختلفة، معالجة الفواتير، إرسال إشعارات، كلها أمثلة شائعة. نحدد الأفضل معاً في جلسة التشخيص.</div>
+<!-- FINAL CTA -->
+<section class="section-sm" aria-label="دعوة للتواصل">
+  <div class="container">
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">هل أنتم مستعدون لأتمتة أكبر مضيعات الوقت لديكم؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">احجزوا مكالمة اكتشاف مجانية مع فريقنا في دبي. سنحدد أهم ٣ فرص أتمتة لديكم ونقدّر التوفير في الوقت والتكلفة.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون أي التزام</span>
+          <span class="cta-trust-badge">✓ ضمان الاسترداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_automation_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
       </div>
-
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل الأتمتة ستُلغي وظائف موظفينا؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">لا. الأتمتة تُحرّر فريقك من المهام المتكررة لكي يركّزوا على ما يحتاج حكماً وإبداعاً وعلاقات بشرية. معظم عملاءنا لا يُقلّصون فريقهم، بل يُوظّفون طاقته في مكان أعلى قيمة.</div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          كم يستغرق بناء أتمتة وإطلاقها؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نبدأ دائماً بأعلى نقطة تأثير لترى نتيجة سريعة. الجدول الزمني يعتمد على تعقيد العمليات وعددها، ونحدده معك بدقة في جلسة التشخيص.</div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          ماذا لو تغيّرت عمليات الشركة لاحقاً؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نبني الأتمتة بمرونة وقابلية للتعديل. تغيير خطوة أو إضافة شرط جديد لا يحتاج إعادة بناء من الصفر، وتوفر لك وثائق واضحة لإدارة التعديلات البسيطة بنفسك.</div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل يمكن الأتمتة مع الأنظمة التي نستخدمها حالياً؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نعم. نعمل مع معظم الأنظمة الشائعة. حتى الأنظمة القديمة التي لا تحتوي على API يمكن في الغالب دمجها بطرق بديلة.</div>
-      </div>
-
     </div>
   </div>
 </section>
 
-<!-- 8. Final CTA Band -->
-<section class="cta-band" style="border-radius:24px;margin:2rem 2rem 4rem;">
-  <div class="container" style="text-align:center;">
-    <h2 style="margin-bottom:1rem;">ابدأ بتحديد أول ساعة يمكن توفيرها</h2>
-    <p style="opacity:0.85;max-width:500px;margin:0 auto 2rem;line-height:1.8;">احجز جلسة تشخيص مجانية ونخرج منها بقائمة واضحة لأعلى ٣ عمليات تستحق الأتمتة في شركتك.</p>
-    <button onclick="openModal(this)" data-source="ar_ai-automation_cta" class="btn-primary">احجز جلستك المجانية</button>
-  </div>
-</section>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "name": "الأتمتة بالذكاء الاصطناعي",
+      "url": "https://lenooai.com/ar/services/ai-automation",
+      "description": "أتمتة ذكية لسير العمل والعمليات تلغي العمل اليدوي المتكرر في المبيعات والعمليات والإدارة.",
+      "inLanguage": "ar",
+      "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+      "areaServed": "United Arab Emirates",
+      "offers": { "@type": "Offer", "description": "مشاريع الأتمتة بالذكاء الاصطناعي: التسعير حسب تعقيد سير العمل ونطاقه. احجزوا مكالمة اكتشاف مجانية للحصول على عرض سعر." },
+      "serviceType": "AI Automation"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
+        { "@type": "ListItem", "position": 2, "name": "الخدمات", "item": "https://lenooai.com/ar/services" },
+        { "@type": "ListItem", "position": 3, "name": "الأتمتة بالذكاء الاصطناعي", "item": "https://lenooai.com/ar/services/ai-automation" }
+      ]
+    }
+  ]
+}
+</script>
 
 </ArBaseLayout>
 
-<script define:vars={{ pageId: 'ai-automation' }}>
-  (function () {
-    const wrap = document.getElementById('auto-tabs');
-    if (!wrap) return;
-    const buttons = wrap.querySelectorAll('.auto-tab');
-    const cards = document.querySelectorAll('.feature-grid .card[data-cat]');
-    buttons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        buttons.forEach((b) => b.classList.remove('active'));
-        btn.classList.add('active');
-        const cat = btn.getAttribute('data-cat');
-        cards.forEach((card) => {
-          card.style.display = cat === 'all' || card.getAttribute('data-cat') === cat ? '' : 'none';
-        });
-      });
-    });
-  })();
-</script>
-
 <style>
-  .stats-strip {
-    display: flex;
-    justify-content: center;
-    gap: 3rem;
-    flex-wrap: wrap;
-    text-align: center;
-  }
-  .stat-item { min-width: 120px; }
-  .stat-number { font-size: 2rem; font-weight: 800; color: #00253b; line-height: 1.1; }
-  .stat-label { font-size: 0.8125rem; color: #5f6b7a; margin-top: 0.375rem; }
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+.builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+@media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } }
+@media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
 
-  .feature-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-  }
-  .feature-card { display: flex; flex-direction: column; gap: 0.75rem; }
-  .feature-icon { font-size: 2rem; color: #006875; }
-  .feature-card h3 { font-size: 1rem; font-weight: 700; color: #00253b; margin: 0; }
-  .feature-card p { font-size: 0.875rem; color: #42474e; line-height: 1.7; margin: 0; }
-
-  .results-card { padding: 2.5rem; }
-  .results-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: rgba(0,104,117,0.1); color: #004f58;
-    font-size: 0.8125rem; font-weight: 700; padding: 5px 14px;
-    border-radius: 100px; margin-bottom: 2rem;
-  }
-  .results-row { display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 2rem; }
-  .results-col { flex: 1; }
-  .results-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #006875; margin-bottom: 0.5rem; }
-  .results-col p { font-size: 0.9375rem; color: #42474e; line-height: 1.75; margin: 0; }
-  .results-divider { font-size: 1.5rem; color: #c4cbd4; padding-top: 1.5rem; flex-shrink: 0; }
-  .results-metrics { display: flex; gap: 2rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0; }
-  .metric { flex: 1; text-align: center; }
-  .metric-number { font-size: 2rem; font-weight: 800; color: #006875; line-height: 1.1; }
-  .metric-label { font-size: 0.8125rem; color: #5f6b7a; margin-top: 0.375rem; }
-
-  .process-steps { display: flex; flex-direction: column; gap: 2rem; }
-  .process-step { display: flex; gap: 1.5rem; align-items: flex-start; }
-  .step-number {
-    width: 44px; height: 44px; border-radius: 50%;
-    background: #00253b; color: #fff;
-    font-size: 1.125rem; font-weight: 800;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .step-content h3 { font-size: 1.0625rem; font-weight: 700; color: #00253b; margin: 0 0 0.5rem; }
-  .step-content p { font-size: 0.9375rem; color: #42474e; line-height: 1.75; margin: 0; }
-
-  .faq-list { display: flex; flex-direction: column; gap: 0; }
-
-  .auto-tabs { display: flex; flex-wrap: wrap; gap: 0.625rem; justify-content: center; margin-bottom: 2.5rem; }
-  .auto-tab {
-    font-size: 0.875rem; font-weight: 600; padding: 0.5rem 1.25rem;
-    border-radius: 100px; border: 1px solid rgba(0,37,59,0.14);
-    background: #fff; color: #42474e; cursor: pointer;
-    transition: all .2s var(--ease); font-family: inherit;
-  }
-  .auto-tab:hover { border-color: rgba(0,104,117,0.4); color: #006875; }
-  .auto-tab.active { background: #00253b; border-color: #00253b; color: #fff; }
-
-  .industry-imgs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
-  .industry-img { border-radius: 20px; overflow: hidden; position: relative; height: 260px; }
-  .industry-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .industry-img-cap {
-    position: absolute; bottom: 1rem; right: 1rem;
-    background: rgba(0,37,59,0.82); backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.12); border-radius: 10px;
-    padding: 0.5rem 0.875rem; font-size: 0.75rem; color: rgba(255,255,255,0.9);
-  }
-
-  @media (max-width: 900px) { .feature-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 580px) {
-    .feature-grid { grid-template-columns: 1fr; }
-    .results-row { flex-direction: column; }
-    .results-divider { display: none; }
-    .stats-strip { gap: 1.5rem; }
-    .industry-imgs { grid-template-columns: 1fr; }
-  }
+.tools-strip { max-width:900px; margin:2.5rem auto 0; background:#f7f8fc; border-radius:14px; padding:1.5rem 1.25rem; }
+.tools-strip-label { text-align:center; font-size:0.8rem; font-weight:700; color:#8a93a6; margin:0 0 1.1rem; }
+.tools-strip-row { display:flex; align-items:center; justify-content:center; gap:1rem; flex-wrap:wrap; }
+.tools-strip-logo { background:#fff; border:1px solid #e6e9f0; border-radius:12px; width:64px; height:64px; display:flex; align-items:center; justify-content:center; }
+@media(max-width:600px) { .tools-strip-logo { width:52px; height:52px; } .tools-strip-logo img { width:22px; height:22px; } }
 </style>
