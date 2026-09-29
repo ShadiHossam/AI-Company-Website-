@@ -1,4 +1,5 @@
 import { GENERATED_ROUTES } from '../data/routes.generated';
+import { isReleased } from './arRollout';
 
 /**
  * The site's static route table.
@@ -35,7 +36,13 @@ export const arTwinOf = (route: string): string =>
 export const enTwinOf = (route: string): string =>
   route === '/ar' ? '/' : route.slice(3);
 
-export const routeExists = (route: string): boolean => ROUTE_SET.has(route);
+/**
+ * Whether a route is live right now. A page that exists on disk but is still
+ * waiting for its day in the Arabic rollout (see arRollout.ts) is not, so its
+ * twin's hreflang and the sitemap leave it out until it goes live.
+ */
+export const routeExists = (route: string): boolean =>
+  ROUTE_SET.has(route) && isReleased(route);
 
 /**
  * The Arabic twin of an English route, or null when none is published.
@@ -46,12 +53,12 @@ export const routeExists = (route: string): boolean => ROUTE_SET.has(route);
 export function arTwinFor(route: string): string | null {
   if (isArabicRoute(route)) return null;
   const twin = arTwinOf(route);
-  return ROUTE_SET.has(twin) ? twin : null;
+  return routeExists(twin) ? twin : null;
 }
 
 /** The English twin of an Arabic route, or null when none is published. */
 export function enTwinFor(route: string): string | null {
   if (!isArabicRoute(route)) return null;
   const twin = enTwinOf(route);
-  return ROUTE_SET.has(twin) ? twin : null;
+  return routeExists(twin) ? twin : null;
 }

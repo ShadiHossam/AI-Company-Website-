@@ -31,6 +31,7 @@ on:
           - both
           - en
           - ar
+          - probe
 
 concurrency:
   group: daily-publish
@@ -39,19 +40,60 @@ concurrency:
 jobs:
   trigger-publish:
     runs-on: ubuntu-latest
+    env:
+      WEBHOOK_SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
     steps:
-      - name: Trigger EN publish
-        if: github.event.inputs.target != 'ar'
+      # "probe" sends an invalid target: a 400 means the request reached the app and
+      # the secret matched, without publishing anything. It tries both hosts, since
+      # GitHub's runners stopped reaching aicompany.usine.site directly on 2026-09-17.
+      - name: Probe webhook reachability
+        if: github.event.inputs.target == 'probe'
         run: |
-          curl -sf -X POST http://aicompany.usine.site/api/deploy/publish \
-            -H "Authorization: Bearer ${{ secrets.DEPLOY_WEBHOOK_SECRET }}" \
-            -H "Content-Type: application/json" \
-            -d '{"target":"en"}'
+          for url in http://aicompany.usine.site https://lenooai.com; do
+            code=$(curl -s -o body.txt -w "%{http_code}" --max-time 20 -X POST "$url/api/deploy/publish" \
+              -H "Authorization: Bearer $WEBHOOK_SECRET" -H "Content-Type: application/json" \
+              -d '{"target":"probe"}') || code="curl-exit-$?"
+            echo "$url -> $code | title: $(grep -o '<title>[^<]*' body.txt | head -1 | cut -c8-) | $(sed 's/<[^>]*>/ /g' body.txt | tr -s ' \n' ' ' | grep -oiE '(o2switch|tiger|protect|captcha|firewall|blocked|bot)[^.]{0,120}' | head -3 | tr '\n' ' ')"
+          done
+
+      - uses: actions/checkout@v4
+        if: github.event.inputs.target != 'probe'
+        with:
+          sparse-checkout: .github/scripts
+
+      - name: Trigger EN publish
+        id: en
+        if: github.event.inputs.target != 'ar' && github.event.inputs.target != 'probe'
+        continue-on-error: true
+        run: ./.github/scripts/trigger-publish.sh en
 
       - name: Trigger AR publish
-        if: github.event.inputs.target != 'en'
-        run: |
-          curl -sf -X POST http://aicompany.usine.site/api/deploy/publish \
-            -H "Authorization: Bearer ${{ secrets.DEPLOY_WEBHOOK_SECRET }}" \
-            -H "Content-Type: application/json" \
-            -d '{"target":"ar"}'
+        id: ar
+        if: github.event.inputs.target != 'en' && github.event.inputs.target != 'probe'
+        continue-on-error: true
+        run: ./.github/scripts/trigger-publish.sh ar
+    outputs:
+      en: ${{ steps.en.outcome }}
+      ar: ${{ steps.ar.outcome }}
+
+  # A blocked runner tends to stay blocked, so retry only the failed queues from a
+  # fresh runner, which usually gets a different IP. A queue that already
+  # succeeded is never re-triggered, so it can't publish twice.
+  retry-on-new-runner:
+    needs: trigger-publish
+    if: needs.trigger-publish.outputs.en == 'failure' || needs.trigger-publish.outputs.ar == 'failure'
+    runs-on: ubuntu-latest
+    env:
+      WEBHOOK_SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+
+      - name: Retry EN publish
+        if: needs.trigger-publish.outputs.en == 'failure'
+        run: ./.github/scripts/trigger-publish.sh en
+
+      - name: Retry AR publish
+        if: always() && needs.trigger-publish.outputs.ar == 'failure'
+        run: ./.github/scripts/trigger-publish.sh ar

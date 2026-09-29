@@ -11,6 +11,7 @@ import {
   arTwinFor,
   enTwinFor,
 } from '../../lib/routes';
+import { isReleased } from '../../lib/arRollout';
 
 describe('routes.generated.ts', () => {
   it('is current with src/pages', () => {
@@ -55,9 +56,11 @@ describe('twin lookup', () => {
     expect(arTwinFor('/')).toBe('/ar');
   });
 
-  it('pairs the marketing sub-pages and the pricing page with their Arabic twins', () => {
-    expect(arTwinFor('/industries/marketing/seo')).toBe('/ar/industries/marketing/seo');
-    expect(enTwinFor('/ar/pricing/ai-automation-cost')).toBe('/pricing/ai-automation-cost');
+  it('pairs a staged Arabic page with its English twin only once it is live', () => {
+    const seo = '/ar/industries/marketing/seo';
+    expect(arTwinFor('/industries/marketing/seo')).toBe(isReleased(seo) ? seo : null);
+    expect(routeExists(seo)).toBe(isReleased(seo));
+    expect(ROUTES).toContain(seo);
   });
 
   it('returns null when the Arabic twin is not published', () => {

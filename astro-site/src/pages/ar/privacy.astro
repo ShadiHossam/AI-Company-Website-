@@ -19,13 +19,16 @@ try {
 
   if (!error && data) {
     const arSections = Array.isArray(data.ar_sections) && data.ar_sections.length > 0 ? data.ar_sections : null;
-    const enSections = Array.isArray(data.sections) && data.sections.length > 0 ? data.sections : null;
     // Only an Arabic title from the CMS is usable here. Falling back to
     // data.title put the English headline on the Arabic page, which is how
     // /privacy and /ar/privacy ended up sharing one <title>.
     dynamicTitle = data.ar_title ?? null;
-    dynamicSections = arSections ?? enSections;
-    dynamicLastUpdated = data.last_updated ?? null;
+    // Never fall back to the English CMS sections: that rendered English
+    // headings and body text on the Arabic page. With no Arabic sections in
+    // the CMS, the hardcoded Arabic content below is used instead, along with
+    // its own date, since the CMS date belongs to the English text.
+    dynamicSections = arSections;
+    dynamicLastUpdated = arSections ? (data.last_updated ?? null) : null;
   }
 } catch (err) {
   // Fallback to hardcoded content on error

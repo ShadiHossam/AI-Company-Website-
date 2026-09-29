@@ -21,6 +21,8 @@ interface RelatedPost {
   title: string;
   slug: string;
   category: string;
+  image?: string;
+  imageAlt?: string;
 }
 
 interface DbPost {
@@ -114,14 +116,25 @@ try {
     // it's actually published, producing a broken link for visitors.
     const { data: related } = await supabase
       .from('blog_posts')
-      .select('title, slug, category')
+      .select('title, slug, category, og_image, og_image_alt')
       .eq('status', 'published')
       .is('deleted_at', null)
       .eq('category', dbPost.category)
       .neq('slug', slug!)
       .limit(3);
 
-    relatedPosts = (related ?? []) as RelatedPost[];
+    // blog_posts has no cover_image column (selecting it fails the whole query),
+    // so use og_image and skip the generic social card, which keeps the gradient.
+    relatedPosts = (related ?? []).map((r) => {
+      const og = r.og_image && r.og_image !== '/assets/og-blog.jpg' ? r.og_image : undefined;
+      return {
+        title: r.title,
+        slug: r.slug,
+        category: r.category,
+        image: og,
+        imageAlt: r.og_image_alt ?? r.title,
+      };
+    });
   }
 } catch {
   // fall through to content collection
@@ -170,7 +183,7 @@ if (!dbPost) {
       relatedPosts = posts
         .filter(p => p.id !== slug && p.data.category === collectionCategory)
         .slice(0, 3)
-        .map(p => ({ title: p.data.title, slug: p.id, category: p.data.category }));
+        .map(p => ({ title: p.data.title, slug: p.id, category: p.data.category, image: p.data.coverImage }));
     } else {
       return await notFound();
     }
@@ -183,6 +196,7 @@ if (!dbPost) {
 {dbPost ? (
   <ArticleLayout
     title={dbPost.meta_title ?? dbPost.title}
+    headline={dbPost.title}
     description={dbPost.meta_description ?? dbPost.description}
     pubDate={pubDate}
     updatedDate={updatedDate}
