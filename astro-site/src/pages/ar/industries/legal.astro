@@ -1,15 +1,48 @@
 ---
 export const prerender = false;
-import ArBaseLayout from '../../../layouts/ArBaseLayout.astro';
+import ArBaseLayout from "../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const fallbackFaqs = [
+  { question: "هل ستحل مراجعة العقود بالذكاء الاصطناعي محل المحامين المساعدين أو المساعدين القانونيين لدينا؟", answer: "لا. مراجعة العقود بالذكاء الاصطناعي تنبّه إلى البنود التي تخالف دليل المكتب وتُظهر الأجزاء التي تحتاج تقدير محامٍ، لكن كل بند منبَّه إليه يذهب إلى شخص لاتخاذ القرار القانوني الفعلي. إنها تلغي وقت القراءة الأولى، لا العمل القانوني نفسه." },
+  { question: "هل يمكن الوثوق بأدوات البحث القانوني بالذكاء الاصطناعي بألا تختلق إحالات لقضايا؟", answer: "هذا أكبر خطر منفرد في الذكاء الاصطناعي القانوني، وهو سبب بنائنا للتحقق من الإحالات في أي مساعد بحث ننشره: كل إشارة لقضية ينتجها النظام يُتحقق منها مقابل مصدر حقيقي قبل عرضها عليكم. الأداة التي لا تستطيع ضمان ذلك لا يجب أن تكون في سير عمل قانوني أصلاً." },
+  { question: "كيف تتعاملون مع سرية العملاء والامتياز القانوني؟", answer: "تجري معالجة المستندات في بيئات معزولة مخصصة لمكتبكم، ولا يُستخدم أي شيء لتدريب نماذج مشتركة خارج مشروعكم. نصمم تدفق البيانات حول التزامات السرية القائمة لديكم قبل أن يلمس أي مستند النظام." },
+  { question: "هل هذا مبني للقانون المدني في الإمارات، أم أنه أداة ذكاء اصطناعي قانونية غربية عامة؟", answer: "ندرّب مساعدي المستندات والبحث على الاختصاص القضائي الذي تمارسون فيه فعلاً. الأداة المدرَّبة فقط على السوابق القضائية الأمريكية أو البريطانية تنتج إجابات خاطئة بثقة في سياق القانون المدني الإماراتي، لذلك التدريب الخاص بالاختصاص القضائي شرط أساسي، لا إضافة." },
+];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_legal')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {
+  // الرجوع إلى المحتوى الثابت عند حدوث خطأ
+}
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 
 const ldJson = [
   {
     "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "الذكاء الاصطناعي لمكاتب المحاماة في الإمارات | Lenoo AI",
+    "@type": "Service",
+    "name": "الذكاء الاصطناعي لمكاتب المحاماة في الإمارات",
     "url": "https://lenooai.com/ar/industries/legal",
+    "description": "أنظمة ذكاء اصطناعي مخصصة لمكاتب المحاماة والإدارات القانونية في الإمارات: مراجعة العقود، وأتمتة المستندات، ومساعدو البحث القانوني، ومراقبة الامتثال.",
     "inLanguage": "ar",
-    "isPartOf": { "@type": "WebSite", "url": "https://lenooai.com" }
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Legal Services"
   },
   {
     "@context": "https://schema.org",
@@ -17,144 +50,128 @@ const ldJson = [
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
       { "@type": "ListItem", "position": 2, "name": "القطاعات", "item": "https://lenooai.com/ar/industries" },
-      { "@type": "ListItem", "position": 3, "name": "مكاتب المحاماة", "item": "https://lenooai.com/ar/industries/legal" }
-    ]
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "name": "الذكاء الاصطناعي لمكاتب المحاماة في الإمارات",
-    "description": "مراجعة عقود، أتمتة مستندات قانونية، مساعد بحث قانوني، ومراقبة امتثال لمكاتب المحاماة والإدارات القانونية في الإمارات.",
-    "areaServed": {"@type": "Country", "name": "United Arab Emirates"},
-    "provider": { "name": "Lenoo AI", "url": "https://lenooai.com" }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "هل ستحل مراجعة العقود بالذكاء الاصطناعي محل المحامين المساعدين؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "لا. مراجعة العقود بالذكاء الاصطناعي تُنبّه للبنود المنحرفة عن دليلكم وتُظهر الأقسام التي تحتاج حكم محامٍ، لكن كل بند مُنبَّه له يذهب لشخص للقرار القانوني الفعلي. يُزيل وقت القراءة الأولى، لا العمل القانوني نفسه." }
-      },
-      {
-        "@type": "Question",
-        "name": "هل يمكن الوثوق بأدوات البحث القانوني بالذكاء الاصطناعي ألا تختلق استشهادات قضايا؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "هذا أكبر خطر واحد بالذكاء الاصطناعي القانوني، ولهذا نبني فحص الاستشهاد في أي مساعد بحث ننشره: كل مرجع قضية يُنتجه النظام يُتحقق منه مقابل مصدر حقيقي قبل عرضه." }
-      },
-      {
-        "@type": "Question",
-        "name": "كيف تتعاملون مع سرية العميل والامتياز؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "معالجة المستندات تعمل في بيئات معزولة محددة النطاق لمكتبكم، ولا شيء يُستخدم لتدريب نماذج مشتركة خارج مشروعكم. نُصمّم تدفق البيانات حول التزامات السرية الحالية لديكم." }
-      },
-      {
-        "@type": "Question",
-        "name": "هل هذا مبني للقانون المدني الإماراتي، أم أداة ذكاء اصطناعي قانونية غربية عامة؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نُدرّب مساعدي المستندات والبحث على الولاية القضائية التي تُمارسون فيها فعلياً. أداة مُدرَّبة فقط على اجتهاد أمريكي أو بريطاني تُنتج إجابات خاطئة بثقة في سياق القانون المدني الإماراتي." }
-      }
+      { "@type": "ListItem", "position": 3, "name": "الذكاء الاصطناعي القانوني", "item": "https://lenooai.com/ar/industries/legal" }
     ]
   }
 ];
 ---
 
 <ArBaseLayout
-  title="الذكاء الاصطناعي لمكاتب المحاماة في الإمارات | Lenoo AI"
-  description="Lenoo AI، وكالة الذكاء الاصطناعي في دبي، تبني مراجعة عقود وأتمتة مستندات ومساعد بحث قانوني لمكاتب المحاماة في الإمارات، مع مراجعة بشرية نهائية دائماً."
+  title="الذكاء الاصطناعي لمكاتب المحاماة في الإمارات: مراجعة العقود"
+  description="Lenoo AI، وكالة ذكاء اصطناعي في دبي، تبني أنظمة ذكاء اصطناعي مخصصة لمكاتب المحاماة في الإمارات: مراجعة العقود، وأتمتة المستندات، ومساعدو البحث القانوني."
   canonicalPath="/ar/industries/legal"
   enPath="/industries/legal"
   ldJson={ldJson}
 >
 
-<!-- HERO -->
-<header class="page-hero">
-  <div class="container">
-    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التنقل"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">القطاعات</a><span style="opacity:0.4;padding:0 4px;"> / </span>مكاتب المحاماة</div>
-    <div class="badge badge-cyan" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">gavel</span>
-      مكاتب المحاماة
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">القطاعات</a><span style="opacity:0.4;padding:0 4px;"> / </span>القانون</div>
+    <h1>ذكاء اصطناعي<br><span class="gradient-text">لمكاتب المحاماة في الإمارات</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">تبني Lenoo AI أنظمة ذكاء اصطناعي مخصصة لمكاتب المحاماة والإدارات القانونية في الإمارات: مراجعة العقود، وأتمتة المستندات القانونية، ومساعدو البحث، ومراقبة الامتثال. كل مخرج يبقى قابلاً للمراجعة والإسناد، وتحت الموافقة النهائية لمحامٍ.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;">
+      <button onclick="openModal(this)" data-source="ar_legal_hero" class="btn-primary">احجزوا تدقيقاً مجانياً للذكاء القانوني</button>
+      <a href="#what-we-build" class="btn-outline">شاهدوا ما نبنيه ↓</a>
     </div>
-    <h1>ذكاء اصطناعي لمكاتب المحاماة في الإمارات<br><span class="gradient-text">القرار النهائي يبقى دائماً للمحامي</span></h1>
-    <p style="max-width:640px;margin:1.5rem auto;line-height:1.8;color:rgba(255,255,255,0.72);">
-      المحامون يقضون قرابة ثلث وقتهم بمراجعة المستندات. نبني لك مراجعة عقود تُنبّه للانحراف عن دليلكم، مساعد بحث قانوني يتحقق من كل استشهاد، وأتمتة مستندات من قوالبكم الفعلية.
-    </p>
-    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-      <button onclick="openModal(this)" data-source="ar_legal_hero" class="btn-primary">احجز استشارة مجانية ←</button>
-    </div>
+    <StatStrip stats={[
+      { value: "٣٠٪", caption: "من وقت المحامين يُقضى عادةً في مراجعة المستندات، وفق استطلاعات العمليات القانونية" },
+      { value: "٥٠-٩٠٪", caption: "انخفاض معتاد في وقت المراجعة الأولى للعقود بمساعدة الذكاء الاصطناعي" },
+      { value: "١٠٠٪", caption: "من الإحالات المولَّدة بالذكاء الاصطناعي يُتحقق منها مقابل مصادر حقيقية قبل التسليم" },
+    ]} />
   </div>
 </header>
 
-<!-- IMAGE BANNER + STATS -->
-<div style="position:relative; overflow:hidden;">
-  <img src="https://images.unsplash.com/photo-1758518731462-d091b0b4ed0d?w=1600&q=80&auto=format&fit=crop" alt="محامون يراجعون ويوقّعون عقداً في مكتب محاماة" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
-  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.18) 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.40));"></div>
-  <div style="position:relative; padding:3rem 2rem;">
-    <div class="glass-dark hosp-stats-grid" style="max-width:920px; margin:0 auto; border-radius:20px; padding:2rem 2.5rem;">
-      <div class="stat-item">
-        <p class="stat-num">~٣٠٪</p>
-        <p class="stat-lbl">من وقت المحامي يُنفَق عادة بمراجعة المستندات</p>
-      </div>
-      <div class="stat-item">
-        <p class="stat-num">٥٠-٩٠٪</p>
-        <p class="stat-lbl">تخفيض نموذجي بوقت مراجعة العقد الأولى مع الذكاء الاصطناعي</p>
-      </div>
-      <div class="stat-item">
-        <p class="stat-num">١٠٠٪</p>
-        <p class="stat-lbl">من استشهادات الذكاء الاصطناعي تُتحقق مقابل مصادر حقيقية</p>
-      </div>
-      <div class="stat-item">
-        <p class="stat-num">١٠٠٪</p>
-        <p class="stat-lbl">ضمان استرداد إذا لم ترضَ</p>
-      </div>
-    </div>
-  </div>
+<div style="position:relative; overflow:hidden; height:280px; margin:0 0 -1px;">
+  <img src="https://images.unsplash.com/photo-1758518731462-d091b0b4ed0d?w=1600&h=320&q=80&auto=format&fit=crop" alt="محامون يراجعون عقداً ويوقعونه على مكتب في مكتب محاماة" loading="lazy" width="1600" height="280" style="width:100%; height:100%; object-fit:cover; object-position:center 35%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.35) 0%,transparent 55%);"></div>
 </div>
 
-<!-- AI USE CASES -->
-<section class="section">
+<!-- WHY LEGAL & AI FIT -->
+<section class="section" aria-labelledby="shift-heading">
   <div class="container">
-    <h2 style="text-align:center;margin-bottom:0.75rem;">ما يفعله الذكاء الاصطناعي في مكتب المحاماة</h2>
-    <p style="text-align:center;color:#42474e;margin-bottom:3rem;max-width:560px;margin-inline:auto;">ستة أنظمة بفحص استشهاد ومراجعة بشرية مبنية فيها.</p>
-    <div class="feature-ledger">
-      <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">fact_check</span>
-        <h3>مساعد مراجعة العقود والتعديل</h3>
-        <p style="color:#42474e;line-height:1.7;">يُقارن العقود الواردة مقابل دليل مكتبكم، يُنبّه للبنود غير القياسية، ويقترح تعديلات لمراجعة المحامي.</p>
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">لماذا القانون من أعلى القطاعات تأثراً بالذكاء الاصطناعي</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>مراجعة المستندات متكررة بطبيعتها.</strong> تجد استطلاعات العمليات القانونية باستمرار أن المحامين يقضون ما يقارب ثلث وقتهم في قراءة المستندات ومقارنتها. أدوات مراجعة العقود بالذكاء الاصطناعي تنبّه إلى الاختلافات عن الدليل المعتمد في ثوانٍ، وتترك القرارات التقديرية للمحامي.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>الدقة تهم هنا أكثر من أي مكان تقريباً.</strong> أداة ذكاء اصطناعي قانونية تختلق إحالة لقضية ليست خاطئة فقط، بل مسؤولية مهنية. كل مساعد بحث نبنيه يتحقق من كل إحالة مقابل مصدر حقيقي قبل أن تصل إلى المستخدم.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>استقبال العملاء والأعمال الإدارية تستهلك الساعات القابلة للفوترة.</strong> أتمتة فرز العملاء، وصياغة المستندات، وتسجيل الوقت تعيد للمحامين ساعات كانت ستذهب إلى الأوراق بدلاً من القضايا.</p>
       </div>
-      <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">description</span>
-        <h3>أتمتة المستندات القانونية</h3>
-        <p style="color:#42474e;line-height:1.7;">يُسوّد الاتفاقيات والخطابات والمذكرات الروتينية من قوالب مكتبكم، مالئاً تفاصيل خاصة بالقضية تلقائياً.</p>
-      </div>
-      <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">gavel</span>
-        <h3>مساعد بحث قضايا وسوابق</h3>
-        <p style="color:#42474e;line-height:1.7;">يبحث في الاجتهاد القضائي وسوابق المكتب عن السند ذي الصلة، وكل استشهاد يُتحقق منه مقابل المصدر.</p>
-      </div>
-      <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">forum</span>
-        <h3>بوت استقبال وفرز العملاء</h3>
-        <p style="color:#42474e;line-height:1.7;">يجمع تفاصيل القضية من استفسارات العملاء الجدد بالعربي والإنجليزي، ويُوجّهها لمجال الممارسة الصحيح.</p>
-      </div>
-      <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">policy</span>
-        <h3>مراقبة امتثال للتغييرات التنظيمية</h3>
-        <p style="color:#42474e;line-height:1.7;">يتابع التحديثات التنظيمية ذات الصلة ويُنبّه لأي قضايا نشطة أو استشارات عملاء قد تتأثر.</p>
-      </div>
-      <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">receipt_long</span>
-        <h3>أتمتة الفوترة وإدخال الوقت</h3>
-        <p style="color:#42474e;line-height:1.7;">يُسوّد قيود الوقت من نشاط التقويم والمستندات، فيقضي المحامون وقتاً أقل بإعادة بناء يومهم آخر الشهر.</p>
+      <div class="split-media" style="display:flex; align-items:stretch;">
+        <div class="card" style="display:flex; flex-direction:column; justify-content:center; text-align:center; width:100%; padding:2.5rem;">
+          <p class="stat-number" style="font-size:3rem; margin-bottom:0.75rem;">٥٠-٩٠٪</p>
+          <p style="color:#42474e; font-size:1rem; line-height:1.7;">انخفاض معتاد في وقت المراجعة الأولى للعقود عندما يتولى الذكاء الاصطناعي القراءة الأولى مقابل دليل مكتبكم.</p>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">أنظمة ذكاء اصطناعي مبنية لمكاتب المحاماة في الإمارات</h2>
+      <p>ستة أنظمة تبنيها وكالتنا للذكاء الاصطناعي في دبي لمكاتب المحاماة والإدارات القانونية، مع تحقق مدمج من الإحالات ومراجعة بشرية.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">fact_check</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">مساعد مراجعة العقود واقتراح التعديلات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يقارن العقود الواردة بدليل مكتبكم، وينبّه إلى البنود غير المعتادة، ويقترح تعديلات لمراجعة المحامي.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">كل تعديل مقترح يتطلب موافقة محامٍ قبل إرساله</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">أتمتة المستندات القانونية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يصيغ الاتفاقيات والخطابات والمذكرات الروتينية من نماذج مكتبكم الخاصة، ويملأ تفاصيل كل قضية تلقائياً.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">مبني من نماذجكم الحالية، لا من صيغ عامة جاهزة</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">gavel</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">مساعد البحث في القضايا والسوابق</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يبحث في السوابق القضائية وسوابق المكتب عن المراجع ذات الصلة، مع التحقق من كل إحالة مقابل مصدرها قبل عرضها.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">مدرَّب على الاختصاص القضائي الذي تمارسون فيه فعلاً</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">forum</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">روبوت محادثة لاستقبال العملاء وفرزهم</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يجمع تفاصيل القضايا من استفسارات العملاء الجدد بالعربية والإنجليزية، ويوجّهها إلى مجال الممارسة المناسب قبل المكالمة الأولى.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">يوفر على المحامين المكالمات الأولية غير المؤهلة</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">policy</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">مراقبة الامتثال للتغيرات التنظيمية</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يتابع التحديثات التنظيمية ذات الصلة وينبّه إلى القضايا النشطة أو الاستشارات المقدمة للعملاء التي قد تتأثر بها.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">يبقي العمل الاستشاري محدّثاً دون مراقبة يدوية</p>
+      </div>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">receipt_long</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">أتمتة الفوترة وتسجيل الوقت</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يصيغ قيود الوقت من نشاط التقويم والمستندات، فيقضي المحامون وقتاً أقل في إعادة بناء يومهم في نهاية الشهر.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">يقلل الوقت غير المفوتر الضائع بسبب عادات التسجيل غير المنتظمة</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">مشمول بضمان الاسترداد ١٠٠٪</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">كل الأنظمة تبقي المحامي صاحب القرار النهائي، مع ضوابط سرية مخصصة لمكتبكم.</p>
+      <button onclick="openModal(this)" data-source="ar_legal_mid" class="btn-primary">احجزوا تدقيقاً مجانياً للذكاء القانوني</button>
+    </div>
+  </div>
+</section>
+
 <!-- HOW WE WORK WITH YOUR FIRM -->
-<section class="section" style="background:#f0f3ff;" aria-labelledby="legal-team-heading">
-  <div class="container" style="max-width:900px; text-align:center;">
-    <h2 id="legal-team-heading" style="margin-bottom:1.5rem;">مبني مع محاميكم، لا حولهم</h2>
-    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">كل مشروع يبدأ مع المحامين المساعدين والمساعدين القانونيين والشركاء الذين يقومون فعلياً بمراجعة المستندات والبحث الذي نهدف لتسريعه. يحضرون جلسات التصميم منذ الأسبوع الأول، فيكون الدليل الذي يفحصه النظام هو الذي يستخدمه مكتبكم فعلياً.</p>
-    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">هذا يشمل توثيق كيفية تنبيه النظام للبنود والاستشهادات بلغة يستطيع شركاء المخاطر والامتثال لديكم الدفاع عنها، لا كوداً يقرأه المهندسون فقط.</p>
+<section class="section" aria-labelledby="legal-team-heading">
+  <div class="container">
+    <div class="split-grid split-media-right">
+      <div>
+        <h2 id="legal-team-heading" style="margin-bottom:1.5rem;">مبني مع محاميكم، لا من حولهم</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">كل مشروع يبدأ مع المحامين المساعدين والمساعدين القانونيين والشركاء الذين يؤدون فعلاً مراجعة المستندات والبحث الذي نهدف إلى تسريعه. يشاركون في جلسات التصميم من الأسبوع الأول، فيكون الدليل الذي يتحقق النظام مقابله هو الدليل الذي يستخدمه مكتبكم فعلاً.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">يشمل ذلك توثيق طريقة تنبيه النظام إلى البنود والإحالات بلغة يستطيع شركاء المخاطر والامتثال لديكم الدفاع عنها، لا مجرد كود يقرؤه مهندسوكم. البدء بهذه الطريقة يأخذ وقتاً أطول، وهو السبب في أن الأنظمة التي نسلّمها تُستخدم فعلاً بدلاً من أن تُهجر بصمت.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1562564055-71e051d33c19?w=800&h=600&q=80&auto=format&fit=crop" alt="محامٍ يراجع المستندات مع عميل على مكتب" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
   </div>
 </section>
 
@@ -162,44 +179,86 @@ const ldJson = [
 <section id="applications" class="section" aria-labelledby="apps-heading">
   <div class="container">
     <div class="section-header">
-      <h2 id="apps-heading">أين يُحدث الذكاء الاصطناعي أكبر أثر في الخدمات القانونية</h2>
+      <h2 id="apps-heading">أين يحقق الذكاء الاصطناعي أكبر أثر في الخدمات القانونية</h2>
     </div>
     <div class="bento-grid bento-grid-3">
-      <div class="card">
-        <div class="icon-box"><span class="material-symbols-outlined" style="direction:ltr;color:#006875; font-size:24px;" aria-hidden="true">fact_check</span></div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">تحليل ومراجعة العقود</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">أدوات الذكاء الاصطناعي تُقارن العقود مقابل دليل المكتب أو معيار السوق، مُظهرة الانحرافات للمراجعة بجزء صغير من وقت القراءة اليدوية.</p>
-        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">أحد أسرع فئات الذكاء الاصطناعي القانوني تبنياً بين الفرق القانونية للشركات</p>
+      <div class="card" data-legal-expand>
+        <button type="button" class="legal-card-toggle" aria-expanded="false" aria-controls="legal-panel-1" id="legal-toggle-1">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">fact_check</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">تحليل العقود ومراجعتها</h3>
+          </div>
+          <span class="legal-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="legal-card-panel" id="legal-panel-1" role="region" aria-labelledby="legal-toggle-1" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">أدوات الذكاء الاصطناعي تقارن العقود بدليل المكتب أو بالمعيار السائد في السوق، وتُظهر الاختلافات للمراجعة في جزء بسيط من وقت القراءة اليدوية.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875;">من أسرع فئات الذكاء الاصطناعي القانوني تبنّياً لدى الفرق القانونية في الشركات</p>
+        </div>
       </div>
-      <div class="card">
-        <div class="icon-box"><span class="material-symbols-outlined" style="direction:ltr;color:#006875; font-size:24px;" aria-hidden="true">gavel</span></div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">بحث قانوني بالذكاء الاصطناعي</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">مساعدو البحث يبحثون في الاجتهاد القضائي والتشريعات أسرع بكثير من المراجعة اليدوية، رغم أن التحقق من الاستشهاد يبقى أساسياً.</p>
-        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">فحص الاستشهاد أصبح ممارسة قياسية في نشر الذكاء الاصطناعي القانوني</p>
+      <div class="card" data-legal-expand>
+        <button type="button" class="legal-card-toggle" aria-expanded="false" aria-controls="legal-panel-2" id="legal-toggle-2">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">gavel</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">البحث القانوني بالذكاء الاصطناعي</h3>
+          </div>
+          <span class="legal-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="legal-card-panel" id="legal-panel-2" role="region" aria-labelledby="legal-toggle-2" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">مساعدو البحث يبحثون في السوابق القضائية والتشريعات أسرع بكثير من المراجعة اليدوية، لكن التحقق من الإحالات يبقى ضرورياً في ظل حالات موثقة لسوابق قضائية اختلقها الذكاء الاصطناعي.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875;">التحقق من الإحالات أصبح ممارسة معتادة في تطبيقات الذكاء الاصطناعي القانونية</p>
+        </div>
       </div>
-      <div class="card">
-        <div class="icon-box"><span class="material-symbols-outlined" style="direction:ltr;color:#006875; font-size:24px;" aria-hidden="true">description</span></div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">أتمتة المستندات</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">أدوات الصياغة المبنية على قوالب تُولّد مسودات أولى للاتفاقيات والمذكرات الروتينية، تاركة المحامين يركّزون على التفاوض والاستراتيجية.</p>
-        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">مستخدمة على نطاق واسع لأنواع مستندات عالية الحجم منخفضة التعقيد</p>
+      <div class="card" data-legal-expand>
+        <button type="button" class="legal-card-toggle" aria-expanded="false" aria-controls="legal-panel-3" id="legal-toggle-3">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">أتمتة المستندات</h3>
+          </div>
+          <span class="legal-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="legal-card-panel" id="legal-panel-3" role="region" aria-labelledby="legal-toggle-3" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">أدوات الصياغة القائمة على النماذج تولّد المسودات الأولى للاتفاقيات والمذكرات الروتينية، فيركز المحامون وقتهم على التفاوض والاستراتيجية.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875;">مستخدمة على نطاق واسع لأنواع المستندات كثيرة الحجم وقليلة التعقيد</p>
+        </div>
       </div>
-      <div class="card">
-        <div class="icon-box"><span class="material-symbols-outlined" style="direction:ltr;color:#006875; font-size:24px;" aria-hidden="true">search</span></div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">أتمتة العناية الواجبة</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">أدوات الذكاء الاصطناعي تفحص مجموعات مستندات كبيرة أثناء صفقات الاندماج والاستحواذ أو العقارات، مُنبّهة لبنود المخاطر والمستندات الناقصة.</p>
-        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">يُقلّص وقت المراجعة على مجموعات المستندات الكبيرة بشكل ملحوظ</p>
+      <div class="card" data-legal-expand>
+        <button type="button" class="legal-card-toggle" aria-expanded="false" aria-controls="legal-panel-4" id="legal-toggle-4">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">search</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">أتمتة العناية الواجبة</h3>
+          </div>
+          <span class="legal-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="legal-card-panel" id="legal-panel-4" role="region" aria-labelledby="legal-toggle-4" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">أدوات الذكاء الاصطناعي تفحص مجموعات مستندات كبيرة أثناء صفقات الاندماج والاستحواذ أو المعاملات العقارية، وتنبّه فريق الصفقة إلى بنود المخاطر والمستندات الناقصة.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875;">يختصر وقت المراجعة على مجموعات المستندات الكبيرة بشكل كبير</p>
+        </div>
       </div>
-      <div class="card">
-        <div class="icon-box"><span class="material-symbols-outlined" style="direction:ltr;color:#006875; font-size:24px;" aria-hidden="true">folder_managed</span></div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">اكتشاف إلكتروني</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">أدوات الترميز التنبؤي وتصنيف الذكاء الاصطناعي تُرتّب كميات كبيرة من مستندات الاكتشاف حسب الصلة، استخدام راسخ منذ فترة طويلة.</p>
-        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">أحد أقدم وأنضج تطبيقات الذكاء الاصطناعي القانوني</p>
+      <div class="card" data-legal-expand>
+        <button type="button" class="legal-card-toggle" aria-expanded="false" aria-controls="legal-panel-5" id="legal-toggle-5">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">folder_managed</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">الاكتشاف الإلكتروني</h3>
+          </div>
+          <span class="legal-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="legal-card-panel" id="legal-panel-5" role="region" aria-labelledby="legal-toggle-5" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">أدوات الترميز التنبؤي والتصنيف بالذكاء الاصطناعي ترتب كميات كبيرة من مستندات الاكتشاف حسب الصلة، وهو استخدام راسخ منذ فترة طويلة للذكاء الاصطناعي في التقاضي.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875;">من أقدم تطبيقات الذكاء الاصطناعي القانونية وأكثرها نضجاً</p>
+        </div>
       </div>
-      <div class="card">
-        <div class="icon-box"><span class="material-symbols-outlined" style="direction:ltr;color:#006875; font-size:24px;" aria-hidden="true">insights</span></div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">تحليل تنبؤي للقضايا</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">نماذج مُدرَّبة على نتائج قضايا تاريخية تساعد المتقاضين بتقييم النتائج المحتملة وقيمة التسوية، مُوجّهة الاستراتيجية لا مُملية إياها.</p>
-        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">يُستخدم كمدخل داعم للقرار، لا بديلاً عن الحكم القانوني</p>
+      <div class="card" data-legal-expand>
+        <button type="button" class="legal-card-toggle" aria-expanded="false" aria-controls="legal-panel-6" id="legal-toggle-6">
+          <div>
+            <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">insights</span></div>
+            <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b;">التحليل التنبؤي للقضايا</h3>
+          </div>
+          <span class="legal-card-icon" aria-hidden="true">+</span>
+        </button>
+        <div class="legal-card-panel" id="legal-panel-6" role="region" aria-labelledby="legal-toggle-6" hidden>
+          <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">نماذج مدرَّبة على نتائج القضايا التاريخية تساعد المحامين على تقدير النتائج المرجحة وقيمة التسوية، فتُثري الاستراتيجية بدلاً من أن تفرضها.</p>
+          <p style="font-size:0.8125rem; font-weight:600; color:#006875;">تُستخدم كمُدخل لدعم القرار، لا بديلاً عن التقدير القانوني</p>
+        </div>
       </div>
     </div>
   </div>
@@ -209,28 +268,28 @@ const ldJson = [
 <section class="section" style="background:#e7eeff;" aria-labelledby="eval-heading">
   <div class="container">
     <div class="section-header">
-      <h2 id="eval-heading">ما الذي يجعل الذكاء الاصطناعي القانوني يعمل فعلياً</h2>
+      <h2 id="eval-heading">ما يجعل الذكاء الاصطناعي القانوني يعمل فعلاً</h2>
     </div>
     <div class="eval-grid">
       <div class="card" style="text-align:center;">
-        <div class="num-circle">1</div>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">الدقة ومخاطر الهلوسة</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">أداة الذكاء الاصطناعي القانونية يجب أن تستشهد بمصادر قابلة للتحقق. استشهادات مُختلَقة سببت بالفعل عقوبات حقيقية في المحاكم.</p>
+        <div class="num-circle">١</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">الدقة وخطر الاختلاق</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">أداة الذكاء الاصطناعي القانونية يجب أن تستشهد بمصادر يمكن التحقق منها. الإحالات المختلقة تسببت بالفعل في عقوبات حقيقية أمام المحاكم، هذا ليس خطراً افتراضياً.</p>
       </div>
       <div class="card" style="text-align:center;">
-        <div class="num-circle">2</div>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">السرية والامتياز</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">مستندات العميل لا يمكنها المرور عبر أنظمة تحتفظ ببياناتها أو تُدرّب عليها خارج مشروعكم. السرية يجب أن تُبنى في البنية، لا افتراضها.</p>
+        <div class="num-circle">٢</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">السرية والامتياز القانوني</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">مستندات العملاء لا يمكن أن تمر عبر أنظمة تحتفظ بتلك البيانات أو تتدرب عليها خارج مشروعكم. السرية يجب أن تُبنى في التصميم، لا أن تُفترض.</p>
       </div>
       <div class="card" style="text-align:center;">
-        <div class="num-circle">3</div>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">تدريب خاص بالولاية القضائية</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">أداة مُدرَّبة على اجتهاد أجنبي تُنتج إجابات خاطئة بثقة في سياق القانون المدني الإماراتي. الدقة القضائية ليست اختيارية.</p>
+        <div class="num-circle">٣</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">تدريب خاص بالاختصاص القضائي</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">أداة مدرَّبة على سوابق قضائية أجنبية تنتج إجابات خاطئة بثقة في سياق القانون المدني الإماراتي. دقة الاختصاص القضائي ليست اختيارية.</p>
       </div>
       <div class="card" style="text-align:center;">
-        <div class="num-circle">4</div>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">مراجعة بشرية كفحص نهائي</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">الذكاء الاصطناعي يُسوّد وينبّه، لكن المحامي يقرر. أي سير عمل يُزيل خطوة المراجعة البشرية النهائية مخاطرة مهنية، لا فوز إنتاجية.</p>
+        <div class="num-circle">٤</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">المراجعة البشرية كفحص نهائي</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">الذكاء الاصطناعي يصيغ وينبّه، لكن المحامي يقرر. أي سير عمل يلغي خطوة المراجعة البشرية النهائية خطر مهني، لا مكسب إنتاجية.</p>
       </div>
     </div>
   </div>
@@ -240,138 +299,93 @@ const ldJson = [
 <section class="section" aria-labelledby="research-heading">
   <div class="container" style="max-width:860px;">
     <div class="section-header">
-      <h2 id="research-heading">ما تُظهره البيانات حول الذكاء الاصطناعي في الخدمات القانونية</h2>
+      <h2 id="research-heading">ما تقوله البيانات عن الذكاء الاصطناعي في الخدمات القانونية</h2>
     </div>
     <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
       <div class="card" style="text-align:center;">
         <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">~٣٠٪</p>
-        <p style="color:#42474e; font-size:0.875rem;">من وقت المحامي يُنفَق عادة بمراجعة المستندات وفق استطلاعات عمليات قانونية</p>
+        <p style="color:#42474e; font-size:0.875rem;">من وقت المحامين يُقضى عادةً في مراجعة المستندات، وفق استطلاعات العمليات القانونية</p>
       </div>
       <div class="card" style="text-align:center;">
         <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">٥٠-٩٠٪</p>
-        <p style="color:#42474e; font-size:0.875rem;">تخفيض نموذجي بوقت مراجعة العقد الأولى بمساعدة الذكاء الاصطناعي</p>
+        <p style="color:#42474e; font-size:0.875rem;">انخفاض معتاد في وقت المراجعة الأولى للعقود بمساعدة الذكاء الاصطناعي</p>
       </div>
       <div class="card" style="text-align:center;">
-        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">صفر</p>
-        <p style="color:#42474e; font-size:0.875rem;">تسامح مع استشهادات غير مُتحقَّق منها في أي مخرج بحث قانوني نبنيه</p>
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">٠</p>
+        <p style="color:#42474e; font-size:0.875rem;">تسامح مع الإحالات غير المتحقق منها في أي مخرجات بحث قانوني نبنيها</p>
       </div>
     </div>
     <div class="research-panel">
       <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
         <div>
           <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">توزيع الوقت</p>
-          <p style="color:#42474e; line-height:1.7;">أبحاث العمليات القانونية تُظهر باستمرار أن مراجعة المستندات والعمل الإداري يستهلكان حصة غير متناسبة من الوقت القابل للفوترة مقارنة بالعمل الاستراتيجي والاستشاري الذي يُقدّره العملاء فعلياً.</p>
+          <p style="color:#42474e; line-height:1.7;">تُظهر أبحاث العمليات القانونية باستمرار أن مراجعة المستندات والأعمال الإدارية تستهلك حصة غير متناسبة من الوقت القابل للفوترة مقارنة بالعمل الاستراتيجي والاستشاري الذي يقدّره العملاء فعلاً.</p>
         </div>
         <div>
           <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">سرعة المراجعة</p>
-          <p style="color:#42474e; line-height:1.7;">المكاتب التي تستخدم مراجعة عقود بمساعدة الذكاء الاصطناعي تُبلغ عن انخفاض وقت المراجعة الأولى بنسبة ٥٠ إلى ٩٠٪، حسب تعقيد العقد ووضوح الدليل.</p>
+          <p style="color:#42474e; line-height:1.7;">المكاتب التي تستخدم مراجعة العقود بمساعدة الذكاء الاصطناعي تسجل انخفاضاً في وقت المراجعة الأولى بنسبة ٥٠ إلى ٩٠٪، حسب تعقيد العقد ومدى وضوح الدليل، فيتفرغ المحامون للتفاوض والقرارات التقديرية.</p>
         </div>
         <div>
-          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">مخاطر الاستشهاد</p>
-          <p style="color:#42474e; line-height:1.7;">قضايا محاكم موثقة متعددة تشمل محامين عوقبوا لتقديم مذكرات باستشهادات مُختلَقة بالذكاء الاصطناعي. هذا أوضح مثال تحذيري في تبني الذكاء الاصطناعي المهني.</p>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">خطر الإحالات</p>
+          <p style="color:#42474e; line-height:1.7;">هناك عدة قضايا موثقة أمام المحاكم عوقب فيها محامون لتقديمهم مذكرات تتضمن إحالات اختلقها الذكاء الاصطناعي. هذا أوضح مثال تحذيري في تبنّي الذكاء الاصطناعي المهني، وسبب كون التحقق من الإحالات غير قابل للتفاوض في الأدوات القانونية.</p>
         </div>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- GUARANTEE -->
-<section class="section" style="background:#e7eeff;padding:4rem 0;text-align:center;">
-  <div class="container">
-    <div class="guarantee-badge" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:18px;direction:ltr;" aria-hidden="true">shield</span>
-      ضمان الاسترداد الكامل، الوحيد في الإمارات
-    </div>
-    <h2 style="margin-bottom:1rem;">إذا لم تكن راضياً، لا تدفع أي شيء.</h2>
-    <p style="color:#42474e;max-width:560px;margin:0 auto 2rem;line-height:1.8;">نبني، تختبر، وإذا لم تكن راضياً تماماً نردّ ١٠٠٪ خلال ٣٠ يوماً من التسليم. بدون أسئلة.</p>
-    <button onclick="openModal(this)" data-source="ar_legal_guarantee" class="btn-primary">ابدأ بدون مخاطرة</button>
   </div>
 </section>
 
 <!-- FAQ -->
-<section class="section">
-  <div class="container" style="max-width:760px;">
-    <h2 style="text-align:center;margin-bottom:2.5rem;">أسئلة شائعة</h2>
-    <div class="faq-list">
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل ستحل مراجعة العقود بالذكاء الاصطناعي محل المحامين المساعدين؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">لا. مراجعة العقود تُنبّه للبنود المنحرفة عن دليلكم وتُظهر الأقسام التي تحتاج حكم محامٍ، لكن كل بند مُنبَّه له يذهب لشخص للقرار الفعلي. يُزيل وقت القراءة الأولى، لا العمل القانوني نفسه.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل يمكن الوثوق بأدوات البحث القانوني ألا تختلق استشهادات؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">هذا أكبر خطر واحد بالذكاء الاصطناعي القانوني، ولهذا نبني فحص الاستشهاد في أي مساعد بحث ننشره: كل مرجع يُتحقق منه مقابل مصدر حقيقي قبل عرضه.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          كيف تتعاملون مع سرية العميل والامتياز؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">معالجة المستندات تعمل في بيئات معزولة محددة النطاق لمكتبكم، ولا شيء يُستخدم لتدريب نماذج مشتركة خارج مشروعكم.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل هذا مبني للقانون المدني الإماراتي؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نُدرّب مساعدي المستندات والبحث على الولاية القضائية التي تُمارسون فيها فعلياً، فالتدريب الخاص بالولاية القضائية متطلب لا إضافة.</div>
-      </div>
+<section class="section" style="background:#e7eeff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">أسئلة حول الذكاء الاصطناعي في الخدمات القانونية</h2>
     </div>
+    <FaqAccordion items={faqItems} />
   </div>
 </section>
 
 <!-- FINAL CTA -->
-<section class="cta-band" style="border-radius:24px;margin:2rem 2rem 4rem;">
-  <div class="container" style="text-align:center;">
-    <h2 style="margin-bottom:1rem;">جاهز لإعادة ساعات المراجعة للعمل القانوني الفعلي؟</h2>
-    <p style="margin-bottom:2rem;max-width:500px;margin-inline:auto;line-height:1.7;">احجز جلسة تشخيص مجانية، نُقيّم سير عمل مستنداتكم وبحثكم، ونريك بالضبط ما سنبنيه. بدون التزام.</p>
-    <button onclick="openModal(this)" data-source="ar_legal_cta" class="btn-primary">ابدأ الآن ←</button>
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">احجزوا تدقيقاً مجانياً للذكاء القانوني</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">سنقيّم سير عمل المستندات والبحث في مكتبكم، ونريكم بالضبط ما سنبنيه. دون أي التزام. معظم عمليات التدقيق تأخذ ٣٠ دقيقة وتنتج خطة عمل واضحة.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+      <span class="cta-trust-badge">✓ دون أي التزام</span>
+      <span class="cta-trust-badge">✓ ضمان الاسترداد</span>
+    </div>
+    <button onclick="openModal(this)" data-source="ar_legal_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا تدقيقاً مجانياً للذكاء القانوني</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
   </div>
-</section>
-
-<style>
-  .hosp-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
-    text-align: center;
-  }
-  .stat-num {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: #00e3fd;
-    margin: 0 0 0.25rem;
-  }
-  .stat-lbl {
-    color: rgba(255,255,255,0.72);
-    font-size: 0.875rem;
-    margin: 0;
-    line-height: 1.5;
-  }
-  .stat-item { padding: 0 .25rem; }
-  .faq-list {
-    display: grid;
-    gap: 0.75rem;
-  }
-  @media (max-width: 900px) {
-    .hosp-stats-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 580px) {
-    .hosp-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-  }
-
-  /* Applications / evaluation / research sections */
-  .icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
-  .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
-  .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
-  .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
-  @media(max-width:900px) { .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
-  @media(max-width:600px) { .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
-</style>
+</div>
 
 </ArBaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
+    .legal-card-toggle { display:flex; justify-content:space-between; align-items:center; width:100%; background:none; border:none; cursor:pointer; text-align:start; padding:0; gap:1rem; }
+    .legal-card-toggle h3 { margin:0; }
+    .legal-card-icon { font-size:1.25rem; color:#006875; transition:transform 0.2s; flex-shrink:0; }
+    .legal-card-toggle[aria-expanded="true"] .legal-card-icon { transform:rotate(45deg); }
+    .legal-card-toggle:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+    .legal-card-panel { margin-top:0.75rem; }
+</style>
+
+<script>
+  document.querySelectorAll('[data-legal-expand]').forEach((card) => {
+    const btn = card.querySelector('.legal-card-toggle');
+    const panel = card.querySelector('.legal-card-panel');
+    btn?.addEventListener('click', () => {
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!expanded));
+      if (panel) (panel as HTMLElement).hidden = expanded;
+    });
+  });
+</script>

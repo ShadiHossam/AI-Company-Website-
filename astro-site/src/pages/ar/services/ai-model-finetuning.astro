@@ -1,422 +1,317 @@
 ---
 export const prerender = false;
-import ArBaseLayout from '../../../layouts/ArBaseLayout.astro';
+import ArBaseLayout from "../../../layouts/ArBaseLayout.astro";
+import { getSupabaseAdmin } from "../../../lib/supabase";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import ProcessSteps from "../../../components/ProcessSteps.astro";
+import StatStrip from "../../../components/StatStrip.astro";
 
-const faqItems = [
-  { question: "ما الفرق بين التدريب المخصص واستخدام الأوامر (Prompt)؟", answer: "الأمر (Prompt) يُخبر نموذجاً عاماً كيف يتصرف في موقف محدد. التدريب المخصص يُدرّب النموذج على مئات أو آلاف الأمثلة حتى يصبح هذا السلوك افتراضياً لديه، دون الحاجة لأي أمر. النتيجة استجابة أسرع، تكلفة أقل لكل طلب (لأن الأمر يصبح أقصر أو يُلغى تماماً)، واتساق أعلى بشكل ملحوظ في المخرجات. يستحق التدريب المخصص الاستثمار عندما يكون لديك استخدام عالي الحجم وتحتاج النموذج ليؤدي مهمة محددة بثبات، على نطاق واسع." },
-  { question: "ما النماذج التي يمكنكم تدريبها؟", answer: "نُدرّب نماذج تأسيسية مملوكة ومفتوحة المصدر على حد سواء. النماذج المملوكة توفّر سهولة وتكلفة بنية تحتية أقل. النماذج مفتوحة المصدر يمكن تدريبها على بنيتك التحتية الخاصة، فتبقى بياناتك بالكامل داخل بيئتك. نوصي بالخيار الأنسب بناءً على حالة استخدامك وحساسية بياناتك ومتطلبات التكلفة." },
-  { question: "كم من البيانات أحتاج لتدريب نموذج؟", answer: "يعتمد على المهمة. لمعظم استخدامات الأعمال (تصنيف المستندات، توليد ردود بصيغة محددة، أو الكتابة بنبرة العلامة التجارية بثبات)، يمكننا تحقيق نتائج قوية بـ٢٠٠ إلى ٥٠٠ مثال عالي الجودة. المهام الأكثر تعقيداً تستفيد من بيانات أكثر، لكن الجودة أهم بكثير من الكمية. نساعدك في بناء وتنقية مجموعة بيانات التدريب كجزء من المشروع." },
-  { question: "هل بياناتنا آمنة أثناء عملية التدريب؟", answer: "نعم. تُستخدم بياناتك التدريبية حصرياً لتدريب نموذجك الخاص، ولا تُستخدم لتدريب أي نماذج مشتركة أو عامة. للشركات ذات السياسات الصارمة في التعامل مع البيانات، يمكننا تدريب نماذج مفتوحة المصدر على بنيتك السحابية الخاصة بحيث لا تغادر بياناتك بيئتك إطلاقاً. نناقش ونوثّق متطلبات التعامل مع بياناتك قبل مشاركة أي بيانات." },
-  { question: "ماذا يشمل التسليم بعد تدريب النموذج؟", answer: "نُسلّمك النموذج المدرَّب مع نتائج تقييم توضّح أداءه مقارنة بالنموذج الأساسي، وثائق دمج لفريق المطورين لديك، ودعم لمدة ٦٠ يوماً بعد الإطلاق. للمهام المستمرة، يمكننا إعادة التدريب على بيانات جديدة مع تطور احتياجاتك. تكلفة إعادة التدريب عادة أقل بكثير من المشروع الأولي." },
-  { question: "هل يمكن تدريب نموذج على بيانات خاصة أو سرية؟", answer: "نعم، وهذا أحد الأسباب الرئيسية التي تدفع الشركات لاختيار التدريب المخصص بدلاً من مقاربات أخرى. للشركات ذات السياسات الصارمة في التعامل مع البيانات، يمكننا تدريب نماذج مفتوحة المصدر بالكامل على بنيتك السحابية الخاصة، فلا تغادر بياناتك بيئتك أبداً. أما للنماذج المملوكة، فتنطبق سياسات مزوّد الواجهة البرمجية في التعامل مع البيانات، ونستعرض هذه السياسات بالتفصيل قبل بدء المشروع لتتخذ قراراً مدروساً." },
-  { question: "كم يستغرق مشروع التدريب المخصص من البداية للنهاية؟", answer: "مشروع التدريب المخصص المعتاد يستغرق ٣ إلى ٦ أسابيع من الانطلاق إلى نموذج منشور ومُقيَّم. التوزيع الزمني: أسبوع إلى أسبوعين لجمع البيانات وتحضيرها، أسبوع إلى أسبوعين لجولات التدريب والتقييم، وأسبوع للدمج والنشر. المشاريع التي تملك بيانات تدريب جيدة مسبقاً تتحرك أسرع. المشاريع التي تحتاج بناء مجموعة بيانات من الصفر تأخذ وقتاً أطول، لأن جودة البيانات تؤثر مباشرة على جودة النموذج." },
-  { question: "ماذا لو لم يُلبِّ النموذج المدرَّب توقعاتنا؟", answer: "نحدّد مقاييس النجاح قبل بدء المشروع، فتكون هناك عتبة واضحة يجب تجاوزها. إذا لم تصل جولة التدريب الأولى لهذه العتبة، نُكرّر المحاولة: بيانات أكثر، بيانات مختلفة، تعديل المعاملات الفائقة، أو نموذج أساسي مختلف. لا نُسلّم نموذجاً لا يجتاز التقييم. فترة الدعم لمدة ٦٠ يوماً بعد الإطلاق تغطي أيضاً مشاكل الأداء التي تظهر فقط عندما يبدأ النموذج بمعالجة بيانات إنتاج حقيقية." },
+const fallbackFaqs = [
+  { question: "ما الفرق بين الضبط الدقيق واستخدام الأوامر؟", answer: "الأمر يخبر نموذجاً عام الغرض كيف يتصرف في موقف محدد. أما الضبط الدقيق فيدرّب النموذج على مئات أو آلاف الأمثلة حتى يصبح هذا السلوك افتراضياً للنموذج، دون الحاجة لأي أمر. النتيجة استجابات أسرع، وتكلفة رموز أقل (أمر نظام أقصر أو دون أمر إطلاقاً)، ومخرجات أكثر ثباتاً بشكل ملحوظ. يستحق الضبط الدقيق العناء عندما تكون لديكم حالة استخدام بحجم كبير وتحتاجون أن ينفذ النموذج مهمة محددة بموثوقية وعلى نطاق واسع." },
+  { question: "ما النماذج التي تستطيعون ضبطها؟", answer: "نضبط النماذج الأساسية المغلقة ومفتوحة المصدر على حد سواء. النماذج المغلقة توفر سهولة وعبئاً منخفضاً على البنية التحتية. والنماذج مفتوحة المصدر يمكن ضبطها على بنيتكم التحتية الخاصة، فتبقى بياناتكم بالكامل داخل بيئتكم. سنوصي بالخيار المناسب حسب حالة استخدامكم وحساسية بياناتكم ومتطلبات التكلفة." },
+  { question: "كم أحتاج من البيانات لضبط نموذج؟", answer: "يعتمد على المهمة. في معظم حالات استخدام الأعمال (تصنيف المستندات، أو توليد ردود بتنسيق محدد، أو الكتابة بنبرة علامة تجارية ثابتة)، نستطيع تحقيق نتائج قوية بـ ٢٠٠ إلى ٥٠٠ مثال عالي الجودة. المهام الأكثر تعقيداً تستفيد من بيانات أكثر، لكن الجودة أهم بكثير من الكمية. نساعدكم في بناء مجموعة بيانات التدريب وتنقيحها كجزء من المشروع." },
+  { question: "هل بياناتنا آمنة أثناء عملية الضبط الدقيق؟", answer: "نعم. بيانات التدريب لديكم تُستخدم فقط لضبط نموذجكم ولا تُستخدم لتدريب أي نماذج مشتركة أو عامة. وللمؤسسات ذات سياسات البيانات الصارمة، نستطيع ضبط نماذج مفتوحة المصدر على بنيتكم السحابية الخاصة فلا تغادر بياناتكم بيئتكم أبداً. نناقش متطلبات التعامل مع بياناتكم ونوثقها قبل مشاركة أي بيانات." },
+  { question: "ماذا يشمل العمل بعد تدريب النموذج؟", answer: "نسلّم النموذج المضبوط مع نتائج تقييم توضح بالضبط أداءه مقارنة بالنموذج الأساسي، ووثائق ربط لمطوريكم، ودعماً لمدة ٦٠ يوماً. وللمهام المستمرة، نستطيع إعادة التدريب على بيانات جديدة مع تطور احتياجاتكم. وتكلفة إعادة التدريب عادةً أقل بكثير من المشروع الأول." },
+  { question: "هل نستطيع ضبط نموذج على بيانات خاصة أو سرية؟", answer: "نعم، وهذا من الأسباب الرئيسية لاختيار الشركات للضبط الدقيق بدلاً من أساليب الذكاء الاصطناعي الأخرى. للمؤسسات ذات سياسات البيانات الصارمة، نستطيع ضبط نماذج مفتوحة المصدر بالكامل على بنيتكم السحابية الخاصة، فلا تغادر بياناتكم بيئتكم أبداً. أما النماذج المغلقة فتنطبق عليها سياسات مزود الخدمة في التعامل مع البيانات، ونشرحها بالتفصيل قبل بدء المشروع حتى تتخذوا قراراً مدروساً." },
+  { question: "كم يستغرق مشروع الضبط الدقيق من البداية إلى النهاية؟", answer: "مشروع الضبط الدقيق النموذجي يستغرق ٣ إلى ٦ أسابيع من الانطلاق إلى نموذج منشور ومقيَّم. يتوزع الجدول الزمني كالتالي: أسبوع إلى أسبوعين لجمع البيانات وتجهيزها، وأسبوع إلى أسبوعين لجولات التدريب والتقييم، وأسبوع للربط والنشر. المشاريع التي تتوفر فيها بيانات تدريب جيدة مسبقاً تتحرك أسرع. والمشاريع التي تتطلب بناء مجموعة بيانات من الصفر تأخذ وقتاً أطول، لأن جودة البيانات تؤثر مباشرة على جودة النموذج." },
+  { question: "ماذا يحدث إذا لم يرقَ النموذج المضبوط إلى توقعاتنا؟", answer: "نحدد مؤشرات النجاح قبل بدء المشروع، فيكون هناك معيار واضح يجب بلوغه. إذا لم تصل جولة التدريب الأولى إلى هذا المعيار، نكرر: بيانات أكثر، أو بيانات مختلفة، أو معاملات تدريب معدّلة، أو نموذج أساسي مختلف. لا نسلّم نموذجاً لم يجتز التقييم. وتغطي فترة الدعم لمدة ٦٠ يوماً بعد الإطلاق أيضاً مشكلات الأداء التي لا تظهر إلا عندما يعالج النموذج بيانات إنتاج حقيقية." },
 ];
+
+let faqItems = fallbackFaqs;
+
+try {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('faq_items')
+    .select('question, answer, sort_order')
+    .eq('section', 'ar_ai_finetuning')
+    .eq('published', true)
+    .order('sort_order');
+
+  if (!error && data && data.length > 0) {
+    faqItems = data;
+  }
+} catch (err) {}
 
 const faqLdJson = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  mainEntity: faqItems.map((f) => ({
+  mainEntity: faqItems.map((f: { question: string; answer: string }) => ({
     '@type': 'Question',
     name: f.question,
     acceptedAnswer: { '@type': 'Answer', text: f.answer },
   })),
 };
 
-const ldJson = [
-  {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "تدريب نماذج الذكاء الاصطناعي المخصص في دبي والإمارات | Lenoo AI",
-    "url": "https://lenooai.com/ar/services/ai-model-finetuning",
-    "inLanguage": "ar",
-    "isPartOf": { "@type": "WebSite", "url": "https://lenooai.com" }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
-      { "@type": "ListItem", "position": 2, "name": "الخدمات", "item": "https://lenooai.com/ar/services" },
-      { "@type": "ListItem", "position": 3, "name": "تدريب نماذج الذكاء الاصطناعي المخصص", "item": "https://lenooai.com/ar/services/ai-model-finetuning" }
-    ]
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "name": "تدريب نماذج الذكاء الاصطناعي المخصص",
-    "description": "ندرّب النماذج التأسيسية على بيانات شركتك الخاصة، فتُنتج مخرجات ثابتة وموثوقة على نطاق واسع، بالعربي والإنجليزي.",
-    "areaServed": {"@type": "Country", "name": "United Arab Emirates"},
-    "provider": { "name": "Lenoo AI", "url": "https://lenooai.com" }
-  },
-  faqLdJson
+const processSteps = [
+  { icon: "dataset", step: "الخطوة ١", title: "جمع البيانات", description: "نحدد نطاق المهمة، ونحدد مصادر بيانات التدريب، ونبني مجموعة البيانات أو ننقحها، مع التنظيف والتنسيق والتصنيف حسب الحاجة." },
+  { icon: "model_training", step: "الخطوة ٢", title: "الضبط الدقيق", description: "نشغّل عملية التدريب ببياناتكم، ونراقب منحنيات الخطأ، ونعدّل معاملات التدريب لمنع الحفظ الزائد." },
+  { icon: "science", step: "الخطوة ٣", title: "التقييم", description: "نقارن النموذج المضبوط بالنموذج الأساسي على بيانات اختبار منفصلة، فترون بالضبط مقدار التحسن." },
+  { icon: "rocket_launch", step: "الخطوة ٤", title: "النشر", description: "ندمج نموذجكم المضبوط في منتجكم أو سير عملكم، مع التوثيق ودعم ما بعد الإطلاق." },
 ];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 ---
 
 <ArBaseLayout
-  title="تدريب نماذج الذكاء الاصطناعي المخصص للشركات في الإمارات"
-  description="Lenoo AI، وكالة الذكاء الاصطناعي في دبي، تُدرّب النماذج التأسيسية على بيانات شركتك الخاصة، فيتعلّم ذكاؤك الاصطناعي لغة عملك ويُنتج مخرجات ثابتة."
+  title="الضبط الدقيق لنماذج الذكاء الاصطناعي للشركات في الإمارات | Lenoo AI"
+  description="نضبط النماذج الأساسية على بياناتكم ليعرف ذكاؤكم الاصطناعي عملكم ويقدم مخرجات ثابتة على نطاق واسع. وكالة ذكاء اصطناعي في دبي لشركات الإمارات."
   canonicalPath="/ar/services/ai-model-finetuning"
   enPath="/services/ai-model-finetuning"
   ogImage="/assets/og-services.jpg"
-  ldJson={ldJson}
+  ldJson={[faqLdJson]}
 >
 
-<!-- 1. Page Hero -->
-<header class="page-hero">
-  <div class="container">
-    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التنقل"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services" style="color:inherit;text-decoration:none;opacity:0.65;">الخدمات</a><span style="opacity:0.4;padding:0 4px;"> / </span>تدريب نماذج الذكاء الاصطناعي المخصص</div>
-    <div class="badge badge-cyan" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">model_training</span>
-      تدريب مخصص
-    </div>
-    <h1>توقف عن استخدام ذكاء اصطناعي عام.<br><span class="gradient-text">استخدم ذكاءً اصطناعياً يخصّك.</span></h1>
-    <p style="color:rgba(255,255,255,0.72);font-size:1.125rem;max-width:640px;margin:1.5rem auto 2.5rem;line-height:1.8;">
-      النماذج الجاهزة تعرف كل شيء عن الإنترنت ولا شيء عن شركتك. التدريب المخصص يُغيّر هذا. نُدرّب النماذج التأسيسية على بياناتك ونبرتك ومجالك، فيؤدي ذكاؤك الاصطناعي فعلاً كأنه ملكك.
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar/services" style="color:inherit;text-decoration:none;opacity:0.65;">الخدمات</a><span style="opacity:0.4;padding:0 4px;"> / </span>الضبط الدقيق لنماذج الذكاء الاصطناعي</div>
+    <h1>توقفوا عن استخدام ذكاء اصطناعي عام. <span class="gradient-text">ابدؤوا باستخدام ذكائكم الخاص.</span></h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:640px; margin:1.5rem auto 2.5rem; line-height:1.8;">
+      النماذج الجاهزة تعرف كل شيء عن الإنترنت ولا شيء عن عملكم. الضبط الدقيق يغيّر ذلك. ندرّب النماذج الأساسية على بياناتكم ونبرتكم ومجالكم، فيؤدي ذكاؤكم الاصطناعي فعلاً كأنه ملك لكم.
     </p>
-    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
-      <button onclick="openModal(this)" data-source="ar_finetuning_hero" class="btn-primary">ناقش تدريب النموذج</button>
-      <a href="#what-we-do" class="btn-outline">شاهد ما هو ممكن ↓</a>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_finetuning_hero" class="btn-primary">ناقشوا الضبط الدقيق معنا</button>
+      <a href="#what-we-do" class="btn-outline">شاهدوا ما هو ممكن ↓</a>
     </div>
   </div>
 </header>
 
-<!-- IMAGE BANNER -->
-<div style="width:100%; height:260px; overflow:hidden; position:relative;">
-  <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1400&q=80&auto=format&fit=crop" alt="ضبط نماذج الذكاء الاصطناعي وتدريب التعلم الآلي" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center;" />
+<!-- HERO IMAGE -->
+<div style="position:relative; overflow:hidden; height:260px;">
+  <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1400&q=80&auto=format&fit=crop" alt="الضبط الدقيق لنماذج الذكاء الاصطناعي وتدريب تعلم الآلة" loading="eager" fetchpriority="high" width="1400" height="260" style="width:100%; height:100%; object-fit:cover; object-position:center;" />
   <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.45));"></div>
 </div>
 
-<!-- 2. Stats Strip -->
-<section style="background:#f8fafc;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:2.5rem 0;">
-  <div class="container">
-    <div class="stats-strip">
-      <div class="stat-item">
-        <div class="stat-number">٢٠٠+</div>
-        <div class="stat-label">مثال تدريبي قد يكفي لنموذج مخصص قوي</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-number">٤٠–٦٠٪</div>
-        <div class="stat-label">انخفاض في تكلفة التشغيل مقارنة بالأوامر الطويلة</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-number">بياناتك</div>
-        <div class="stat-label">لا تُستخدم أبداً لتدريب نماذج مشتركة. معزولة بالكامل لحسابك</div>
-      </div>
-    </div>
+<!-- STATS BANNER -->
+<div style="width:100%; overflow:hidden; position:relative;">
+  <div style="width:100%; background:linear-gradient(135deg,#001e30,#00253b,#006875); padding:3.5rem 2rem; display:flex; align-items:center; justify-content:center; position:relative;">
+    <div style="position:absolute; inset:0; background-image:radial-gradient(circle, rgba(0,227,253,0.07) 1px, transparent 1px); background-size:24px 24px;"></div>
+    <StatStrip stats={[
+      { value: "+٢٠٠", caption: "مثال تدريب قد يكفي لنموذج مضبوط قوي" },
+      { value: "٤٠-٦٠٪", caption: "انخفاض في تكلفة التشغيل مقارنة باستخدام أوامر نظام طويلة" },
+      { value: "بياناتكم", caption: "لا تُستخدم أبداً لتدريب نماذج مشتركة. معزولة بالكامل في حسابكم" },
+    ]} />
   </div>
-</section>
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,#f9f9ff 0%,transparent 100%); pointer-events:none;"></div>
+</div>
 
-<!-- 3. What Is It -->
+<!-- WHAT IS FINE-TUNING -->
 <section class="section" aria-labelledby="explain-heading">
   <div class="container">
-    <div style="max-width:800px;margin:0 auto;">
-      <h2 id="explain-heading" style="margin-bottom:1.5rem;">ما هو تدريب نماذج الذكاء الاصطناعي المخصص؟</h2>
-      <p style="color:#42474e;font-size:1.0625rem;line-height:1.85;margin-bottom:1.25rem;">
-        تدريب النموذج المخصص هو أخذ نموذج تأسيسي مُدرَّب مسبقاً وتدريبه أكثر على مجموعة بياناتك الخاصة، حتى يتعلّم الأنماط والمصطلحات والنبرة والسلوك الذي تحتاجه حالتك تحديداً. النتيجة نموذج يؤدي كأنه بُني لشركتك، لأنه فعلاً كذلك.
-      </p>
-      <p style="color:#42474e;font-size:1.0625rem;line-height:1.85;margin-bottom:1.25rem;">
-        تخيّل النموذج التأسيسي كموظف عام مثقف جداً: يعرف الكثير عن كل شيء، لكنه لم يعمل يوماً في مجالك ولم يقرأ مستندات شركتك. التدريب المخصص أشبه بإخضاع هذا الموظف لبرنامج تدريب مكثف باستخدام مئات الأمثلة من العمل الذي تحتاجه بالضبط. بعدها، لن يحتاج أمراً طويلاً ليُنتج المخرج الصحيح؛ هذا المخرج يصبح سلوكه الافتراضي.
-      </p>
-      <p style="color:#42474e;font-size:1.0625rem;line-height:1.85;">
-        التدريب المخصص أكثر قيمة في المهام عالية الحجم والمتكررة حيث يهم الاتساق: كتابة محتوى بصوت علامتك التجارية، تصنيف المستندات حسب تصنيفك الخاص، استخراج حقول محددة من نوع مستنداتك، أو توليد ردود بأسلوب دعم عملائك. على نطاق واسع، النموذج المدرَّب مخصصاً أدق من نموذج عام مع أمر طويل، وعادة أرخص تشغيلاً، لأن الأمر يصبح أقصر أو يُلغى تماماً.
-      </p>
-      <div style="border-radius:24px;overflow:hidden;margin-top:2.5rem;box-shadow:0 24px 56px rgba(0,59,92,0.10);">
-        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&auto=format&fit=crop" alt="لوحة بيانات تعرض مقاييس أداء نموذج ذكاء اصطناعي بعد التدريب المخصص" loading="lazy" width="1200" height="340" style="width:100%;height:clamp(180px,26vw,340px);object-fit:cover;display:block;" />
+    <div class="explain-split">
+      <div>
+        <h2 id="explain-heading" style="margin-bottom:1.5rem;">ما هو الضبط الدقيق لنماذج الذكاء الاصطناعي؟</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;">
+          الضبط الدقيق للذكاء الاصطناعي هو أخذ نموذج أساسي مدرَّب مسبقاً وتدريبه أكثر على مجموعة بياناتكم الخاصة، حتى يتعلم الأنماط والمصطلحات والنبرة والسلوك المحدد الذي تتطلبه حالة استخدامكم. النتيجة نموذج يؤدي كأنه بُني لعملكم، لأنه بُني له فعلاً.
+        </p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;">
+          فكروا في النموذج الأساسي كشخص عام المعرفة بتعليم عالٍ: يعرف الكثير عن كل شيء لكنه لم يعمل أبداً في قطاعكم ولم يقرأ مستندات شركتكم. الضبط الدقيق يشبه إخضاعه لبرنامج تدريب عميق ومركّز باستخدام مئات الأمثلة على العمل الذي تحتاجونه بالضبط. بعد ذلك، لا يحتاج لأمر نظام طويل لإنتاج المخرجات الصحيحة، فهذه المخرجات تصبح سلوكه الافتراضي.
+        </p>
+      </div>
+      <div class="explain-img-wrap">
+        <img src="https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800&q=80&auto=format&fit=crop" alt="مهندسو تعلم آلة يجهزون بيانات تدريب لنموذج مضبوط على مستندات شركة إماراتية" loading="lazy" width="800" height="600" />
       </div>
     </div>
+    <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; max-width:800px; margin:2rem auto 0;">
+      الضبط الدقيق أكثر قيمة في المهام المتكررة بحجم كبير حيث يهم الثبات: صياغة المحتوى بصوت علامتكم، وتصنيف المستندات وفق تصنيفاتكم، واستخراج حقول محددة من أنواع مستنداتكم، أو توليد ردود بأسلوب دعم العملاء لديكم. على نطاق واسع، يكون النموذج المضبوط أدق من نموذج عام بأمر طويل، وأرخص تشغيلاً عادةً، لأن أمر النظام يمكن أن يكون أقصر أو يُلغى تماماً.
+    </p>
   </div>
 </section>
 
-<!-- 4. Fine-tuning vs Prompting -->
-<section class="section" style="background:#f8fafc;" aria-labelledby="vs-heading">
+<!-- FINE-TUNING VS PROMPTING -->
+<section class="section" style="background:#f0f3ff;" aria-labelledby="vs-heading">
   <div class="container">
-    <div style="text-align:center;margin-bottom:3rem;">
-      <h2 id="vs-heading">التدريب المخصص مقابل الأوامر: متى تستخدم كل منهما</h2>
-      <p style="color:#42474e;font-size:1.0625rem;max-width:600px;margin:1rem auto 0;">كلاهما نهج صحيح. الاختيار الأنسب يعتمد على حجم الاستخدام، متطلبات الاتساق، وتوفّر البيانات.</p>
+    <div class="section-header">
+      <h2 id="vs-heading">الضبط الدقيق مقابل الأوامر: متى تستخدمون كلاً منهما</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">كلا النهجين صالح. الاختيار الصحيح يعتمد على حجم الاستخدام، ومتطلبات الثبات، وتوفر البيانات.</p>
     </div>
-    <div class="vs-grid">
-      <div class="card vs-card">
-        <h3 style="font-size:1rem;color:#00253b;margin-bottom:1rem;">استخدم الأوامر عندما:</h3>
-        <ul class="vs-list">
-          <li>الحجم منخفض (أقل من بضعة آلاف طلب شهرياً)</li>
-          <li>المهام متنوعة ويصعب تقديم أمثلة ثابتة لها</li>
-          <li>ما زلت تحدّد شكل المخرج الجيد</li>
-          <li>سرعة النشر أهم من تحسين التكلفة على المدى الطويل</li>
-          <li>حالة الاستخدام تتغيّر باستمرار</li>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+      <div style="background:#fff; border:1px solid rgba(0,37,59,0.08); border-radius:16px; padding:1.75rem;">
+        <h3 style="font-size:1rem; color:#00253b; margin-bottom:1rem;">استخدموا الأوامر عندما:</h3>
+        <ul style="color:#42474e; font-size:0.875rem; line-height:1.8; list-style:none; padding:0; margin:0;">
+          <li style="padding:0.375rem 0; border-bottom:1px solid rgba(0,37,59,0.07);">يكون الحجم منخفضاً (أقل من بضعة آلاف طلب شهرياً)</li>
+          <li style="padding:0.375rem 0; border-bottom:1px solid rgba(0,37,59,0.07);">تكون المهام متنوعة ويصعب تقديم أمثلة ثابتة لها</li>
+          <li style="padding:0.375rem 0; border-bottom:1px solid rgba(0,37,59,0.07);">ما زلتم تحددون كيف تبدو المخرجات الجيدة</li>
+          <li style="padding:0.375rem 0; border-bottom:1px solid rgba(0,37,59,0.07);">تكون سرعة النشر أهم من تحسين التكلفة على المدى الطويل</li>
+          <li style="padding:0.375rem 0;">تتغير حالة الاستخدام كثيراً</li>
         </ul>
       </div>
-      <div class="card vs-card vs-card-highlight">
-        <h3 style="font-size:1rem;color:#006875;margin-bottom:1rem;">درّب النموذج مخصصاً عندما:</h3>
-        <ul class="vs-list">
-          <li>الحجم مرتفع وتكلفة الأوامر مصدر قلق فعلي</li>
-          <li>الاتساق غير قابل للتفاوض (قانوني، امتثال، مواجهة للعميل)</li>
-          <li>مصطلحات مجالية محددة تتعامل معها النماذج العامة بضعف</li>
-          <li>النموذج يحتاج أن يتصرف بطريقة محددة في كل مرة، دون أوامر</li>
-          <li>لديك ٢٠٠ مثال جودة عالية على الأقل من المخرج المطلوب</li>
+      <div style="background:#fff; border:2px solid rgba(0,104,117,0.3); border-radius:16px; padding:1.75rem;">
+        <h3 style="font-size:1rem; color:#006875; margin-bottom:1rem;">اضبطوا النموذج عندما:</h3>
+        <ul style="color:#42474e; font-size:0.875rem; line-height:1.8; list-style:none; padding:0; margin:0;">
+          <li style="padding:0.375rem 0; border-bottom:1px solid rgba(0,37,59,0.07);">يكون الحجم كبيراً وتكاليف الأوامر مصدر قلق حقيقي</li>
+          <li style="padding:0.375rem 0; border-bottom:1px solid rgba(0,37,59,0.07);">يكون الثبات غير قابل للتفاوض (قانوني، امتثال، موجه للعملاء)</li>
+          <li style="padding:0.375rem 0; border-bottom:1px solid rgba(0,37,59,0.07);">توجد مصطلحات متخصصة تتعامل معها النماذج العامة بشكل ضعيف</li>
+          <li style="padding:0.375rem 0; border-bottom:1px solid rgba(0,37,59,0.07);">يحتاج النموذج أن يتصرف بطريقة محددة في كل مرة، دون أوامر</li>
+          <li style="padding:0.375rem 0;">لديكم ٢٠٠ مثال عالي الجودة على الأقل للمخرجات المطلوبة</li>
         </ul>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 4.5 Before/After Demo -->
-<section class="section" style="background:#e7eeff;" aria-labelledby="demo-heading">
-  <div class="container" style="max-width:860px;">
-    <div style="text-align:center;margin-bottom:2.5rem;">
-      <h2 id="demo-heading">شاهد الفرق بنفسك</h2>
-      <p style="color:#42474e;max-width:560px;margin:1rem auto 0;line-height:1.8;">نفس السؤال من عميل، ردّان مختلفان تماماً. بدّل بين النموذجين وقارن.</p>
+<!-- TRY THE DIFFERENCE -->
+<section class="section" aria-labelledby="difference-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="difference-heading">جرّبوا الفرق</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">نفس الطلب، نموذجان. المهمة: "الرد على عميل يسأل لماذا تأخرت شحنته من مستودعنا في جبل علي."</p>
     </div>
-    <div class="ft-demo-tabs" id="ft-demo-tabs" role="tablist" aria-label="مقارنة النموذج العام بالنموذج المدرَّب">
-      <button class="ft-demo-btn" data-ft-tab="generic" type="button" role="tab" aria-selected="false">نموذج عام</button>
-      <button class="ft-demo-btn active" data-ft-tab="tuned" type="button" role="tab" aria-selected="true">نموذج مدرَّب على بياناتك</button>
-    </div>
-    <div class="card ft-demo-card">
-      <div class="ft-demo-q">
-        <span class="material-symbols-outlined" style="font-size:20px;direction:ltr;color:#006875;" aria-hidden="true">person</span>
-        <p>اشتريت جهازاً من عندكم قبل ٢٠ يوماً وتوقف عن العمل. هل أقدر أستبدله؟</p>
-      </div>
-      <div class="ft-demo-a" data-ft-panel="generic" hidden>
-        <div class="ft-demo-label ft-demo-label-generic">رد النموذج العام</div>
-        <p>تختلف سياسات الاستبدال من شركة لأخرى. بشكل عام، تسمح كثير من المتاجر بالاستبدال خلال فترة معينة إذا توفرت شروط محددة. ننصحك بمراجعة سياسة الاستبدال الخاصة بالمتجر أو التواصل مع خدمة العملاء لمعرفة الخيارات المتاحة لك.</p>
-        <p class="ft-demo-note">إجابة صحيحة نظرياً، لكنها لا تعرف سياستك ولا تحل مشكلة العميل.</p>
-      </div>
-      <div class="ft-demo-a" data-ft-panel="tuned">
-        <div class="ft-demo-label ft-demo-label-tuned">رد النموذج المدرَّب</div>
-        <p>أهلاً بك. نعم، جهازك مشمول بسياسة الاستبدال لأنك ما زلت داخل فترة الثلاثين يوماً. أرسل لنا رقم الفاتورة وصورة للجهاز، وسنجهّز لك بديلاً يصلك خلال يومي عمل. وإذا فضّلت الاسترداد بدل الاستبدال، هذا متاح أيضاً بنفس الشروط.</p>
-        <p class="ft-demo-note">يعرف سياستك بالضبط، يرد بنبرة فريقك، وينهي الطلب من أول رسالة.</p>
+    <div class="ft-demo">
+      <div class="duo-grid">
+        <div class="duo-card">
+          <h3 style="font-size:1rem; color:#00253b; margin-bottom:1rem;">نموذج عام</h3>
+          <p class="ft-output">"عزيزنا العميل، نعتذر بشدة عن أي إزعاج قد يكون حدث. نؤكد لكم أن فريقنا يعمل بجد لحل المسألة. رضاكم هو أولويتنا القصوى، ونشكركم على صبركم وتفهمكم خلال هذا الوقت..."</p>
+          <ul class="ft-notes">
+            <li>احتاج أمر نظام طويلاً فقط للوصول إلى هذا المستوى</li>
+            <li>النبرة تتغير بين الردود، ويبدو مثل أي شركة أخرى</li>
+            <li>لا تفاصيل للطلب، ولا سياق للمستودع، ولا خطوة تالية</li>
+          </ul>
+        </div>
+        <div class="duo-card">
+          <h3 style="font-size:1rem; color:#006875; margin-bottom:1rem;">نموذج مضبوط</h3>
+          <p class="ft-output">"مرحباً عمر، غادر طلبك جبل علي صباح اليوم بعد انتهاء تعليق جمركي. موعد التسليم الجديد: الخميس قبل الساعة ٦ مساءً، ويمكنك تتبعه عبر الرابط أدناه. وبما أنه تأخر، طبّقنا خصم طلبك القادم تلقائياً. لأي شيء آخر، رد هنا فقط."</p>
+          <ul class="ft-notes">
+            <li>لا حاجة لأمر نظام، فهذه النبرة هي السلوك الافتراضي للنموذج</li>
+            <li>يطابق أفضل ردود فريقكم البشري لأنه تدرّب عليها</li>
+            <li>يعرف سياساتكم ومواقعكم وصوتكم</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 5. Use Cases -->
-<section id="what-we-do" class="section" aria-labelledby="usecases-heading">
+<!-- WHAT WE DO -->
+<section id="what-we-do" class="section" aria-labelledby="use-cases-heading">
   <div class="container">
-    <div style="text-align:center;margin-bottom:3rem;">
-      <h2 id="usecases-heading">المهام التي يقدّم فيها التدريب المخصص أكبر قيمة</h2>
-      <p style="color:#42474e;max-width:600px;margin:1rem auto 0;line-height:1.8;">هذه أشيع حالات الاستخدام، لا حدود ما ندرّبه. التدريب المخصص يعمل بأفضل شكل في المهام عالية الحجم والمتكررة حيث يهم الاتساق والدقة. إذا كانت مهمتك مختلفة، أخبرنا بما تحاول فعله.</p>
+    <div class="section-header">
+      <h2 id="use-cases-heading">المهام التي يحقق فيها الضبط الدقيق أكبر قيمة</h2>
+      <p style="color:#42474e; font-size:1.0625rem;">هذه أكثر حالات الاستخدام شيوعاً، وليست حدود ما نضبطه. يعمل الضبط الدقيق بشكل أفضل في المهام المتكررة بحجم كبير حيث يهم الثبات والدقة. إذا كانت مهمتكم مختلفة، أخبرونا بما تحاولون فعله.</p>
     </div>
     <div style="border-radius:24px; overflow:hidden; margin-bottom:3rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
-      <img src="https://images.unsplash.com/photo-1509228468518-180dd4864904?w=1200&q=80&auto=format&fit=crop" alt="بيانات تدريب النموذج ومعادلات التقييم" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+      <img src="https://images.unsplash.com/photo-1509228468518-180dd4864904?w=1200&q=80&auto=format&fit=crop" alt="بيانات تدريب ومعادلات تقييم على لوح" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
     </div>
-    <div class="feature-grid">
-      <div class="card feature-card">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">draw</span>
-        <h3>تدريب صوت العلامة التجارية</h3>
-        <p>نُدرّب النموذج على آلاف الأمثلة من نصوصك الخاصة حتى يكتب بصوتك بالضبط، دون الحاجة لأي أمر لضمان مخرج يتماشى مع علامتك.</p>
-        <p class="ft-example">مثال: وصف منتج جديد يخرج بنبرة متجرك بالضبط، جاهز للنشر دون تحرير.</p>
+    <div class="builds-grid">
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">draw</span></div>
+        <h3>التدريب على صوت العلامة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">دربوا النموذج على آلاف الأمثلة من نصوصكم حتى يكتب بصوتكم بالضبط، دون الحاجة لأي أوامر للحصول على مخرجات متوافقة مع العلامة.</p>
       </div>
-      <div class="card feature-card">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">category</span>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">category</span></div>
         <h3>تصنيف المستندات</h3>
-        <p>نُدرّب نموذجاً لتصنيف المستندات أو الرسائل أو تذاكر الدعم الواردة حسب تصنيفك الخاص، بدقة لا تضاهيها النماذج العامة على التصنيفات النادرة.</p>
-        <p class="ft-example">مثال: ٣٠٠ تذكرة دعم يومياً تتوزع تلقائياً على تصنيفاتك الداخلية التسعة.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">دربوا نموذجاً على تصنيف المستندات أو الرسائل أو تذاكر الدعم الواردة ضمن فئاتكم المحددة، بدقة لا تستطيع النماذج العامة مجاراتها في التصنيفات المتخصصة.</p>
       </div>
-      <div class="card feature-card">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">support_agent</span>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">support_agent</span></div>
         <h3>ردود دعم العملاء</h3>
-        <p>نُدرّب على أفضل ردود فريق الدعم البشري لديك، فيرد ذكاؤك الاصطناعي بنفس النبرة وبنفس مستوى الجودة، باتساق عبر آلاف التذاكر يومياً.</p>
-        <p class="ft-example">مثال: رد على طلب استرجاع يطابق سياستك ويحمل صياغة أفضل موظفيك.</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">دربوه على أفضل ردود فريق الدعم البشري لديكم ليرد ذكاؤكم الاصطناعي بنفس النبرة ونفس مستوى الجودة، بثبات عبر آلاف التذاكر اليومية.</p>
       </div>
-      <div class="card feature-card">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">gavel</span>
-        <h3>معرفة مجالية متخصصة</h3>
-        <p>المجالات القانونية والطبية والمالية والتقنية حيث تُهلوس النماذج العامة أو تستخدم مصطلحات غير دقيقة. التدريب على بيانات المجال يمنحك دقة على مستوى الخبير.</p>
-        <p class="ft-example">مثال: مسودة مذكرة قانونية بمصطلحات دقيقة يراجعها المحامي بدل أن يكتبها من الصفر.</p>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">gavel</span></div>
+        <h3>معرفة متخصصة بالقطاع</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">المجالات القانونية أو الطبية أو المالية أو التقنية حيث تختلق النماذج العامة معلومات أو تستخدم مصطلحات غير دقيقة. الضبط الدقيق على بيانات المجال يعطيكم دقة بمستوى الخبراء.</p>
       </div>
-      <div class="card feature-card">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">data_object</span>
-        <h3>استخراج بيانات مُهيكلة</h3>
-        <p>نُدرّب نموذجاً لاستخراج حقول محددة من نوع مستنداتك (عقود، فواتير، نماذج) بصيغة JSON ثابتة تستطيع أنظمتك استيعابها مباشرة.</p>
-        <p class="ft-example">مثال: فاتورة PDF تتحول إلى JSON بحقول المورد والمبلغ والتاريخ دون إدخال يدوي.</p>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">data_object</span></div>
+        <h3>استخراج البيانات المنظمة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">اضبطوا نموذجاً لاستخراج حقول محددة من أنواع مستنداتكم (العقود، الفواتير، النماذج) بتنسيق JSON ثابت تستطيع أنظمتكم استيعابه مباشرة.</p>
       </div>
-      <div class="card feature-card">
-        <span class="material-symbols-outlined feature-icon" style="direction:ltr;" aria-hidden="true">translate</span>
-        <h3>ترجمة متخصصة</h3>
-        <p>للقطاعات ذات المصطلحات المحددة (طبي، قانوني، هندسي)، التدريب المخصص يُنتج ترجمات تحافظ على المعنى والدقة حيث تفشل أدوات الترجمة العامة.</p>
-        <p class="ft-example">مثال: ترجمة نشرة دواء تحافظ على المصطلح الطبي الصحيح في كل جملة.</p>
+      <div class="card">
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">translate</span></div>
+        <h3>الترجمة المتخصصة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7;">في القطاعات ذات المصطلحات الخاصة (الطبية، القانونية، الهندسية)، ينتج الضبط الدقيق ترجمات تحافظ على المعنى والدقة حيث تقصر نماذج الترجمة العامة.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 6. Process -->
-<section class="section" style="background:#f8fafc;" aria-labelledby="process-heading">
-  <div class="container" style="max-width:760px;">
-    <div style="text-align:center;margin-bottom:3rem;">
+<!-- PROCESS -->
+<section class="section" aria-labelledby="process-heading">
+  <div class="container">
+    <div class="section-header">
       <h2 id="process-heading">من البيانات الخام إلى نموذج منشور</h2>
     </div>
-    <div style="border-radius:24px;overflow:hidden;margin-bottom:2.5rem;box-shadow:0 24px 56px rgba(0,59,92,0.10);">
-      <img src="https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=1100&q=80&auto=format&fit=crop" alt="مهندسا ذكاء اصطناعي يراجعان جولة تدريب نموذج على الشاشة" loading="lazy" width="1100" height="320" style="width:100%;height:clamp(180px,26vw,320px);object-fit:cover;display:block;" />
+    <div style="border-radius:20px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 20px 48px rgba(0,59,92,0.10);">
+      <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&auto=format&fit=crop" alt="لوحة تقييم تقارن دقة نموذج مضبوط بالنموذج الأساسي قبل النشر" loading="lazy" width="1200" height="320" style="width:100%; height:clamp(180px, 26vw, 320px); object-fit:cover; display:block;" />
     </div>
-    <div class="process-steps">
-      <div class="process-step">
-        <div class="step-number">١</div>
-        <div class="step-content">
-          <h3>جمع البيانات</h3>
-          <p>نُحدّد نطاق المهمة، نُحدّد مصادر بيانات التدريب، ونبني أو ننقّي مجموعة البيانات، بالتنظيف والتنسيق والتصنيف حسب الحاجة.</p>
-        </div>
-      </div>
-      <div class="process-step">
-        <div class="step-number">٢</div>
-        <div class="step-content">
-          <h3>التدريب المخصص</h3>
-          <p>نُشغّل عملية التدريب على بياناتك، مع مراقبة منحنيات الخسارة وتعديل المعاملات الفائقة لمنع الإفراط في التخصيص.</p>
-        </div>
-      </div>
-      <div class="process-step">
-        <div class="step-number">٣</div>
-        <div class="step-content">
-          <h3>التقييم</h3>
-          <p>نُقارن أداء النموذج المدرَّب مع النموذج الأساسي على بيانات اختبار محجوزة، لتشاهد بدقة مقدار التحسّن.</p>
-        </div>
-      </div>
-      <div class="process-step">
-        <div class="step-number">٤</div>
-        <div class="step-content">
-          <h3>النشر</h3>
-          <p>نُدمج نموذجك المدرَّب في منتجك أو سير عملك، مع توثيق ودعم بعد الإطلاق.</p>
-        </div>
-      </div>
-    </div>
+    <ProcessSteps steps={processSteps} />
   </div>
 </section>
 
-<!-- 7. FAQ -->
-<section class="section" aria-labelledby="faq-heading">
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
   <div class="container" style="max-width:720px;">
-    <div style="text-align:center;margin-bottom:3rem;">
-      <h2 id="faq-heading">أسئلة شائعة</h2>
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
     </div>
-    <div class="faq-list">
-      {faqItems.map((item) => (
-        <div class="faq-item">
-          <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-            {item.question}
-            <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-          </button>
-          <div class="faq-body">{item.answer}</div>
-        </div>
-      ))}
-    </div>
+    <FaqAccordion items={faqItems} />
   </div>
 </section>
 
-<!-- 8. Guarantee -->
-<section class="section" style="background:#e7eeff;padding:4rem 0;text-align:center;">
+<!-- CTA -->
+<section class="section-sm" aria-label="دعوة للتواصل">
   <div class="container">
-    <div class="guarantee-badge" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:18px;direction:ltr;" aria-hidden="true">shield</span>
-      ضمان الاسترداد الكامل، الوحيد في الإمارات
+    <div class="cta-band">
+      <div style="position:relative; z-index:1; text-align:center;">
+        <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">هل أنتم مستعدون لتدريب نموذجكم الخاص؟</h2>
+        <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">أخبرونا بحالة استخدامكم والبيانات المتوفرة لديكم. سيخبركم فريقنا في دبي إن كان الضبط الدقيق هو النهج الصحيح وما تحسينات الأداء التي يمكنكم توقعها واقعياً.</p>
+        <div class="cta-trust-badges">
+          <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+          <span class="cta-trust-badge">✓ دون أي التزام</span>
+          <span class="cta-trust-badge">✓ ضمان الاسترداد</span>
+        </div>
+        <button onclick="openModal(this)" data-source="ar_finetuning_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا مكالمة اكتشاف مجانية</button>
+        <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
+      </div>
     </div>
-    <h2 style="margin-bottom:1rem;">إذا لم تكن راضياً، لا تدفع أي شيء.</h2>
-    <p style="color:#42474e;max-width:560px;margin:0 auto 2rem;line-height:1.8;">نبني، تختبر، وإذا لم تكن راضياً تماماً نردّ ١٠٠٪ خلال ٣٠ يوماً من التسليم. بدون أسئلة.</p>
-    <button onclick="openModal(this)" data-source="ar_finetuning_guarantee" class="btn-primary">ابدأ بدون مخاطرة</button>
   </div>
 </section>
 
-<!-- 9. Final CTA Band -->
-<section class="cta-band" style="border-radius:24px;margin:2rem 2rem 4rem;">
-  <div class="container" style="text-align:center;">
-    <h2 style="margin-bottom:1rem;">هل أنت مستعد لتدريب نموذجك الخاص؟</h2>
-    <p style="opacity:0.85;max-width:500px;margin:0 auto 2rem;line-height:1.8;">شاركنا حالة استخدامك والبيانات المتوفرة لديك. فريقنا في دبي سيخبرك بصدق إن كان التدريب المخصص هو النهج الصحيح وما التحسّن الذي يمكنك توقعه واقعياً.</p>
-    <button onclick="openModal(this)" data-source="ar_finetuning_cta" class="btn-primary">احجز جلستك المجانية</button>
-  </div>
-</section>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "name": "الضبط الدقيق لنماذج الذكاء الاصطناعي",
+      "url": "https://lenooai.com/ar/services/ai-model-finetuning",
+      "description": "نضبط النماذج الأساسية على بياناتكم الخاصة، فنقدم أداء ذكاء اصطناعي ثابتاً ومتخصصاً بمجالكم على نطاق واسع.",
+      "inLanguage": "ar",
+      "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+      "areaServed": "United Arab Emirates",
+      "serviceType": "AI Model Fine-Tuning"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
+        { "@type": "ListItem", "position": 2, "name": "الخدمات", "item": "https://lenooai.com/ar/services" },
+        { "@type": "ListItem", "position": 3, "name": "الضبط الدقيق لنماذج الذكاء الاصطناعي", "item": "https://lenooai.com/ar/services/ai-model-finetuning" }
+      ]
+    }
+  ]
+}
+</script>
 
 </ArBaseLayout>
 
-<script is:inline>
-  (function () {
-    var wrap = document.getElementById('ft-demo-tabs');
-    if (!wrap) return;
-    var buttons = wrap.querySelectorAll('[data-ft-tab]');
-    var panels = document.querySelectorAll('[data-ft-panel]');
-    buttons.forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        buttons.forEach(function (b) { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
-        btn.classList.add('active');
-        btn.setAttribute('aria-selected', 'true');
-        var key = btn.getAttribute('data-ft-tab');
-        panels.forEach(function (p) { p.hidden = p.getAttribute('data-ft-panel') !== key; });
-      });
-    });
-  })();
-</script>
-
 <style>
-  .ft-demo-tabs { display: flex; justify-content: center; gap: 0.5rem; background: #fff; border: 1px solid rgba(0,37,59,0.10); border-radius: 100px; padding: 5px; max-width: 480px; margin: 0 auto 1.75rem; }
-  .ft-demo-btn {
-    flex: 1; font-size: 0.875rem; font-weight: 600; padding: 0.625rem 1rem;
-    border-radius: 100px; border: none; background: none; color: #42474e;
-    cursor: pointer; transition: all .2s var(--ease); font-family: inherit;
-  }
-  .ft-demo-btn:hover { color: #006875; }
-  .ft-demo-btn.active { background: #00253b; color: #fff; box-shadow: 0 2px 8px rgba(0,37,59,0.18); }
-  .ft-demo-card { padding: 2rem; }
-  .ft-demo-q { display: flex; gap: 0.75rem; align-items: flex-start; background: #f0f3ff; border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
-  .ft-demo-q p { margin: 0; color: #00253b; font-weight: 600; font-size: 0.9375rem; line-height: 1.7; }
-  .ft-demo-a p { color: #42474e; font-size: 0.9375rem; line-height: 1.8; margin: 0 0 1rem; }
-  .ft-demo-label { display: inline-block; font-size: 0.75rem; font-weight: 700; padding: 4px 12px; border-radius: 100px; margin-bottom: 0.875rem; }
-  .ft-demo-label-generic { background: rgba(217,119,6,0.12); color: #92400e; }
-  .ft-demo-label-tuned { background: rgba(0,104,117,0.12); color: #004f58; }
-  .ft-demo-note { font-size: 0.8125rem !important; color: #5f6b7a !important; border-top: 1px dashed #e2e8f0; padding-top: 0.875rem; margin-bottom: 0 !important; }
-
-  .ft-example {
-    max-height: 0; opacity: 0; overflow: hidden; margin: 0 !important;
-    font-size: 0.8125rem !important; color: #004f58 !important; line-height: 1.7 !important;
-    border-inline-start: 3px solid rgba(0,227,253,0.6); padding-inline-start: 0.75rem;
-    transition: max-height .35s var(--ease), opacity .35s var(--ease), margin-top .35s var(--ease);
-  }
-  .feature-card:hover .ft-example, .feature-card:focus-within .ft-example { max-height: 120px; opacity: 1; margin-top: 0.25rem !important; }
-
-  .stats-strip {
-    display: flex;
-    justify-content: center;
-    gap: 3rem;
-    flex-wrap: wrap;
-    text-align: center;
-  }
-  .stat-item { min-width: 120px; }
-  .stat-number { font-size: 2rem; font-weight: 800; color: #00253b; line-height: 1.1; }
-  .stat-label { font-size: 0.8125rem; color: #5f6b7a; margin-top: 0.375rem; }
-
-  .vs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
-  .vs-card { padding: 1.75rem; }
-  .vs-card-highlight { border: 2px solid rgba(0,104,117,0.3); }
-  .vs-list { list-style: none; padding: 0; margin: 0; color: #42474e; font-size: 0.875rem; line-height: 1.8; }
-  .vs-list li { padding: 0.375rem 0; border-bottom: 1px solid rgba(0,37,59,0.07); }
-  .vs-list li:last-child { border-bottom: none; }
-
-  .feature-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-  }
-  .feature-card { display: flex; flex-direction: column; gap: 0.75rem; }
-  .feature-icon { font-size: 2rem; color: #006875; }
-  .feature-card h3 { font-size: 1rem; font-weight: 700; color: #00253b; margin: 0; }
-  .feature-card p { font-size: 0.875rem; color: #42474e; line-height: 1.7; margin: 0; }
-
-  .process-steps { display: flex; flex-direction: column; gap: 2rem; }
-  .process-step { display: flex; gap: 1.5rem; align-items: flex-start; }
-  .step-number {
-    width: 44px; height: 44px; border-radius: 50%;
-    background: #00253b; color: #fff;
-    font-size: 1.125rem; font-weight: 800;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .step-content h3 { font-size: 1.0625rem; font-weight: 700; color: #00253b; margin: 0 0 0.5rem; }
-  .step-content p { font-size: 0.9375rem; color: #42474e; line-height: 1.75; margin: 0; }
-
-  .faq-list { display: flex; flex-direction: column; gap: 0; }
-
-  @media (max-width: 900px) { .feature-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 580px) {
-    .feature-grid { grid-template-columns: 1fr; }
-    .vs-grid { grid-template-columns: 1fr; }
-    .stats-strip { gap: 1.5rem; }
-  }
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; }
+.builds-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+.explain-split { display:grid; grid-template-columns:1.3fr 1fr; gap:3rem; align-items:center; max-width:1080px; margin:0 auto; }
+.explain-img-wrap { border-radius:20px; overflow:hidden; box-shadow:0 20px 48px rgba(0,59,92,0.12); }
+.explain-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; min-height:280px; }
+.ft-demo { max-width:920px; margin:0 auto; }
+.duo-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+.duo-card { background:#fff; border:1px solid rgba(0,37,59,0.08); border-radius:16px; padding:1.75rem; }
+.ft-output { background:#f0f3ff; border-radius:12px; padding:1.25rem 1.5rem; color:#00253b; font-size:0.9375rem; line-height:1.75; margin-bottom:1.25rem; }
+.ft-notes { list-style:none; padding:0; margin:0; }
+.ft-notes li { color:#42474e; font-size:0.875rem; line-height:1.7; padding-block:0.3rem; padding-inline-start:1.5rem; position:relative; }
+.ft-notes li::before { content:'•'; position:absolute; inset-inline-start:0.375rem; color:#006875; font-weight:700; }
+@media(max-width:900px) { .builds-grid { grid-template-columns:1fr 1fr; } .process-grid { grid-template-columns:1fr 1fr; } .process-connector { display:none; } .explain-split { grid-template-columns:1fr; } .explain-img-wrap img { min-height:220px; } }
+@media(max-width:700px) { .duo-grid { grid-template-columns:1fr; } }
+@media(max-width:600px) { .builds-grid { grid-template-columns:1fr; } }
 </style>

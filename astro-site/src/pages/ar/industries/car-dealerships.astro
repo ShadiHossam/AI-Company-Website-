@@ -1,15 +1,29 @@
 ---
 export const prerender = false;
-import ArBaseLayout from '../../../layouts/ArBaseLayout.astro';
+import ArBaseLayout from "../../../layouts/ArBaseLayout.astro";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "بأي منصات إعلانات يتصل الذكاء الاصطناعي فعلاً؟", answer: "نبني على دوبيزل ويلا موتور، المنصتين اللتين تحملان معظم حركة إعلانات السيارات المستعملة والجديدة في الإمارات. عندما يصل عميل محتمل عبر أي منهما، يستقبله الذكاء الاصطناعي كما يستقبله فريق مبيعاتكم، ويرد ضمن نظام المراسلة في المنصة نفسها أو بالمتابعة عبر بيانات التواصل المقدمة." },
+  { question: "ما مدى دقة التأهيل المسبق للتمويل فعلاً؟", answer: "الروبوت لا يوافق على التمويل، بل يفحص الأساسيات: نطاق الدخل، وحالة التوظيف، والالتزامات القائمة، والاحتمال العام لاجتياز المشتري فحص البنك أو جهة التمويل المعتاد. هذا يكفي ليعرف فريق مبيعاتكم هل يعطي العميل أولوية أم يعلّمه لمحادثة أطول. والموافقة النهائية دائماً لدى البنك أو شريك التمويل، لا لدى الذكاء الاصطناعي." },
+  { question: "كم مرة تتحدث مزامنة المخزون؟", answer: "بأقرب ما يسمح به نظام إدارة الوكالة لديكم من الوقت الفعلي، وعادةً تتزامن مع كل تغيير: وحدة جديدة أُضيفت، أو تحديث سعر، أو سيارة بيعت وسُحبت من الإعلانات. الهدف ألا يُقال أبداً لعميل يسأل عن سيارة إنها متاحة وقد بيعت فعلاً ذلك الصباح." },
+  { question: "هل يستطيع الذكاء الاصطناعي التعامل مع مشترٍ يتحدث الهندية أو الأردية فقط؟", answer: "نعم. الذكاء الاصطناعي مبني للتواصل بالعربية والإنجليزية والهندية والأردية، ويتنقل بينها حسب لغة كتابة العميل، دون أن يحتاج العميل لاختيار لغة أولاً. ونظراً لاتساع قاعدة المشترين في الإمارات، فهذه التغطية أهم هنا منها في معظم الأسواق الأخرى." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 
 const ldJson = [
   {
     "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "الذكاء الاصطناعي لمعارض السيارات في الإمارات | Lenoo AI",
+    "@type": "Service",
+    "name": "الأتمتة بالذكاء الاصطناعي لوكالات السيارات في الإمارات",
     "url": "https://lenooai.com/ar/industries/car-dealerships",
+    "description": "أنظمة ذكاء اصطناعي مخصصة لوكالات السيارات في الإمارات: روبوتات الرد على العملاء المحتملين من دوبيزل والمنصات، وجدولة تجارب القيادة عبر واتساب، وتقييم السيارات المستبدلة، والتأهيل المسبق للتمويل، وتذكيرات الصيانة.",
     "inLanguage": "ar",
-    "isPartOf": { "@type": "WebSite", "url": "https://lenooai.com" }
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "تطوير الذكاء الاصطناعي لوكالات السيارات"
   },
   {
     "@context": "https://schema.org",
@@ -17,134 +31,112 @@ const ldJson = [
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
       { "@type": "ListItem", "position": 2, "name": "القطاعات", "item": "https://lenooai.com/ar/industries" },
-      { "@type": "ListItem", "position": 3, "name": "معارض السيارات", "item": "https://lenooai.com/ar/industries/car-dealerships" }
-    ]
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "name": "الذكاء الاصطناعي لمعارض السيارات في الإمارات",
-    "description": "بوت رد على عملاء دوبيزل ومنصات السيارات، جدولة تجربة قيادة عبر واتساب، تقييم استبدال، وتأهيل تمويل أولي لمعارض السيارات في الإمارات.",
-    "areaServed": {"@type": "Country", "name": "United Arab Emirates"},
-    "provider": { "name": "Lenoo AI", "url": "https://lenooai.com" }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "على أي منصات إعلانات يعمل الذكاء الاصطناعي فعلياً؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نبني على دوبيزل ويلا موتور، المنصتان اللتان تحملان معظم حركة إعلانات السيارات المستعملة والجديدة في الإمارات. حين يصل عميل محتمل عبر أي منصة، يستقبله الذكاء الاصطناعي بنفس طريقة فريق المبيعات." }
-      },
-      {
-        "@type": "Question",
-        "name": "ما مدى دقة التأهيل التمويلي الأولي؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "البوت لا يوافق على التمويل، بل يفحص الأساسيات: نطاق الدخل، حالة التوظيف، الالتزامات القائمة، واحتمالية اجتياز المشتري لفحص بنكي معتاد. هذا يكفي لإخبار فريق مبيعاتكم أي عميل يستحق الأولوية. الموافقة النهائية دائماً عند البنك أو شريك التمويل." }
-      },
-      {
-        "@type": "Question",
-        "name": "كم مرة يُحدَّث مزامنة المخزون؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "بأقرب وقت ممكن للحظي حسب دعم نظام إدارة المعرض لديكم، عادة عند كل تغيير: سيارة جديدة، تحديث سعر، أو بيع مركبة وسحبها من الإعلانات. الهدف ألا يُقال لعميل إن سيارة متاحة وهي مباعة بالفعل." }
-      },
-      {
-        "@type": "Question",
-        "name": "هل يستطيع الذكاء الاصطناعي التعامل مع مشتري يتحدث الهندية أو الأردية فقط؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نعم. الذكاء الاصطناعي مبني للتواصل بالعربية والإنجليزية والهندية والأردية، ويبدّل حسب لغة كتابة العميل، دون الحاجة لاختيار لغة مسبقاً. نظراً لتنوع قاعدة مشتري الإمارات، هذه التغطية مهمة هنا أكثر من أغلب الأسواق." }
-      }
+      { "@type": "ListItem", "position": 3, "name": "الذكاء الاصطناعي لوكالات السيارات", "item": "https://lenooai.com/ar/industries/car-dealerships" }
     ]
   }
 ];
 ---
 
 <ArBaseLayout
-  title="الذكاء الاصطناعي لمعارض السيارات في الإمارات | Lenoo AI"
-  description="Lenoo AI، وكالة الذكاء الاصطناعي في دبي، تبني بوت رد على عملاء دوبيزل، جدولة تجربة قيادة عبر واتساب، وتأهيل تمويل أولي لمعارض السيارات في الإمارات."
+  title="الأتمتة بالذكاء الاصطناعي لوكالات السيارات في الإمارات"
+  description="ذكاء اصطناعي لوكالات السيارات في دبي: روبوتات الرد على العملاء المحتملين من دوبيزل والمنصات، وجدولة تجارب القيادة عبر واتساب، وتقييم السيارات المستبدلة، والتأهيل المسبق للتمويل."
   canonicalPath="/ar/industries/car-dealerships"
   enPath="/industries/car-dealerships"
+  ogImage="/assets/og-home.jpg"
   ldJson={ldJson}
 >
 
-<!-- HERO -->
-<header class="page-hero">
-  <div class="container">
-    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التنقل"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">القطاعات</a><span style="opacity:0.4;padding:0 4px;"> / </span>معارض السيارات</div>
-    <div class="badge badge-cyan" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">directions_car</span>
-      معارض السيارات
-    </div>
-    <h1>ذكاء اصطناعي لمعارض السيارات في الإمارات<br><span class="gradient-text">الرد الأول يحسم الصفقة</span></h1>
-    <p style="max-width:640px;margin:1.5rem auto;line-height:1.8;color:rgba(255,255,255,0.72);">
-      مشترٍ يتصفح دوبيزل يراسل عادة ثلاثة معارض في نفس الوقت. من يردّ أولاً بمعلومة حقيقية يفوز بالمحادثة. نبني لمعرضك بوتاً يردّ خلال دقائق، يحجز تجربة قيادة عبر واتساب، ويؤهّل التمويل قبل أن يصل العميل للمعرض.
-    </p>
-    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-      <button onclick="openModal(this)" data-source="ar_car_dealerships_hero" class="btn-primary">احجز استشارة مجانية ←</button>
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">القطاعات</a><span style="opacity:0.4;padding:0 4px;"> / </span>وكالات السيارات</div>
+    <h1>الأتمتة بالذكاء الاصطناعي<br><span class="gradient-text">لوكالات السيارات</span> في الإمارات</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">تبني Lenoo AI أنظمة ذكاء اصطناعي لوكالات السيارات في الإمارات: الرد على العملاء المحتملين من المنصات، وجدولة تجارب القيادة عبر واتساب، وتقييم السيارات المستبدلة، والتأهيل المسبق للتمويل. مبنية لسوق يفوز فيه الرد الأول بالصفقة.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_car_dealerships_hero" class="btn-primary">احجزوا تقييماً مجانياً للذكاء الاصطناعي في وكالتكم</button>
+      <a href="#what-we-build" class="btn-outline">شاهدوا ما نبنيه ↓</a>
     </div>
   </div>
 </header>
 
-<!-- IMAGE BANNER + STATS -->
+<!-- HERO IMAGE -->
 <div style="position:relative; overflow:hidden;">
-  <img src="https://images.unsplash.com/photo-1542744173-05336fcc7ad4?w=1600&q=80&auto=format&fit=crop" alt="صالة عرض سيارات معروضة للبيع في الإمارات" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 45%;" />
-  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.18) 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.40));"></div>
-  <div style="position:relative; padding:3rem 2rem;">
-    <div class="glass-dark hosp-stats-grid" style="max-width:920px; margin:0 auto; border-radius:20px; padding:2rem 2.5rem;">
-      <div class="stat-item">
-        <p class="stat-num">×٩</p>
-        <p class="stat-lbl">فرصة تحويل أعلى خلال ٥ دقائق بدل ٣٠ (MIT)</p>
-      </div>
-      <div class="stat-item">
-        <p class="stat-num">أقل من ساعة</p>
-        <p class="stat-lbl">قبل أن يبرد عميل دوبيزل عادة</p>
-      </div>
-      <div class="stat-item">
-        <p class="stat-num">٤ لغات</p>
-        <p class="stat-lbl">عربي، إنجليزي، هندي، أردو</p>
-      </div>
-      <div class="stat-item">
-        <p class="stat-num">١٠٠٪</p>
-        <p class="stat-lbl">ضمان استرداد إذا لم ترضَ</p>
-      </div>
-    </div>
+  <img src="https://images.unsplash.com/photo-1542744173-05336fcc7ad4?w=1600&q=80&auto=format&fit=crop" alt="صالة عرض وكالة سيارات مع سيارات معروضة للبيع في الإمارات" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 45%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "٩×", caption: "احتمال أعلى للتحويل عند التواصل مع العميل المحتمل خلال ٥ دقائق مقابل ٣٠ (MIT)" },
+      { value: "أقل من ساعة", caption: "المهلة التي يبرد بعدها عادةً العميل المحتمل القادم من دوبيزل أو المنصات" },
+      { value: "٤", caption: "لغات تغطيها عادةً قاعدة مشتري وكالة سيارات في الإمارات: العربية والإنجليزية والهندية والأردية" },
+    ]} />
   </div>
 </div>
 
-<!-- AI USE CASES -->
-<section class="section">
+<!-- WHY THE FIRST REPLY DECIDES THE SALE -->
+<section class="section" aria-labelledby="shift-heading">
   <div class="container">
-    <h2 style="text-align:center;margin-bottom:0.75rem;">ما يفعله الذكاء الاصطناعي في معرض السيارات</h2>
-    <p style="text-align:center;color:#42474e;margin-bottom:3rem;max-width:560px;margin-inline:auto;">ستة أنظمة مرتبطة بنظام إدارة معرضك والمنصات التي يصل منها عملاؤك فعلياً.</p>
-    <div class="feature-ledger">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">لماذا يحسم الرد الأول الصفقة</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>المشتري الذي يتصفح دوبيزل أو إعلانات المنصات ينظر إلى عدة وكلاء في آن واحد، لا إليكم فقط.</strong> في اللحظة التي يراسل فيها بشأن سيارة، يكون غالباً قد راسل اثنين أو ثلاثة آخرين أيضاً. من يرد أولاً بمعلومات حقيقية يكسب المحادثة، والبقية يتنافسون على عميل ذهب نصفه أصلاً.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>وجدت أبحاث MIT حول سرعة الاستجابة أن التواصل مع العميل المحتمل خلال ٥ دقائق يجعل احتمال تحوله أعلى بنحو ٩ مرات من الانتظار ٣٠ دقيقة.</strong> هذه النتيجة لم تُبنَ على مبيعات السيارات تحديداً، لكنها تنطبق مباشرة على سلوك عملاء المنصات: سريعو الحركة، يقارنون الأسعار، ويختفون لحظة وصول رد أسرع من مكان آخر.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>فريق المبيعات البشري لا يستطيع تغطية كل ساعة قد يصل فيها عميل من المنصات.</strong> العميل الذي يصل في الحادية عشرة ليلاً أو أثناء صلاة الجمعة يبقى دون رد حتى يعود أحد إلى مكتبه، وبحلول ذلك يكون المشتري قد وجد سيارته عادةً. الذكاء الاصطناعي يسد هذه الفجوة دون إضافة وردية ليلية.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1502810190503-8303352d0dd1?w=800&q=80&auto=format&fit=crop" alt="مندوب مبيعات يعرض سيارة على عميل في صالة العرض" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">أنظمة ذكاء اصطناعي مبنية لوكالات السيارات في الإمارات</h2>
+      <p>ستة أنظمة محددة ننشرها لوكالات السيارات في الإمارات، كل منها متكامل مع نظام إدارة الوكالة والمنصات التي يأتي منها عملاؤكم فعلاً.</p>
+    </div>
+    <div class="apps-grid">
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">directions_car</span>
-        <h3>بوت رد على عملاء دوبيزل والمنصات</h3>
-        <p style="color:#42474e;line-height:1.7;">يردّ على كل استفسار خلال دقائق، يجيب عن أسئلة السيارة الأساسية، ويحجز مكالمة أو زيارة والمشتري لا يزال يقارن.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">directions_car</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">روبوت الرد على عملاء دوبيزل والمنصات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يرد على كل استفسار من المنصات خلال دقائق، ويجيب عن الأسئلة الأساسية حول السيارة، ويحجز مكالمة أو زيارة بينما لا يزال المشتري يقارن بين الوكلاء.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">الإجابات تصل والعميل لا يزال يقارن، لا بعد أن يقرر</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">event_available</span>
-        <h3>جدولة تجربة القيادة عبر واتساب</h3>
-        <p style="color:#42474e;line-height:1.7;">يحجز تجربة القيادة مباشرة عبر واتساب، يتحقق من توفر السيارة والموظف، ويرسل تذكيراً.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_available</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">مجدول تجارب القيادة عبر واتساب</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يحجز تجارب القيادة مباشرة على واتساب، ويتحقق من توفر السيارة والموظفين، ويرسل تذكيرات ليحضر أصحاب المواعيد المؤكدة فعلاً.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">موعد مؤكد بدلاً من الأخذ والرد عبر الهاتف</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">request_quote</span>
-        <h3>مساعد تقييم الاستبدال</h3>
-        <p style="color:#42474e;line-height:1.7;">يجمع تفاصيل سيارة الاستبدال، المسافة المقطوعة، والحالة عبر محادثة موجّهة، ويعطي تقديراً أولياً للسعر.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">request_quote</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">مساعد تقييم السيارات المستبدلة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يجمع تفاصيل السيارة المراد استبدالها وعدد الكيلومترات وحالتها عبر محادثة موجهة، ويعطي نطاق تقييم تقديرياً قبل أن يزور العميل أصلاً.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">تقدير أولي قبل أن يلتزم المشتري بالزيارة</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">account_balance</span>
-        <h3>بوت تأهيل تمويل أولي</h3>
-        <p style="color:#42474e;line-height:1.7;">يفحص المشتري على نطاق الدخل والتوظيف والالتزامات القائمة ليُحدد من الأقرب لقبول التمويل.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">account_balance</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">روبوت التأهيل المسبق للتمويل</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يفحص المشترين حسب نطاق الدخل والتوظيف والالتزامات القائمة ليحدد من يُرجح تأهله للتمويل، فيعطي فريق مبيعاتكم الأولوية للعملاء القادرين على إتمام الصفقة فعلاً.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">خطوة فحص لا موافقة نهائية، تتم قبل زيارة صالة العرض</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">build</span>
-        <h3>نظام تذكير بالصيانة</h3>
-        <p style="color:#42474e;line-height:1.7;">يتابع مواعيد الصيانة الدورية ويرسل تذكيراً عبر واتساب حين تحين، فيبقى إيراد قسم الصيانة مستمراً.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">build</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">نظام تذكير الصيانة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يتتبع فترات الصيانة ويرسل تذكيرات عبر واتساب عندما يحين موعد صيانة سيارة العميل، فيبقي إيراد مركز الصيانة مستمراً دون قائمة اتصالات يدوية.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">تذكيرات تلقائية بدلاً من جدول بيانات على أحدهم أن يتذكر مراجعته</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">search</span>
-        <h3>ذكاء اصطناعي لمطابقة المخزون</h3>
-        <p style="color:#42474e;line-height:1.7;">يطابق ميزانية المشتري وتفضيلاته مع المخزون الفعلي الحي، ويقترح بدائل حين لا يكون الإعلان الذي راسل عنه الأنسب.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">search</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">ذكاء اصطناعي لمطابقة المخزون</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يطابق ميزانية المشتري وتفضيلاته المعلنة مع المخزون الحي في معرضكم، ويقترح بدائل عندما لا يكون الإعلان الذي راسل بشأنه هو الأنسب.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">يُظهر السيارة المناسبة في المعرض، لا فقط التي ضغط عليها</p>
       </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">مشمول بضمان الاسترداد ١٠٠٪</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">كل الأنظمة متوافقة مع لوائح الإمارات، متعددة اللغات، ومتكاملة مع نظام إدارة الوكالة والمنصات التي يأتي منها عملاؤكم.</p>
+      <button onclick="openModal(this)" data-source="ar_car_dealerships_mid" class="btn-primary">احجزوا تقييماً مجانياً للذكاء الاصطناعي في وكالتكم</button>
     </div>
   </div>
 </section>
@@ -153,38 +145,38 @@ const ldJson = [
 <section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
   <div class="container" style="max-width:1040px;">
     <div class="section-header">
-      <h2 id="journey-heading">من عميل محتمل إلى صفقة مكتملة</h2>
-      <p>ما يتولاه الذكاء الاصطناعي من أول رسالة على منصة إلى متابعة لا تتوقف بعد محاولة واحدة.</p>
+      <h2 id="journey-heading">عميل محتمل واحد، من البداية حتى البيع</h2>
+      <p>ما يتولاه الذكاء الاصطناعي من أول رسالة عبر المنصة حتى متابعة لا تستسلم بعد محاولة واحدة.</p>
     </div>
     <div class="bento-grid bento-grid-3">
       <div class="card">
-        <div class="num-circle">1</div>
+        <div class="num-circle">١</div>
         <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">استفسار المنصة يُجاب في أقل من دقيقة</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">مشترٍ يراسل عن إعلان على دوبيزل في أي وقت من اليوم.</p>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">مشترٍ يراسل بشأن إعلان على دوبيزل في أي ساعة من اليوم.</p>
         <ul class="journey-list">
-          <li>يردّ فوراً بمواصفات السيارة والسعر والتوفر الحالي</li>
-          <li>يسأل الأسئلة التأهيلية التي يسألها البائع: الميزانية، الجدول الزمني، الاستبدال</li>
-          <li>يُحوّل العميل الجاد للبائع المناسب فور اهتمامه</li>
+          <li>يرد فوراً بمواصفات السيارة وسعرها وتوفرها الحالي</li>
+          <li>يطرح أسئلة التأهيل التي يطرحها مندوب المبيعات: الميزانية، والإطار الزمني، والاستبدال، والاهتمام بالتمويل</li>
+          <li>يحوّل العميل الجاد إلى مندوب المبيعات المناسب بينما لا يزال المشتري متفاعلاً</li>
         </ul>
       </div>
       <div class="card">
-        <div class="num-circle">2</div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">تجربة القيادة تُحجز بلا مراسلات طويلة</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">بمجرد اهتمام المشتري، ينتقل الذكاء الاصطناعي مباشرة لزيارة محجوزة.</p>
+        <div class="num-circle">٢</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">تجربة القيادة تُحجز دون أخذ ورد</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">بمجرد اهتمام المشتري، ينتقل الذكاء الاصطناعي مباشرة إلى حجز زيارة.</p>
         <ul class="journey-list">
-          <li>يتحقق من توفر السيارة والموظف ويقترح موعداً عبر واتساب</li>
-          <li>يؤكد تفاصيل سيارة الاستبدال إن وُجدت، قبل الزيارة</li>
-          <li>يرسل تذكيراً قبل الموعد فتحدث الزيارة فعلياً</li>
+          <li>يتحقق من توفر السيارة والموظفين ويقترح موعداً على واتساب</li>
+          <li>يؤكد تفاصيل السيارة المراد استبدالها إن وُجدت، قبل الزيارة</li>
+          <li>يرسل تذكيراً قبل الموعد لتتم الزيارة فعلاً</li>
         </ul>
       </div>
       <div class="card">
-        <div class="num-circle">3</div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">متابعة لا تتوقف بعد رسالة واحدة</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">مشترٍ لم يحجز فوراً ليس عميلاً ضائعاً، بل سلسلة متابعة.</p>
+        <div class="num-circle">٣</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">المتابعة التي لا تتوقف بعد رسالة واحدة</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">المشتري الذي لا يحجز فوراً ليس عميلاً ميتاً، بل سلسلة متابعة.</p>
         <ul class="journey-list">
-          <li>يرسل متابعات موقّتة مع مخزون ذي صلة بدل رسالة واحدة وصمت</li>
-          <li>يُعلّم العميل البارد فعلياً ليتوقف فريقك عن ملاحقته يدوياً</li>
-          <li>يُبقي التأهيل التمويلي وتقييم الاستبدال مرتبطين بالعميل لحظة جاهزيته</li>
+          <li>يرسل متابعات مدروسة التوقيت بمخزون مناسب بدلاً من رسالة واحدة ثم صمت</li>
+          <li>ينبّه إلى العميل البارد فعلاً فيتوقف فريقكم عن ملاحقته يدوياً</li>
+          <li>يبقي التأهيل المسبق للتمويل وتقييم الاستبدال مرفقين بالعميل لحين يكون جاهزاً</li>
         </ul>
       </div>
     </div>
@@ -195,26 +187,26 @@ const ldJson = [
 <section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
   <div class="container">
     <div class="section-header">
-      <h2 id="apps-heading">أين يُحدث الذكاء الاصطناعي أكبر أثر لمعارض الإمارات</h2>
+      <h2 id="apps-heading">أين يحقق الذكاء الاصطناعي أكبر أثر لوكالات السيارات في الإمارات</h2>
     </div>
     <div class="bento-grid bento-grid-3">
       <div class="card">
-        <div class="icon-box"><span class="material-symbols-outlined" style="direction:ltr;color:#006875; font-size:24px;" aria-hidden="true">bolt</span></div>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">bolt</span></div>
         <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">سرعة الرد على العملاء المحتملين</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">أبحاث MIT تُظهر أن العملاء المُتواصَل معهم خلال ٥ دقائق أكثر احتمالاً للتحويل بـ٩ مرات من الذين ينتظرون ٣٠ دقيقة. على منصة يراسل فيها المشتري عدة معارض معاً، سرعة الرد وحدها غالباً تحسم البيع.</p>
-        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">ردود فورية على مدار الساعة، لا فقط في ساعات صالة العرض</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">تضع أبحاث MIT العملاء المحتملين الذين يُتواصل معهم خلال ٥ دقائق عند احتمال تحويل أعلى بنحو ٩ مرات من الذين يُتواصل معهم بعد ٣٠ دقيقة. وعلى منصة يراسل فيها المشتري عدة وكلاء في آن واحد، غالباً ما تحسم سرعة الرد وحدها من يفوز بالصفقة.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">ردود فورية على مدار الساعة، لا خلال ساعات صالة العرض فقط</p>
       </div>
       <div class="card">
-        <div class="icon-box"><span class="material-symbols-outlined" style="direction:ltr;color:#006875; font-size:24px;" aria-hidden="true">account_balance</span></div>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">account_balance</span></div>
         <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">تأهيل الاستبدال والتمويل</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">إنجاز تقييم الاستبدال وفحص التمويل قبل وصول المشتري يُقصّر زيارة صالة العرض ويُركّز وقت فريق المبيعات على العملاء الأقرب للقرار.</p>
-        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">فحص يتم قبل الزيارة، لا أثناءها</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">إنجاز تقدير الاستبدال وفحص التمويل قبل دخول المشتري يقصّر زيارة صالة العرض، ويتيح لموظفي المبيعات تركيز وقتهم على المشترين القريبين من القرار فعلاً.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">الفحص يتم قبل الزيارة، لا أثناءها</p>
       </div>
       <div class="card">
-        <div class="icon-box"><span class="material-symbols-outlined" style="direction:ltr;color:#006875; font-size:24px;" aria-hidden="true">build</span></div>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">build</span></div>
         <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">الاحتفاظ بعملاء الصيانة</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">تذكيرات الصيانة الآلية تُبقي العملاء يعودون لقسم صيانتكم بدل ورشة خارجية، وتحمي مصدر إيراد يسهل خسارته بدون متابعة ثابتة.</p>
-        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">تذكير يُرسل آلياً في كل مرة تحين الصيانة</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">تذكيرات الصيانة التلقائية تبقي العملاء عائدين إلى مركز الصيانة لديكم بدلاً من ورشة خارجية، فتحمي مصدر إيراد يسهل فقدانه دون نظام متابعة منتظم.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">تذكير يُرسل تلقائياً، في كل مرة يحين فيها موعد صيانة</p>
       </div>
     </div>
   </div>
@@ -224,28 +216,28 @@ const ldJson = [
 <section class="section" aria-labelledby="eval-heading">
   <div class="container">
     <div class="section-header">
-      <h2 id="eval-heading">ما الذي يجعله يعمل</h2>
+      <h2 id="eval-heading">ما يجعلها تنجح</h2>
     </div>
     <div class="eval-grid">
       <div class="card" style="text-align:center;">
-        <div class="num-circle">1</div>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">تكامل مع واجهات المنصات (دوبيزل، يلا موتور)</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">معظم عملاء المعارض المحتملين يبدأون على دوبيزل ويلا موتور. الذكاء الاصطناعي يحتاج استقبال هذه العملاء والرد عليهم بنفس طريقة فريق المبيعات، لا مجرد رد على بريد مُحوَّل بعد ساعات.</p>
+        <div class="num-circle">١</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">التكامل مع واجهات المنصات (دوبيزل، يلا موتور)</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">معظم عملاء الوكالات المحتملين يأتون من دوبيزل ويلا موتور. يحتاج الذكاء الاصطناعي إلى استقبالهم والرد عليهم كما يفعل فريق مبيعاتكم، لا مجرد التفاعل مع بريد إلكتروني محوَّل بعد ساعات.</p>
       </div>
       <div class="card" style="text-align:center;">
-        <div class="num-circle">2</div>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">تكامل مع نظام إدارة المعرض</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">توفر المخزون والأسعار وبيانات العملاء يجب أن تتزامن مباشرة مع نظامكم. نظام يعرض سيارة مباعة بالفعل يُفقد الثقة قبل أن تبدأ المحادثة.</p>
+        <div class="num-circle">٢</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">التكامل مع نظام إدارة الوكالة</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">توفر المخزون والأسعار وبيانات العملاء المحتملين يجب أن تتزامن مع نظام إدارة الوكالة مباشرة. النظام الذي يعرض سعر سيارة بيعت أصلاً يضر بالثقة قبل أن تبدأ المحادثة.</p>
       </div>
       <div class="card" style="text-align:center;">
-        <div class="num-circle">3</div>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">قاعدة مشترين متعددة اللغات</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">مشترو السيارات في الإمارات يصلون من جنوب آسيا والخليج وأبعد. ذكاء اصطناعي يتعامل بالإنجليزية أو العربية فقط يُفوّت جزءاً كبيراً من المشترين المهتمين فعلياً.</p>
+        <div class="num-circle">٣</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">قاعدة مشترين متعددة اللغات (العربية/الإنجليزية/الهندية/الأردية)</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">مشترو السيارات في الإمارات يأتون من جنوب آسيا والخليج وما بعدهما. الذكاء الاصطناعي الذي يتعامل بالإنجليزية أو العربية فقط يفوّت شريحة كبيرة من المشترين المهتمين فعلاً الذين يفضلون المراسلة بلغتهم.</p>
       </div>
       <div class="card" style="text-align:center;">
-        <div class="num-circle">4</div>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">التزام رد سريع</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">الالتزام بالرد خلال دقائق هو صلب الفكرة. إن كان الذكاء الاصطناعي يجمّع الردود أو ينتظر مراجعة بشرية قبل الإرسال، يخسر ميزة السرعة التي تجعله يستحق النشر أصلاً.</p>
+        <div class="num-circle">٤</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">التزامات سرعة الرد</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">الالتزام بالرد خلال دقائق هو جوهر الأمر. إذا ضُبط الذكاء الاصطناعي لتجميع الردود أو انتظار مراجعة بشرية قبل الإرسال، فإنه يفقد ميزة السرعة التي تجعل نشره مجدياً أصلاً.</p>
       </div>
     </div>
   </div>
@@ -255,144 +247,83 @@ const ldJson = [
 <section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
   <div class="container" style="max-width:860px;">
     <div class="section-header">
-      <h2 id="research-heading">ما تُظهره البيانات</h2>
+      <h2 id="research-heading">ما تقوله البيانات</h2>
     </div>
     <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
-      <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&auto=format&fit=crop" alt="صف سيارات معروضة للبيع في معرض إماراتي" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+      <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&auto=format&fit=crop" alt="صف من السيارات المعروضة للبيع في معرض وكالة في الإمارات" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
     </div>
     <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
       <div class="card" style="text-align:center;">
-        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">×٩</p>
-        <p style="color:#42474e; font-size:0.875rem;">فرصة تحويل أعلى عند الرد خلال ٥ دقائق بدل ٣٠ (MIT)</p>
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">٩×</p>
+        <p style="color:#42474e; font-size:0.875rem;">احتمال أعلى للتحويل عند التواصل مع العميل المحتمل خلال ٥ دقائق مقابل ٣٠ (MIT)</p>
       </div>
       <div class="card" style="text-align:center;">
         <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">أقل من ساعة</p>
-        <p style="color:#42474e; font-size:0.875rem;">النافذة المعتادة قبل انتقال عميل المنصة لمعرض آخر</p>
+        <p style="color:#42474e; font-size:0.875rem;">المهلة المعتادة قبل أن ينتقل عميل المنصة إلى وكيل آخر</p>
       </div>
       <div class="card" style="text-align:center;">
         <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">٤</p>
-        <p style="color:#42474e; font-size:0.875rem;">لغات تمتد عبرها قاعدة مشتري معرض إماراتي عادة</p>
+        <p style="color:#42474e; font-size:0.875rem;">لغات تغطيها عادةً قاعدة مشتري وكالة سيارات في الإمارات</p>
       </div>
     </div>
     <div class="research-panel">
       <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
         <div>
           <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">ميزة السرعة حقيقية</p>
-          <p style="color:#42474e; line-height:1.7;">نتيجة MIT بأن العملاء المُتواصَل معهم خلال ٥ دقائق أكثر احتمالاً للتحويل بـ٩ مرات من بعد ٣٠ دقيقة تنطبق تماماً على مبيعات السيارات عبر المنصات، حيث يراسل المشتري عدة معارض عن سيارات متشابهة في نفس الوقت.</p>
+          <p style="color:#42474e; line-height:1.7;">نتيجة MIT بأن العملاء المحتملين الذين يُتواصل معهم خلال ٥ دقائق أعلى احتمالاً للتحويل بنحو ٩ مرات من الذين يُتواصل معهم بعد ٣٠ دقيقة من أكثر أبحاث الاستجابة للعملاء استشهاداً. وهي تنطبق بوضوح على مبيعات السيارات عبر المنصات، حيث يراسل المشتري غالباً عدة وكلاء بشأن سيارات متشابهة في الوقت نفسه.</p>
         </div>
         <div>
-          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">عملاء المنصات يتصرفون بشكل مختلف</p>
-          <p style="color:#42474e; line-height:1.7;">المعارض التي نتحدث معها تصف باستمرار عملاء المنصات كأكثر برودة ومقارنة من زوار المعرض المباشرين. مشترٍ راسل ثلاثة معارض بالفعل ليس وفياً لأي منها بعد، من يردّ أولاً بإجابة واضحة يحصل عادة على الخطوة التالية.</p>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">عملاء المنصات يتصرفون بشكل مختلف عن زوار المعرض</p>
+          <p style="color:#42474e; line-height:1.7;">الوكالات التي نتحدث معها تصف باستمرار عملاء المنصات بأنهم أبرد وأكثر ميلاً للمقارنة من زوار المعرض. المشتري الذي راسل ثلاثة وكلاء لا يدين بالولاء لأي منهم بعد، ومن يرد أولاً بإجابة صريحة يكسب عادةً الخطوة التالية من المحادثة.</p>
         </div>
         <div>
-          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">التمويل يُسقط صفقات أكثر من السعر</p>
-          <p style="color:#42474e; line-height:1.7;">فرق المبيعات تُبلغ باستمرار أن فشل صفقة عند مرحلة التمويل، بعد تجربة القيادة والتفاوض، يُكلّف وقتاً أكثر من أي خطوة أخرى. التأهيل المسبق يعني توقّف الصفقة الفاشلة قبل استثمار البائع ساعات فيها.</p>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">التمويل يُسقط صفقات أكثر مما يُسقطها السعر</p>
+          <p style="color:#42474e; line-height:1.7;">فرق المبيعات تذكر باستمرار أن الصفقة التي تسقط في مرحلة التمويل، بعد تجربة القيادة والتفاوض، تكلف وقتاً أكثر من أي خطوة أخرى في العملية. التأهيل المسبق للمشترين في وقت أبكر يعني أن هذا التعثر يحدث قبل أن يستثمر مندوب المبيعات ساعات في الصفقة، لا بعدها.</p>
         </div>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- GUARANTEE -->
-<section class="section" style="background:#e7eeff;padding:4rem 0;text-align:center;">
-  <div class="container">
-    <div class="guarantee-badge" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:18px;direction:ltr;" aria-hidden="true">shield</span>
-      ضمان الاسترداد الكامل، الوحيد في الإمارات
-    </div>
-    <h2 style="margin-bottom:1rem;">إذا لم تكن راضياً، لا تدفع أي شيء.</h2>
-    <p style="color:#42474e;max-width:560px;margin:0 auto 2rem;line-height:1.8;">نبني، تختبر، وإذا لم تكن راضياً تماماً نردّ ١٠٠٪ خلال ٣٠ يوماً من التسليم. بدون أسئلة.</p>
-    <button onclick="openModal(this)" data-source="ar_car_dealerships_guarantee" class="btn-primary">ابدأ بدون مخاطرة</button>
   </div>
 </section>
 
 <!-- FAQ -->
-<section class="section">
-  <div class="container" style="max-width:760px;">
-    <h2 style="text-align:center;margin-bottom:2.5rem;">أسئلة شائعة</h2>
-    <div class="faq-list">
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          على أي منصات إعلانات يعمل الذكاء الاصطناعي فعلياً؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نبني على دوبيزل ويلا موتور، المنصتان اللتان تحملان معظم حركة إعلانات السيارات في الإمارات. حين يصل عميل محتمل عبر أي منصة، يستقبله الذكاء الاصطناعي بنفس طريقة فريق المبيعات.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          ما مدى دقة التأهيل التمويلي الأولي؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">البوت لا يوافق على التمويل، بل يفحص الأساسيات: نطاق الدخل، حالة التوظيف، الالتزامات القائمة. هذا يكفي لإخبار فريق مبيعاتكم أي عميل يستحق الأولوية. الموافقة النهائية دائماً عند البنك.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          كم مرة يُحدَّث مزامنة المخزون؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">بأقرب وقت ممكن للحظي حسب دعم نظام إدارة المعرض لديكم، عادة عند كل تغيير: سيارة جديدة، تحديث سعر، أو بيع مركبة. الهدف ألا يُقال لعميل إن سيارة متاحة وهي مباعة بالفعل.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل يستطيع الذكاء الاصطناعي التعامل مع مشتري يتحدث الهندية أو الأردية فقط؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نعم. الذكاء الاصطناعي مبني للتواصل بالعربية والإنجليزية والهندية والأردية، ويبدّل حسب لغة كتابة العميل، دون الحاجة لاختيار لغة مسبقاً.</div>
-      </div>
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">أسئلة حول الذكاء الاصطناعي لوكالات السيارات في الإمارات</h2>
     </div>
+    <FaqAccordion items={faqItems} />
   </div>
 </section>
 
 <!-- FINAL CTA -->
-<section class="cta-band" style="border-radius:24px;margin:2rem 2rem 4rem;">
-  <div class="container" style="text-align:center;">
-    <h2 style="margin-bottom:1rem;">جاهز لعدم خسارة عميل محتمل آخر؟</h2>
-    <p style="margin-bottom:2rem;max-width:500px;margin-inline:auto;line-height:1.7;">احجز جلسة تشخيص مجانية، نراجع حجم عملائك المحتملين من المنصات وزمن ردكم الحالي، ونريك بالضبط ما سنبنيه أولاً. بدون التزام.</p>
-    <button onclick="openModal(this)" data-source="ar_car_dealerships_cta" class="btn-primary">ابدأ الآن ←</button>
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">احجزوا تقييماً مجانياً للذكاء الاصطناعي في وكالتكم</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">سنراجع حجم عملائكم من المنصات، وأوقات الرد الحالية، وأين تتعثر الصفقات في مرحلة التمويل، ثم نوضح لكم بالضبط ما سنبنيه أولاً. ٣٠ دقيقة، دون أي التزام.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+      <span class="cta-trust-badge">✓ دون أي التزام</span>
+      <span class="cta-trust-badge">✓ ضمان الاسترداد</span>
+    </div>
+    <button onclick="openModal(this)" data-source="ar_car_dealerships_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا تقييماً مجانياً للذكاء الاصطناعي في وكالتكم</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
   </div>
-</section>
-
-<style>
-  .hosp-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
-    text-align: center;
-  }
-  .stat-num {
-    font-size: 2rem;
-    font-weight: 800;
-    color: #00e3fd;
-    margin: 0 0 0.25rem;
-  }
-  .stat-lbl {
-    color: rgba(255,255,255,0.72);
-    font-size: 0.875rem;
-    margin: 0;
-    line-height: 1.5;
-  }
-  .stat-item { padding: 0 .25rem; }
-  .faq-list {
-    display: grid;
-    gap: 0.75rem;
-  }
-  @media (max-width: 900px) {
-    .hosp-stats-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 580px) {
-    .hosp-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-  }
-
-  /* Applications / evaluation / research sections */
-  .icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
-  .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
-  .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
-  .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
-  .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
-  .journey-list li { position:relative; padding-right:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
-  .journey-list li::before { content:''; position:absolute; right:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
-  @media(max-width:900px) { .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
-  @media(max-width:600px) { .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
-</style>
+</div>
 
 </ArBaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    /* Journey list markers (reused inside static bento-grid-3 cards) */
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-inline-start:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; inset-inline-start:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>

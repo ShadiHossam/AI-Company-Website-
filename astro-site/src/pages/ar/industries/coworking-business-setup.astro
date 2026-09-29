@@ -1,15 +1,28 @@
 ---
 export const prerender = false;
-import ArBaseLayout from '../../../layouts/ArBaseLayout.astro';
+import ArBaseLayout from "../../../layouts/ArBaseLayout.astro";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "هل يعرف الذكاء الاصطناعي فعلاً الفرق بين قواعد المناطق الحرة والبر الرئيسي؟", answer: "نعم، هذا الفرق مبني في طريقة عمل أدوات تأهيل الاستفسارات ومقارنة المناطق الحرة. الذكاء الاصطناعي مدرَّب على هياكل الترخيص وقوائم الأنشطة والفروق العامة في القواعد بين التأسيس في البر الرئيسي والمناطق الحرة التي تعملون معها، فيستطيع توجيه الاستفسار الجديد نحو المحادثة الصحيحة بدلاً من إجابات عامة لا تنطبق على أي منهما. إنه فلتر أولي، لا بديل عن الاعتماد النهائي من فريق المعقبين لديكم." },
+  { question: "كيف تُحفظ بيانات مستندات العملاء بأمان؟", answer: "تمر المستندات عبر قنوات مشفرة وتُخزن كما يُخزن أي ملف عميل حساس في شركتكم: بصلاحيات وصول محددة، وسجلات، ومقصورة على من يحتاجها. نبني مسار جمع المستندات وتتبعها حول متطلبات الامتثال الحالية لديكم بدلاً من مطالبتكم باعتماد نظام تخزين جديد." },
+  { question: "ما مدى دقة التتبع متعدد الخطوات، خاصة حين يتضمن تأسيس العميل خطوات غير معتادة؟", answer: "في مسار التأسيس المعتاد، يتبع المتتبع التسلسل المعروف لخطوات الرخصة والتأشيرة والتسجيل بدقة لأنه مبني على مسارات عمل حقيقية لا على قائمة تحقق عامة. وحين تتضمن الحالة خطوات غير معتادة، كمتطلب خاص بمنطقة حرة، أو موافقة متأخرة، أو رفض مستند، ينبّه إلى الانحراف ويسلّم لفريقكم بدلاً من تخمين ما سيحدث بعد ذلك." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 
 const ldJson = [
   {
     "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "الذكاء الاصطناعي لشركات تأسيس الأعمال في الإمارات | Lenoo AI",
+    "@type": "Service",
+    "name": "الأتمتة بالذكاء الاصطناعي لاستشارات تأسيس الشركات في الإمارات",
     "url": "https://lenooai.com/ar/industries/coworking-business-setup",
+    "description": "أنظمة ذكاء اصطناعي مخصصة لاستشارات تأسيس الشركات في الإمارات: روبوتات تأهيل الاستفسارات، وتتبع خطوات الرخص والتأشيرات، وأتمتة جمع المستندات، وتذكيرات التجديد.",
     "inLanguage": "ar",
-    "isPartOf": { "@type": "WebSite", "url": "https://lenooai.com" }
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "تطوير الذكاء الاصطناعي لاستشارات تأسيس الشركات"
   },
   {
     "@context": "https://schema.org",
@@ -17,129 +30,112 @@ const ldJson = [
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
       { "@type": "ListItem", "position": 2, "name": "القطاعات", "item": "https://lenooai.com/ar/industries" },
-      { "@type": "ListItem", "position": 3, "name": "تأسيس الأعمال", "item": "https://lenooai.com/ar/industries/coworking-business-setup" }
-    ]
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "name": "الذكاء الاصطناعي لشركات تأسيس الأعمال في الإمارات",
-    "description": "بوت تأهيل استفسارات، متابعة خطوات الرخصة والتأشيرة، تحصيل مستندات آلي، وتذكير بالتجديد لشركات تأسيس الأعمال في الإمارات.",
-    "areaServed": {"@type": "Country", "name": "United Arab Emirates"},
-    "provider": { "name": "Lenoo AI", "url": "https://lenooai.com" }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "هل يعرف الذكاء الاصطناعي فعلياً الفرق بين قواعد المنطقة الحرة والبر الرئيسي؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نعم، هذا التمييز مبني في طريقة عمل أدوات تأهيل الاستفسار ومقارنة المناطق الحرة. الذكاء الاصطناعي مُدرَّب على هياكل التراخيص وقوائم الأنشطة والفروقات العامة، فيوجّه الاستفسار الجديد نحو المحادثة الصحيحة. هذا فلتر أولي، لا بديل عن اعتماد فريق العلاقات الحكومية النهائي." }
-      },
-      {
-        "@type": "Question",
-        "name": "كيف تُحفظ بيانات مستندات العملاء بأمان؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "المستندات تمر عبر قنوات مشفّرة وتُخزَّن كما يُخزَّن أي ملف عميل حساس في عملكم، بصلاحيات محكومة وسجل وصول. نبني سير تحصيل المستندات ومتابعتها حول متطلبات الامتثال الحالية لديكم بدل طلب اعتماد نظام تخزين جديد." }
-      },
-      {
-        "@type": "Question",
-        "name": "ما مدى دقة المتابعة متعددة الخطوات، خاصة عندما تكون خطوات إعداد العميل غير معتادة؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "لمسار إعداد قياسي، يتابع النظام تسلسل خطوات الرخصة والتأشيرة والتسجيل بدقة لأنه مرتبط بسير عمل حقيقي، لا قائمة عامة. عندما تظهر خطوات غير معتادة، متطلب خاص لمنطقة حرة، تأخير موافقة، رفض مستند، يُنبّه بالانحراف ويُحوّل لفريقكم بدل التخمين." }
-      }
+      { "@type": "ListItem", "position": 3, "name": "الذكاء الاصطناعي لتأسيس الشركات", "item": "https://lenooai.com/ar/industries/coworking-business-setup" }
     ]
   }
 ];
 ---
 
 <ArBaseLayout
-  title="الذكاء الاصطناعي لشركات تأسيس الأعمال في الإمارات | Lenoo AI"
-  description="Lenoo AI، وكالة الذكاء الاصطناعي في دبي، تبني بوت تأهيل استفسارات ومتابعة خطوات الرخصة والتأشيرة لشركات تأسيس الأعمال في الإمارات."
+  title="الأتمتة بالذكاء الاصطناعي لشركات تأسيس الأعمال في الإمارات"
+  description="ذكاء اصطناعي لشركات تأسيس الأعمال في دبي: روبوتات تأهيل الاستفسارات، وتتبع خطوات الرخص والتأشيرات، وجمع المستندات، وتذكيرات التجديد."
   canonicalPath="/ar/industries/coworking-business-setup"
   enPath="/industries/coworking-business-setup"
+  ogImage="/assets/og-home.jpg"
   ldJson={ldJson}
 >
 
-<!-- HERO -->
-<header class="page-hero">
-  <div class="container">
-    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التنقل"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">القطاعات</a><span style="opacity:0.4;padding:0 4px;"> / </span>تأسيس الأعمال</div>
-    <div class="badge badge-cyan" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">domain_add</span>
-      تأسيس الأعمال
-    </div>
-    <h1>ذكاء اصطناعي لشركات تأسيس الأعمال في الإمارات<br><span class="gradient-text">القطاع الأكثر ارتباطاً بالإمارات نفسها</span></h1>
-    <p style="max-width:640px;margin:1.5rem auto;line-height:1.8;color:rgba(255,255,255,0.72);">
-      إعداد كل عميل رحلة متعددة الخطوات، بمستند ينتظر في كل خطوة. نبني لك بوتاً يؤهّل الاستفسارات الجديدة، يتابع خطوات الرخصة والتأشيرة، يُحصّل المستندات تلقائياً، ولا ينسى تجديداً أبداً.
-    </p>
-    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-      <button onclick="openModal(this)" data-source="ar_business_setup_hero" class="btn-primary">احجز استشارة مجانية ←</button>
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">القطاعات</a><span style="opacity:0.4;padding:0 4px;"> / </span>تأسيس الشركات</div>
+    <h1>الأتمتة بالذكاء الاصطناعي<br><span class="gradient-text">لاستشارات تأسيس الشركات</span> في الإمارات</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">تبني Lenoo AI أنظمة ذكاء اصطناعي لاستشارات تأسيس الشركات في الإمارات: تأهيل الاستفسارات، وتتبع خطوات الرخص والتأشيرات، وجمع المستندات، وتذكيرات التجديد. مبنية لعمل يقوم على الأوراق والمواعيد النهائية.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_business_setup_hero" class="btn-primary">احجزوا تقييماً مجانياً للذكاء الاصطناعي في تأسيس الشركات</button>
+      <a href="#what-we-build" class="btn-outline">شاهدوا ما نبنيه ↓</a>
     </div>
   </div>
 </header>
 
-<!-- IMAGE BANNER + STATS -->
+<!-- HERO IMAGE -->
 <div style="position:relative; overflow:hidden;">
-  <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1600&q=80&auto=format&fit=crop" alt="مستشار أعمال يراجع أوراقاً مع عميل في مكتب بدبي" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 45%;" />
-  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.18) 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.40));"></div>
-  <div style="position:relative; padding:3rem 2rem;">
-    <div class="glass-dark hosp-stats-grid" style="max-width:920px; margin:0 auto; border-radius:20px; padding:2rem 2.5rem;">
-      <div class="stat-item">
-        <p class="stat-num">عشرات</p>
-        <p class="stat-lbl">مناطق حرة عبر الإمارات، لكل منها قواعد ترخيص خاصة</p>
-      </div>
-      <div class="stat-item">
-        <p class="stat-num">خطوات متعددة</p>
-        <p class="stat-lbl">لعملية الرخصة والتأشيرة لكل تأسيس شركة جديد</p>
-      </div>
-      <div class="stat-item">
-        <p class="stat-num">+١٩٠</p>
-        <p class="stat-lbl">جنسية بين قاعدة عملاء دبي الدولية</p>
-      </div>
-      <div class="stat-item">
-        <p class="stat-num">١٠٠٪</p>
-        <p class="stat-lbl">ضمان استرداد إذا لم ترضَ</p>
-      </div>
-    </div>
+  <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1600&q=80&auto=format&fit=crop" alt="مستشار أعمال يراجع الأوراق مع عميل في مكتب في دبي" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 45%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "عشرات", caption: "المناطق الحرة في الإمارات، لكل منها قواعد ترخيص خاصة" },
+      { value: "متعددة الخطوات", caption: "عملية الرخصة والتأشيرة والتسجيل لكل شركة جديدة" },
+      { value: "+١٩٠", caption: "جنسية ممثلة في قاعدة العملاء الدولية في دبي" },
+    ]} />
   </div>
 </div>
 
-<!-- AI USE CASES -->
-<section class="section">
+<!-- MOST UAE-SHAPED VERTICAL -->
+<section class="section" aria-labelledby="shift-heading">
   <div class="container">
-    <h2 style="text-align:center;margin-bottom:0.75rem;">ما يفعله الذكاء الاصطناعي في شركة تأسيس الأعمال</h2>
-    <p style="text-align:center;color:#42474e;margin-bottom:3rem;max-width:560px;margin-inline:auto;">ستة أنظمة مبنية حول سير عمل الرخصة والتأشيرة والمستندات الذي تعمل عليه الشركة فعلياً.</p>
-    <div class="feature-ledger">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">القطاع الأكثر ارتباطاً بخصوصية الإمارات</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>لا يوجد نشاط آخر قائم بسبب مجموعة محددة من القواعد المحلية كما هي استشارات التأسيس.</strong> المنطقة الحرة مقابل البر الرئيسي، وترخيص الأنشطة، وحصص التأشيرات المرتبطة بمساحة المكتب: هذا نشاط مبني بالكامل حول التعامل مع بنية تنظيمية فريدة فعلاً في الإمارات. هذا التعقيد هو المنتج، وهو أيضاً ما يستهلك أسبوع المستشار.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>تأسيس كل عميل عملية متعددة الخطوات مع مستند ينتظر عند كل خطوة.</strong> حجز الاسم التجاري، والموافقة المبدئية، وإصدار الرخصة، وبطاقة المنشأة، وطلبات التأشيرة، والهوية الإماراتية، وغيرها، وكلها بمستندات يجب جمعها وفحصها وتقديمها بالتسلسل. عميل يلاحق مستشاره لمعرفة الحالة، ومستشار يلاحق عميلاً لمستند ناقص: هذا هو الإيقاع المعتاد لهذا العمل.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>قاعدة العملاء من الأكثر تنوعاً دولياً في العالم.</strong> رواد الأعمال الذين يؤسسون في دبي يأتون من كل القارات، ويتحدثون لغات كثيرة، وغالباً ما يمرون بهذه العملية لأول مرة في أي بلد. التواصل الواضح والسريع ومتعدد اللغات ليس إضافة لطيفة هنا، بل هو معظم ما تبيعه الاستشارة الجيدة.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80&auto=format&fit=crop" alt="مستندات تأسيس شركة وأوراق رخصة قيد المراجعة في دبي" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">أنظمة ذكاء اصطناعي مبنية لاستشارات تأسيس الشركات في الإمارات</h2>
+      <p>ستة أنظمة محددة ننشرها لاستشارات تأسيس الشركات في الإمارات، كل منها مبني حول مسار الرخص والتأشيرات والمستندات الذي يقوم عليه العمل فعلاً.</p>
+    </div>
+    <div class="apps-grid">
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">fact_check</span>
-        <h3>بوت تأهيل استفسارات جديدة</h3>
-        <p style="color:#42474e;line-height:1.7;">يجيب فوراً على استفسار جديد، يسأل عن النشاط التجاري وهيكل الملكية والميزانية، ويوجّه نحو منطقة حرة أو البر الرئيسي.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">fact_check</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">روبوت تأهيل الاستفسارات الجديدة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يرد على الاستفسار الجديد فوراً، ويسأل عن النشاط التجاري وهيكل الملكية والميزانية، ويوجهه نحو المنطقة الحرة أو البر الرئيسي قبل حجز أي مكالمة.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">استفسار مؤهل قبل أن يقضي فريق المعقبين وقته في المكالمة</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">checklist</span>
-        <h3>متتبع خطوات الرخصة والتأشيرة</h3>
-        <p style="color:#42474e;line-height:1.7;">يتابع إعداد كل عميل عبر حجز الاسم التجاري والموافقة الأولية وإصدار الرخصة وخطوات التأشيرة، بتحديثات حالة تلقائية.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">checklist</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">متتبع خطوات الرخصة والتأشيرة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يتتبع تأسيس كل عميل عبر الاسم التجاري والموافقة المبدئية وإصدار الرخصة وخطوات التأشيرة، مع تحديثات حالة تلقائية فيتوقف العملاء عن السؤال «أين وصلنا؟»</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">عرض حي للحالة بدلاً من عميل يلاحق تحديثاً</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">description</span>
-        <h3>مساعد تحصيل المستندات</h3>
-        <p style="color:#42474e;line-height:1.7;">يطلب المستند الصحيح في الخطوة الصحيحة، يتحقق من نوعه واكتماله، ويتابع مع العميل تلقائياً حتى التقديم.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">مساعد جمع المستندات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يطلب المستند الصحيح في الخطوة الصحيحة، ويتحقق من أنه النوع الصحيح ومكتمل، ويلاحق العميل تلقائياً حتى يقدمه.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">ملاحقة المستندات تعمل وحدها بدلاً من مستشار يرسل التذكيرات يدوياً</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">notifications_active</span>
-        <h3>نظام تذكير بالتجديد</h3>
-        <p style="color:#42474e;line-height:1.7;">يتابع تواريخ انتهاء الرخصة والتأشيرة لكل عميل، ويرسل تذكيراً بوقت كافٍ للتصرف قبل تحوّل التأخير لغرامة.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">notifications_active</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">نظام تذكير التجديد</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يتتبع تواريخ انتهاء الرخص والتأشيرات لكل العملاء ويرسل تذكيرات التجديد بوقت كافٍ للتصرف، قبل أن يتحول الانتهاء إلى غرامة.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">تجديد لا يفوت أبداً، يُتتبع تلقائياً لكل عميل</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">compare_arrows</span>
-        <h3>مساعد مقارنة المناطق الحرة</h3>
-        <p style="color:#42474e;line-height:1.7;">يشرح للعميل المحتمل المفاضلات بين المناطق الحرة والبر الرئيسي حسب نشاطه التجاري وتكلفته واحتياجات التأشيرة.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">compare_arrows</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">مساعد مقارنة المناطق الحرة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يرشد العميل المحتمل خلال المفاضلة بين المناطق الحرة والتأسيس في البر الرئيسي حسب نشاطه التجاري وتكلفته واحتياجاته من التأشيرات.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">مقارنة واضحة بدلاً من قائمة خيارات عامة</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">handshake</span>
-        <h3>بوت تحديث حالة العميل</h3>
-        <p style="color:#42474e;line-height:1.7;">يرسل تحديثات حالة استباقية للعملاء عند كل مرحلة، ويُحوّل لفريق العلاقات الحكومية لحظة احتياج قرار بشري.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">handshake</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">روبوت تحديثات حالة العملاء</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يرسل تحديثات حالة استباقية للعملاء عند كل مرحلة، ويسلّم إلى أحد المعقبين أو فريق الترخيص لحظة احتياج خطوة لقرار بشري.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">عميل يعرف حالته دون أن يسأل، وتسليم واضح حين يهم الأمر</p>
       </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">مشمول بضمان الاسترداد ١٠٠٪</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">كل الأنظمة متوافقة مع لوائح الإمارات، متعددة اللغات، ومتكاملة مع مسارات العملاء والمستندات الحالية لديكم.</p>
+      <button onclick="openModal(this)" data-source="ar_business_setup_mid" class="btn-primary">احجزوا تقييماً مجانياً للذكاء الاصطناعي في تأسيس الشركات</button>
     </div>
   </div>
 </section>
@@ -148,38 +144,38 @@ const ldJson = [
 <section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
   <div class="container" style="max-width:1040px;">
     <div class="section-header">
-      <h2 id="journey-heading">رحلة إعداد عميل واحد، من البداية للنهاية</h2>
-      <p>ما يتولاه الذكاء الاصطناعي من أول استفسار حتى تجديد لا يُنسى بعد عام.</p>
+      <h2 id="journey-heading">رحلة تأسيس عميل واحد، من البداية إلى النهاية</h2>
+      <p>ما يتولاه الذكاء الاصطناعي من الاستفسار الأول حتى تجديد لا يفوت بعد عام.</p>
     </div>
     <div class="bento-grid bento-grid-3">
       <div class="card">
-        <div class="num-circle">1</div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">الاستفسار يُؤهَّل قبل حجز مكالمة</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">مؤسس محتمل يراسل سائلاً كيف يؤسس شركة في دبي.</p>
+        <div class="num-circle">١</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">الاستفسار يُؤهَّل قبل حجز المكالمة</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">مؤسس محتمل يراسل ليسأل كيف يؤسس شركة في دبي.</p>
         <ul class="journey-list">
-          <li>يسأل عن النشاط التجاري وهيكل الملكية واحتياجات التأشيرة لفهم المسار الصحيح</li>
-          <li>يشرح المفاضلة بين المنطقة الحرة والبر الرئيسي المناسبة لحالته</li>
-          <li>يحجز استشارة مع المتخصص المناسب، وهو مُطّلع بالفعل على احتياجات العميل</li>
+          <li>يسأل عن النشاط التجاري وهيكل الملكية واحتياجات التأشيرة ليفهم المسار الصحيح</li>
+          <li>يشرح المفاضلة بين المنطقة الحرة والبر الرئيسي بما يناسب وضعه تحديداً</li>
+          <li>يحجز استشارة مع المختص المناسب، وقد اطلع مسبقاً على ما يحتاجه العميل</li>
         </ul>
       </div>
       <div class="card">
-        <div class="num-circle">2</div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">ملاحقة المستندات التي تدير نفسها</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">بمجرد بدء الإعداد، تحتاج كل خطوة مستنداً على العميل إرساله.</p>
+        <div class="num-circle">٢</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">ملاحقة المستندات التي تعمل وحدها</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">بمجرد بدء التأسيس، تحتاج كل خطوة مستنداً على العميل إرساله.</p>
         <ul class="journey-list">
-          <li>يطلب كل مستند في خطوته، مع شرح واضح لسبب الحاجة له</li>
-          <li>يتحقق من اكتمال وصحة المستندات قبل أن تُعطّل العملية</li>
-          <li>يرسل متابعة تلقائية لعميل بطيء بدل قيام المستشار بذلك يدوياً</li>
+          <li>يطلب كل مستند في الخطوة الصحيحة، مع شرح واضح لما هو مطلوب ولماذا</li>
+          <li>يتحقق من اكتمال المستندات المقدمة وصحتها قبل أن تعطل العملية</li>
+          <li>يرسل متابعات تلقائية للعميل البطيء بدلاً من أن يقوم المستشار بذلك يدوياً</li>
         </ul>
       </div>
       <div class="card">
-        <div class="num-circle">3</div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">التجديد الذي لا يُنسى أبداً</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">بعد أشهر، رخصة العميل وتأشيرته تقتربان من الانتهاء.</p>
+        <div class="num-circle">٣</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">التجديد الذي لا يفوت أبداً</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">بعد أشهر، تقترب رخصة العميل وتأشيرته من الانتهاء.</p>
         <ul class="journey-list">
-          <li>يُنبّه بالتجديد القادم بوقت كافٍ للتصرف قبل تطبيق غرامة</li>
-          <li>يُحصّل مستندات التجديد بنفس طريقة الإعداد الأصلي</li>
-          <li>يُبقي العميل مطلعاً في كل خطوة دون تتبع مستشار للتواريخ يدوياً</li>
+          <li>ينبّه إلى التجديد القادم بوقت كافٍ للتصرف قبل فرض أي غرامة</li>
+          <li>يجمع مستندات التجديد بنفس طريقة التأسيس الأصلي</li>
+          <li>يبقي العميل على اطلاع في كل خطوة دون مستشار يتتبع التواريخ يدوياً</li>
         </ul>
       </div>
     </div>
@@ -190,197 +186,143 @@ const ldJson = [
 <section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
   <div class="container">
     <div class="section-header">
-      <h2 id="apps-heading">أين يُحدث الذكاء الاصطناعي أكبر أثر لتأسيس الأعمال في الإمارات</h2>
+      <h2 id="apps-heading">أين يحقق الذكاء الاصطناعي أكبر أثر في تأسيس الشركات بالإمارات</h2>
     </div>
     <div class="bento-grid bento-grid-3">
       <div class="card">
-        <div class="icon-box"><span class="material-symbols-outlined" style="direction:ltr;color:#006875; font-size:24px;" aria-hidden="true">fact_check</span></div>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">fact_check</span></div>
         <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">تأهيل العملاء المحتملين</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">استفسار مؤهّل، فُهم فيه النشاط والهيكل والميزانية بالفعل، يحوّل المكالمة الأولى لمحادثة حقيقية بدل جلسة استكشاف لا تصل لشيء.</p>
-        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">مكالمة تبدأ بإجابات مُجمَّعة بالفعل</p>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">الاستفسار المؤهل، الذي يكون فيه النشاط والهيكل والميزانية مفهومة مسبقاً، يحوّل المكالمة الأولى إلى محادثة حقيقية بدلاً من جلسة جمع معلومات لا تصل إلى شيء.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">مكالمة تبدأ والإجابات مجموعة أصلاً</p>
       </div>
       <div class="card">
-        <div class="icon-box"><span class="material-symbols-outlined" style="direction:ltr;color:#006875; font-size:24px;" aria-hidden="true">description</span></div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">تحصيل المستندات</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">المستندات الناقصة أو الخاطئة هي باستمرار أكبر مصدر تأخير في عملية الإعداد. التحصيل الآلي بفحص مدمج يكتشف المشاكل قبل أن تُعطّل طلب الرخصة.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">description</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">جمع المستندات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">المستندات الناقصة أو الخاطئة هي باستمرار أكبر مصدر للتأخير في عملية التأسيس. الجمع الآلي مع فحوصات مدمجة يلتقط المشكلات قبل أن تعطل طلب الرخصة.</p>
         <p style="font-size:0.8125rem; font-weight:600; color:#006875;">تأخيرات أقل بسبب مستند عاد ناقصاً</p>
       </div>
       <div class="card">
-        <div class="icon-box"><span class="material-symbols-outlined" style="direction:ltr;color:#006875; font-size:24px;" aria-hidden="true">notifications_active</span></div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">الامتثال في التجديد</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">تجديد فائت للرخصة أو التأشيرة يعني غرامات للعميل وتضرر العلاقة مع الشركة. المتابعة الآلية لتواريخ كل عميل تُزيل خطر تفلّت تجديد.</p>
-        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">تواريخ كل عميل متابعة، لا فقط ما يتذكره أحد</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">notifications_active</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">الالتزام بالتجديد</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">فوات تجديد رخصة أو تأشيرة قد يعني غرامات للعميل وعلاقة متضررة مع الاستشارة. التتبع التلقائي لتواريخ كل العملاء يزيل خطر إفلات أي تجديد.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">تواريخ كل العملاء تُتتبع، لا التي يتذكرها أحدهم فقط</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- WHAT MAKES IT WORK -->
+<!-- EVALUATION CRITERIA -->
 <section class="section" aria-labelledby="eval-heading">
   <div class="container">
     <div class="section-header">
-      <h2 id="eval-heading">ما الذي يجعله يعمل</h2>
+      <h2 id="eval-heading">ما يجعلها تنجح</h2>
     </div>
     <div class="eval-grid">
       <div class="card" style="text-align:center;">
-        <div class="num-circle">1</div>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">وعي بقواعد المنطقة الحرة والبر الرئيسي</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">يحتاج الذكاء الاصطناعي فهم الفروقات العملية بين إعداد المنطقة الحرة والبر الرئيسي لنشاط تجاري معيّن، لا مجرد تكرار عبارات تسويقية عامة عن "الملكية الكاملة" بلا الفروق الدقيقة المهمة لقرار حقيقي.</p>
+        <div class="num-circle">١</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">الإلمام بقواعد المناطق الحرة مقابل البر الرئيسي</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">يحتاج الذكاء الاصطناعي إلى فهم الفروق العملية فعلاً بين التأسيس في المنطقة الحرة والبر الرئيسي لنشاط تجاري محدد، لا مجرد تكرار عبارات تسويقية عامة عن «ملكية ١٠٠٪» دون التفاصيل التي تهم القرار الحقيقي.</p>
       </div>
       <div class="card" style="text-align:center;">
-        <div class="num-circle">2</div>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">متابعة سير عمل متعدد الخطوات</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">عملية الإعداد لها تسلسل خطوات محدد يجب اتباعه بالترتيب. المتتبع يجب أن يعكس هذا التسلسل الحقيقي، لا قائمة مهام مسطحة لا تفهم أي خطوة تعتمد على أخرى.</p>
+        <div class="num-circle">٢</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">تتبع مسارات العمل متعددة الخطوات</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">عملية التأسيس لها تسلسل محدد من الخطوات يجب اتباعه بالترتيب. يحتاج المتتبع إلى عكس هذا التسلسل الحقيقي، لا قائمة مهام مسطحة لا تفهم أي الخطوات تعتمد على أيها.</p>
       </div>
       <div class="card" style="text-align:center;">
-        <div class="num-circle">3</div>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">تعدد اللغات (جمهور دولي كثيراً)</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">العملاء الذين يؤسسون في الإمارات يأتون من كل منطقة في العالم، وكثيرون يمرّون بهذه العملية لأول مرة في أي بلد. تواصل واضح بلغتهم يُقلّل الالتباس في كل خطوة.</p>
+        <div class="num-circle">٣</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">تعدد اللغات (جمهور دولي بدرجة عالية)</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">العملاء الذين يؤسسون في الإمارات يأتون من كل مناطق العالم، وكثير منهم يمر بهذه العملية لأول مرة في أي بلد. التواصل الواضح بلغتهم يقلل الالتباس في كل خطوة.</p>
       </div>
       <div class="card" style="text-align:center;">
-        <div class="num-circle">4</div>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">تحويل لفريق العلاقات الحكومية</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">يجب أن يتولى الذكاء الاصطناعي الأجزاء المتكررة، تحديثات الحالة وطلبات المستندات والتذكيرات، ويُحوّل بسلاسة لفريقكم لحظة احتياج قرار حكم أو إجراء حكومي.</p>
+        <div class="num-circle">٤</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">التسليم إلى فريق المعقبين والترخيص</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">يجب أن يتولى الذكاء الاصطناعي الأجزاء المتكررة، مثل تحديثات الحالة وطلبات المستندات والتذكيرات، وأن يسلّم بوضوح إلى فريق المعقبين أو الترخيص لحظة احتياج خطوة لتقدير أو إجراء أمام جهة حكومية.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- WHAT THE DATA SHOWS -->
+<!-- INDUSTRY RESEARCH -->
 <section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
   <div class="container" style="max-width:860px;">
     <div class="section-header">
-      <h2 id="research-heading">ما تُظهره البيانات</h2>
+      <h2 id="research-heading">ما تقوله البيانات</h2>
     </div>
     <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
-      <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1200&q=80&auto=format&fit=crop" alt="مستشار وعميل يراجعان قائمة تأسيس أعمال في مكتب" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+      <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1200&q=80&auto=format&fit=crop" alt="مستشار وعميل يراجعان قائمة تحقق لتأسيس شركة في مكتب" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
     </div>
     <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
       <div class="card" style="text-align:center;">
         <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">عشرات</p>
-        <p style="color:#42474e; font-size:0.875rem;">مناطق حرة عبر الإمارات، لكل منها قواعد ترخيص متمايزة</p>
+        <p style="color:#42474e; font-size:0.875rem;">المناطق الحرة في الإمارات، لكل منها قواعد ترخيص مميزة</p>
       </div>
       <div class="card" style="text-align:center;">
-        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">خطوات متعددة</p>
-        <p style="color:#42474e; font-size:0.875rem;">لعملية الرخصة والتأشيرة لكل تأسيس شركة جديد</p>
+        <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">متعددة الخطوات</p>
+        <p style="color:#42474e; font-size:0.875rem;">عملية الرخصة والتأشيرة لكل شركة جديدة</p>
       </div>
       <div class="card" style="text-align:center;">
         <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">+١٩٠</p>
-        <p style="color:#42474e; font-size:0.875rem;">جنسية ممثَّلة بين رواد الأعمال المؤسسين في دبي</p>
+        <p style="color:#42474e; font-size:0.875rem;">جنسية ممثلة بين رواد الأعمال الذين يؤسسون في دبي</p>
       </div>
     </div>
     <div class="research-panel">
       <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
         <div>
-          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">من أين يأتي التأخير فعلياً</p>
-          <p style="color:#42474e; line-height:1.7;">الشركات التي نتحدث معها تشير باستمرار لنفس عنق الزجاجة: ليس خطوات الموافقة الحكومية نفسها، بل الوقت المُنتظَر لإرسال العميل مستنداً مكتملاً بشكل صحيح. أتمتة هذه الملاحقة غالباً هي التغيير الأعلى تأثيراً في العملية كلها.</p>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">من أين يأتي التأخير فعلاً</p>
+          <p style="color:#42474e; line-height:1.7;">الاستشارات التي نتحدث معها تشير باستمرار إلى عنق الزجاجة نفسه: ليس خطوات الموافقة الحكومية ذاتها، بل الوقت المستغرق في انتظار عميل ليعيد مستنداً مكتملاً بشكل صحيح. أتمتة هذه الملاحقة غالباً التغيير الأعلى أثراً في العملية كلها.</p>
         </div>
         <div>
-          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">المؤسسون لأول مرة يحتاجون شرحاً أكثر</p>
-          <p style="color:#42474e; line-height:1.7;">حصة كبيرة من العملاء المؤسسين لشركة إماراتية يفعلون ذلك لأول مرة في أي مكان، لا فقط في الإمارات. الإجابة الفورية على أسئلة المنطقة الحرة والتأشيرة تُبقي الزخم دون توقف.</p>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">المؤسسون لأول مرة يحتاجون شرحاً أكثر لا أقل</p>
+          <p style="color:#42474e; line-height:1.7;">شريحة كبيرة من العملاء الذين يؤسسون شركة في الإمارات يفعلون ذلك لأول مرة في أي مكان، لا في الإمارات فقط. هذا يعني أن الأسئلة عن المنطقة الحرة مقابل البر الرئيسي وحصص التأشيرات والترخيص تتكرر باستمرار، والإجابة عنها فوراً بدلاً من المكالمة المجدولة التالية تمنع توقف الزخم.</p>
         </div>
         <div>
-          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">الامتثال بالتجديد مسألة ثقة لا إدارية فقط</p>
-          <p style="color:#42474e; line-height:1.7;">تجديد فائت لا يُكلّف العميل غرامة فقط، بل يُضرّ بثقته في الشركة التي كان مفترضاً أن تتابعه. المتابعة الآلية للتجديد تحمي العلاقة بقدر ما تحمي الموعد.</p>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">الالتزام بالتجديد مسألة ثقة، لا مسألة إدارية فقط</p>
+          <p style="color:#42474e; line-height:1.7;">التجديد الفائت لا يكلف العميل غرامة فحسب، بل يضر بثقته في الاستشارة التي كان يُفترض أن تتتبعه. التتبع الآلي للتجديد يحمي العلاقة بقدر ما يحمي الموعد النهائي.</p>
         </div>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- GUARANTEE -->
-<section class="section" style="background:#e7eeff;padding:4rem 0;text-align:center;">
-  <div class="container">
-    <div class="guarantee-badge" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:18px;direction:ltr;" aria-hidden="true">shield</span>
-      ضمان الاسترداد الكامل، الوحيد في الإمارات
-    </div>
-    <h2 style="margin-bottom:1rem;">إذا لم تكن راضياً، لا تدفع أي شيء.</h2>
-    <p style="color:#42474e;max-width:560px;margin:0 auto 2rem;line-height:1.8;">نبني، تختبر، وإذا لم تكن راضياً تماماً نردّ ١٠٠٪ خلال ٣٠ يوماً من التسليم. بدون أسئلة.</p>
-    <button onclick="openModal(this)" data-source="ar_business_setup_guarantee" class="btn-primary">ابدأ بدون مخاطرة</button>
   </div>
 </section>
 
 <!-- FAQ -->
-<section class="section">
-  <div class="container" style="max-width:760px;">
-    <h2 style="text-align:center;margin-bottom:2.5rem;">أسئلة شائعة</h2>
-    <div class="faq-list">
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل يعرف الذكاء الاصطناعي فعلياً الفرق بين قواعد المنطقة الحرة والبر الرئيسي؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نعم، هذا التمييز مبني في طريقة عمل أدوات تأهيل الاستفسار ومقارنة المناطق الحرة. الذكاء الاصطناعي مُدرَّب على هياكل التراخيص وقوائم الأنشطة، فيوجّه الاستفسار الجديد نحو المحادثة الصحيحة. هذا فلتر أولي، لا بديل عن اعتماد فريقكم النهائي.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          كيف تُحفظ بيانات مستندات العملاء بأمان؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">المستندات تمر عبر قنوات مشفّرة وتُخزَّن كما يُخزَّن أي ملف عميل حساس في عملكم، بصلاحيات محكومة وسجل وصول. نبني السير حول متطلبات الامتثال الحالية لديكم بدل طلب اعتماد نظام جديد.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          ما مدى دقة المتابعة متعددة الخطوات عند وجود خطوات غير معتادة؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">لمسار قياسي، يتابع النظام تسلسل خطوات الرخصة والتأشيرة بدقة لأنه مرتبط بسير عمل حقيقي. عند ظهور خطوات غير معتادة، يُنبّه بالانحراف ويُحوّل لفريقكم بدل التخمين.</div>
-      </div>
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">أسئلة حول الذكاء الاصطناعي لاستشارات تأسيس الشركات في الإمارات</h2>
     </div>
+    <FaqAccordion items={faqItems} />
   </div>
 </section>
 
 <!-- FINAL CTA -->
-<section class="cta-band" style="border-radius:24px;margin:2rem 2rem 4rem;">
-  <div class="container" style="text-align:center;">
-    <h2 style="margin-bottom:1rem;">جاهز لإيقاف ملاحقة المستندات يدوياً؟</h2>
-    <p style="margin-bottom:2rem;max-width:500px;margin-inline:auto;line-height:1.7;">احجز جلسة تشخيص مجانية، نراجع تدفق استفساراتك وعملية تحصيل المستندات، ونريك بالضبط ما سنبنيه أولاً. بدون التزام.</p>
-    <button onclick="openModal(this)" data-source="ar_business_setup_cta" class="btn-primary">ابدأ الآن ←</button>
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">احجزوا تقييماً مجانياً للذكاء الاصطناعي في تأسيس الشركات</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">سنراجع مسار الاستفسارات لديكم، وعملية جمع المستندات، وأين يلاحقكم العملاء لمعرفة الحالة، ثم نوضح لكم بالضبط ما سنبنيه أولاً. ٣٠ دقيقة، دون أي التزام.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+      <span class="cta-trust-badge">✓ دون أي التزام</span>
+      <span class="cta-trust-badge">✓ ضمان الاسترداد</span>
+    </div>
+    <button onclick="openModal(this)" data-source="ar_business_setup_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا تقييماً مجانياً للذكاء الاصطناعي في تأسيس الشركات</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
   </div>
-</section>
-
-<style>
-  .hosp-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
-    text-align: center;
-  }
-  .stat-num {
-    font-size: 1.375rem;
-    font-weight: 800;
-    color: #00e3fd;
-    margin: 0 0 0.25rem;
-  }
-  .stat-lbl {
-    color: rgba(255,255,255,0.72);
-    font-size: 0.875rem;
-    margin: 0;
-    line-height: 1.5;
-  }
-  .stat-item { padding: 0 .25rem; }
-  .faq-list {
-    display: grid;
-    gap: 0.75rem;
-  }
-  @media (max-width: 900px) {
-    .hosp-stats-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 580px) {
-    .hosp-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-  }
-
-  /* Applications / evaluation / research sections */
-  .icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
-  .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
-  .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
-  .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
-  .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
-  .journey-list li { position:relative; padding-right:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
-  .journey-list li::before { content:''; position:absolute; right:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
-  @media(max-width:900px) { .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
-  @media(max-width:600px) { .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
-</style>
+</div>
 
 </ArBaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    /* Journey list markers (reused inside static bento-grid-3 cards) */
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-inline-start:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; inset-inline-start:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>

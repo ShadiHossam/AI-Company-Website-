@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { pruneUnpublishedLinks, buildLiveBlogPaths, localiseBlogLinks } from '../../lib/deadLinks';
+import { pruneUnpublishedLinks, buildLiveBlogPaths, localiseBlogLinks, stripTrailingSlashes } from '../../lib/deadLinks';
 
 const live = (paths: string[]) => (p: string) => paths.includes(p);
 
@@ -140,5 +140,23 @@ describe('localiseBlogLinks', () => {
     expect(out).toBe(
       '<a href="/ar/blog/twin">a</a><span data-pending-page="true">b</span>',
     );
+  });
+});
+
+describe('stripTrailingSlashes', () => {
+  it('drops the trailing slash from site-relative and own-domain links', () => {
+    const html = '<a href="/ar/blog/metrics/">a</a> <a href="https://lenooai.com/services/x/">b</a>';
+    expect(stripTrailingSlashes(html)).toBe(
+      '<a href="/ar/blog/metrics">a</a> <a href="https://lenooai.com/services/x">b</a>',
+    );
+  });
+
+  it('keeps any query or hash', () => {
+    expect(stripTrailingSlashes('<a href="/blog/rag/#faq">a</a>')).toBe('<a href="/blog/rag#faq">a</a>');
+  });
+
+  it('leaves the root, external links and slash-free links alone', () => {
+    const html = '<a href="/">h</a><a href="https://oecd.ai/en/">o</a><a href="/blog/rag">r</a>';
+    expect(stripTrailingSlashes(html)).toBe(html);
   });
 });

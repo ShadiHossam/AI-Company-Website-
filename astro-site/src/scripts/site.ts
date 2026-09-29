@@ -106,6 +106,38 @@ function toggleLang() {
   });
 })();
 
+// Calendly's widget.js boots every .calendly-inline-widget on the page as soon as
+// it loads, and its booking app is ~2.8MB. The sitewide modal's widget is marked
+// data-auto-load="false" and only started here when the modal first opens, so a
+// page view no longer pays for a calendar nobody has asked to see. A visible
+// widget (the /contact page) still loads straight away.
+let calendlyLoad: Promise<void> | null = null;
+
+function loadCalendly(): Promise<void> {
+  calendlyLoad ??= new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://assets.calendly.com/assets/external/widget.js';
+    s.async = true;
+    s.onload = () => resolve();
+    s.onerror = () => { calendlyLoad = null; reject(); };
+    document.head.appendChild(s);
+  });
+  return calendlyLoad;
+}
+
+function initModalCalendly() {
+  const el = document.querySelector<HTMLElement>('#modal .calendly-inline-widget');
+  if (!el || el.dataset.processed) return;
+  loadCalendly().then(() => {
+    const cal = (window as unknown as { Calendly?: { initInlineWidget(o: { url: string; parentElement: HTMLElement }): void } }).Calendly;
+    if (!cal || el.dataset.processed || !el.dataset.url) return;
+    el.dataset.processed = 'true';
+    cal.initInlineWidget({ url: el.dataset.url, parentElement: el });
+  }).catch(() => {});
+}
+
+if (document.querySelector('.calendly-inline-widget:not([data-auto-load="false"])')) loadCalendly().catch(() => {});
+
 // Element that had focus before the modal opened — restored on close so keyboard
 // users land back where they were instead of at the top of the page.
 let modalTriggerEl: HTMLElement | null = null;
@@ -133,6 +165,7 @@ function openModal(el?: HTMLElement | Event) {
   modalTriggerEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
+  initModalCalendly();
   // Move keyboard focus into the dialog — aria-modal="true" only holds up if focus
   // actually goes there instead of staying on the trigger behind the overlay.
   getModalFocusable()[0]?.focus();
@@ -300,35 +333,6 @@ if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   targets.forEach((el) => { el.classList.add('js-reveal'); io.observe(el); });
 })();
 
-function subscribeToMailchimp(email: string, onSuccess: () => void) {
-  // Mailchimp URL is stored in site_config and rendered into the page as a data attribute
-  const mailchimpURL = document.getElementById('newsletter-mailchimp-url')?.dataset?.url ?? '';
-  if (mailchimpURL && mailchimpURL !== 'YOUR_MAILCHIMP_AUDIENCE_POST_URL') {
-    const data = new FormData();
-    data.append('EMAIL', email);
-    fetch(mailchimpURL, { method: 'POST', body: data, mode: 'no-cors' }).catch(() => {});
-  }
-  onSuccess();
-}
-
-function handleNewsletterSubmit(event: Event) {
-  event.preventDefault();
-  const email = (document.getElementById('newsletter-email') as HTMLInputElement)?.value;
-  subscribeToMailchimp(email, () => {
-    document.getElementById('newsletter-form-wrap')?.classList.add('hidden');
-    document.getElementById('newsletter-success')?.classList.remove('hidden');
-  });
-}
-
-function handleFooterNewsletterSubmit(event: Event) {
-  event.preventDefault();
-  const email = (document.getElementById('footer-newsletter-email') as HTMLInputElement)?.value;
-  subscribeToMailchimp(email, () => {
-    document.getElementById('footer-newsletter-form')?.classList.add('hidden');
-    document.getElementById('footer-newsletter-success')?.classList.remove('hidden');
-  });
-}
-
 function toggleFaq(btn: HTMLElement) {
   const body = btn.nextElementSibling as HTMLElement | null;
   const icon = btn.querySelector('.faq-icon');
@@ -351,8 +355,6 @@ declare global {
     handleOverlayClick: typeof handleOverlayClick;
     goToStep: typeof goToStep;
     continueToSchedule: typeof continueToSchedule;
-    handleNewsletterSubmit: typeof handleNewsletterSubmit;
-    handleFooterNewsletterSubmit: typeof handleFooterNewsletterSubmit;
     toggleFaq: typeof toggleFaq;
   }
 }
@@ -368,7 +370,5 @@ Object.assign(window, {
   handleOverlayClick,
   goToStep,
   continueToSchedule,
-  handleNewsletterSubmit,
-  handleFooterNewsletterSubmit,
   toggleFaq,
 });

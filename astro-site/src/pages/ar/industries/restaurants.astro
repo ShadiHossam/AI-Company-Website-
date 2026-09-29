@@ -1,15 +1,29 @@
 ---
 export const prerender = false;
-import ArBaseLayout from '../../../layouts/ArBaseLayout.astro';
+import ArBaseLayout from "../../../layouts/ArBaseLayout.astro";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import StatStrip from "../../../components/StatStrip.astro";
+
+const faqItems = [
+  { question: "بأي تطبيقات توصيل يتصل الذكاء الاصطناعي فعلياً؟", answer: "نبني الربط مع طلبات وDeliveroo وZomato، وهي التطبيقات الثلاثة التي تستحوذ على معظم حجم طلبات التوصيل في الإمارات. حيث تدعم واجهة API للتطبيق ذلك، تتزامن الطلبات تلقائياً في شاشة موحدة بجانب طلبات الصالة وواتساب. وحيث لا يوفر التطبيق إلا جهازاً لوحياً دون وصول API، نجهز استقبالاً مراقباً حتى تصل تلك الطلبات إلى نفس القائمة بدلاً من شاشة منفصلة يضطر مطبخكم لمتابعتها." },
+  { question: "هل يستطيع الذكاء الاصطناعي تحمّل حجم المكالمات والطلبات في أوقات الذروة؟", answer: "نعم. على عكس خط هاتفي يرد عليه عدد ثابت من الموظفين، يتوسع الذكاء الاصطناعي مع الحجم، فزحمة عشاء يوم الجمعة لا تعني انتظاراً أطول أو مكالمات فائتة كما يحدث مع مكتب استقبال بشري. روبوت الحجوزات ومساعد الطلب عبر واتساب مبنيان للتعامل مع محادثات متزامنة، لا واحدة تلو الأخرى." },
+  { question: "هل نتحكم في طريقة رد الذكاء الاصطناعي على التقييمات، أم أنه ينشر ردوداً عامة تلقائياً؟", answer: "أنتم تحددون النبرة والحدود. التقييمات الإيجابية يمكن أن تحصل على رد تلقائي بصوت علامتكم. وأي تقييم سلبي، أو يذكر سلامة الغذاء أو مشكلة صحية أو شكوى جدية، يُصاغ رده ليوافق عليه فريقكم أو يُصعَّد مباشرة، فلا يُنشر أبداً شيء حساس دون أن يراجعه إنسان أولاً." },
+  { question: "هل يتكامل روبوت الحجوزات مع نظام نقاط البيع الحالي لدينا؟", answer: "نعم، وهذا هو الهدف. الحجز أو الطلب الذي يتلقاه الذكاء الاصطناعي يجب أن يصل إلى نفس النظام الذي يستخدمه موظفو الصالة والمطبخ أصلاً، لا تطبيق منفصل يضطرون لمتابعته. نربط مع أنظمة نقاط البيع الشائعة لدى مجموعات المطاعم في الإمارات، فتبقى حالة الطاولات والطلبات وجدولة الموظفين متزامنة." },
+];
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 
 const ldJson = [
   {
     "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "الذكاء الاصطناعي للمطاعم في الإمارات | Lenoo AI",
+    "@type": "Service",
+    "name": "الأتمتة بالذكاء الاصطناعي للمطاعم في الإمارات",
     "url": "https://lenooai.com/ar/industries/restaurants",
+    "description": "أنظمة ذكاء اصطناعي مخصصة للمطاعم المستقلة ومتعددة الفروع في الإمارات: روبوتات الحجوزات وقوائم الانتظار، وتوحيد طلبات تطبيقات التوصيل، والطلب عبر واتساب، وأتمتة الرد على التقييمات.",
     "inLanguage": "ar",
-    "isPartOf": { "@type": "WebSite", "url": "https://lenooai.com" }
+    "provider": { "@type": "Organization", "name": "Lenoo AI", "url": "https://lenooai.com" },
+    "areaServed": "United Arab Emirates",
+    "serviceType": "AI Development for Restaurants"
   },
   {
     "@context": "https://schema.org",
@@ -17,134 +31,112 @@ const ldJson = [
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
       { "@type": "ListItem", "position": 2, "name": "القطاعات", "item": "https://lenooai.com/ar/industries" },
-      { "@type": "ListItem", "position": 3, "name": "المطاعم", "item": "https://lenooai.com/ar/industries/restaurants" }
-    ]
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "name": "الذكاء الاصطناعي للمطاعم في الإمارات",
-    "description": "بوت حجز وانتظار، توحيد طلبات تطبيقات التوصيل، طلب عبر واتساب، وأتمتة الرد على التقييمات لمطاعم الإمارات المستقلة ومتعددة الفروع.",
-    "areaServed": {"@type": "Country", "name": "United Arab Emirates"},
-    "provider": { "name": "Lenoo AI", "url": "https://lenooai.com" }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "مع أي تطبيقات توصيل يتصل الذكاء الاصطناعي فعلياً؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نبني على طلبات وديليفرو وزوماتو، الثلاثة التي تحمل معظم حجم طلبات التوصيل في الإمارات. حيث تدعم واجهة التطبيق ذلك، تتزامن الطلبات تلقائياً في عرض موحّد واحد بجانب طلبات الصالة وواتساب." }
-      },
-      {
-        "@type": "Question",
-        "name": "هل يستطيع الذكاء الاصطناعي التعامل مع حجم مكالمات وطلبات ساعة الذروة دون تعطل؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نعم. على عكس خط هاتف بعدد موظفين ثابت، الذكاء الاصطناعي يتوسّع مع الحجم، فازدحام عشاء الجمعة لا يعني وقت انتظار أطول أو مكالمات فائتة." }
-      },
-      {
-        "@type": "Question",
-        "name": "هل نتحكم بكيفية رد الذكاء الاصطناعي على التقييمات، أم ينشر ردوداً عامة تلقائياً؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "أنتم تحددون النبرة والحدود. التقييمات الإيجابية تحصل على رد تلقائي بصوت علامتكم. أي شيء سلبي، أو يذكر سلامة غذائية أو مخاوف صحية، يُسوَّد ليعتمده فريقكم أو يُصعَّد مباشرة." }
-      },
-      {
-        "@type": "Question",
-        "name": "هل يتكامل بوت الحجز مع نظام نقاط البيع الحالي لدينا؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "نعم، هذا هو المغزى. حجز أو طلب يتخذه الذكاء الاصطناعي يجب أن يصل نفس النظام الذي يستخدمه طاقم الصالة والمطبخ بالفعل، لا تطبيق منفصل يحتاجون فحصه." }
-      }
+      { "@type": "ListItem", "position": 3, "name": "الذكاء الاصطناعي للمطاعم", "item": "https://lenooai.com/ar/industries/restaurants" }
     ]
   }
 ];
 ---
 
 <ArBaseLayout
-  title="الذكاء الاصطناعي للمطاعم في الإمارات | Lenoo AI"
-  description="Lenoo AI، وكالة الذكاء الاصطناعي في دبي، تبني بوت حجز وتوحيد طلبات تطبيقات التوصيل وطلب عبر واتساب وأتمتة رد على التقييمات لمطاعم الإمارات."
+  title="الأتمتة بالذكاء الاصطناعي للمطاعم في الإمارات"
+  description="ذكاء اصطناعي للمطاعم في دبي والإمارات: روبوتات حجوزات، وتوحيد طلبات تطبيقات التوصيل، والطلب عبر واتساب، وأتمتة الرد على التقييمات."
   canonicalPath="/ar/industries/restaurants"
   enPath="/industries/restaurants"
+  ogImage="/assets/og-home.jpg"
   ldJson={ldJson}
 >
 
-<!-- HERO -->
-<header class="page-hero">
-  <div class="container">
-    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التنقل"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">القطاعات</a><span style="opacity:0.4;padding:0 4px;"> / </span>المطاعم</div>
-    <div class="badge badge-cyan" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">restaurant</span>
-      المطاعم
-    </div>
-    <h1>ذكاء اصطناعي للمطاعم في الإمارات<br><span class="gradient-text">خمس قنوات لطلب واحد</span></h1>
-    <p style="max-width:640px;margin:1.5rem auto;line-height:1.8;color:rgba(255,255,255,0.72);">
-      طلبات، ديليفرو، زوماتو، صالة، واتساب، كل قناة لها شاشتها. نبني لك بوتاً يحجز الطاولات ويوحّد الطلبات في طابور واحد، يستقبل طلبات واتساب المباشرة، ويردّ على التقييمات بنفس اليوم.
-    </p>
-    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-      <button onclick="openModal(this)" data-source="ar_restaurants_hero" class="btn-primary">احجز استشارة مجانية ←</button>
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التصفح"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span><a href="/ar#industries-heading" style="color:inherit;text-decoration:none;opacity:0.65;">القطاعات</a><span style="opacity:0.4;padding:0 4px;"> / </span>المطاعم</div>
+    <h1>الأتمتة بالذكاء الاصطناعي<br>لـ<span class="gradient-text">المطاعم</span> في الإمارات</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.0625rem; max-width:640px; margin:1.5rem auto 2rem; line-height:1.8;">تبني Lenoo AI أنظمة ذكاء اصطناعي للمطاعم المستقلة ومتعددة الفروع في الإمارات: روبوتات الحجوزات، وتوحيد طلبات تطبيقات التوصيل، والطلب عبر واتساب، والرد على التقييمات. مبنية لعمل يدير خمس قنوات في وقت واحد.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal(this)" data-source="ar_restaurants_hero" class="btn-primary">احجزوا تدقيقاً مجانياً لذكاء المطاعم</button>
+      <a href="#what-we-build" class="btn-outline">شاهدوا ما نبنيه ↓</a>
     </div>
   </div>
 </header>
 
-<!-- IMAGE BANNER + STATS -->
+<!-- HERO IMAGE -->
 <div style="position:relative; overflow:hidden;">
-  <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&q=80&auto=format&fit=crop" alt="مطبخ وخدمة صالة مطعم في الإمارات" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 45%;" />
-  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.18) 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.40));"></div>
-  <div style="position:relative; padding:3rem 2rem;">
-    <div class="glass-dark hosp-stats-grid" style="max-width:920px; margin:0 auto; border-radius:20px; padding:2rem 2.5rem;">
-      <div class="stat-item">
-        <p class="stat-num">+٣</p>
-        <p class="stat-lbl">قنوات طلب يُوفّق بينها مطعم إماراتي نموذجي يدوياً كل نوبة</p>
-      </div>
-      <div class="stat-item">
-        <p class="stat-num">٩٨٪</p>
-        <p class="stat-lbl">معدل فتح واتساب المعتاد، القناة التي يردّ عليها الزبائن فعلاً</p>
-      </div>
-      <div class="stat-item">
-        <p class="stat-num">٢٤/٧</p>
-        <p class="stat-lbl">تغطية حجز وطلب، حتى في ساعات عدم وجود موظف استقبال</p>
-      </div>
-      <div class="stat-item">
-        <p class="stat-num">١٠٠٪</p>
-        <p class="stat-lbl">ضمان استرداد إذا لم ترضَ</p>
-      </div>
-    </div>
+  <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&q=80&auto=format&fit=crop" alt="مطبخ مطعم وخدمة صالة في الإمارات" loading="eager" fetchpriority="high" width="1600" height="320" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 45%;" />
+  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.55) 0%,rgba(0,19,32,0.15) 55%),linear-gradient(135deg,rgba(0,104,117,0.15),rgba(0,37,59,0.25));"></div>
+  <div style="position:relative; padding:3.25rem 2rem;">
+    <StatStrip stats={[
+      { value: "+٣", caption: "قنوات يتعامل معها المطعم النموذجي في الإمارات لطلب واحد: تطبيقات التوصيل، وواتساب، والهاتف، والزبائن المباشرون" },
+      { value: "٩٨٪", caption: "معدل الفتح المعتاد لرسائل واتساب، القناة التي يتفاعل معها الزبائن فعلاً" },
+      { value: "٢٤/٧", caption: "تغطية للحجوزات والطلبات، بما فيها الساعات التي لا يعمل فيها مكتب الاستقبال" },
+    ]} />
   </div>
 </div>
 
-<!-- AI USE CASES -->
-<section class="section">
+<!-- WHY FIVE CHANNELS FOR ONE ORDER -->
+<section class="section" aria-labelledby="shift-heading">
   <div class="container">
-    <h2 style="text-align:center;margin-bottom:0.75rem;">ما يفعله الذكاء الاصطناعي في مطعمك</h2>
-    <p style="text-align:center;color:#42474e;margin-bottom:3rem;max-width:560px;margin-inline:auto;">ستة أنظمة متصلة بنظام نقاط البيع وقنوات الطلب الحالية لديكم.</p>
-    <div class="feature-ledger">
+    <div class="split-grid">
+      <div>
+        <h2 id="shift-heading" style="margin-bottom:1.5rem;">لماذا تتعامل المطاعم مع خمس قنوات لطلب واحد</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>مطعم واحد يتلقى الطلبات من كل مكان في وقت واحد.</strong> طلبات وDeliveroo وZomato، لكل منها جهازه اللوحي ونغمة إشعاره الخاصة. أضيفوا الزبائن المباشرين، وحجوزات الهاتف، ورقم واتساب يحفظه الزبائن أصلاً، فيجد المطبخ نفسه يراقب خمسة مصادر لأداء مهمة واحدة: تقديم الطعام بشكل صحيح وفي الوقت المحدد.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85; margin-bottom:1.25rem;"><strong>التقييمات تتحرك أسرع مما يستطيع الموظفون الرد عليها.</strong> ليلة سيئة على منصة واحدة، أو طلب فائت، أو طاولة بطيئة، تتحول إلى تقييم خلال ساعة، ويبقى التقييم دون رد بينما يقرؤه المئة شخص التالون الذين يفكرون في الحجز. المطاعم المستقلة التي ليس لديها مسؤول تسويق متفرغ تتأخر في ذلك بطبيعة الحال، لا باختيارها.</p>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.85;"><strong>عدم الحضور يكلف طاولة كان يمكن أن تُشغل مرتين.</strong> حجز يُؤخذ بالهاتف الساعة ٦ مساءً لموعد الساعة ٨، دون إرسال أي تذكير، احتمال بنسبة خمسين بالمئة. لمطعم بمقاعد ثابتة ومطبخ مجهز للأعداد المتوقعة، الطاولة الفارغة في وقت الذروة إيراد ضائع لا يعود في تلك الليلة.</p>
+      </div>
+      <div class="split-media">
+        <img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&q=80&auto=format&fit=crop" alt="مضيف مطعم يدير حجزاً وموعد طاولة في دبي" loading="lazy" width="800" height="600" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT LENOO BUILDS -->
+<section id="what-we-build" class="section" style="background:#e7eeff;" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header">
+      <h2 id="build-heading">أنظمة ذكاء اصطناعي مبنية لمطاعم الإمارات</h2>
+      <p>ستة أنظمة محددة ننشرها للمطاعم المستقلة ومتعددة الفروع في الإمارات، كل منها مربوط بنظام نقاط البيع وقنوات الطلب الحالية لديكم.</p>
+    </div>
+    <div class="apps-grid">
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">event_seat</span>
-        <h3>بوت حجز وانتظار</h3>
-        <p style="color:#42474e;line-height:1.7;">يستقبل الحجوزات بالهاتف أو واتساب، يتحقق من توفر الطاولة الفعلي مقابل نظامكم، ويدير قائمة الانتظار.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_seat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">روبوت الحجوزات وقائمة الانتظار</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يتلقى الحجوزات عبر الهاتف أو واتساب، ويتحقق من توفر الطاولات الفعلي في نظام نقاط البيع، ويدير قائمة الانتظار عندما تكونون ممتلئين. ويرسل تذكيرات لتقليل عدم الحضور.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">يحجز الطاولات على مدار الساعة، لا فقط عندما يكون مكتب الاستقبال مفتوحاً</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">restaurant</span>
-        <h3>توحيد طلبات تطبيقات التوصيل</h3>
-        <p style="color:#42474e;line-height:1.7;">يسحب طلبات طلبات وديليفرو وزوماتو في طابور واحد بجانب طلبات الصالة وواتساب.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">restaurant</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">توحيد طلبات تطبيقات التوصيل</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يجمع طلبات طلبات وDeliveroo وZomato في قائمة واحدة بجانب طلبات الصالة وواتساب، فيتابع المطبخ شاشة واحدة بدلاً من أربعة أجهزة لوحية.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">قائمة واحدة بدلاً من جهاز لوحي لكل منصة</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">chat</span>
-        <h3>مساعد طلب عبر واتساب</h3>
-        <p style="color:#42474e;line-height:1.7;">يستقبل طلبات مباشرة عبر واتساب، القناة التي يحتفظ بها الزبائن بالفعل، دون عمولة تطبيق توصيل.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">chat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">مساعد الطلب عبر واتساب</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يتلقى الطلبات المباشرة على واتساب، القناة التي يحفظ فيها الزبائن رقمكم أصلاً، دون العمولة التي تتقاضاها تطبيقات التوصيل على كل طلب.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">الطلبات المباشرة تحفظ الهامش الذي كانت ستأخذه تطبيقات التوصيل</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">reviews</span>
-        <h3>الرد على التقييمات ومراقبة السمعة</h3>
-        <p style="color:#42474e;line-height:1.7;">يتابع التقييمات الجديدة عبر المنصات الرئيسية ويُسوّد رداً بنفس اليوم بصوت علامتكم.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">reviews</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">الرد على التقييمات ومراقبة السمعة</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يتابع التقييمات الجديدة عبر المنصات الرئيسية ويصيغ رداً في نفس اليوم بصوت علامتكم. التقييمات الإيجابية يُرد عليها بسرعة، وأي شيء حساس يُحوَّل إليكم أولاً.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">رد في نفس اليوم بدلاً من رد يصل بعد أسبوع، إن وصل أصلاً</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">forum</span>
-        <h3>جامع ملاحظات العملاء</h3>
-        <p style="color:#42474e;line-height:1.7;">يرسل رسالة ملاحظات قصيرة بعد وجبة، ويُحوّل أي شيء سلبي لمديركم فوراً قبل أن يصبح تقييماً عاماً.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">forum</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">جامع ملاحظات الزبائن</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يرسل رسالة ملاحظات قصيرة بعد الوجبة، في الصالة أو التوصيل، ويحوّل أي ملاحظة سلبية إلى مديركم فوراً بدلاً من أن تتحول إلى تقييم علني أولاً.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">يلتقط التجربة السيئة قبل أن تصبح علنية</p>
       </div>
       <div class="card">
-        <span class="material-symbols-outlined" style="color:#2563eb;direction:ltr;" aria-hidden="true">schedule</span>
-        <h3>مساعد جدولة الطاولات والموظفين</h3>
-        <p style="color:#42474e;line-height:1.7;">يطابق عدد الضيوف المتوقع من الحجوزات والأنماط التاريخية مع احتياج التوظيف.</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">schedule</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">مساعد جدولة الطاولات والموظفين</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">يطابق الأعداد المتوقعة من الحجوزات والأنماط التاريخية مع احتياجات التوظيف، فتُبنى المناوبات حول الطلب الفعلي بدلاً من جدول أسبوعي ثابت.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">توظيف مبني على الطلب المتوقع، لا على التخمين</p>
       </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;padding:2rem;background:#f9f9ff;border-radius:20px;">
+      <p style="color:#00253b;font-weight:700;font-size:1.0625rem;margin-bottom:0.5rem;">مشمول بضمان الاسترداد ١٠٠٪</p>
+      <p style="color:#42474e;font-size:0.9rem;margin-bottom:1.5rem;">كل الأنظمة متوافقة مع أنظمة الإمارات، ثنائية اللغة بالعربية والإنجليزية، ومربوطة بنظام نقاط البيع وقنوات الطلب الحالية لديكم.</p>
+      <button onclick="openModal(this)" data-source="ar_restaurants_mid" class="btn-primary">احجزوا تدقيقاً مجانياً لذكاء المطاعم</button>
     </div>
   </div>
 </section>
@@ -153,38 +145,38 @@ const ldJson = [
 <section class="section" style="background:#f0f3ff;" aria-labelledby="journey-heading">
   <div class="container" style="max-width:1040px;">
     <div class="section-header">
-      <h2 id="journey-heading">من حجز إلى تقييم، من البداية للنهاية</h2>
-      <p>ما يتولاه الذكاء الاصطناعي من أول رسالة حجز حتى التقييم الذي يتبع الوجبة.</p>
+      <h2 id="journey-heading">من الحجز إلى التقييم، من البداية إلى النهاية</h2>
+      <p>ما يتولاه الذكاء الاصطناعي من أول رسالة حجز إلى التقييم الذي يلي الوجبة.</p>
     </div>
     <div class="bento-grid bento-grid-3">
       <div class="card">
-        <div class="num-circle">1</div>
+        <div class="num-circle">١</div>
         <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">حجز دون مكالمة هاتفية</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">ضيف يُراسل عبر واتساب يريد طاولة لأربعة ليلة الجمعة.</p>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">ضيف يراسلكم على واتساب يريد طاولة لأربعة أشخاص ليلة الجمعة.</p>
         <ul class="journey-list">
-          <li>يتحقق من توفر الطاولة الفعلي مقابل نظامكم ويؤكد موعداً خلال ثوانٍ</li>
-          <li>يجمع عدد الضيوف والمناسبة وأي ملاحظات غذائية تستحق تمريرها للمطبخ</li>
-          <li>يرسل تذكيراً قبل الحجز فلا تبقى الطاولة فارغة بسبب غياب</li>
+          <li>يتحقق من توفر الطاولات الفعلي في نظام نقاط البيع ويؤكد الموعد في ثوانٍ</li>
+          <li>يجمع عدد الأشخاص، والمناسبة، وأي ملاحظات غذائية تستحق إبلاغ المطبخ بها</li>
+          <li>يرسل تذكيراً قبل الموعد حتى لا تبقى الطاولة فارغة بسبب عدم الحضور</li>
         </ul>
       </div>
       <div class="card">
-        <div class="num-circle">2</div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">طلب لا يضيع في فوضى التطبيقات</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">طلب توصيل يصل على طلبات بينما المطبخ منشغل بثلاث شاشات أخرى.</p>
+        <div class="num-circle">٢</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">طلب لا يضيع في فوضى تطبيقات التوصيل</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">طلب توصيل يصل عبر طلبات بينما المطبخ في ذروة الزحمة على ثلاث شاشات أخرى.</p>
         <ul class="journey-list">
-          <li>يسحب الطلب لنفس الطابور الموحّد كباقي القنوات، لا جهاز منفصل للفحص</li>
-          <li>يُنبّه لتعارض توقيت الطلبات قبل تأخر المطبخ عن نافذة توصيل موعودة</li>
-          <li>يؤكد حالة الطلب للعميل تلقائياً إن تابع</li>
+          <li>يسحب الطلب إلى نفس القائمة الموحدة مع كل القنوات الأخرى، دون جهاز لوحي منفصل للمتابعة</li>
+          <li>ينبّه إلى تعارضات توقيت الطلبات قبل أن يتأخر المطبخ عن موعد توصيل مُلتزم به</li>
+          <li>يؤكد حالة الطلب للزبون تلقائياً إذا تابع</li>
         </ul>
       </div>
       <div class="card">
-        <div class="num-circle">3</div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">التقييم يحصل على رد بنفس اليوم</h3>
-        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">ضيف يترك تقييماً ذلك المساء، جيداً أو سيئاً.</p>
+        <div class="num-circle">٣</div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.75rem;">تقييم يحصل على رد في نفس اليوم</h3>
+        <p style="color:#42474e; font-size:0.9375rem; line-height:1.7; margin-bottom:1rem;">ضيف يترك تقييماً في تلك الليلة، جيداً كان أو سيئاً.</p>
         <ul class="journey-list">
-          <li>يُسوّد رداً بصوت علامتكم خلال ساعات، لا حين يتذكر أحد الفحص</li>
-          <li>يُصعّد أي شيء جاد، مخاوف صحية أو شكوى حقيقية، لكم قبل أي رد عام</li>
-          <li>يُسجّل الملاحظات فتظهر المشاكل المتكررة للإدارة بدل الضياع بالضجيج</li>
+          <li>يصيغ رداً بصوت علامتكم خلال ساعات، لا عندما يتذكر أحدهم التحقق</li>
+          <li>يصعّد أي أمر جدي، مثل مشكلة صحية أو شكوى حقيقية، إليكم قبل أي رد علني</li>
+          <li>يسجل الملاحظات حتى تظهر المشكلات المتكررة للإدارة بدلاً من أن تضيع في الزحام</li>
         </ul>
       </div>
     </div>
@@ -195,26 +187,26 @@ const ldJson = [
 <section id="applications" class="section" style="background:#e7eeff;" aria-labelledby="apps-heading">
   <div class="container">
     <div class="section-header">
-      <h2 id="apps-heading">أين يُحدث الذكاء الاصطناعي أكبر أثر لمطاعم الإمارات</h2>
+      <h2 id="apps-heading">أين يحقق الذكاء الاصطناعي أكبر أثر لمطاعم الإمارات</h2>
     </div>
     <div class="bento-grid bento-grid-3">
       <div class="card">
-        <div class="icon-box"><span class="material-symbols-outlined" style="direction:ltr;color:#006875; font-size:24px;" aria-hidden="true">restaurant</span></div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">فوضى طلبات التطبيقات</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">توحيد طلبات وديليفرو وزوماتو في عرض واحد يُزيل أكبر مصدر خطأ في المطبخ: طلب فائت لأن الجهاز الذي وصل عليه لم يكن ما يفحصه أحد.</p>
-        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">طابور واحد، لا جهاز لكل منصة</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">restaurant</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">فوضى طلبات تطبيقات التوصيل</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">توحيد طلبات وDeliveroo وZomato في شاشة واحدة يزيل أكبر مصدر لأخطاء المطبخ: طلب فائت لأن الجهاز اللوحي الذي وصل عليه لم يكن الذي يراقبه أحد في تلك اللحظة.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">قائمة واحدة، لا جهاز لوحي لكل منصة</p>
       </div>
       <div class="card">
-        <div class="icon-box"><span class="material-symbols-outlined" style="direction:ltr;color:#006875; font-size:24px;" aria-hidden="true">reviews</span></div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">سرعة التقييمات</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">الزبائن الذين يقارنون بين مطاعم متشابهة يفحصون التقييمات قبل الحجز باستمرار. مطعم يردّ بسرعة وثبات يُقرأ كمُهتم؛ مطعم بأسابيع من تقييمات دون رد يُقرأ كلامبالٍ.</p>
-        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">رد بنفس اليوم، كل مرة، لا حين يتذكر أحد</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">reviews</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">سرعة الرد على التقييمات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">الزبائن الذين يختارون بين مطاعم متشابهة يتحققون عادةً من التقييمات قبل الحجز. المطعم الذي يرد بسرعة وباستمرار يبدو مهتماً، والمطعم الذي تتراكم لديه أسابيع من التقييمات دون رد يبدو غير مبالٍ، سواء كان ذلك صحيحاً أم لا.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">رد في نفس اليوم، في كل مرة، لا عندما يتذكر أحدهم</p>
       </div>
       <div class="card">
-        <div class="icon-box"><span class="material-symbols-outlined" style="direction:ltr;color:#006875; font-size:24px;" aria-hidden="true">event_seat</span></div>
-        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">الغياب عن الحجوزات</h3>
-        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">غياب واحد بساعة ذروة يعني طاولة كانت ستُشغَل مرتين. تأكيدات وتذكيرات آلية تُرسل بالوقت المناسب تستعيد حصة معتبرة من الحجوزات.</p>
-        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">تذكير آلي لا يُكلّف شيئاً ويُنقذ الطاولة</p>
+        <div class="icon-box"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:24px;">event_seat</span></div>
+        <h3 style="font-weight:700; font-size:1.0625rem; color:#00253b; margin-bottom:0.5rem;">عدم الحضور للحجوزات</h3>
+        <p style="color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:0.75rem;">عدم الحضور في وقت الذروة يعني طاولة كان يمكن أن تُشغل مرتين. التأكيدات والتذكيرات التلقائية المرسلة في الوقت المناسب تستعيد جزءاً ملموساً من الحجوزات التي كانت ستضيع ببساطة.</p>
+        <p style="font-size:0.8125rem; font-weight:600; color:#006875;">تذكير يُرسل تلقائياً لا يكلف شيئاً وينقذ الطاولة</p>
       </div>
     </div>
   </div>
@@ -224,28 +216,28 @@ const ldJson = [
 <section class="section" aria-labelledby="eval-heading">
   <div class="container">
     <div class="section-header">
-      <h2 id="eval-heading">ما الذي يجعله يعمل</h2>
+      <h2 id="eval-heading">ما يجعلها تنجح</h2>
     </div>
     <div class="eval-grid">
       <div class="card" style="text-align:center;">
-        <div class="num-circle">1</div>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">تكامل مع طلبات/ديليفرو/زوماتو</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">توحيد الطلبات يعمل فقط إن اتصل بالتطبيقات التي تستخدمونها فعلياً. نبني على الثلاثة التي تحمل معظم حجم التوصيل بالإمارات.</p>
+        <div class="num-circle">١</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">الربط مع طلبات وDeliveroo وZomato</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">توحيد الطلبات لا يعمل إلا إذا اتصل بتطبيقات التوصيل التي تستخدمونها فعلاً. نبني الربط مع التطبيقات الثلاثة التي تحمل معظم حجم التوصيل في الإمارات، فتصل الطلبات إلى قائمة واحدة بدلاً من ثلاثة أجهزة لوحية منفصلة.</p>
       </div>
       <div class="card" style="text-align:center;">
-        <div class="num-circle">2</div>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">تكامل مع نقاط البيع</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">الحجوزات وحالة الطاولات وبيانات الطلبات يجب أن تعيش في نفس النظام الذي يستخدمه طاقم الصالة والمطبخ بالفعل.</p>
+        <div class="num-circle">٢</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">الربط مع نظام نقاط البيع</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">الحجوزات وحالة الطاولات وبيانات الطلبات يجب أن تكون في نفس النظام الذي يستخدمه موظفو الصالة والمطبخ أصلاً. روبوت حجوزات لا يتحقق من التوفر الفعلي في نظام نقاط البيع يحجز طاولات غير موجودة فعلاً.</p>
       </div>
       <div class="card" style="text-align:center;">
-        <div class="num-circle">3</div>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">قائمة وطلب متعدد اللغات</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">قاعدة زبائن الإمارات تتنقل بين العربية والإنجليزية، وغالباً تتوقع شرح القائمة لا فقط سردها.</p>
+        <div class="num-circle">٣</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">قائمة طعام وطلب متعددا اللغات</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">زبائن الإمارات يتنقلون بين العربية والإنجليزية، وكثيراً ما يتوقعون شرح القائمة، لا مجرد عرضها. مساعد الطلب يحتاج أن يجيب عن أسئلة الأطباق والمكونات بأي من اللغتين، لا أن يعالج رمز قائمة ثابتاً فقط.</p>
       </div>
       <div class="card" style="text-align:center;">
-        <div class="num-circle">4</div>
-        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">التعامل مع ضغط ساعة الذروة</h3>
-        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">خدمة عشاء الجمعة والسبت تجلب ارتفاعاً بطلبات الحجز والطلبات والرسائل معاً. النظام يحتاج الصمود دون فوات حجز أو طلب.</p>
+        <div class="num-circle">٤</div>
+        <h3 style="font-weight:700; font-size:0.9375rem; color:#00253b; margin-bottom:0.5rem;">التعامل مع ضغط أوقات الذروة</h3>
+        <p style="color:#42474e; font-size:0.8125rem; line-height:1.6;">خدمة العشاء يومي الجمعة والسبت تجلب ارتفاعاً في طلبات الحجز والطلبات والرسائل في وقت واحد. النظام يحتاج أن يصمد تحت هذا الضغط دون إسقاط حجز أو تفويت طلب، في اللحظة التي لا يستطيع المطعم فيها تحمّل أي منهما.</p>
       </div>
     </div>
   </div>
@@ -255,144 +247,83 @@ const ldJson = [
 <section class="section" style="background:#e7eeff;" aria-labelledby="research-heading">
   <div class="container" style="max-width:860px;">
     <div class="section-header">
-      <h2 id="research-heading">ما تُظهره البيانات</h2>
+      <h2 id="research-heading">ما تقوله البيانات</h2>
     </div>
     <div style="border-radius:24px; overflow:hidden; margin-bottom:2.5rem; box-shadow:0 24px 56px rgba(0,59,92,0.10);">
-      <img src="https://images.unsplash.com/photo-1517840901100-8179e982acb7?w=1200&q=80&auto=format&fit=crop" alt="طاقم مطعم يُجهّز طلبات خلال خدمة ذروة" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
+      <img src="https://images.unsplash.com/photo-1517840901100-8179e982acb7?w=1200&q=80&auto=format&fit=crop" alt="موظفو مطعم يجهزون طلبات الطعام في وقت الذروة" loading="lazy" width="1200" height="380" style="width:100%; height:clamp(200px, 30vw, 380px); object-fit:cover; display:block;" />
     </div>
     <div class="ind-stats-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2rem;">
       <div class="card" style="text-align:center;">
         <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">+٣</p>
-        <p style="color:#42474e; font-size:0.875rem;">قنوات طلب منفصلة يُوفّق بينها مطعم إماراتي يدوياً كل نوبة</p>
+        <p style="color:#42474e; font-size:0.875rem;">قنوات طلب منفصلة يطابقها المطعم النموذجي في الإمارات يدوياً في كل مناوبة</p>
       </div>
       <div class="card" style="text-align:center;">
         <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">٩٨٪</p>
-        <p style="color:#42474e; font-size:0.875rem;">معدل فتح رسائل واتساب المعتاد، مقابل ٢٠٪ تقريباً للبريد</p>
+        <p style="color:#42474e; font-size:0.875rem;">معدل الفتح المعتاد لرسائل واتساب، مقابل نحو ٢٠٪ للبريد الإلكتروني</p>
       </div>
       <div class="card" style="text-align:center;">
         <p class="stat-number" style="font-size:2.25rem; margin-bottom:4px;">٢٤/٧</p>
-        <p style="color:#42474e; font-size:0.875rem;">تغطية حجز، بما فيها ساعات عدم وجود موظف استقبال</p>
+        <p style="color:#42474e; font-size:0.875rem;">تغطية للحجوزات، بما فيها الساعات التي لا يعمل فيها مكتب الاستقبال</p>
       </div>
     </div>
     <div class="research-panel">
       <div class="ind-text-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; font-size:0.875rem;">
         <div>
-          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">ضغط عمولة التطبيقات</p>
-          <p style="color:#42474e; line-height:1.7;">تطبيقات التوصيل تفرض عمولة على كل طلب يمر عبر منصتها، ولهذا المطاعم التي تبني قناة طلب مباشرة قوية عبر واتساب تحمي هامشاً أكبر لكل طلب.</p>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">ضغط عمولات تطبيقات التوصيل</p>
+          <p style="color:#42474e; line-height:1.7;">تتقاضى تطبيقات التوصيل عمولة على كل طلب يمر عبر منصتها، ولهذا تحافظ المطاعم التي تبني قناة طلب مباشر قوية على واتساب على هامش أكبر لكل طلب باستمرار مقارنة بالمطاعم التي تعتمد على تطبيقات التوصيل وحدها.</p>
         </div>
         <div>
           <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">توقيت الرد على التقييمات</p>
-          <p style="color:#42474e; line-height:1.7;">المطاعم التي نتحدث معها تقول نفس الشيء: تقييم يُردّ عليه بنفس اليوم يبدو كمطعم يهتم، وواحد يُردّ عليه بعد أسبوع، أو لا يُردّ أبداً، يُقرأ كلامبالاة.</p>
+          <p style="color:#42474e; line-height:1.7;">المطاعم التي نتحدث معها تقول نفس الشيء: التقييم الذي يُرد عليه في نفس اليوم يوحي بمطعم منتبه، والتقييم الذي يُرد عليه بعد أسبوع، أو لا يُرد عليه أبداً، يبدو لامبالاة للزبائن الذين يتصفحون قبل الحجز. سرعة الرد إشارة سمعة بحد ذاتها.</p>
         </div>
         <div>
-          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">استعادة الغياب</p>
-          <p style="color:#42474e; line-height:1.7;">تذكير مؤكد يُرسل قرب موعد الحجز هو الحل القياسي الذي يستخدمه مشغّلو الضيافة عبر الصناعة للغياب. لمطعم بمقاعد ثابتة، استعادة ولو جزء من هذه الطاولات بساعات الذروة يتراكم خلال شهر.</p>
+          <p style="font-weight:700; color:#00253b; margin-bottom:0.5rem;">استعادة حالات عدم الحضور</p>
+          <p style="color:#42474e; line-height:1.7;">التذكير المؤكد المرسل قرب موعد الحجز هو الحل المعتاد الذي يستخدمه مشغلو الضيافة لعدم الحضور في كل القطاع. لمطعم بمقاعد ثابتة، استعادة حتى جزء من تلك الطاولات في أوقات الذروة يتراكم على مدار الشهر.</p>
         </div>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- GUARANTEE -->
-<section class="section" style="background:#e7eeff;padding:4rem 0;text-align:center;">
-  <div class="container">
-    <div class="guarantee-badge" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:18px;direction:ltr;" aria-hidden="true">shield</span>
-      ضمان الاسترداد الكامل، الوحيد في الإمارات
-    </div>
-    <h2 style="margin-bottom:1rem;">إذا لم تكن راضياً، لا تدفع أي شيء.</h2>
-    <p style="color:#42474e;max-width:560px;margin:0 auto 2rem;line-height:1.8;">نبني، تختبر، وإذا لم تكن راضياً تماماً نردّ ١٠٠٪ خلال ٣٠ يوماً من التسليم. بدون أسئلة.</p>
-    <button onclick="openModal(this)" data-source="ar_restaurants_guarantee" class="btn-primary">ابدأ بدون مخاطرة</button>
   </div>
 </section>
 
 <!-- FAQ -->
-<section class="section">
-  <div class="container" style="max-width:760px;">
-    <h2 style="text-align:center;margin-bottom:2.5rem;">أسئلة شائعة</h2>
-    <div class="faq-list">
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          مع أي تطبيقات توصيل يتصل الذكاء الاصطناعي فعلياً؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نبني على طلبات وديليفرو وزوماتو، الثلاثة التي تحمل معظم حجم طلبات التوصيل في الإمارات. حيث تدعم الواجهة ذلك، تتزامن الطلبات تلقائياً في عرض موحّد واحد.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل يتحمل حجم ساعة الذروة دون تعطل؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نعم. على عكس خط هاتف بعدد موظفين ثابت، الذكاء الاصطناعي يتوسّع مع الحجم، فازدحام عشاء الجمعة لا يعني وقت انتظار أطول أو مكالمات فائتة.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل نتحكم بكيفية الرد على التقييمات؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">أنتم تحددون النبرة والحدود. التقييمات الإيجابية تحصل على رد تلقائي بصوت علامتكم. أي شيء سلبي يُسوَّد ليعتمده فريقكم أو يُصعَّد مباشرة، لا يُنشر شيء حساس دون مراجعة بشرية.</div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
-          هل يتكامل بوت الحجز مع نظام نقاط البيع لدينا؟
-          <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="12" height="12" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="faq-body">نعم، هذا هو المغزى. حجز أو طلب يتخذه الذكاء الاصطناعي يجب أن يصل نفس النظام الذي يستخدمه طاقم الصالة والمطبخ بالفعل.</div>
-      </div>
+<section class="section" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">أسئلة حول الذكاء الاصطناعي لمطاعم الإمارات</h2>
     </div>
+    <FaqAccordion items={faqItems} />
   </div>
 </section>
 
 <!-- FINAL CTA -->
-<section class="cta-band" style="border-radius:24px;margin:2rem 2rem 4rem;">
-  <div class="container" style="text-align:center;">
-    <h2 style="margin-bottom:1rem;">جاهز لتوحيد خمس قنوات في واحدة؟</h2>
-    <p style="margin-bottom:2rem;max-width:500px;margin-inline:auto;line-height:1.7;">احجز جلسة تشخيص مجانية، نراجع تدفق حجوزاتكم ومزيج تطبيقاتكم، ونريك بالضبط ما سنبنيه أولاً. بدون التزام.</p>
-    <button onclick="openModal(this)" data-source="ar_restaurants_cta" class="btn-primary">ابدأ الآن ←</button>
+<div class="cta-band">
+  <div style="position:relative; z-index:1; text-align:center;">
+    <p class="cta-eyebrow">مكالمة اكتشاف مجانية</p>
+    <h2 style="font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem;">احجزوا تدقيقاً مجانياً لذكاء المطاعم</h2>
+    <p style="font-size:1.125rem; max-width:36rem; margin:0 auto 2rem; line-height:1.7;">سننظر في مسار الحجوزات لديكم، ومزيج تطبيقات التوصيل، وأين تبقى التقييمات دون رد، ثم نريكم بالضبط ما سنبنيه أولاً. ٣٠ دقيقة، دون أي التزام.</p>
+    <div class="cta-trust-badges">
+      <span class="cta-trust-badge">✓ مجاني ١٠٠٪</span>
+      <span class="cta-trust-badge">✓ دون أي التزام</span>
+      <span class="cta-trust-badge">✓ ضمان الاسترداد</span>
+    </div>
+    <button onclick="openModal(this)" data-source="ar_restaurants_cta" class="btn-primary" style="font-size:1.125rem; padding:1.125rem 2.75rem;">احجزوا تدقيقاً مجانياً لذكاء المطاعم</button>
+    <p style="font-size:.875rem; margin-top:1rem; color:#94a3b8;">مكالمة ٣٠ دقيقة · دون ضغط بيعي</p>
   </div>
-</section>
-
-<style>
-  .hosp-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
-    text-align: center;
-  }
-  .stat-num {
-    font-size: 1.375rem;
-    font-weight: 800;
-    color: #00e3fd;
-    margin: 0 0 0.25rem;
-  }
-  .stat-lbl {
-    color: rgba(255,255,255,0.72);
-    font-size: 0.875rem;
-    margin: 0;
-    line-height: 1.5;
-  }
-  .stat-item { padding: 0 .25rem; }
-  .faq-list {
-    display: grid;
-    gap: 0.75rem;
-  }
-  @media (max-width: 900px) {
-    .hosp-stats-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 580px) {
-    .hosp-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-  }
-
-  /* Applications / evaluation / research sections */
-  .icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
-  .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
-  .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
-  .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
-  .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
-  .journey-list li { position:relative; padding-right:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
-  .journey-list li::before { content:''; position:absolute; right:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
-  @media(max-width:900px) { .eval-grid { grid-template-columns:1fr 1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr 1fr !important; } }
-  @media(max-width:600px) { .eval-grid { grid-template-columns:1fr; } .ind-stats-grid, .ind-text-grid { grid-template-columns:1fr !important; } }
-</style>
+</div>
 
 </ArBaseLayout>
+
+<style>
+.icon-box { width:48px; height:48px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:1rem; flex-shrink:0; }
+    .num-circle { width:48px; height:48px; border-radius:50%; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.125rem; font-weight:800; color:#006875; }
+    .research-panel { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:20px; padding:2rem; margin-top:2rem; }
+    .apps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .eval-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; }
+    @media(max-width:900px) { .apps-grid { grid-template-columns:1fr 1fr; } .eval-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .apps-grid { grid-template-columns:1fr; } .eval-grid { grid-template-columns:1fr; } }
+
+    /* Journey list markers (reused inside static bento-grid-3 cards) */
+    .journey-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.625rem; }
+    .journey-list li { position:relative; padding-inline-start:1.5rem; color:#42474e; font-size:0.875rem; line-height:1.65; }
+    .journey-list li::before { content:''; position:absolute; inset-inline-start:0; top:0.5em; width:8px; height:8px; border-radius:50%; background:#00e3fd; }
+</style>
