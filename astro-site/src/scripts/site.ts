@@ -136,6 +136,38 @@ function initModalCalendly() {
   }).catch(() => {});
 }
 
+// Lead tracking: GA4 events for every contact action, and UTM tags on the
+// Calendly widgets so Calendly's booking email says which site/page it came from.
+// Must run before loadCalendly() below, which boots the widgets from data-url.
+function trackLead(name: string, params: Record<string, string> = {}) {
+  window.gtag?.('event', name, { page_path: location.pathname, ...params });
+}
+
+document.querySelectorAll<HTMLElement>('.calendly-inline-widget[data-url]').forEach(el => {
+  const url = new URL(el.dataset.url!);
+  url.searchParams.set('utm_source', 'lenooai.com');
+  url.searchParams.set('utm_medium', 'website');
+  url.searchParams.set('utm_campaign', location.pathname);
+  el.dataset.url = url.toString();
+});
+
+document.addEventListener('click', (e) => {
+  const a = (e.target as HTMLElement).closest?.('a[href]') as HTMLAnchorElement | null;
+  if (!a) return;
+  if (a.href.startsWith('mailto:')) trackLead('email_click');
+  else if (a.href.startsWith('tel:')) trackLead('phone_click');
+  else if (/wa\.me|whatsapp\.com/.test(a.href)) trackLead('whatsapp_click');
+  else if (/calendly\.com/.test(a.href)) trackLead('calendly_open');
+});
+
+window.addEventListener('message', (e: MessageEvent) => {
+  if (!(e.origin ?? '').includes('calendly.com')) return;
+  if ((e.data as { event?: string })?.event !== 'calendly.event_scheduled') return;
+  trackLead('generate_lead', { method: 'calendly' });
+});
+
+(window as unknown as { trackLead: typeof trackLead }).trackLead = trackLead;
+
 if (document.querySelector('.calendly-inline-widget:not([data-auto-load="false"])')) loadCalendly().catch(() => {});
 
 // Element that had focus before the modal opened — restored on close so keyboard
@@ -277,6 +309,7 @@ async function continueToSchedule() {
   } catch {
     // Silent — Calendly scheduling still proceeds even if the CRM lead write failed.
   }
+  trackLead('lead_form_submit', { form: 'modal', page_source: payload.page_source });
   goToStep(2);
   if (btn) btn.disabled = false;
 }
