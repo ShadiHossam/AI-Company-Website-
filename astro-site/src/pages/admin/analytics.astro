@@ -1,0 +1,49 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+
+// Visitor & lead analytics from the first-party tracker (public/js/ln-track.js
+// -> /api/t -> ~/lenoo-analytics). The page is the same dashboard as
+// shadihossam.com's, ported from New Golden Office's admin: public/admin-analytics.js
+// loads the range from /api/admin/analytics/data and builds everything in the browser.
+// Access: super_admin, or a role with the 'analytics' section (middleware).
+const user = Astro.locals.user!;
+
+const config = {
+  site: 'lenooai.com',
+  dataUrl: '/api/admin/analytics/data',
+  visitUrl: '/api/admin/analytics/visit',
+  tz: 'Asia/Dubai',
+  tzLabel: 'Dubai time',
+  filePrefix: 'lenoo',
+  // Labels for the button / form names the tracker records.
+  buttons: {
+    float: 'Floating WhatsApp button', floating_form_button: 'Floating booking button', nav: 'Menu', footer: 'Footer',
+    inline: 'In-page link', blog_body: 'Link inside article', hero: 'Top of page', cta_band: 'CTA band', popup: 'Popup',
+    modal: 'Booking form (popup window)', contact_page: 'Contact page form', calendly: 'Calendly', script: 'Script',
+  },
+};
+---
+
+<AdminLayout title="Analytics" user={user}>
+  <div class="an-host">
+    <div id="an-root"></div>
+  </div>
+  <script type="application/json" id="an-config" set:html={JSON.stringify(config).replace(/</g, '\\u003c')} />
+  <script is:inline src="/admin-analytics.js" defer></script>
+</AdminLayout>
+
+<style>
+  /* Map the dashboard's colour slots onto the admin's dark theme. */
+  .an-host {
+    --surface: var(--bg-card);
+    --surface-2: var(--bg-input);
+    --surface-3: #1f2a3f;
+    --border: rgba(255, 255, 255, 0.10);
+    --border-light: rgba(255, 255, 255, 0.07);
+    --text: var(--text-primary);
+    --text-2: var(--text-muted);
+    --text-3: var(--text-dim);
+    --hover: var(--bg-hover);
+  }
+</style>

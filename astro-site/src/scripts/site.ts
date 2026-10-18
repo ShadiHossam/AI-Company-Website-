@@ -310,6 +310,12 @@ async function continueToSchedule() {
     // Silent — Calendly scheduling still proceeds even if the CRM lead write failed.
   }
   trackLead('lead_form_submit', { form: 'modal', page_source: payload.page_source });
+  // First-party tracker (src/tracking/ln-track.js) records the lead with the
+  // visit; the button that opened the modal (data-source) names it.
+  document.dispatchEvent(new CustomEvent('ln:lead', { detail: {
+    form: payload.page_source && payload.page_source !== 'unknown' ? payload.page_source : 'modal',
+    data: { name: payload.full_name, company: payload.company_name, email: payload.work_email, phone: payload.whatsapp, detail: payload.job_title },
+  } }));
   goToStep(2);
   if (btn) btn.disabled = false;
 }

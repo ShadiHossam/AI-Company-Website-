@@ -7,6 +7,9 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
 import { COMPANY } from '../config/company';
 import { arTwinFor } from '../lib/routes';
 import '../styles/global.css';
+import ContactPopup from '../components/ContactPopup.astro';
+import { resolvePopupCopy, type PopupContext } from '../lib/popupCopy';
+import { trackJsVersion } from '../lib/assetVersions';
 
 interface Props {
   title: string;
@@ -36,6 +39,10 @@ interface Props {
   prevPath?: string;
   /** Next page in a paginated series, emitted as <link rel="next">. */
   nextPath?: string;
+  /** Show the 15s booking / WhatsApp popup (also off on contact, careers and legal pages). */
+  popup?: boolean;
+  /** Blog posts pass their category for article-aware popup copy. */
+  popupContext?: PopupContext;
 }
 
 const {
@@ -51,7 +58,10 @@ const {
   preloadImageSrcset,
   prevPath,
   nextPath,
+  popup = true,
+  popupContext,
 } = Astro.props;
+const popupCopy = popup ? resolvePopupCopy(Astro.url.pathname, 'en', popupContext) : null;
 
 // `undefined` means "work it out"; an explicit `null` means "this page has no
 // twin", so only the former falls through to the lookup.
@@ -123,6 +133,9 @@ const effectiveNoindex = noindex || isStaging;
 <Footer />
 <Modal />
 <WhatsAppButton lang="en" />
+{popupCopy && <ContactPopup copy={popupCopy} lang="en" />}
+<!-- First-party visit tracker (src/tracking/ln-track.js, built by scripts/build-tracking.mjs) -->
+<script is:inline defer src={`/js/ln-track.js?v=${trackJsVersion}`}></script>
 
 <script>
   import '../scripts/site';

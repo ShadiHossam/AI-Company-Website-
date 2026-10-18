@@ -9,7 +9,7 @@ const CSRF = (req: Request) => {
 };
 
 const VALID_SECTIONS = [
-  'dashboard', 'blog', 'content', 'media', 'leads', 'jobs',
+  'dashboard', 'blog', 'content', 'media', 'leads', 'analytics', 'jobs',
   'applications', 'notifications', 'seo', 'activity', 'settings', 'users',
 ];
 

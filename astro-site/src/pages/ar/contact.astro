@@ -482,6 +482,8 @@ const contactLdJson = [
       // Silent — Calendly scheduling still proceeds even if the CRM lead write failed.
     }
     (window as unknown as { trackLead?: (n: string, p?: Record<string, string>) => void }).trackLead?.('lead_form_submit', { form: 'contact_page' });
+    // First-party tracker (src/tracking/ln-track.js) records the lead with the visit.
+    document.dispatchEvent(new CustomEvent('ln:lead', { detail: { form: 'contact_page', data: { name: payload.full_name, company: payload.company_name, email: payload.work_email, phone: payload.whatsapp, service: payload.industry } } }));
     btn.disabled = false;
     contactStep(3);
   }
