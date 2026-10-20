@@ -17,8 +17,16 @@
  * Everything else in the body is left exactly as authored.
  */
 
-/** `/blog/foo`, `/ar/blog/foo`, with optional trailing slash, query or hash. */
-const BLOG_HREF = /^\/(?:ar\/)?blog\/[^/?#]+\/?(?:[?#].*)?$/;
+import { POST_SECTIONS, postPath } from './postPaths';
+
+/** `blog` or a section such as `abu-dhabi`: the first segment of a post URL. */
+const POST_ROOT = `(?:blog|${POST_SECTIONS.join('|')})`;
+
+/**
+ * `/blog/foo`, `/ar/blog/foo`, `/abu-dhabi/foo`, `/ar/abu-dhabi/foo`, with
+ * optional trailing slash, query or hash.
+ */
+const BLOG_HREF = new RegExp(`^\\/(?:ar\\/)?${POST_ROOT}\\/[^/?#]+\\/?(?:[?#].*)?$`);
 
 /** Anchors do not nest, so matching to the first closing tag is safe. */
 const ANCHOR = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi;
@@ -76,8 +84,8 @@ export function buildLiveBlogPaths(
   const live = new Set<string>();
   for (const row of rows) {
     if (!row.slug) continue;
-    if (!isArabicOnly(row)) live.add(`/blog/${row.slug}`);
-    if (row.ar_title) live.add(`/ar/blog/${row.slug}`);
+    if (!isArabicOnly(row)) live.add(postPath(row.slug, 'en'));
+    if (row.ar_title) live.add(postPath(row.slug, 'ar'));
   }
   return live;
 }
@@ -105,8 +113,9 @@ export function localiseBlogLinks(
 ): string {
   if (!html) return html;
 
-  const from = lang === 'ar' ? /^\/blog\/([^/?#]+)\/?$/ : /^\/ar\/blog\/([^/?#]+)\/?$/;
-  const to = (slug: string) => (lang === 'ar' ? `/ar/blog/${slug}` : `/blog/${slug}`);
+  // Captures `blog/<slug>` or `<section>/<slug>`, the part both languages share.
+  const from = new RegExp(`^\\/${lang === 'ar' ? '' : 'ar\\/'}(${POST_ROOT}\\/[^/?#]+)\\/?$`);
+  const to = (rest: string) => (lang === 'ar' ? `/ar/${rest}` : `/${rest}`);
 
   return html.replace(ANCHOR, (whole, attrs: string) => {
     const m = HREF.exec(attrs);

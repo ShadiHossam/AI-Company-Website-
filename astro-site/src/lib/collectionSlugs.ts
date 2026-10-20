@@ -10,11 +10,13 @@
  * Kept separate from deadLinks.ts so that module stays free of `astro:content`
  * and can be unit-tested outside an Astro build.
  */
+import { postPath } from './postPaths';
+
 export async function getCollectionBlogPaths(): Promise<string[]> {
   try {
     const { getCollection } = await import('astro:content');
     const posts = await getCollection('blog');
-    return posts.map((p) => `/blog/${p.id}`);
+    return posts.map((p) => postPath(p.id));
   } catch {
     // The collection is optional; an empty list just means nothing extra is live.
     return [];

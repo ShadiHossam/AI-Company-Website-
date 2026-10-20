@@ -9,7 +9,8 @@ export const COMPANY = {
   linkedinSlug: "lenoo-ai-dubai",
   // Fallback used when integration.calendly_url isn't set in admin settings (Settings →
   // Integrations → Scheduling & CRM) — that field overrides this at render time.
-  calendlyUrl: "https://calendly.com/chadihossam1",
+  // Point it at the event, not the profile, or visitors get an extra "pick a meeting" screen.
+  calendlyUrl: "https://calendly.com/chadihossam1/30min",
   twitter: "",
   instagram: "",
   facebook: "",

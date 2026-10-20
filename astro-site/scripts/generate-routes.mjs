@@ -22,6 +22,12 @@ const OUT = join(here, '..', 'src', 'data', 'routes.generated.ts');
 /** Not indexable, so never part of a sitemap or an hreflang cluster. */
 const EXCLUDE = new Set(['/404', '/maintenance']);
 
+/**
+ * Section hubs list blog_posts rows and 404 while none is published, so they
+ * cannot be static routes. post-sitemap.xml.ts lists them once they have posts.
+ */
+const DB_BACKED = new Set(['/abu-dhabi', '/ar/abu-dhabi']);
+
 function walk(dir) {
   const out = [];
   for (const entry of readdirSync(dir)) {
@@ -40,7 +46,7 @@ export function collectRoutes() {
     .filter((r) => !r.startsWith('/admin/') && !r.startsWith('/api/'))
     .map((r) => (r.endsWith('/index') ? r.slice(0, -6) : r))
     .map((r) => (r === '' ? '/' : r))
-    .filter((r) => !EXCLUDE.has(r))
+    .filter((r) => !EXCLUDE.has(r) && !DB_BACKED.has(r))
     .sort();
 }
 

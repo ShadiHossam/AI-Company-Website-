@@ -2,12 +2,17 @@ import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../lib/supabase';
 import { getCollection } from 'astro:content';
 import { isArabicOnlyPost } from '../lib/post-lang';
+import { postPath, postSection, type PostSection } from '../lib/postPaths';
 
 const BASE = 'https://lenooai.com';
 
 export const GET: APIRoute = async () => {
   const seenSlugs = new Set<string>();
   const urlBlocks: string[] = [];
+  // Section hubs (/abu-dhabi, /ar/abu-dhabi) 404 until a post in them is live,
+  // so they are listed here, from the same rows, instead of the page sitemap.
+  const enSections = new Set<PostSection>();
+  const arSections = new Set<PostSection>();
 
   try {
     const supabase = getSupabaseAdmin();
@@ -22,6 +27,14 @@ export const GET: APIRoute = async () => {
     if (!error && data) {
       for (const post of data) {
         seenSlugs.add(post.slug);
+        const section = postSection(post.slug);
+        if (section) {
+          if (isArabicOnlyPost(post)) arSections.add(section);
+          else enSections.add(section);
+          if (post.ar_title) arSections.add(section);
+        }
+        const en = `${BASE}${postPath(post.slug, 'en')}`;
+        const ar = `${BASE}${postPath(post.slug, 'ar')}`;
         const lastmod = (post.updated_at ?? post.pub_date ?? new Date().toISOString())
           .replace(/(\.\d+)?Z$/, '+00:00');
 
@@ -32,34 +45,53 @@ export const GET: APIRoute = async () => {
         // sitemap entirely.
         if (isArabicOnlyPost(post)) {
           urlBlocks.push(`  <url>
-    <loc>${BASE}/ar/blog/${post.slug}</loc>
+    <loc>${ar}</loc>
     <lastmod>${lastmod}</lastmod>
-    <xhtml:link rel="alternate" hreflang="ar-ae" href="${BASE}/ar/blog/${post.slug}"/>
+    <xhtml:link rel="alternate" hreflang="ar-ae" href="${ar}"/>
   </url>`);
           continue;
         }
 
         const hreflang = post.ar_title
           ? `
-    <xhtml:link rel="alternate" hreflang="en-ae" href="${BASE}/blog/${post.slug}"/>
-    <xhtml:link rel="alternate" hreflang="ar-ae" href="${BASE}/ar/blog/${post.slug}"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}/blog/${post.slug}"/>`
+    <xhtml:link rel="alternate" hreflang="en-ae" href="${en}"/>
+    <xhtml:link rel="alternate" hreflang="ar-ae" href="${ar}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${en}"/>`
           : '';
         urlBlocks.push(`  <url>
-    <loc>${BASE}/blog/${post.slug}</loc>
+    <loc>${en}</loc>
     <lastmod>${lastmod}</lastmod>${hreflang}
   </url>${post.ar_title ? `
   <url>
-    <loc>${BASE}/ar/blog/${post.slug}</loc>
+    <loc>${ar}</loc>
     <lastmod>${lastmod}</lastmod>
-    <xhtml:link rel="alternate" hreflang="ar-ae" href="${BASE}/ar/blog/${post.slug}"/>
-    <xhtml:link rel="alternate" hreflang="en-ae" href="${BASE}/blog/${post.slug}"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}/blog/${post.slug}"/>
+    <xhtml:link rel="alternate" hreflang="ar-ae" href="${ar}"/>
+    <xhtml:link rel="alternate" hreflang="en-ae" href="${en}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${en}"/>
   </url>` : ''}`);
       }
     }
   } catch {
     // DB unreachable — fall through to content-collection posts below
+  }
+
+  const sections = new Set([...enSections, ...arSections]);
+  for (const section of sections) {
+    const en = `${BASE}/${section}`;
+    const ar = `${BASE}/ar/${section}`;
+    const both = enSections.has(section) && arSections.has(section);
+    const alternates = both
+      ? `
+    <xhtml:link rel="alternate" hreflang="en-ae" href="${en}"/>
+    <xhtml:link rel="alternate" hreflang="ar-ae" href="${ar}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${en}"/>`
+      : '';
+    if (enSections.has(section)) urlBlocks.push(`  <url>
+    <loc>${en}</loc>${alternates}
+  </url>`);
+    if (arSections.has(section)) urlBlocks.push(`  <url>
+    <loc>${ar}</loc>${alternates}
+  </url>`);
   }
 
   // Content-collection posts (local markdown) are the site's fallback content
@@ -72,7 +104,7 @@ export const GET: APIRoute = async () => {
         .toISOString()
         .replace(/\.\d{3}Z$/, '+00:00');
       urlBlocks.push(`  <url>
-    <loc>${BASE}/blog/${post.id}</loc>
+    <loc>${BASE}${postPath(post.id)}</loc>
     <lastmod>${lastmod}</lastmod>
   </url>`);
     }

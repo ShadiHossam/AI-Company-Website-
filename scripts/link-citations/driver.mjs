@@ -50,7 +50,12 @@ function titleOf(r, lang) {
   if (head.length >= 20 && head.length < t.length) t = head;
   return t;
 }
-const blogPath = (slug, lang) => lang === 'ar' ? `/ar/blog/${slug}` : `/blog/${slug}`;
+// Mirrors astro-site/src/lib/postPaths.ts: `abu-dhabi/<x>` slugs live at /abu-dhabi/<x>.
+const SECTIONS = ['abu-dhabi'];
+const blogPath = (slug, lang) => {
+  const prefix = lang === 'ar' ? '/ar' : '';
+  return SECTIONS.some((s) => slug.startsWith(`${s}/`)) ? `${prefix}/${slug}` : `${prefix}/blog/${slug}`;
+};
 
 const report = [];
 const updates = [];

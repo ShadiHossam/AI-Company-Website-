@@ -1,0 +1,23 @@
+---
+export const prerender = false;
+import SectionHub from '../../../components/SectionHub.astro';
+import { loadSectionCards } from '../../../lib/sectionHub';
+
+Astro.response.headers.set('Cache-Control', 's-maxage=900, stale-while-revalidate=3600');
+
+const cards = await loadSectionCards('abu-dhabi', 'ar');
+if (cards.length === 0) return Astro.rewrite('/404');
+const hasTwin = (await loadSectionCards('abu-dhabi', 'en')).length > 0;
+---
+
+<SectionHub
+  section="abu-dhabi"
+  lang="ar"
+  cards={cards}
+  hasTwin={hasTwin}
+  title="روبوتات المحادثة والأتمتة بالذكاء الاصطناعي في أبوظبي | Lenoo AI"
+  description="أدلة للشركات والجهات في أبوظبي عن المحادثة والصوت والأتمتة بالذكاء الاصطناعي: التكلفة، قواعد البيانات، اللغة العربية، الربط مع الأنظمة، وحالات الاستخدام حسب القطاع."
+  heading="الذكاء الاصطناعي للشركات والجهات في أبوظبي"
+  intro="كيف تعمل المحادثة والأتمتة بالذكاء الاصطناعي داخل شركة أو جهة في أبوظبي: قواعد البيانات، اللغة العربية، الأنظمة التي تستخدمها، والتكلفة الفعلية."
+  heroImage={{ src: "https://images.pexels.com/photos/7252280/pexels-photo-7252280.jpeg", alt: "منظر جوي لساحل أبوظبي وأفقها" }}
+/>

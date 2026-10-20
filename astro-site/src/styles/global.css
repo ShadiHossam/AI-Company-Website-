@@ -36,6 +36,8 @@
   font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
 }
+/* Icon name lives in data-icon so it isn't indexed as page text. */
+.material-symbols-outlined[data-icon]::before { content: attr(data-icon); }
 
 /* ── Skip link ── */
 .skip-link {
@@ -643,8 +645,9 @@ div.feature-ledger > div.card > p {
 #mobile-menu.open { display: block; }
 
 /* ── Modal ── */
+/* Sits above the cookie banner (z-index 9999 in cookie-consent.js), which otherwise covered the form on phones */
 .modal-overlay {
-  position: fixed; inset: 0; z-index: 100;
+  position: fixed; inset: 0; z-index: 10000;
   background: rgba(0,37,59,0.55); backdrop-filter: blur(8px);
   display: flex; align-items: center; justify-content: center; padding: 1rem;
   opacity: 0; pointer-events: none; transition: opacity .3s;
@@ -653,12 +656,45 @@ div.feature-ledger > div.card > p {
 .modal-box {
   background: #ffffff;
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg); width: 100%; max-width: 600px;
-  max-height: 90vh; overflow-y: auto;
+  border-radius: var(--radius-lg); width: 100%; max-width: 560px;
+  max-height: 94vh; overflow-y: auto;
   box-shadow: var(--shadow-pop);
-  transform: translateY(20px); transition: transform .3s;
+  transform: translateY(20px); transition: transform .3s, max-width .3s;
 }
+.modal-box--wide { max-width: 1000px; }
 .modal-overlay.open .modal-box { transform: translateY(0); }
+.modal-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+  padding: 1.25rem 1.5rem .75rem;
+}
+.modal-close {
+  width: 2.25rem; height: 2.25rem; flex-shrink: 0; border-radius: 9999px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  background: #e7eeff; transition: background .2s;
+}
+.modal-close:hover { background: #c2c7ce; }
+.modal-steps {
+  display: flex; align-items: center; gap: .5rem;
+  padding: 0 1.5rem 1rem; border-bottom: 1px solid #e2e8f0;
+  font-size: .8125rem; font-weight: 600; color: #42474e;
+}
+.modal-steps .step-dot { width: 24px; height: 24px; font-size: .75rem; }
+.modal-steps .step-line { max-width: 3rem; }
+.modal-body { padding: 1.5rem; }
+.modal-body--calendar { padding: .5rem 0 0; }
+.modal-back {
+  border: 0; background: none;
+  margin: 0 1.5rem .25rem; padding: .25rem 0; cursor: pointer;
+  font-size: .8125rem; font-weight: 600; color: #006875;
+}
+.modal-back:hover { text-decoration: underline; }
+.modal-calendly { min-width: 280px; height: min(700px, calc(94vh - 140px)); }
+@media (max-width: 640px) {
+  /* Phones: full-screen sheet, so the calendar isn't a scroll box inside a scroll box */
+  .modal-overlay { padding: 0; align-items: stretch; }
+  .modal-box, .modal-box--wide { max-width: none; max-height: none; height: 100%; border-radius: 0; border: 0; }
+  .modal-calendly { height: calc(100dvh - 130px); }
+}
 
 /* ── Steps ── */
 .step-dot {
@@ -794,7 +830,6 @@ body.rtl h1, body.rtl h2 { text-wrap: initial; line-height: 1.3; font-family: 'I
   background: transparent; color: #fff; border-color: rgba(255,255,255,0.5);
 }
 .cta-band .btn-outline:hover { border-color: #fff; background: rgba(255,255,255,0.08); }
-.cta-eyebrow { display: none; }
 
 /* ── De-templatize: kill the oversized "1 2 3" gradient step numerals used by
    every generic agency site's process section. Keep the number, drop the theatrics. ── */

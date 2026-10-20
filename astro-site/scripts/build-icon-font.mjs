@@ -26,6 +26,8 @@ export function collectIconNames(dir = join(root, 'src')) {
       const src = readFileSync(p, 'utf8');
       // Literal icons: <span class="material-symbols-outlined" ...>name</span>
       for (const m of src.matchAll(/material-symbols-outlined[^>]*>\s*([a-z0-9_]+)\s*</g)) names.add(m[1]);
+      // Icons drawn from an attribute: <span class="material-symbols-outlined" data-icon="name">
+      for (const m of src.matchAll(/data-icon="([a-z0-9_]+)"/g)) names.add(m[1]);
       // Icons from data arrays rendered as {x.icon}
       for (const m of src.matchAll(/\bicon\s*:\s*['"]([a-z0-9_]+)['"]/g)) names.add(m[1]);
     }

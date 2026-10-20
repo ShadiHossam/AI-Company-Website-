@@ -108,9 +108,8 @@ function toggleLang() {
 
 // Calendly's widget.js boots every .calendly-inline-widget on the page as soon as
 // it loads, and its booking app is ~2.8MB. The sitewide modal's widget is marked
-// data-auto-load="false" and only started here when the modal first opens, so a
-// page view no longer pays for a calendar nobody has asked to see. A visible
-// widget (the /contact page) still loads straight away.
+// data-auto-load="false" and only fetched here when the modal first opens, so a
+// page view no longer pays for a calendar nobody has asked to see.
 let calendlyLoad: Promise<void> | null = null;
 
 function loadCalendly(): Promise<void> {
@@ -125,14 +124,26 @@ function loadCalendly(): Promise<void> {
   return calendlyLoad;
 }
 
-function initModalCalendly() {
-  const el = document.querySelector<HTMLElement>('#modal .calendly-inline-widget');
-  if (!el || el.dataset.processed) return;
+type CalendlyPrefill = { name?: string; email?: string; a1?: string; a2?: string; a3?: string };
+
+// Boots (or re-boots) a data-auto-load="false" widget with the details the visitor
+// already typed, so Calendly's own form opens filled in and booking is one click.
+// Prefill goes on the URL (name/email/a1 are Calendly's documented params); the
+// widget's `prefill` option didn't reach the iframe. Re-booting matters when
+// someone goes Back and edits their details.
+function initCalendly(el: HTMLElement | null, prefill: CalendlyPrefill = {}) {
+  if (!el?.dataset.url) return;
+  // Built by hand: URLSearchParams writes spaces as "+", which Calendly re-encodes and
+  // then shows literally ("Ahmed+Al+Mansouri").
+  const base = el.dataset.url.replace(/&(name|email|a\d)=[^&]*/g, '');
+  const extra = Object.entries(prefill).filter(([, v]) => v).map(([k, v]) => `&${k}=${encodeURIComponent(v!)}`).join('');
+  const url = base + (base.includes('?') ? '' : '?') + extra;
   loadCalendly().then(() => {
     const cal = (window as unknown as { Calendly?: { initInlineWidget(o: { url: string; parentElement: HTMLElement }): void } }).Calendly;
-    if (!cal || el.dataset.processed || !el.dataset.url) return;
+    if (!cal) return;
+    el.innerHTML = '';
     el.dataset.processed = 'true';
-    cal.initInlineWidget({ url: el.dataset.url, parentElement: el });
+    cal.initInlineWidget({ url, parentElement: el });
   }).catch(() => {});
 }
 
@@ -148,6 +159,14 @@ document.querySelectorAll<HTMLElement>('.calendly-inline-widget[data-url]').forE
   url.searchParams.set('utm_source', 'lenooai.com');
   url.searchParams.set('utm_medium', 'website');
   url.searchParams.set('utm_campaign', location.pathname);
+  // The site has its own cookie banner; Calendly's second one ate a third of the widget.
+  url.searchParams.set('hide_gdpr_banner', '1');
+  // In the popup, our header already says what the call is, so drop Calendly's
+  // host/event panel and give the calendar the room.
+  if (el.closest('#modal')) {
+    url.searchParams.set('hide_event_type_details', '1');
+    url.searchParams.set('hide_landing_page_details', '1');
+  }
   el.dataset.url = url.toString();
 });
 
@@ -168,7 +187,9 @@ window.addEventListener('message', (e: MessageEvent) => {
 
 (window as unknown as { trackLead: typeof trackLead }).trackLead = trackLead;
 
-if (document.querySelector('.calendly-inline-widget:not([data-auto-load="false"])')) loadCalendly().catch(() => {});
+// Pages with their own calendar (/contact) fetch widget.js up front so it's ready by
+// the scheduling step; the widget itself boots later via initCalendly() with prefill.
+if (document.querySelector('.calendly-inline-widget:not(#modal *)')) loadCalendly().catch(() => {});
 
 // Element that had focus before the modal opened — restored on close so keyboard
 // users land back where they were instead of at the top of the page.
@@ -197,7 +218,8 @@ function openModal(el?: HTMLElement | Event) {
   modalTriggerEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
-  initModalCalendly();
+  // Fetch widget.js while they fill in step 1; the widget itself boots on Continue, with prefill.
+  loadCalendly().catch(() => {});
   // Move keyboard focus into the dialog — aria-modal="true" only holds up if focus
   // actually goes there instead of staying on the trigger behind the overlay.
   getModalFocusable()[0]?.focus();
@@ -225,6 +247,12 @@ document.addEventListener('keydown', (e: KeyboardEvent) => {
   const modal = document.getElementById('modal');
   if (!modal || !modal.classList.contains('open')) return;
   if (e.key === 'Escape') { closeModal(); return; }
+  // Step 1 isn't a real <form>, so Enter does nothing by default.
+  if (e.key === 'Enter' && (e.target as HTMLElement).closest?.('#modal #step-1 input')) {
+    e.preventDefault();
+    continueToSchedule();
+    return;
+  }
   // Trap Tab focus inside the open modal so keyboard users can't tab into the page behind it.
   if (e.key === 'Tab') {
     const focusable = getModalFocusable();
@@ -274,41 +302,36 @@ function goToStep(n: number) {
   document.getElementById('line-1')?.classList.toggle('done', 1 < n);
   currentStep = n;
   document.querySelector('#modal #step-' + n)?.classList.remove('hidden');
+  document.querySelector('#modal .modal-box')?.classList.toggle('modal-box--wide', n === 2);
 }
 
-// Submits the contact data collected in step 1, then reveals the Calendly
-// widget in step 2. Best-effort: scheduling shouldn't be blocked by a CRM hiccup, so a
-// failed submit doesn't stop the user from reaching the calendar.
-async function continueToSchedule() {
+// Saves the contact data from step 1 and shows the calendar in step 2 straight away.
+// The lead write runs in the background (keepalive survives the page closing) so a
+// slow or failed CRM call never makes the visitor wait for the calendar.
+function continueToSchedule() {
   if (!validateStep(1)) return;
-  const btn = document.querySelector('#modal [onclick="continueToSchedule()"]') as HTMLButtonElement | null;
-  if (btn) btn.disabled = true;
 
-  const waVal = (document.getElementById('whatsapp') as HTMLInputElement)?.value ?? '';
+  const val = (id: string) => (document.getElementById(id) as HTMLInputElement | null)?.value?.trim() ?? '';
   const countryCode = (document.getElementById('country-code') as HTMLSelectElement)?.value ?? '+971';
   const payload = {
-    full_name:      (document.getElementById('full-name') as HTMLInputElement)?.value?.trim() ?? '',
-    company_name:   (document.getElementById('company') as HTMLInputElement)?.value?.trim() ?? '',
-    work_email:     (document.getElementById('email') as HTMLInputElement)?.value?.trim() ?? '',
-    whatsapp:       countryCode + waVal.replace(/^0+/, '').replace(/\D/g, ''),
-    job_title:      (document.getElementById('job-title') as HTMLInputElement)?.value?.trim() ?? '',
+    full_name:      val('full-name'),
+    company_name:   val('company'),
+    work_email:     val('email'),
+    whatsapp:       countryCode + val('whatsapp').replace(/^0+/, '').replace(/\D/g, ''),
     source:         'modal',
-    page_source:    (document.getElementById('modal-source-field') as HTMLInputElement)?.value ?? 'unknown',
+    page_source:    val('modal-source-field') || 'unknown',
     utm_source:     sessionStorage.getItem('utm_source') ?? '',
     utm_medium:     sessionStorage.getItem('utm_medium') ?? '',
     utm_campaign:   sessionStorage.getItem('utm_campaign') ?? '',
     website:        (document.getElementById('modal-honeypot') as HTMLInputElement)?.value ?? '',
   };
 
-  try {
-    await fetch('/api/submit-lead', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-  } catch {
-    // Silent — Calendly scheduling still proceeds even if the CRM lead write failed.
-  }
+  fetch('/api/submit-lead', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    keepalive: true,
+  }).catch(() => {});
   trackLead('lead_form_submit', { form: 'modal', page_source: payload.page_source });
   // First-party tracker (src/tracking/ln-track.js) records the lead with the
   // visit; the button that opened the modal (data-source) names it.
@@ -317,7 +340,14 @@ async function continueToSchedule() {
     data: { name: payload.full_name, company: payload.company_name, email: payload.work_email, phone: payload.whatsapp, detail: payload.job_title },
   } }));
   goToStep(2);
-  if (btn) btn.disabled = false;
+  initCalendly(document.querySelector<HTMLElement>('#modal .calendly-inline-widget'), {
+    name: payload.full_name,
+    email: payload.work_email,
+    // a1/a3 follow the order of the 30min event's questions in Calendly
+    // (Company Name, Company Website, Request Details). Reorder those and these shift.
+    a1: payload.company_name,
+    a3: `WhatsApp: ${payload.whatsapp}`,
+  });
 }
 
 // Calendly posts this message to the parent window once a slot is actually booked.
@@ -394,6 +424,7 @@ declare global {
     handleOverlayClick: typeof handleOverlayClick;
     goToStep: typeof goToStep;
     continueToSchedule: typeof continueToSchedule;
+    initCalendly: typeof initCalendly;
     toggleFaq: typeof toggleFaq;
   }
 }
@@ -409,5 +440,6 @@ Object.assign(window, {
   handleOverlayClick,
   goToStep,
   continueToSchedule,
+  initCalendly,
   toggleFaq,
 });

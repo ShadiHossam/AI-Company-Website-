@@ -7,8 +7,18 @@ import { sanitizeRichText } from '../../lib/sanitize';
 import { isArabicOnlyPost } from '../../lib/post-lang';
 import { pruneUnpublishedLinks, buildLiveBlogPaths, localiseBlogLinks, stripTrailingSlashes } from '../../lib/deadLinks';
 import { getCollectionBlogPaths } from '../../lib/collectionSlugs';
+import { postPath, postSection } from '../../lib/postPaths';
 
 const { slug } = Astro.params;
+
+// A rest param so section posts (slug `abu-dhabi/<x>`) can render here: the
+// /abu-dhabi/<x> route rewrites to this one. Anything else with a slash in it
+// is not a post. A direct hit on /blog/abu-dhabi/<x> is a duplicate of the
+// section URL, so it 301s there.
+if (slug?.includes('/')) {
+  if (!postSection(slug)) return Astro.rewrite('/404');
+  if (Astro.originPathname.startsWith('/blog/')) return Astro.redirect(postPath(slug), 301);
+}
 
 Astro.response.headers.set('Cache-Control', 's-maxage=1800, stale-while-revalidate=86400');
 
@@ -145,7 +155,7 @@ try {
 // under an English URL. 301 (not 302) so the duplicate consolidates into
 // /ar/blog/<slug> and any links or rankings it picked up transfer there.
 if (arabicOnly) {
-  return Astro.redirect(`/ar/blog/${slug}`, 301);
+  return Astro.redirect(postPath(slug!, 'ar'), 301);
 }
 
 // 2. Fall back to content collection
@@ -209,7 +219,7 @@ if (!dbPost) {
     authorName={dbPost.author_name ?? undefined}
     keyPoints={dbPost.key_points ?? []}
     relatedPosts={relatedPosts}
-    arPath={dbPost.ar_title ? `/ar/blog/${dbPost.slug}` : undefined}
+    arPath={dbPost.ar_title ? postPath(dbPost.slug, 'ar') : undefined}
     noindex={dbPost.noindex ?? false}
   >
     <Fragment set:html={bodyHtml} />
@@ -219,7 +229,7 @@ if (!dbPost) {
         <span>Share it with your team.</span>
       </div>
       <button type="button" class="nsw-btn" id="native-share-btn">
-        <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;">ios_share</span>
+        <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;" data-icon="ios_share"></span>
         <span id="native-share-btn-label">Share this article</span>
       </button>
     </div>
@@ -245,7 +255,7 @@ if (!dbPost) {
         <span>Share it with your team.</span>
       </div>
       <button type="button" class="nsw-btn" id="native-share-btn">
-        <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;">ios_share</span>
+        <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;" data-icon="ios_share"></span>
         <span id="native-share-btn-label">Share this article</span>
       </button>
     </div>

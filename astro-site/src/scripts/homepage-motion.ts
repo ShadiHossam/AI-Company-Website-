@@ -56,10 +56,23 @@ function initOrbAnimation() {
   });
 }
 
+// Feeds the pointer position to the .hp-spot radial glow (CSS vars --mx/--my).
+function initSpotlight() {
+  if (!window.matchMedia('(hover: hover)').matches) return;
+  document.querySelectorAll<HTMLElement>('.hp-spot').forEach((el) => {
+    el.addEventListener('pointermove', (e) => {
+      const r = el.getBoundingClientRect();
+      el.style.setProperty('--mx', `${e.clientX - r.left}px`);
+      el.style.setProperty('--my', `${e.clientY - r.top}px`);
+    });
+  });
+}
+
 export function initHomepageMotion() {
   initScrollReveal();
   initHoverLift();
   initOrbAnimation();
+  initSpotlight();
 }
 
 initHomepageMotion();

@@ -1,0 +1,23 @@
+---
+export const prerender = false;
+import SectionHub from '../../components/SectionHub.astro';
+import { loadSectionCards } from '../../lib/sectionHub';
+
+Astro.response.headers.set('Cache-Control', 's-maxage=900, stale-while-revalidate=3600');
+
+const cards = await loadSectionCards('abu-dhabi', 'en');
+if (cards.length === 0) return Astro.rewrite('/404');
+const hasTwin = (await loadSectionCards('abu-dhabi', 'ar')).length > 0;
+---
+
+<SectionHub
+  section="abu-dhabi"
+  lang="en"
+  cards={cards}
+  hasTwin={hasTwin}
+  title="AI Chatbots and Automation in Abu Dhabi | Lenoo AI"
+  description="Guides for Abu Dhabi organisations on AI chat, voice and automation: costs, PDPL and DoH data rules, Arabic handling, integrations and sector use cases."
+  heading="AI for Abu Dhabi Organisations"
+  intro="What AI chat and automation look like inside an Abu Dhabi business or entity: the data rules, the Arabic, the systems you already run, and what it costs."
+  heroImage={{ src: "https://images.pexels.com/photos/7252280/pexels-photo-7252280.jpeg", alt: "Aerial view of the Abu Dhabi coastline and skyline" }}
+/>

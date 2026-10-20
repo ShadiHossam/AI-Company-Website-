@@ -3,6 +3,7 @@ import { authorPhoto } from '../lib/authors';
 import BaseLayout from './BaseLayout.astro';
 import { withBrand } from '../lib/titles';
 import { categoryGroup, categoryLabel } from '../lib/blogCategories';
+import { postPath, postSection, SECTION_META } from '../lib/postPaths';
 
 interface KeyPoint {
   heading: string;
@@ -57,6 +58,14 @@ const {
   noindex = false,
 } = Astro.props;
 
+// Section posts (slug `abu-dhabi/...`) live at /abu-dhabi/..., and their
+// breadcrumb parent is the section hub rather than /blog.
+const path = postPath(slug, 'en');
+const section = postSection(slug);
+const parent = section
+  ? { name: SECTION_META[section].en, path: `/${section}` }
+  : { name: 'Blog', path: '/blog' };
+
 const displayDate = updatedDate ?? pubDate;
 const dateLabel = updatedDate ? 'Updated' : 'Published';
 const dateStr = displayDate.toLocaleDateString('en-AE', {
@@ -107,7 +116,7 @@ const articleSchema = {
       height: 192,
     },
   },
-  mainEntityOfPage: { '@type': 'WebPage', '@id': `https://lenooai.com/blog/${slug}` },
+  mainEntityOfPage: { '@type': 'WebPage', '@id': `https://lenooai.com${path}` },
   image: schemaImage,
 };
 
@@ -116,8 +125,8 @@ const breadcrumbSchema = {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://lenooai.com/' },
-    { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://lenooai.com/blog' },
-    { '@type': 'ListItem', position: 3, name: headline, item: `https://lenooai.com/blog/${slug}` },
+    { '@type': 'ListItem', position: 2, name: parent.name, item: `https://lenooai.com${parent.path}` },
+    { '@type': 'ListItem', position: 3, name: headline, item: `https://lenooai.com${path}` },
   ],
 };
 
@@ -133,7 +142,7 @@ const cardGradients = [
 <BaseLayout
   title={withBrand(title, ' | Lenoo AI Blog')}
   description={description}
-  canonicalPath={`/blog/${slug}`}
+  canonicalPath={path}
   ogType="article"
   ogImage={ogImage ?? '/assets/og-blog.jpg'}
   ldJson={ldJson}
@@ -152,7 +161,7 @@ const cardGradients = [
         <nav class="breadcrumb" aria-label="Breadcrumb">
           <a href="/">Home</a>
           <span class="sep" aria-hidden="true">/</span>
-          <a href="/blog">Blog</a>
+          <a href={parent.path}>{parent.name}</a>
           <span class="sep" aria-hidden="true">/</span>
           <span class="cur">{headline}</span>
         </nav>
@@ -270,7 +279,7 @@ const cardGradients = [
             <div class="related-label">Related Articles</div>
             <div class="related-grid">
               {relatedPosts.map((post, idx) => (
-                <a href={`/blog/${post.slug}`} class="related-card">
+                <a href={postPath(post.slug)} class="related-card">
                   <div class="rcard-img" style={`background:${cardGradients[idx % 3]}`}>
                     {post.image && <img src={post.image} alt={post.imageAlt ?? post.title} width="400" height="130" loading="lazy" decoding="async" />}
                   </div>

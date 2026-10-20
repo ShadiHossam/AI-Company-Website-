@@ -10,8 +10,21 @@ import { pruneUnpublishedLinks, buildLiveBlogPaths, localiseBlogLinks, stripTrai
 import { withBrand } from '../../../lib/titles';
 import { categoryGroup, categoryLabel } from '../../../lib/blogCategories';
 import { getCollectionBlogPaths } from '../../../lib/collectionSlugs';
+import { postPath, postSection, SECTION_META } from '../../../lib/postPaths';
 
 const { slug } = Astro.params;
+
+// See the English route: section posts render here via the /ar/abu-dhabi/<x>
+// rewrite, and a direct /ar/blog/abu-dhabi/<x> hit 301s to the section URL.
+const section = slug ? postSection(slug) : null;
+if (slug?.includes('/')) {
+  if (!section) return Astro.rewrite('/404');
+  if (Astro.originPathname.startsWith('/ar/blog/')) return Astro.redirect(postPath(slug, 'ar'), 301);
+}
+const selfPath = postPath(slug!, 'ar');
+const parent = section
+  ? { name: SECTION_META[section].ar, path: `/ar/${section}` }
+  : { name: 'المدونة', path: '/ar/blog' };
 
 Astro.response.headers.set('Cache-Control', 's-maxage=1800, stale-while-revalidate=86400');
 
@@ -58,13 +71,13 @@ if (error || !post) {
   return await Astro.rewrite('/404');
 }
 if (!post.ar_title) {
-  return Astro.redirect(`/blog/${slug}`, 302);
+  return Astro.redirect(postPath(slug!, 'en'), 302);
 }
 
 // An Arabic-only post has no English counterpart: /blog/<slug> 301s back here.
 // Advertising an English alternate would point hreflang at a redirect and make
 // the cluster invalid, so the page declares itself as the only version.
-const enPath = isArabicOnlyPost(post) ? null : `/blog/${slug}`;
+const enPath = isArabicOnlyPost(post) ? null : postPath(slug!, 'en');
 
 // Same treatment as the English route: article bodies link posts that are
 // still queued for publishing, and those links would otherwise resolve to a
@@ -130,7 +143,7 @@ const ldJson = [
         height: 192,
       },
     },
-    mainEntityOfPage: { '@type': 'WebPage', '@id': `https://lenooai.com/ar/blog/${slug}` },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `https://lenooai.com${selfPath}` },
     image: (() => {
       const img = post.og_image ?? '/assets/og-blog.jpg';
       return img.startsWith('http') ? img : `https://lenooai.com${img}`;
@@ -141,8 +154,8 @@ const ldJson = [
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
-      { '@type': 'ListItem', position: 2, name: 'المدونة', item: 'https://lenooai.com/ar/blog' },
-      { '@type': 'ListItem', position: 3, name: post.ar_title, item: `https://lenooai.com/ar/blog/${slug}` },
+      { '@type': 'ListItem', position: 2, name: parent.name, item: `https://lenooai.com${parent.path}` },
+      { '@type': 'ListItem', position: 3, name: post.ar_title, item: `https://lenooai.com${selfPath}` },
     ],
   },
 ];
@@ -151,7 +164,7 @@ const ldJson = [
 <ArBaseLayout
   title={withBrand(post.ar_meta_title ?? post.ar_title, ' | مدونة Lenoo AI')}
   description={post.ar_meta_description ?? post.ar_description ?? ''}
-  canonicalPath={`/ar/blog/${slug}`}
+  canonicalPath={selfPath}
   enPath={enPath}
   ogImage={post.og_image ?? '/assets/og-blog.jpg'}
   ogType="article"
@@ -169,7 +182,7 @@ const ldJson = [
         <nav style="display:flex;align-items:center;gap:8px;font-size:0.875rem;color:#72787e;margin-bottom:1.5rem;flex-wrap:wrap;" aria-label="مسار التنقل">
           <a href="/ar" style="color:#006875;font-weight:600;">الرئيسية</a>
           <span aria-hidden="true">/</span>
-          <a href="/ar/blog" style="color:#006875;font-weight:600;">المدونة</a>
+          <a href={parent.path} style="color:#006875;font-weight:600;">{parent.name}</a>
           <span aria-hidden="true">/</span>
           <span style="color:#42474e;">{post.ar_title}</span>
         </nav>
@@ -187,7 +200,7 @@ const ldJson = [
             : <div style="width:36px;height:36px;border-radius:50%;background:rgba(0,104,117,0.12);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.875rem;color:#006875;" aria-hidden="true">AI</div>}
           <span style="font-size:0.9rem;color:#42474e;font-weight:600;">{post.author_name ?? 'Lenoo AI'}</span>
           <button id="share-btn" type="button" class="share-inline-btn" aria-label="مشاركة المقال">
-            <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;">ios_share</span>
+            <span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;direction:ltr;" data-icon="ios_share"></span>
             <span id="share-btn-label">مشاركة</span>
           </button>
         </div>
@@ -217,7 +230,7 @@ const ldJson = [
           <div class="card" style="position:sticky;top:calc(var(--topbar-h,80px) + 1.5rem);">
             <div style="font-size:0.8125rem;font-weight:700;color:#42474e;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:1rem;">مقالات ذات صلة</div>
             {relatedPosts.map(r => (
-              <a href={`/ar/blog/${r.slug}`} style="display:block;padding:0.75rem 0;border-bottom:1px solid rgba(0,37,59,0.08);text-decoration:none;">
+              <a href={postPath(r.slug, 'ar')} style="display:block;padding:0.75rem 0;border-bottom:1px solid rgba(0,37,59,0.08);text-decoration:none;">
                 <div style="font-size:0.875rem;font-weight:700;color:#00253b;line-height:1.4;margin-bottom:4px;">{r.ar_title ?? r.title}</div>
                 <div style="font-size:0.75rem;color:#72787e;">{categoryLabel(r.category, 'ar')}</div>
               </a>

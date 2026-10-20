@@ -10,38 +10,30 @@ const calendlyUrl = siteConfig['integration.calendly_url'] || COMPANY.calendlyUr
 
 <div id="modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title" onclick="handleOverlayClick(event)">
   <div class="modal-box">
-    <div class="flex items-center justify-between p-6" style="border-bottom:1px solid #c2c7ce;">
+    <div class="modal-head">
       <div>
-        <h2 id="modal-title" class="text-xl font-bold" style="color:#111c2d;">احجز استشارتك المجانية</h2>
-        <p class="text-sm mt-0.5" style="color:#72787e;">مكالمة استراتيجية 30 دقيقة · بدون ضغط مبيعات</p>
+        <h2 id="modal-title" class="text-lg font-bold" style="color:#111c2d;">احجز استشارتك المجانية</h2>
+        <p class="text-sm" style="color:#72787e;">مكالمة فيديو 30 دقيقة · مجانية · بدون ضغط مبيعات</p>
       </div>
-      <button onclick="closeModal()" class="w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer" style="background:#e7eeff;" onmouseover="this.style.background='#c2c7ce'" onmouseout="this.style.background='#e7eeff'" aria-label="إغلاق">
+      <button onclick="closeModal()" class="modal-close" aria-label="إغلاق">
         <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="#42474e" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
     </div>
-    <div class="px-6 pt-5 pb-0" id="step-indicator">
-      <div class="flex items-center">
-        <div class="step-dot active" id="dot-1">1</div>
-        <div class="step-line" id="line-1"></div>
-        <div class="step-dot inactive" id="dot-2">2</div>
-      </div>
-      <div class="flex justify-between mt-1.5 text-xs font-medium" style="color:#94A3B8;">
-        <span>معلوماتك</span><span>حدد موعدك</span>
-      </div>
+    <div class="modal-steps" id="step-indicator">
+      <div class="step-dot active" id="dot-1">1</div><span>معلوماتك</span>
+      <div class="step-line" id="line-1"></div>
+      <div class="step-dot inactive" id="dot-2">2</div><span>اختر موعداً</span>
     </div>
     <!-- Hidden tracking fields -->
     <input type="hidden" id="modal-source-field" value="unknown" />
     <!-- Honeypot -->
     <input type="text" id="modal-honeypot" name="website" autocomplete="off" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" />
     <!-- Step 1 -->
-    <div id="step-1" class="p-6">
-      <h3 class="font-bold mb-5" style="color:#111c2d;">أخبرنا عنك</h3>
-      <div class="space-y-4">
-        <div class="grid sm:grid-cols-2 gap-4">
-          <div><label class="form-label" for="full-name">الاسم الكامل <span class="text-red-400">*</span></label><input id="full-name" type="text" class="form-input" autocomplete="name" placeholder="أحمد المنصوري" required /></div>
-          <div><label class="form-label" for="company">اسم الشركة <span class="text-red-400">*</span></label><input id="company" type="text" class="form-input" autocomplete="organization" placeholder="شركتك المحدودة" required /></div>
-        </div>
+    <div id="step-1" class="modal-body">
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div><label class="form-label" for="full-name">الاسم الكامل <span class="text-red-400">*</span></label><input id="full-name" type="text" class="form-input" autocomplete="name" placeholder="أحمد المنصوري" required /></div>
         <div><label class="form-label" for="email">البريد الإلكتروني <span class="text-red-400">*</span></label><input id="email" type="email" class="form-input" autocomplete="email" placeholder="ahmed@company.ae" required /></div>
+        <div><label class="form-label" for="company">اسم الشركة <span class="text-red-400">*</span></label><input id="company" type="text" class="form-input" autocomplete="organization" placeholder="شركتك المحدودة" required /></div>
         <div><label class="form-label" for="whatsapp">رقم الواتساب <span class="text-red-400">*</span></label>
           <div class="flex">
             <select id="country-code" aria-label="كود البلد" style="border:1px solid #CBD5E1;border-left:none;border-radius:0 8px 8px 0;background:#F8FAFC;color:#42474e;font-size:.875rem;font-weight:500;padding:.75rem .5rem .75rem .75rem;outline:none;cursor:pointer;flex-shrink:0;appearance:none;-webkit-appearance:none;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%226%22 viewBox=%220 0 10 6%22><path d=%22M1 1l4 4 4-4%22 stroke=%22%2372787e%22 stroke-width=%221.5%22 fill=%22none%22 stroke-linecap=%22round%22/></svg>');background-repeat:no-repeat;background-position:left .5rem center;padding-left:1.5rem;direction:ltr;">
@@ -60,22 +52,17 @@ const calendlyUrl = siteConfig['integration.calendly_url'] || COMPANY.calendlyUr
               <option value="+44">🇬🇧 +44</option>
               <option value="+1">🇺🇸 +1</option>
             </select>
-            <input id="whatsapp" type="tel" class="form-input" autocomplete="tel-national" style="border-radius:8px 0 0 8px;direction:ltr;" placeholder="50 123 4567" required />
+            <input id="whatsapp" type="tel" class="form-input" autocomplete="tel-national" style="border-radius:8px 0 0 8px;direction:ltr;min-width:0;" placeholder="50 123 4567" required />
           </div>
         </div>
-        <div><label class="form-label" for="job-title">المسمى الوظيفي</label><input id="job-title" type="text" class="form-input" autocomplete="organization-title" placeholder="المدير التنفيذي، مدير العمليات..." /></div>
       </div>
-      <div class="mt-6 flex justify-start"><button onclick="continueToSchedule()" class="btn-primary">متابعة لتحديد الموعد <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="currentColor" stroke-width="2" style="transform:scaleX(-1);"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button></div>
+      <button onclick="continueToSchedule()" class="btn-primary w-full justify-center mt-6">اختر موعداً <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="currentColor" stroke-width="2" style="transform:scaleX(-1);"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+      <p class="text-xs text-center mt-3" style="color:#72787e;">المكالمة مجانية. وإذا بنينا شيئاً لم تكن راضياً عنه، تحصل على استرداد كامل.</p>
     </div>
     <!-- Step 2 -->
-    <div id="step-2" class="p-6 hidden">
-      <h3 class="font-bold mb-5" style="color:#111c2d;">حدد موعدك</h3>
-      <div class="calendly-inline-widget" data-auto-load="false" data-url={calendlyUrl} style="min-width:280px;height:630px;"></div>
-      <div class="flex items-start gap-3 rounded-xl p-3.5 mt-4" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.20);">
-        <svg viewBox="0 0 24 24" fill="#F59E0B" class="w-5 h-5 flex-shrink-0 mt-0.5"><path d="M12 1L3 5v6c0 5.25 3.75 10.15 9 11.25C17.25 21.15 21 16.25 21 11V5l-9-4z"/></svg>
-        <p class="text-xs leading-relaxed" style="color:#92400E;"><strong>١٠٠٪ بدون مخاطرة:</strong> إذا بنينا شيئاً لم تكن راضياً عنه، تحصل على استرداد كامل. بدون أسئلة.</p>
-      </div>
-      <div class="mt-4 flex justify-start"><button onclick="goToStep(1)" class="btn-outline-sky text-sm py-2.5 px-5">→ رجوع</button></div>
+    <div id="step-2" class="modal-body modal-body--calendar hidden">
+      <button onclick="goToStep(1)" class="modal-back">→ تعديل معلوماتك</button>
+      <div class="calendly-inline-widget modal-calendly" data-auto-load="false" data-url={calendlyUrl}></div>
     </div>
     <!-- Success -->
     <div id="step-success" class="p-8 text-center hidden">
