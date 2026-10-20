@@ -6,17 +6,32 @@ interface FaqItem {
 
 interface Props {
   items: FaqItem[];
+  /** Also emit FAQPage JSON-LD built from the same items. Leave off on pages
+   *  whose own ldJson already contains a FAQPage, or Google sees two. */
+  schema?: boolean;
 }
 
-const { items } = Astro.props;
+const { items, schema = false } = Astro.props;
+
+const faqLd = schema && items.length > 0 ? JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": items.map((item) => ({
+    "@type": "Question",
+    "name": item.question,
+    "acceptedAnswer": { "@type": "Answer", "text": item.answer },
+  })),
+}).replace(/</g, '\\u003c') : null;
 ---
+
+{faqLd && <script type="application/ld+json" set:html={faqLd} />}
 
 <div>
   {items.map((item) => (
     <div class="faq-item">
       <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
         {item.question}
-        <span class="faq-icon">+</span>
+        <span class="faq-icon" aria-hidden="true">+</span>
       </button>
       <div class="faq-body">{item.answer}</div>
     </div>

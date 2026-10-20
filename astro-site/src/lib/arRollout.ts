@@ -2,7 +2,7 @@
  * Staged release of the Arabic marketing and pricing pages, one page a day.
  *
  * The pages ship in a single deploy but stay unpublished until their day: the
- * page itself answers 404, and the route table (hreflang, sitemap) and the
+ * page itself answers a 302 to its hub, and the route table (hreflang, sitemap) and the
  * Arabic navigation all treat it as absent. Everything reads the date at
  * request time, so each page goes live at midnight Dubai time on its day with
  * no further deploy.

@@ -1,4 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+
+// The real list is empty between staged rollouts; pin a fixture so the
+// pending-page filtering stays covered.
+vi.mock('../../data/pendingPages', () => ({ PENDING_PAGES: ['/industries/pharmacies'] }));
+
 import { isPageLive, getRelatedLinks } from '../../lib/internalLinks';
 import type { IndustryServiceRelation } from '../../data/pageRelations';
 

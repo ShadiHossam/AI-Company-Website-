@@ -11,35 +11,6 @@
  * has deployed, remove it once that batch's deploy is verified live.
  */
 export const PENDING_PAGES: string[] = [
-  // Industries hub + leaf pages that are local drafts only (untracked in
-  // git) as of 2026-08-23 — verified via `git ls-files` + `curl -sI` against
-  // production returning 404. Remove each path once you publish that page
-  // through the normal one-or-two-at-a-time pipeline (see git log --grep=publish).
-  '/industries',
-  '/industries/pharmacies',
-  '/industries/event-management',
-  '/industries/trading-distribution',
-  '/industries/fitness-gyms',
-  '/industries/training-institutes',
-  '/industries/marketing-agencies',
-  '/industries/healthcare-clinics',
-  '/industries/property-management',
-  '/industries/interior-fitout',
-  '/industries/it-msp',
-  '/industries/travel-agencies',
-  '/industries/restaurants',
-  '/industries/engineering-consultancies',
-  '/industries/facilities-management',
-  '/industries/security-services',
-  '/industries/dental-clinics',
-  '/industries/ecommerce',
-  '/industries/last-mile-delivery',
-  '/ar/industries',
-  // Service subpages that are local drafts only, same verification method.
-  '/services/ai-compliance-uae',
-  '/services/ai-automation/finance',
-  '/services/ai-automation/free-zone',
-  '/services/ai-automation/procurement',
-  '/services/ai-automation/operations',
-  '/services/ai-agents/receptionist',
+  // Empty as of 2026-10-21: all 26 previously listed paths verified live (200)
+  // on lenooai.com, so links to them render normally again.
 ];

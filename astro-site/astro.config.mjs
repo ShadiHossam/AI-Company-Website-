@@ -19,6 +19,8 @@ export default defineConfig({
   },
   integrations: [],
   redirects: {
+    // No pricing hub yet: send the guessable URL to the pricing guide until one exists.
+    '/pricing':                                 '/pricing/ai-automation-cost',
     '/pages/about':                             '/about',
     '/pages/about.html':                        '/about',
     '/pages/blog':                              '/blog',

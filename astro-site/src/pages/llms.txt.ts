@@ -70,7 +70,7 @@ Lenoo AI works with UAE companies on AI strategy, agent and chatbot builds,
 workflow automation, Arabic-language AI, and staff training. The site is
 published in English at lenooai.com and in Arabic under /ar.
 
-Contact: hello@lenooai.com
+Contact: info@lenooai.com
 
 ${body}
 
