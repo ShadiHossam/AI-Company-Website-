@@ -4,6 +4,18 @@ import { categoryLabel } from './blogCategories';
 import { postPath, type PostSection } from './postPaths';
 import { todayInDubai } from './scheduledPosts';
 
+interface SectionPostRow {
+  slug: string;
+  title: string;
+  description: string | null;
+  ar_title: string | null;
+  ar_description: string | null;
+  category: string;
+  pub_date: string | null;
+  og_image: string | null;
+  og_image_alt: string | null;
+}
+
 export interface SectionCard {
   href: string;
   title: string;
@@ -31,7 +43,7 @@ export async function loadSectionCards(section: PostSection, lang: 'en' | 'ar'):
       .is('deleted_at', null)
       .order('pub_date', { ascending: false });
 
-    return (data ?? [])
+    return ((data ?? []) as SectionPostRow[])
       .filter((r) => (ar ? !!r.ar_title : !isArabicOnlyPost(r)))
       .map((r) => ({
         href: postPath(r.slug, lang),

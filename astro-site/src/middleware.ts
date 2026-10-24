@@ -1,5 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
 import { verifyJWT, extractRole } from './lib/jwt';
+import { getClientIp } from './lib/request-safety';
 import { getSupabaseAdmin } from './lib/supabase';
 
 const supabaseConfigured = (() => {
@@ -232,6 +233,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return response;
   }
 
+  // Staging has no trusted certificate and is reachable over plain HTTP, and it
+  // shares Supabase auth with prod, so an admin login there would send real
+  // credentials in cleartext. Keep the admin area off staging entirely.
+  if (isStaging && (pathname.startsWith('/admin') || pathname.startsWith('/api/admin'))) {
+    const response = new Response('Not found', { status: 404 });
+    applySecurityHeaders(response);
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    return response;
+  }
+
   // DB redirect check + maintenance check (public routes only) — both use in-memory caches
   const isPublicRoute = supabaseConfigured && !pathname.startsWith('/admin') && !pathname.startsWith('/api') && !pathname.startsWith('/_');
   if (isPublicRoute) {
@@ -246,7 +257,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (pathname !== '/maintenance') {
       const maintenance = await getMaintenanceState();
       if (maintenance.enabled) {
-        const ip = context.request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? '';
+        const ip = getClientIp(context.request, context.clientAddress);
         if (!maintenance.allowedIPs.includes(ip)) {
           return context.redirect('/maintenance');
         }

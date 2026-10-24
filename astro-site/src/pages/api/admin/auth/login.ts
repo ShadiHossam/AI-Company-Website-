@@ -1,27 +1,17 @@
 import type { APIRoute } from 'astro';
-import { SignJWT } from 'jose';
 import { supabaseBrowser } from '../../../../lib/supabase-browser';
+import { getClientIp, createRateLimiter } from '../../../../lib/request-safety';
 
 export const prerender = false;
 
-// Brute-force protection: 10 attempts per IP per 15 minutes
-const loginAttempts = new Map<string, { count: number; resetAt: number }>();
-const LOGIN_LIMIT = 10;
+// Brute-force protection, in memory per process: 10 attempts per IP and 10 per
+// email address per 15 minutes. The per-email limit stops a password-spraying
+// run that rotates IPs from hammering one admin account.
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const checkIpLimit = createRateLimiter(10, LOGIN_WINDOW_MS);
+const checkEmailLimit = createRateLimiter(10, LOGIN_WINDOW_MS);
 
-function checkLoginRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = loginAttempts.get(ip);
-  if (!entry || now > entry.resetAt) {
-    loginAttempts.set(ip, { count: 1, resetAt: now + LOGIN_WINDOW_MS });
-    return true;
-  }
-  if (entry.count >= LOGIN_LIMIT) return false;
-  entry.count++;
-  return true;
-}
-
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
   const origin = request.headers.get('origin');
   const siteUrl = import.meta.env.SITE_URL ?? 'https://lenooai.com';
   if (!import.meta.env.DEV && origin !== siteUrl) {
@@ -37,14 +27,15 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return new Response(JSON.stringify({ error: 'Invalid request' }), { status: 400 });
   }
 
-  if (!email || !password) {
+  if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
     return new Response(JSON.stringify({ error: 'Email and password required' }), { status: 400 });
   }
 
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    ?? request.headers.get('x-real-ip')
-    ?? 'unknown';
-  if (!checkLoginRateLimit(ip)) {
+  const ip = getClientIp(request, clientAddress);
+  // Count the attempt against both limits before checking either.
+  const ipOk = checkIpLimit(ip);
+  const emailOk = checkEmailLimit(email.trim().toLowerCase());
+  if (!ipOk || !emailOk) {
     return new Response(JSON.stringify({ error: 'Too many login attempts. Try again later.' }), { status: 429 });
   }
 
@@ -57,7 +48,9 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return new Response(JSON.stringify({ error: 'Invalid credentials' }), { status: 401 });
   }
 
-  const { access_token, refresh_token, expires_in } = data.session;
+  // Only the access token is kept: nothing ever used the refresh token, and a
+  // 30-day cookie holding it just widened what a stolen cookie jar would give away.
+  const { access_token, expires_in } = data.session;
 
   cookies.set('sb-access-token', access_token, {
     path: '/',
@@ -66,13 +59,5 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     sameSite: 'lax',
     maxAge: expires_in,
   });
-  cookies.set('sb-refresh-token', refresh_token, {
-    path: '/',
-    httpOnly: true,
-    secure: !import.meta.env.DEV,
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 30, // 30 days
-  });
-
   return new Response(JSON.stringify({ success: true }), { status: 200 });
 };

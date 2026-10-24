@@ -37,6 +37,9 @@ concurrency:
   group: daily-publish
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   trigger-publish:
     runs-on: ubuntu-latest
@@ -44,12 +47,12 @@ jobs:
       WEBHOOK_SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
     steps:
       # "probe" sends an invalid target: a 400 means the request reached the app and
-      # the secret matched, without publishing anything. It tries both hosts, since
-      # GitHub's runners stopped reaching aicompany.usine.site directly on 2026-09-17.
+      # the secret matched, without publishing anything. HTTPS prod only, so the
+      # secret never travels over plain HTTP.
       - name: Probe webhook reachability
         if: github.event.inputs.target == 'probe'
         run: |
-          for url in http://aicompany.usine.site https://lenooai.com; do
+          for url in https://lenooai.com; do
             code=$(curl -s -o body.txt -w "%{http_code}" --max-time 20 -X POST "$url/api/deploy/publish" \
               -H "Authorization: Bearer $WEBHOOK_SECRET" -H "Content-Type: application/json" \
               -d '{"target":"probe"}') || code="curl-exit-$?"

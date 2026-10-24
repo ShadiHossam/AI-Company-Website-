@@ -9,38 +9,36 @@ vi.mock('jose', () => ({
 }));
 
 describe('extractRole', () => {
-  it('returns super_admin from user_metadata.role', () => {
-    const payload = { user_metadata: { role: 'super_admin' } } as JWTPayload;
+  it('returns super_admin from app_metadata.role', () => {
+    const payload = { app_metadata: { role: 'super_admin' } } as JWTPayload;
     expect(extractRole(payload)).toBe('super_admin');
   });
 
-  it('returns editor from user_metadata.role', () => {
-    const payload = { user_metadata: { role: 'editor' } } as JWTPayload;
+  it('returns editor from app_metadata.role', () => {
+    const payload = { app_metadata: { role: 'editor' } } as JWTPayload;
     expect(extractRole(payload)).toBe('editor');
   });
 
-  it('returns sales from user_metadata.role', () => {
-    const payload = { user_metadata: { role: 'sales' } } as JWTPayload;
+  it('ignores user_metadata.role, which users can set themselves', () => {
+    const payload = { user_metadata: { role: 'super_admin' } } as unknown as JWTPayload;
+    expect(extractRole(payload)).toBeNull();
+  });
+
+  it('prefers app_metadata.role over a self-set user_metadata.role', () => {
+    const payload = {
+      app_metadata: { role: 'sales' },
+      user_metadata: { role: 'super_admin' },
+    } as unknown as JWTPayload;
     expect(extractRole(payload)).toBe('sales');
   });
 
-  it('falls back to payload.role when user_metadata is absent', () => {
-    const payload = { role: 'editor' } as JWTPayload;
-    expect(extractRole(payload)).toBe('editor');
+  it('ignores the top-level role claim', () => {
+    const payload = { role: 'authenticated' } as JWTPayload;
+    expect(extractRole(payload)).toBeNull();
   });
 
-  it('prefers user_metadata.role over payload.role', () => {
-    const payload = { role: 'sales', user_metadata: { role: 'editor' } } as JWTPayload;
-    expect(extractRole(payload)).toBe('editor');
-  });
-
-  it('passes through unrecognized role strings from payload.role', () => {
-    const payload = { role: 'unknown_role' } as JWTPayload;
-    expect(extractRole(payload)).toBe('unknown_role');
-  });
-
-  it('returns null when role is empty string', () => {
-    const payload = { role: '' } as JWTPayload;
+  it('returns null when app_metadata.role is empty string', () => {
+    const payload = { app_metadata: { role: '' } } as JWTPayload;
     expect(extractRole(payload)).toBeNull();
   });
 });
@@ -63,6 +61,9 @@ describe('verifyJWT', () => {
 
     expect(result).toEqual(fakePayload);
     expect(jwtVerify).toHaveBeenCalledOnce();
+    expect((jwtVerify as ReturnType<typeof vi.fn>).mock.calls[0][2]).toMatchObject({
+      audience: 'authenticated',
+    });
   });
 
   it('throws when jwtVerify rejects', async () => {

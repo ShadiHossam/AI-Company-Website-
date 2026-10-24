@@ -2,54 +2,65 @@ import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../lib/supabase';
 import { sendApplicationNotification } from '../../lib/resend';
 import { isTrustedOrigin } from '../../lib/trusted-origin';
+import { getClientIp, createRateLimiter, safeHttpsUrl, normaliseWebUrl } from '../../lib/request-safety';
 
 export const prerender = false;
 
-const ipHits = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT = 5;
-const RATE_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+// In-memory, per process: 5 submissions per IP per 10 minutes.
+const checkRateLimit = createRateLimiter(5, 10 * 60 * 1000);
 
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = ipHits.get(ip);
-  if (!entry || now > entry.resetAt) {
-    ipHits.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
-    return true;
-  }
-  if (entry.count >= RATE_LIMIT) return false;
-  entry.count++;
-  return true;
-}
-
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, clientAddress }) => {
   if (!isTrustedOrigin(request)) {
     return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
   }
 
-  let body: Record<string, string>;
+  let raw: unknown;
   try {
-    body = await request.json();
+    raw = await request.json();
   } catch {
     return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 });
   }
+  if (!raw || typeof raw !== 'object') {
+    return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 });
+  }
+  // Every field is read as a string capped at a sane length, so a null, number or
+  // huge value can't crash .trim() or bloat the row.
+  const field = (k: string, max = 500) => {
+    const v = (raw as Record<string, unknown>)[k];
+    return typeof v === 'string' ? v.slice(0, max) : '';
+  };
+  const body = {
+    job_id: field('job_id'), job_title: field('job_title'), full_name: field('full_name'),
+    email: field('email', 254), cv_url: field('cv_url', 1000), cover_letter: field('cover_letter', 10000),
+    phone: field('phone', 50), linkedin_url: field('linkedin_url', 1000),
+    portfolio_url: field('portfolio_url', 1000), how_heard: field('how_heard'),
+  };
 
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    ?? request.headers.get('x-real-ip')
-    ?? 'unknown';
+  const ip = getClientIp(request, clientAddress);
   if (!checkRateLimit(ip)) {
     return new Response(JSON.stringify({ error: 'Too many requests' }), { status: 429 });
   }
 
   const { job_id, job_title, full_name, email, cv_url, cover_letter, phone, linkedin_url, portfolio_url, how_heard } = body;
 
-  if (!job_id?.trim() || !job_title?.trim() || !full_name?.trim() || !email?.trim() || !cv_url?.trim() || !cover_letter?.trim()) {
+  if (!job_id.trim() || !job_title.trim() || !full_name.trim() || !email.trim() || !cv_url.trim() || !cover_letter.trim()) {
     return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 });
   }
 
-  // Reject javascript: and data: scheme URLs to prevent stored XSS
-  const dangerousScheme = (url: string) => /^(javascript|data):/i.test(url.trim());
-  if (dangerousScheme(cv_url) || (linkedin_url && dangerousScheme(linkedin_url)) || (portfolio_url && dangerousScheme(portfolio_url))) {
-    return new Response(JSON.stringify({ error: 'Invalid URL scheme' }), { status: 400 });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    return new Response(JSON.stringify({ error: 'Invalid email' }), { status: 400 });
+  }
+
+  // Links are rendered as <a href> in the admin, so they must parse as http(s)
+  // URLs (a scheme regex let "java\tscript:" through). The CV must be a file in
+  // our own storage bucket, not a page an admin could be lured into opening.
+  const cvPrefix = `${import.meta.env.PUBLIC_SUPABASE_URL}/storage/v1/object/public/cvs/`;
+  const cvUrl = safeHttpsUrl(cv_url);
+  const linkedinUrl = normaliseWebUrl(linkedin_url);
+  const portfolioUrl = normaliseWebUrl(portfolio_url);
+  if (!cvUrl || !cvUrl.startsWith(cvPrefix)
+    || (linkedin_url.trim() && !linkedinUrl) || (portfolio_url.trim() && !portfolioUrl)) {
+    return new Response(JSON.stringify({ error: 'Invalid URL' }), { status: 400 });
   }
 
   const supabase = getSupabaseAdmin();
@@ -61,12 +72,12 @@ export const POST: APIRoute = async ({ request }) => {
       job_title: job_title.trim(),
       full_name: full_name.trim(),
       email: email.trim().toLowerCase(),
-      phone: phone?.trim() || null,
-      linkedin_url: linkedin_url?.trim() || null,
-      portfolio_url: portfolio_url?.trim() || null,
-      cv_url: cv_url.trim(),
+      phone: phone.trim() || null,
+      linkedin_url: linkedinUrl,
+      portfolio_url: portfolioUrl,
+      cv_url: cvUrl,
       cover_letter: cover_letter.trim(),
-      how_heard: how_heard?.trim() || null,
+      how_heard: how_heard.trim() || null,
       status: 'new',
     })
     .select('id')
@@ -86,7 +97,7 @@ export const POST: APIRoute = async ({ request }) => {
       const adminEmail = configRows?.[0]?.value;
       if (adminEmail) {
         await sendApplicationNotification(
-          { id: inserted.id, full_name: full_name.trim(), email: email.trim(), job_title: job_title.trim(), phone: phone?.trim(), linkedin_url: linkedin_url?.trim(), cv_url: cv_url.trim() },
+          { id: inserted.id, full_name: full_name.trim(), email: email.trim(), job_title: job_title.trim(), phone: phone.trim(), linkedin_url: linkedinUrl ?? undefined, cv_url: cvUrl },
           adminEmail
         );
       }

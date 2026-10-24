@@ -44,12 +44,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
   }
 
-  const { data, error } = await supabase.auth.admin.inviteUserByEmail(body.email, {
-    data: { role: body.role },
-  });
+  const { data, error } = await supabase.auth.admin.inviteUserByEmail(body.email);
 
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  }
+
+  // The role goes in app_metadata (service-role only). inviteUserByEmail's `data`
+  // option writes user_metadata, which the invited user could edit themselves.
+  const { error: roleError } = await supabase.auth.admin.updateUserById(data.user.id, {
+    app_metadata: { role: body.role },
+  });
+  if (roleError) {
+    return new Response(JSON.stringify({ error: roleError.message }), { status: 500 });
   }
 
   return new Response(JSON.stringify({ data }), { status: 200 });

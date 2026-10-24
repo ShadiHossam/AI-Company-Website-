@@ -12,6 +12,7 @@ function makeAdminSupabase(result: { data: unknown; error: null | { message: str
     auth: {
       admin: {
         inviteUserByEmail: vi.fn().mockResolvedValue(result),
+        updateUserById: vi.fn().mockResolvedValue({ data: {}, error: null }),
       },
     },
   };
@@ -83,7 +84,7 @@ describe('POST /api/admin/users/invite', () => {
   });
 
   it('invites user and returns 200 on success', async () => {
-    const inviteData = { id: 'new-user-id', email: 'new@user.com' };
+    const inviteData = { user: { id: 'new-user-id', email: 'new@user.com' } };
     makeAdminSupabase({ data: inviteData, error: null });
 
     const ctx = {
@@ -107,8 +108,8 @@ describe('POST /api/admin/users/invite', () => {
     expect((await res.json()).error).toBe('User already registered');
   });
 
-  it('calls inviteUserByEmail with correct email and role metadata', async () => {
-    const { auth } = makeAdminSupabase({ data: {}, error: null });
+  it('invites by email and stores the role in app_metadata, not user_metadata', async () => {
+    const { auth } = makeAdminSupabase({ data: { user: { id: 'u9' } }, error: null });
 
     const ctx = {
       locals: makeLocals({ role: 'super_admin' }),
@@ -116,9 +117,9 @@ describe('POST /api/admin/users/invite', () => {
     };
     await invitePOST(ctx as any);
 
-    expect(auth.admin.inviteUserByEmail).toHaveBeenCalledWith(
-      'new@user.com',
-      { data: { role: 'sales' } }
-    );
+    expect(auth.admin.inviteUserByEmail).toHaveBeenCalledWith('new@user.com');
+    expect(auth.admin.updateUserById).toHaveBeenCalledWith('u9', {
+      app_metadata: { role: 'sales' },
+    });
   });
 });

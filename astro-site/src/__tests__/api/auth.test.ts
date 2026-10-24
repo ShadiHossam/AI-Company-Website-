@@ -8,6 +8,11 @@ vi.mock('../../lib/supabase-browser', () => ({
   },
 }));
 
+const signOut = vi.fn().mockResolvedValue({ error: null });
+vi.mock('../../lib/supabase', () => ({
+  getSupabaseAdmin: () => ({ auth: { admin: { signOut } } }),
+}));
+
 import { supabaseBrowser } from '../../lib/supabase-browser';
 import { POST as loginPOST } from '../../pages/api/admin/auth/login';
 import { POST as logoutPOST } from '../../pages/api/admin/auth/logout';
@@ -102,26 +107,47 @@ describe('POST /api/admin/auth/login', () => {
     expect(res.status).toBe(200);
     expect((await res.json()).success).toBe(true);
     expect(ctx.cookies.set).toHaveBeenCalledWith('sb-access-token', 'access-tok', expect.any(Object));
-    expect(ctx.cookies.set).toHaveBeenCalledWith('sb-refresh-token', 'refresh-tok', expect.any(Object));
+    // The refresh token is never stored in a cookie.
+    expect(ctx.cookies.set).not.toHaveBeenCalledWith('sb-refresh-token', expect.anything(), expect.anything());
   });
 });
 
 // ---- logout -----------------------------------------------------------------
 
 describe('POST /api/admin/auth/logout', () => {
-  it('deletes both auth cookies and returns 200', async () => {
-    const ctx = {
-      request: new Request('https://lenooai.com/api/admin/auth/logout', {
-        method: 'POST',
-        headers: { origin: 'https://lenooai.com' },
-      }),
-      cookies: { delete: vi.fn() },
-    };
+  beforeEach(() => signOut.mockClear());
+
+  const makeLogoutCtx = (token?: string) => ({
+    request: new Request('https://lenooai.com/api/admin/auth/logout', {
+      method: 'POST',
+      headers: { origin: 'https://lenooai.com' },
+    }),
+    cookies: { delete: vi.fn(), get: vi.fn(() => (token ? { value: token } : undefined)) },
+  });
+
+  it('revokes the Supabase session, deletes both auth cookies and returns 200', async () => {
+    const ctx = makeLogoutCtx('access-tok');
     const res = await logoutPOST(ctx as any);
 
     expect(res.status).toBe(200);
     expect((await res.json()).success).toBe(true);
+    expect(signOut).toHaveBeenCalledWith('access-tok');
     expect(ctx.cookies.delete).toHaveBeenCalledWith('sb-access-token', { path: '/' });
     expect(ctx.cookies.delete).toHaveBeenCalledWith('sb-refresh-token', { path: '/' });
+  });
+
+  it('still clears cookies when revoking the session fails', async () => {
+    signOut.mockRejectedValueOnce(new Error('network'));
+    const ctx = makeLogoutCtx('access-tok');
+    const res = await logoutPOST(ctx as any);
+
+    expect(res.status).toBe(200);
+    expect(ctx.cookies.delete).toHaveBeenCalledWith('sb-access-token', { path: '/' });
+  });
+
+  it('skips revocation when there is no session cookie', async () => {
+    const res = await logoutPOST(makeLogoutCtx() as any);
+    expect(res.status).toBe(200);
+    expect(signOut).not.toHaveBeenCalled();
   });
 });

@@ -8,6 +8,15 @@ function getResend() {
   return new Resend(import.meta.env.RESEND_API_KEY);
 }
 
+type EmailPayload = Parameters<Resend['emails']['send']>[0];
+
+// The Resend SDK reports failures (bad key, unverified domain, rate limit) in the
+// returned `error` instead of throwing, so callers' try/catch never saw them.
+async function send(payload: EmailPayload): Promise<void> {
+  const { error } = await getResend().emails.send(payload);
+  if (error) throw new Error(`Resend ${error.name}: ${error.message}`);
+}
+
 interface LeadData {
   id?: string;
   full_name: string;
@@ -406,7 +415,7 @@ export function newsletterWelcomeEmail(): { subject: string; html: string } {
 
 export async function sendAdminNotification(lead: LeadData, adminEmail: string): Promise<void> {
   const { subject, html } = adminNotificationEmail(lead);
-  await getResend().emails.send({
+  await send({
     from: 'Lenoo AI Leads <noreply@lenooai.com>',
     to: adminEmail,
     replyTo: lead.work_email,
@@ -417,7 +426,7 @@ export async function sendAdminNotification(lead: LeadData, adminEmail: string):
 
 export async function sendLeadAutoReply(lead: LeadData, companyPhone: string, companyEmail: string, companyWhatsApp: string): Promise<void> {
   const { subject, html } = leadAutoReplyEmail(lead, companyPhone, companyEmail, companyWhatsApp);
-  await getResend().emails.send({
+  await send({
     from: 'Lenoo AI <hello@lenooai.com>',
     to: lead.work_email,
     // Replies should land in the inbox the email tells people to use.
@@ -429,7 +438,7 @@ export async function sendLeadAutoReply(lead: LeadData, companyPhone: string, co
 
 export async function sendApplicationNotification(app: ApplicationData, adminEmail: string): Promise<void> {
   const { subject, html } = applicationNotificationEmail(app);
-  await getResend().emails.send({
+  await send({
     from: 'Lenoo AI Careers <noreply@lenooai.com>',
     to: adminEmail,
     replyTo: app.email,
@@ -441,7 +450,7 @@ export async function sendApplicationNotification(app: ApplicationData, adminEma
 export async function sendStaleLeadDigest(leads: LeadData[], adminEmail: string): Promise<void> {
   if (!leads.length) return;
   const { subject, html } = staleLeadDigestEmail(leads);
-  await getResend().emails.send({
+  await send({
     from: 'Lenoo AI <noreply@lenooai.com>',
     to: adminEmail,
     subject,
@@ -451,7 +460,7 @@ export async function sendStaleLeadDigest(leads: LeadData[], adminEmail: string)
 
 export async function sendSubscriberNotification(email: string, pageUrl: string, adminEmail: string): Promise<void> {
   const { subject, html } = subscriberNotificationEmail(email, pageUrl);
-  await getResend().emails.send({
+  await send({
     from: 'Lenoo AI Newsletter <noreply@lenooai.com>',
     to: adminEmail,
     replyTo: email,
@@ -462,7 +471,7 @@ export async function sendSubscriberNotification(email: string, pageUrl: string,
 
 export async function sendNewsletterWelcome(email: string, companyEmail = 'info@lenooai.com'): Promise<void> {
   const { subject, html } = newsletterWelcomeEmail();
-  await getResend().emails.send({
+  await send({
     from: 'Lenoo AI <hello@lenooai.com>',
     to: email,
     // Replies should land in the inbox people actually read.

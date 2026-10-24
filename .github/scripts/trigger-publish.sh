@@ -3,16 +3,15 @@
 #
 # Since 2026-09-17 some GitHub runner IPs get a 503 block page from o2switch's
 # front end before the request reaches the app, while other runners get through.
-# So retry with a pause, alternating between the two hosts that serve the same
-# webhook (staging direct, and prod behind Cloudflare). The server-side
-# publish-batch.sh holds a lock, so a late duplicate trigger just waits.
+# So retry with a pause. Only the HTTPS prod host is used: the bearer secret must
+# never go over plain HTTP, and staging still has no trusted certificate. The
+# server-side publish-batch.sh holds a lock, so a late duplicate trigger just waits.
 set -uo pipefail
 target="$1"
-hosts=(http://aicompany.usine.site https://lenooai.com)
 attempts=4
 
 for ((i = 0; i < attempts; i++)); do
-  url="${hosts[i % 2]}/api/deploy/publish"
+  url="https://lenooai.com/api/deploy/publish"
   code=$(curl -s -o body.txt -w "%{http_code}" --max-time 30 -X POST "$url" \
     -H "Authorization: Bearer $WEBHOOK_SECRET" \
     -H "Content-Type: application/json" \

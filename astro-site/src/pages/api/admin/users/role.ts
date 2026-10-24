@@ -44,8 +44,9 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
     }
   }
 
+  // app_metadata, not user_metadata: users can edit their own user_metadata.
   const { data, error } = await supabase.auth.admin.updateUserById(body.uid, {
-    user_metadata: { role: body.role },
+    app_metadata: { role: body.role },
   });
 
   if (error) {

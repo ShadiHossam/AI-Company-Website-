@@ -179,7 +179,7 @@ describe('PATCH /api/admin/users/role', () => {
   });
 
   it('updates user role and returns 200', async () => {
-    const updated = { id: 'u2', user_metadata: { role: 'editor' } };
+    const updated = { id: 'u2', app_metadata: { role: 'editor' } };
     makeAdminSupabase({ error: null }, { data: updated, error: null });
 
     const ctx = {
@@ -199,7 +199,7 @@ describe('PATCH /api/admin/users/role', () => {
     };
     await ROLE_PATCH(ctx as any);
     expect(auth.admin.updateUserById).toHaveBeenCalledWith('u2', {
-      user_metadata: { role: 'sales' },
+      app_metadata: { role: 'sales' },
     });
   });
 

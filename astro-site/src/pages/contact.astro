@@ -475,17 +475,25 @@ const contactLdJson = [
       website:        (document.getElementById('c-honeypot') as HTMLInputElement)?.value ?? '',
     };
 
+    // Calendly scheduling still proceeds if the CRM write fails, but the ad/GA
+    // conversion only fires once the server has actually stored the lead.
+    let saved = false;
     try {
-      await fetch('/api/submit-lead', {
+      const res = await fetch('/api/submit-lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-    } catch {
-      // Silent — Calendly scheduling still proceeds even if the CRM lead write failed.
+      saved = res.ok;
+      if (!saved) console.error('Lead was not saved', res.status);
+    } catch (err) {
+      console.error('Lead was not saved', err);
     }
-    (window as unknown as { trackLead?: (n: string, p?: Record<string, string>) => void }).trackLead?.('lead_form_submit', { form: 'contact_page' });
+    if (saved) {
+      (window as unknown as { trackLead?: (n: string, p?: Record<string, string>) => void }).trackLead?.('lead_form_submit', { form: 'contact_page' });
+    }
     // First-party tracker (src/tracking/ln-track.js) records the lead with the visit.
+    // Sent even when the CRM write failed: it is then the only copy of the details.
     document.dispatchEvent(new CustomEvent('ln:lead', { detail: { form: 'contact_page', data: { name: payload.full_name, company: payload.company_name, email: payload.work_email, phone: payload.whatsapp, service: payload.industry } } }));
     btn.disabled = false;
     contactStep(3);

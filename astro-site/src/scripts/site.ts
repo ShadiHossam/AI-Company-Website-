@@ -331,19 +331,33 @@ function continueToSchedule() {
     website:        (document.getElementById('modal-honeypot') as HTMLInputElement)?.value ?? '',
   };
 
-  fetch('/api/submit-lead', {
+  // Only count the GA/ads conversion once the server has stored the lead: a
+  // 403/429/500 used to be tracked as a conversion while the lead itself was
+  // lost. One retry covers a brief 5xx blip; a 4xx isn't retried.
+  const sendLead = () => fetch('/api/submit-lead', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
     keepalive: true,
-  }).catch(() => {});
-  trackLead('lead_form_submit', { form: 'modal', page_source: payload.page_source });
+  });
+  const onSaved = () => trackLead('lead_form_submit', { form: 'modal', page_source: payload.page_source });
   // First-party tracker (src/tracking/ln-track.js) records the lead with the
-  // visit; the button that opened the modal (data-source) names it.
+  // visit; the button that opened the modal (data-source) names it. Sent even if
+  // the CRM write fails, since it is then the only copy of the details.
   document.dispatchEvent(new CustomEvent('ln:lead', { detail: {
     form: payload.page_source && payload.page_source !== 'unknown' ? payload.page_source : 'modal',
-    data: { name: payload.full_name, company: payload.company_name, email: payload.work_email, phone: payload.whatsapp, detail: payload.job_title },
+    data: { name: payload.full_name, company: payload.company_name, email: payload.work_email, phone: payload.whatsapp },
   } }));
+  sendLead()
+    .then((res) => {
+      if (res.ok) return onSaved();
+      if (res.status < 500) throw new Error(`submit-lead ${res.status}`);
+      return new Promise((r) => setTimeout(r, 2000)).then(sendLead).then((retry) => {
+        if (!retry.ok) throw new Error(`submit-lead ${retry.status}`);
+        onSaved();
+      });
+    })
+    .catch((err) => console.error('Lead was not saved', err));
   goToStep(2);
   initCalendly(document.querySelector<HTMLElement>('#modal .calendly-inline-widget'), {
     name: payload.full_name,

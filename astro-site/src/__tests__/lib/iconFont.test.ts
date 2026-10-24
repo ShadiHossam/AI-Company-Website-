@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-// @ts-expect-error plain .mjs build script, no type declarations
 import { collectIconNames } from '../../../scripts/build-icon-font.mjs';
 import subset from '../../assets/fonts/material-symbols-icons.json';
 
