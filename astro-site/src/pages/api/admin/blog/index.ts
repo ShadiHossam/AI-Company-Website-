@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../../../lib/supabase';
+import { sanitizeRichText } from '../../../../lib/sanitize';
 import { isScheduled, todayInDubai } from '../../../../lib/scheduledPosts';
 
 export const prerender = false;
@@ -91,7 +92,8 @@ export const POST: APIRoute = async ({ locals, request }) => {
     title,
     slug,
     description,
-    body_html,
+    // Same allowlist the public page renders with, applied on save too.
+    body_html: sanitizeRichText(body_html),
     category,
     status,
     og_image: (body.og_image as string) ?? '/assets/og-blog.jpg',

@@ -45,7 +45,9 @@ export const GET: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: 'Could not read log', detail: String(err) }), {
+    // The error text holds server paths; keep it in the server log only.
+    console.error('[deploy/status] read failed:', err);
+    return new Response(JSON.stringify({ error: 'Could not read log' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });

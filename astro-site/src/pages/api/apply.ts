@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../lib/supabase';
 import { sendApplicationNotification } from '../../lib/resend';
 import { isTrustedOrigin } from '../../lib/trusted-origin';
-import { getClientIp, createRateLimiter, safeHttpsUrl, normaliseWebUrl } from '../../lib/request-safety';
+import { getClientIp, createRateLimiter, normaliseWebUrl } from '../../lib/request-safety';
 
 export const prerender = false;
 
@@ -52,13 +52,13 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   }
 
   // Links are rendered as <a href> in the admin, so they must parse as http(s)
-  // URLs (a scheme regex let "java\tscript:" through). The CV must be a file in
-  // our own storage bucket, not a page an admin could be lured into opening.
-  const cvPrefix = `${import.meta.env.PUBLIC_SUPABASE_URL}/storage/v1/object/public/cvs/`;
-  const cvUrl = safeHttpsUrl(cv_url);
+  // URLs (a scheme regex let "java\tscript:" through). The CV is the object path
+  // /api/cv-upload issued in the private bucket, never a URL, so an applicant
+  // can't point admins at a page of their choosing.
+  const cvPath = cv_url.trim();
   const linkedinUrl = normaliseWebUrl(linkedin_url);
   const portfolioUrl = normaliseWebUrl(portfolio_url);
-  if (!cvUrl || !cvUrl.startsWith(cvPrefix)
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(pdf|docx?)$/.test(cvPath)
     || (linkedin_url.trim() && !linkedinUrl) || (portfolio_url.trim() && !portfolioUrl)) {
     return new Response(JSON.stringify({ error: 'Invalid URL' }), { status: 400 });
   }
@@ -75,7 +75,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
       phone: phone.trim() || null,
       linkedin_url: linkedinUrl,
       portfolio_url: portfolioUrl,
-      cv_url: cvUrl,
+      cv_url: cvPath,
       cover_letter: cover_letter.trim(),
       how_heard: how_heard.trim() || null,
       status: 'new',
@@ -97,7 +97,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
       const adminEmail = configRows?.[0]?.value;
       if (adminEmail) {
         await sendApplicationNotification(
-          { id: inserted.id, full_name: full_name.trim(), email: email.trim(), job_title: job_title.trim(), phone: phone.trim(), linkedin_url: linkedinUrl ?? undefined, cv_url: cvUrl },
+          { id: inserted.id, full_name: full_name.trim(), email: email.trim(), job_title: job_title.trim(), phone: phone.trim(), linkedin_url: linkedinUrl ?? undefined, cv_url: cvPath },
           adminEmail
         );
       }

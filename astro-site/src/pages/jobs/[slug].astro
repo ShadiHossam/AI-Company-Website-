@@ -376,30 +376,31 @@ const jobFaqSchema = {
     // Upload CV to Supabase Storage
     let cvUrl = '';
     try {
-      const { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } = (import.meta as unknown as Record<string, Record<string, string>>).env;
-      if (!PUBLIC_SUPABASE_URL || !PUBLIC_SUPABASE_ANON_KEY) throw new Error('Storage not configured');
-
       progressWrap.style.display = 'block';
-      progressBar.style.width = '30%';
+      progressBar.style.width = '20%';
 
-      const ext      = file.name.split('.').pop() ?? 'pdf';
-      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const uploadUrl = `${PUBLIC_SUPABASE_URL}/storage/v1/object/cvs/${fileName}`;
-
-      const uploadRes = await fetch(uploadUrl, {
+      // The server picks the path and signs a one-time upload into the private
+      // `cvs` bucket; the browser never holds a storage key.
+      const ext = (file.name.split('.').pop() ?? '').toLowerCase();
+      const signRes = await fetch('/api/cv-upload', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${PUBLIC_SUPABASE_ANON_KEY}`,
-          'Content-Type': file.type || 'application/octet-stream',
-          'x-upsert': 'false',
-        },
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ext, size: file.size }),
+      });
+      if (!signRes.ok) throw new Error('CV upload failed');
+      const { path, uploadUrl, contentType } = await signRes.json();
+
+      progressBar.style.width = '40%';
+      const uploadRes = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': contentType },
         body: file,
       });
 
       progressBar.style.width = '80%';
       if (!uploadRes.ok) throw new Error('CV upload failed');
 
-      cvUrl = `${PUBLIC_SUPABASE_URL}/storage/v1/object/public/cvs/${fileName}`;
+      cvUrl = path;
       progressBar.style.width = '100%';
     } catch (err) {
       progressWrap.style.display = 'none';

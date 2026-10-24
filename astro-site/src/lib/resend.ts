@@ -317,7 +317,7 @@ export function applicationNotificationEmail(app: ApplicationData): { subject: s
       ['LinkedIn', app.linkedin_url ? `<a href="${esc(app.linkedin_url)}" style="color:${TEAL}; font-weight:600;">${esc(app.linkedin_url)}</a>` : ''],
     ])}
     <div>
-      ${button(esc(app.cv_url), 'Download CV')}
+      ${button(`${SITE}/api/admin/applications/${encodeURIComponent(app.id)}/cv`, 'Download CV')}
       ${button(`${SITE}/admin/applications`, 'Open in admin', 'secondary')}
     </div>`;
   return {

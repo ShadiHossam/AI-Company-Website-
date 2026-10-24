@@ -16,9 +16,11 @@ const BASE = 'https://lenooai.com';
  * direct. Reading the real dates back out of the children keeps the index
  * honest and costs one internal fetch each.
  */
-async function latestLastmod(url: string, request: Request): Promise<string | null> {
+async function latestLastmod(url: string): Promise<string | null> {
   try {
-    const res = await fetch(url, { headers: { cookie: request.headers.get('cookie') ?? '' } });
+    // No visitor cookie forwarded (it was never needed), and a timeout so a slow
+    // child can't hold this request open: the fallback below covers a miss.
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) return null;
     const dates = [...(await res.text()).matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map(m => m[1]);
     if (dates.length === 0) return null;
@@ -28,9 +30,9 @@ async function latestLastmod(url: string, request: Request): Promise<string | nu
   }
 }
 
-export const GET: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async () => {
   const children = [`${BASE}/page-sitemap.xml`, `${BASE}/post-sitemap.xml`];
-  const lastmods = await Promise.all(children.map(url => latestLastmod(url, request)));
+  const lastmods = await Promise.all(children.map(url => latestLastmod(url)));
 
   // Fall back to the current time only when a child could not be read at all.
   // An unknown date is better reported as "now" than omitted, since a missing

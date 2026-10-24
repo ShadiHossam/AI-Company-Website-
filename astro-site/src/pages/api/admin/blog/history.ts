@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../../../lib/supabase';
+import { sanitizeRichText } from '../../../../lib/sanitize';
 
 export const prerender = false;
 
@@ -42,7 +43,14 @@ export const GET: APIRoute = async ({ locals, url }) => {
       });
     }
 
-    return new Response(JSON.stringify({ data }), {
+    // The editor previews a version with innerHTML, so serve it sanitized: a
+    // blog-role user could otherwise plant script that runs for a super_admin.
+    const safe = {
+      ...data,
+      body_html: data.body_html ? sanitizeRichText(data.body_html) : data.body_html,
+      body_markdown: data.body_markdown ? sanitizeRichText(data.body_markdown) : data.body_markdown,
+    };
+    return new Response(JSON.stringify({ data: safe }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

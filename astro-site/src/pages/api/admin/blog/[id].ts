@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../../../lib/supabase';
+import { sanitizeRichText } from '../../../../lib/sanitize';
 import { isScheduled, todayInDubai } from '../../../../lib/scheduledPosts';
 
 export const prerender = false;
@@ -108,6 +109,8 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
   for (const field of allowedFields) {
     if (field in body) updates[field] = body[field];
   }
+  // Same allowlist the public page renders with, applied on save too.
+  if (typeof updates.body_html === 'string') updates.body_html = sanitizeRichText(updates.body_html);
 
   // Auto-set pub_date when first publishing
   if (isPublishing && !updates.pub_date && !existing?.pub_date) {

@@ -1,6 +1,7 @@
 import { defineMiddleware } from 'astro:middleware';
 import { verifyJWT, extractRole } from './lib/jwt';
 import { getClientIp } from './lib/request-safety';
+import { isTrustedOrigin } from './lib/trusted-origin';
 import { getSupabaseAdmin } from './lib/supabase';
 
 const supabaseConfigured = (() => {
@@ -186,7 +187,9 @@ function isAdminPathAllowed(pathname: string, sections: string[]): boolean {
 function isApiPathAllowed(pathname: string, sections: string[]): boolean {
   return sections.some(s => {
     const paths = SECTION_API[s] ?? [];
-    return paths.some(p => pathname.startsWith(p));
+    // Exact or on a "/" boundary, so "/api/admin/blog" doesn't also grant e.g.
+    // a future "/api/admin/blogger".
+    return paths.some(p => pathname === p || pathname.startsWith(p + '/'));
   });
 }
 
@@ -305,7 +308,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   // API admin auth + role check
-  if (pathname.startsWith('/api/admin') && !API_PUBLIC_PATHS.some(p => pathname.startsWith(p))) {
+  if (pathname.startsWith('/api/admin') && !API_PUBLIC_PATHS.includes(pathname)) {
+    // CSRF backstop for every admin write, so a route that forgets its own
+    // Origin check (several did) is still covered.
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(context.request.method) && !isTrustedOrigin(context.request)) {
+      return forbidden403();
+    }
     const token = context.cookies.get('sb-access-token')?.value;
     if (!token) return unauthorized401();
     try {
