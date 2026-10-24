@@ -154,3 +154,46 @@ export function stripTrailingSlashes(html: string): string {
     return whole.replace(HREF, `href="${hit[1]}${hit[2] ?? ''}"`);
   });
 }
+
+/**
+ * Site pages whose full set is in the route table, so a path under one of these
+ * that is not a known route is genuinely missing. Other sections (sections
+ * served from collections, jobs, the blog index) are left alone.
+ */
+const PAGE_FAMILY = /^\/(?:ar\/)?(?:services|industries|pricing)\/[^/]/;
+
+/** `/services/foo`, `https://lenooai.com/industries/bar`, with optional query or hash. */
+const OWN_PAGE_HREF = /^(?:https:\/\/(?:www\.)?lenooai\.com)?(\/[^?#]*)(?:[?#].*)?$/;
+
+/**
+ * Rewrites links to service, industry or pricing pages that do not exist into
+ * <span> tags, the same way {@link pruneUnpublishedLinks} treats unpublished
+ * posts. Article bodies are written against the whole content plan, so some of
+ * them link to pages that were never built (or were dropped, like the GCC
+ * page). Once a page is built the link comes back on its own.
+ *
+ * @param html    Rendered, already-sanitised article body.
+ * @param isPage  Answers whether a site path is a live page.
+ */
+export function pruneMissingPageLinks(
+  html: string,
+  isPage: (path: string) => boolean,
+): string {
+  if (!html) return html;
+
+  return html.replace(ANCHOR, (whole, attrs: string, inner: string) => {
+    const m = HREF.exec(attrs);
+    if (!m) return whole;
+
+    const hit = OWN_PAGE_HREF.exec(m[1] ?? m[2] ?? '');
+    if (!hit) return whole;
+
+    const raw = hit[1];
+    const path = raw.length > 1 && raw.endsWith('/') ? raw.slice(0, -1) : raw;
+    if (!PAGE_FAMILY.test(path) || isPage(path)) return whole;
+
+    const classMatch = /\bclass\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(attrs);
+    const cls = classMatch ? ` class="${classMatch[1] ?? classMatch[2]}"` : '';
+    return `<span data-pending-page="true"${cls}>${inner}</span>`;
+  });
+}

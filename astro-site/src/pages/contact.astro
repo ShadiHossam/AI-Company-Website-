@@ -195,7 +195,7 @@ const contactLdJson = [
           <h2 style="font-size:1.25rem; font-weight:700; color:#00253b; margin-bottom:0.25rem;">Book Your Free Consultation</h2>
           <p style="color:#42474e; font-size:0.875rem; margin-bottom:1.5rem;">3 quick steps, takes about 2 minutes.</p>
 
-          <div class="step-indicator" id="step-indicator">
+          <div class="step-indicator" id="cf-step-indicator">
             <div class="step-dot-sm active" id="ind-1">1</div>
             <div class="step-connector-sm" id="conn-1"></div>
             <div class="step-dot-sm" id="ind-2">2</div>
@@ -206,10 +206,10 @@ const contactLdJson = [
           <form id="contact-form" novalidate>
 
           <!-- STEP 1 -->
-          <div class="form-step active" id="step-1">
+          <div class="form-step active" id="cf-step-1">
             <p style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:1rem;">Step 1 of 3: About You</p>
-            <div id="step-1-error-summary" role="alert" class="step-error-summary" style="display:none;">Please fill in the required fields below.</div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div id="cf-step-1-error-summary" role="alert" class="step-error-summary" style="display:none;">Please fill in the required fields below.</div>
+            <div class="form-row">
               <div>
                 <label class="form-label" for="c-name">Full Name *</label>
                 <input class="form-input" id="c-name" type="text" autocomplete="name" placeholder="Your name" required />
@@ -237,10 +237,10 @@ const contactLdJson = [
           </div>
 
           <!-- STEP 2 -->
-          <div class="form-step" id="step-2">
+          <div class="form-step" id="cf-step-2">
             <p style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:1rem;">Step 2 of 3: Your Business</p>
-            <div id="step-2-error-summary" role="alert" class="step-error-summary" style="display:none;">Please fill in the required fields below.</div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+            <div id="cf-step-2-error-summary" role="alert" class="step-error-summary" style="display:none;">Please fill in the required fields below.</div>
+            <div class="form-row" style="margin-bottom:1rem;">
               <div>
                 <label class="form-label" for="c-industry">Industry *</label>
                 <select class="form-select" id="c-industry" required>
@@ -271,7 +271,7 @@ const contactLdJson = [
               <label class="form-label" for="c-challenge">What is your main challenge or goal? *</label>
               <textarea class="form-textarea" id="c-challenge" rows="3" placeholder="e.g. We're spending too much time on manual lead qualification, or we want to automate customer support on WhatsApp..." required></textarea>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-row">
               <div>
                 <label class="form-label" for="c-budget">Budget Range</label>
                 <select class="form-select" id="c-budget">
@@ -307,7 +307,7 @@ const contactLdJson = [
           </div>
 
           <!-- STEP 3 -->
-          <div class="form-step" id="step-3">
+          <div class="form-step" id="cf-step-3">
             <p style="color:#006875; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:1rem;">Step 3 of 3: Schedule Your Call</p>
 
             <div class="calendly-inline-widget" data-auto-load="false" data-url={calendlyUrl} style="min-width:280px;height:650px;"></div>
@@ -396,7 +396,7 @@ const contactLdJson = [
   }
 
   function validateContactStep(n: number): boolean {
-    const step = document.getElementById('step-' + n);
+    const step = document.getElementById('cf-step-' + n);
     if (!step) return true;
     const fields = step.querySelectorAll<ValidatableField>(
       'input[required], select[required], textarea[required]'
@@ -410,7 +410,7 @@ const contactLdJson = [
         clearFieldError(field);
       }
     }
-    const summary = document.getElementById('step-' + n + '-error-summary');
+    const summary = document.getElementById('cf-step-' + n + '-error-summary');
     if (summary) summary.style.display = firstInvalid ? 'block' : 'none';
     if (firstInvalid) firstInvalid.focus();
     return !firstInvalid;
@@ -422,8 +422,8 @@ const contactLdJson = [
     // indicator dots, and the two connector lines between them), so it's always
     // present for these fixed values of n and currentContactStep — same as the
     // c-name/c-email/etc. casts a few lines down that assume the same thing.
-    document.getElementById('step-' + currentContactStep)!.classList.remove('active');
-    document.getElementById('step-' + n)!.classList.add('active');
+    document.getElementById('cf-step-' + currentContactStep)!.classList.remove('active');
+    document.getElementById('cf-step-' + n)!.classList.add('active');
     for (let i = 1; i <= 3; i++) {
       const dot = document.getElementById('ind-' + i)!;
       dot.classList.remove('active', 'done');
@@ -490,7 +490,7 @@ const contactLdJson = [
     btn.disabled = false;
     contactStep(3);
     // Boot the calendar with what they already typed, so Calendly's form is filled in.
-    window.initCalendly(document.querySelector<HTMLElement>('#step-3 .calendly-inline-widget'), {
+    window.initCalendly(document.querySelector<HTMLElement>('#cf-step-3 .calendly-inline-widget'), {
       name: payload.full_name,
       email: payload.work_email,
       a1: payload.company_name,
@@ -507,10 +507,10 @@ const contactLdJson = [
     const modal = document.getElementById('modal');
     if (modal?.classList.contains('open')) return;
     for (let i = 1; i <= 3; i++) {
-      const s = document.getElementById('step-' + i);
+      const s = document.getElementById('cf-step-' + i);
       if (s) s.classList.remove('active');
     }
-    document.getElementById('step-indicator')!.style.display = 'none';
+    document.getElementById('cf-step-indicator')!.style.display = 'none';
     document.getElementById('success-screen')!.style.display = 'block';
   });
 
@@ -547,7 +547,7 @@ const contactLdJson = [
     .form-box { background:#fff; border:1px solid rgba(0,37,59,0.10); border-radius:24px; padding:2.5rem; box-shadow:0 20px 40px rgba(0,59,92,0.04); }
     .trust-pill { display:flex; align-items:center; gap:8px; padding:10px 16px; background:rgba(0,227,253,0.08); border:1px solid rgba(0,227,253,0.20); border-radius:12px; font-size:0.82rem; color:#42474e; font-weight:500; }
     .step-indicator { display:flex; align-items:center; justify-content:center; gap:0; margin-bottom:2rem; }
-    .step-dot-sm { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.78rem; font-weight:700; border:1px solid rgba(0,37,59,0.15); color:#9ca3af; background:#fff; transition:all 0.3s; position:relative; z-index:1; }
+    .step-dot-sm { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.78rem; font-weight:700; border:1px solid rgba(0,37,59,0.15); color:#6b7280; background:#fff; transition:all 0.3s; position:relative; z-index:1; }
     .step-dot-sm.active { border-color:#00e3fd; background:#00e3fd; color:#00253b; }
     .step-dot-sm.done { border-color:#006875; background:rgba(0,104,117,0.10); color:#006875; }
     .step-connector-sm { width:48px; height:2px; background:rgba(0,37,59,0.10); transition:background 0.3s; }
@@ -557,5 +557,7 @@ const contactLdJson = [
     #success-screen { display:none; }
     .main-grid { display:grid; grid-template-columns:2fr 3fr; gap:3rem; align-items:start; }
     @media(max-width:900px) { .main-grid { grid-template-columns:1fr; } }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    @media(max-width:560px) { .form-row { grid-template-columns:1fr; } }
     @media(max-width:600px) { .form-box { padding:1.5rem; } }
 </style>

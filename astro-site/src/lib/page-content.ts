@@ -29,7 +29,7 @@ export const PAGE_CONFIGS: PageConfig[] = [
           { key: 'hero_h1_line1', label: 'Headline Line 1', type: 'text', default: 'We Build AI That Fits' },
           { key: 'hero_h1_line2', label: 'Headline Line 2 (gradient)', type: 'text', default: 'How Your Business Works.' },
           { key: 'hero_subtext', label: 'Sub-text', type: 'textarea', default: 'Custom AI systems, agents, and automation built around your workflows. Every project includes team training and a 100% refund guarantee.' },
-          { key: 'hero_cta', label: 'CTA Button Text', type: 'text', default: 'Book Free Strategy Call' },
+          { key: 'hero_cta', label: 'CTA Button Text', type: 'text', default: 'Book a Free Strategy Call' },
         ],
       },
       {

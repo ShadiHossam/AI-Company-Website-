@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { pruneUnpublishedLinks, buildLiveBlogPaths, localiseBlogLinks, stripTrailingSlashes } from '../../lib/deadLinks';
+import { pruneUnpublishedLinks, buildLiveBlogPaths, localiseBlogLinks, stripTrailingSlashes, pruneMissingPageLinks } from '../../lib/deadLinks';
 
 const live = (paths: string[]) => (p: string) => paths.includes(p);
 
@@ -158,5 +158,32 @@ describe('stripTrailingSlashes', () => {
   it('leaves the root, external links and slash-free links alone', () => {
     const html = '<a href="/">h</a><a href="https://oecd.ai/en/">o</a><a href="/blog/rag">r</a>';
     expect(stripTrailingSlashes(html)).toBe(html);
+  });
+});
+
+describe('pruneMissingPageLinks', () => {
+  const pages = new Set(['/services/ai-automation', '/ar/industries/legal']);
+  const isPage = (p: string) => pages.has(p);
+
+  it('keeps a link to a page that exists', () => {
+    const html = '<a href="/services/ai-automation">x</a>';
+    expect(pruneMissingPageLinks(html, isPage)).toBe(html);
+  });
+
+  it('turns a link to a missing service page into a span, keeping the text', () => {
+    expect(pruneMissingPageLinks('<a href="/services/ai-automation/gcc/">the <b>GCC</b> view</a>', isPage))
+      .toBe('<span data-pending-page="true">the <b>GCC</b> view</span>');
+  });
+
+  it('handles absolute own-domain links and Arabic paths', () => {
+    expect(pruneMissingPageLinks('<a href="https://lenooai.com/ar/industries/legal">a</a>', isPage))
+      .toBe('<a href="https://lenooai.com/ar/industries/legal">a</a>');
+    expect(pruneMissingPageLinks('<a href="https://lenooai.com/industries/nope">b</a>', isPage))
+      .toBe('<span data-pending-page="true">b</span>');
+  });
+
+  it('never touches blog, hub, external or other-section links', () => {
+    const html = '<a href="/blog/x">1</a><a href="/services">2</a><a href="https://example.com/services/x">3</a><a href="/abu-dhabi/x">4</a><a href="#top">5</a>';
+    expect(pruneMissingPageLinks(html, isPage)).toBe(html);
   });
 });

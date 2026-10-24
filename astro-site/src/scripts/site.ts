@@ -150,8 +150,13 @@ function initCalendly(el: HTMLElement | null, prefill: CalendlyPrefill = {}) {
 // Lead tracking: GA4 events for every contact action, and UTM tags on the
 // Calendly widgets so Calendly's booking email says which site/page it came from.
 // Must run before loadCalendly() below, which boots the widgets from data-url.
+// Events that are an actual lead (not just a click), mirrored to the Meta pixel
+// as its standard Lead event so ad campaigns can optimise on them.
+const META_LEAD_EVENTS = new Set(['lead_form_submit', 'generate_lead']);
+
 function trackLead(name: string, params: Record<string, string> = {}) {
   window.gtag?.('event', name, { page_path: location.pathname, ...params });
+  if (META_LEAD_EVENTS.has(name)) window.fbq?.('track', 'Lead', { content_name: params.form ?? params.method ?? name });
 }
 
 document.querySelectorAll<HTMLElement>('.calendly-inline-widget[data-url]').forEach(el => {
