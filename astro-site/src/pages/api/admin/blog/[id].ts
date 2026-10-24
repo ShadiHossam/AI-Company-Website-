@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../../../lib/supabase';
+import { isScheduled, todayInDubai } from '../../../../lib/scheduledPosts';
 
 export const prerender = false;
 
@@ -73,6 +74,23 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
     .select('*')
     .eq('id', id!)
     .single();
+
+  // 'scheduled' is not a stored status (blog_posts_status_check rejects it): a
+  // scheduled post is a published row with a future pub_date, which public pages
+  // hide until that date in Dubai.
+  if (body.status === 'scheduled') {
+    if (typeof body.pub_date !== 'string' || !isScheduled(body.pub_date)) {
+      return new Response(JSON.stringify({ error: 'A scheduled post needs a future publish date' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    body.status = 'published';
+  } else if (body.status === 'published' && typeof body.pub_date === 'string' && isScheduled(body.pub_date)) {
+    // Choosing Published on a queued post means now; the editor's hidden date
+    // field still holds the queued date.
+    body.pub_date = todayInDubai();
+  }
 
   const newStatus = body.status as string | undefined;
   const isPublishing = newStatus === 'published' && existing?.status !== 'published';

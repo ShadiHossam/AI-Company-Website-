@@ -4,6 +4,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { isArabicOnlyPost } from '../lib/post-lang';
 import { loadPageContent, getVal } from "../lib/page-content";
 import { getSupabaseAdmin } from "../lib/supabase";
+import { todayInDubai } from "../lib/scheduledPosts";
 import "../styles/homepage-redesign.css";
 
 export const prerender = false;
@@ -32,6 +33,7 @@ try {
     .from('blog_posts')
     .select('id, title, slug, description, category, pub_date, author_name, og_image')
     .eq('status', 'published')
+    .lte('pub_date', todayInDubai())
     .is('deleted_at', null)
     .order('pub_date', { ascending: false })
     // Over-fetch, because Arabic-only rows are dropped below and the homepage

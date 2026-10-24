@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 import { getSupabaseAdmin } from '../../lib/supabase';
+import { todayInDubai, updatedAfterPublish } from '../../lib/scheduledPosts';
 import ArticleLayout from '../../layouts/ArticleLayout.astro';
 import { marked } from 'marked';
 import { sanitizeRichText } from '../../lib/sanitize';
@@ -87,6 +88,7 @@ try {
     .select('*')
     .eq('slug', slug!)
     .eq('status', 'published')
+    .lte('pub_date', todayInDubai())
     .is('deleted_at', null)
     .single();
 
@@ -103,6 +105,7 @@ try {
       .from('blog_posts')
       .select('slug, title, ar_title')
       .eq('status', 'published')
+      .lte('pub_date', todayInDubai())
       .is('deleted_at', null);
     const livePaths = buildLiveBlogPaths(publishedRows ?? [], isArabicOnlyPost);
     // Collection-backed posts are live too, and are not in blog_posts.
@@ -119,7 +122,7 @@ try {
       (path) => livePaths.has(path),
     );
     pubDate = dbPost.pub_date ? new Date(dbPost.pub_date) : new Date();
-    updatedDate = dbPost.updated_at ? new Date(dbPost.updated_at) : undefined;
+    updatedDate = updatedAfterPublish(dbPost.updated_at, dbPost.pub_date);
 
     // Fetch related posts (same category, different slug, max 3).
     // The status filter below is load-bearing: without it, a scheduled/draft
@@ -129,6 +132,7 @@ try {
       .from('blog_posts')
       .select('title, slug, category, og_image, og_image_alt')
       .eq('status', 'published')
+      .lte('pub_date', todayInDubai())
       .is('deleted_at', null)
       .eq('category', dbPost.category)
       .neq('slug', slug!)

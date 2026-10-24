@@ -3,6 +3,7 @@ import { authorPhoto } from '../../../lib/authors';
 export const prerender = false;
 import ArBaseLayout from '../../../layouts/ArBaseLayout.astro';
 import { getSupabaseAdmin } from '../../../lib/supabase';
+import { todayInDubai, updatedAfterPublish } from '../../../lib/scheduledPosts';
 import { marked } from 'marked';
 import { sanitizeRichText } from '../../../lib/sanitize';
 import { isArabicOnlyPost } from '../../../lib/post-lang';
@@ -61,6 +62,7 @@ const { data: post, error } = await supabase
   .select('id, title, slug, ar_title, ar_description, ar_body_markdown, ar_meta_title, ar_meta_description, category, pub_date, updated_at, author_name, og_image, og_image_alt, og_image_title, noindex')
   .eq('slug', slug!)
   .eq('status', 'published')
+  .lte('pub_date', todayInDubai())
   .is('deleted_at', null)
   .single();
 
@@ -87,6 +89,7 @@ const { data: publishedRows } = await supabase
   .from('blog_posts')
   .select('slug, title, ar_title')
   .eq('status', 'published')
+  .lte('pub_date', todayInDubai())
   .is('deleted_at', null);
 const livePaths = buildLiveBlogPaths(publishedRows ?? [], isArabicOnlyPost);
 // Collection-backed posts are live too, and are not in blog_posts.
@@ -106,7 +109,7 @@ const bodyHtml = post.ar_body_markdown
   : '';
 
 const pubDate = post.pub_date ? new Date(post.pub_date) : new Date();
-const updatedDate = post.updated_at ? new Date(post.updated_at) : undefined;
+const updatedDate = updatedAfterPublish(post.updated_at, post.pub_date);
 const displayDate = updatedDate ?? pubDate;
 const dateStr = displayDate.toLocaleDateString('ar-AE', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -114,6 +117,7 @@ const { data: related } = await supabase
   .from('blog_posts')
   .select('ar_title, title, slug, category')
   .eq('status', 'published')
+  .lte('pub_date', todayInDubai())
   .is('deleted_at', null)
   .eq('category', post.category)
   .neq('slug', slug!)

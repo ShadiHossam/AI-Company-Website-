@@ -3,6 +3,7 @@ export const prerender = false;
 import { postPath } from '../../../lib/postPaths';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { getSupabaseAdmin } from '../../../lib/supabase';
+import { isScheduled, todayInDubai } from '../../../lib/scheduledPosts';
 import { marked } from 'marked';
 import { sanitizeRichText } from '../../../lib/sanitize';
 
@@ -24,6 +25,9 @@ const { data: post, error } = await supabase
 if (!post) {
   return Astro.redirect('/admin/blog');
 }
+
+// Scheduled posts are published rows with a future pub_date (lib/scheduledPosts.ts).
+const displayStatus = post.status === 'published' && isScheduled(post.pub_date) ? 'scheduled' : post.status;
 
 const createdAt = new Date(post.created_at).toLocaleString('en-AE', { dateStyle: 'medium', timeStyle: 'short' });
 const updatedAt = new Date(post.updated_at).toLocaleString('en-AE', { dateStyle: 'medium', timeStyle: 'short' });
@@ -54,10 +58,10 @@ const postTagIds = new Set((postTagRows ?? []).map((r: { tag_id: string }) => r.
       Back
     </a>
     <h1 style="font-size:1.375rem; font-weight:800; color:var(--text-primary); flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">{post.title}</h1>
-    <span class={`badge ${post.status === 'published' ? 'badge-published' : post.status === 'draft' ? 'badge-draft' : ''}`}
-      style={post.status === 'archived' ? 'background:rgba(245,158,11,0.12);color:#fbbf24;' : post.status === 'scheduled' ? 'background:rgba(96,165,250,0.12);color:#60a5fa;' : ''}
+    <span class={`badge ${displayStatus === 'published' ? 'badge-published' : displayStatus === 'draft' ? 'badge-draft' : ''}`}
+      style={displayStatus === 'archived' ? 'background:rgba(245,158,11,0.12);color:#fbbf24;' : displayStatus === 'scheduled' ? 'background:rgba(96,165,250,0.12);color:#60a5fa;' : ''}
     >
-      {post.status}
+      {displayStatus}
     </span>
   </div>
 
@@ -310,16 +314,16 @@ const postTagIds = new Set((postTagRows ?? []).map((r: { tag_id: string }) => r.
             <label class="form-label" for="status">Status</label>
             <select id="status" name="status" class="form-select">
               <option value="draft" selected={post.status === 'draft'}>Draft</option>
-              <option value="scheduled" selected={post.status === 'scheduled'}>Scheduled</option>
-              <option value="published" selected={post.status === 'published'}>Published</option>
+              <option value="scheduled" selected={displayStatus === 'scheduled'}>Scheduled</option>
+              <option value="published" selected={displayStatus === 'published'}>Published</option>
               <option value="archived" selected={post.status === 'archived'}>Archived</option>
             </select>
           </div>
 
-          <div class="form-group mb-4" id="pub-date-wrap" style={post.status === 'scheduled' ? '' : 'display:none;'}>
+          <div class="form-group mb-4" id="pub-date-wrap" style={displayStatus === 'scheduled' ? '' : 'display:none;'}>
             <label class="form-label" for="pub_date">Publish Date</label>
             <input id="pub_date" name="pub_date" type="date" class="form-input" value={post.pub_date ?? ''}
-              required={post.status === 'scheduled'} />
+              required={displayStatus === 'scheduled'} min={todayInDubai()} />
             <span class="text-xs text-muted" style="margin-top:4px;display:block;">Post goes live on this date</span>
           </div>
 

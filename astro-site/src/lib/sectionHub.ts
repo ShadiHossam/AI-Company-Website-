@@ -2,6 +2,7 @@ import { getSupabaseAdmin } from './supabase';
 import { isArabicOnlyPost } from './post-lang';
 import { categoryLabel } from './blogCategories';
 import { postPath, type PostSection } from './postPaths';
+import { todayInDubai } from './scheduledPosts';
 
 export interface SectionCard {
   href: string;
@@ -26,6 +27,7 @@ export async function loadSectionCards(section: PostSection, lang: 'en' | 'ar'):
       .select('slug, title, description, ar_title, ar_description, category, pub_date, og_image, og_image_alt')
       .like('slug', `${section}/%`)
       .eq('status', 'published')
+      .lte('pub_date', todayInDubai())
       .is('deleted_at', null)
       .order('pub_date', { ascending: false });
 

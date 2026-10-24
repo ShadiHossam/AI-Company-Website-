@@ -3,6 +3,7 @@ export const prerender = false;
 import { postPath } from '../../../lib/postPaths';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { getSupabaseAdmin } from '../../../lib/supabase';
+import { isScheduled, todayInDubai } from '../../../lib/scheduledPosts';
 
 const user = Astro.locals.user!;
 const supabase = getSupabaseAdmin();
@@ -20,11 +21,17 @@ let query = supabase
   .is('deleted_at', null)
   .order('created_at', { ascending: false });
 
-if (statusFilter !== 'all') {
+// Scheduled posts are published rows with a future pub_date (lib/scheduledPosts.ts).
+if (statusFilter === 'scheduled') {
+  query = query.eq('status', 'published').gt('pub_date', todayInDubai());
+} else if (statusFilter === 'published') {
+  query = query.eq('status', 'published').lte('pub_date', todayInDubai());
+} else if (statusFilter !== 'all') {
   query = query.eq('status', statusFilter);
 }
 
-const { data: posts, error } = await query;
+const { data: rows, error } = await query;
+const posts = rows?.map((p) => ({ ...p, status: p.status === 'published' && isScheduled(p.pub_date) ? 'scheduled' : p.status }));
 ---
 
 <AdminLayout title="Blog Posts" user={user} unreadCount={unreadNotifs ?? 0}>

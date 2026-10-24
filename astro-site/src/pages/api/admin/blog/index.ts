@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../../../lib/supabase';
+import { isScheduled, todayInDubai } from '../../../../lib/scheduledPosts';
 
 export const prerender = false;
 
@@ -75,8 +76,16 @@ export const POST: APIRoute = async ({ locals, request }) => {
     );
   }
 
-  const status = (body.status as string) ?? 'draft';
-  const now = new Date().toISOString().split('T')[0];
+  // A scheduled post is stored as published with a future pub_date (see
+  // lib/scheduledPosts.ts); the status column has no 'scheduled' value.
+  if (body.status === 'scheduled' && (typeof body.pub_date !== 'string' || !isScheduled(body.pub_date))) {
+    return new Response(
+      JSON.stringify({ error: 'A scheduled post needs a future publish date' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+  const status = body.status === 'scheduled' ? 'published' : ((body.status as string) ?? 'draft');
+  const now = todayInDubai();
 
   const insertData: Record<string, unknown> = {
     title,

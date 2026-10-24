@@ -3,6 +3,7 @@ export const prerender = false;
 import { postPath } from '../../../lib/postPaths';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { getSupabaseAdmin } from '../../../lib/supabase';
+import { isScheduled } from '../../../lib/scheduledPosts';
 
 const user = Astro.locals.user!;
 const supabase = getSupabaseAdmin();
@@ -26,7 +27,9 @@ const [{ data: posts }, { count: unreadNotifs }] = await Promise.all([
 
 // Group by pub_date (date string YYYY-MM-DD)
 const byDate: Record<string, typeof posts> = {};
-for (const post of posts ?? []) {
+for (const row of posts ?? []) {
+  // Scheduled posts are published rows with a future pub_date (lib/scheduledPosts.ts).
+  const post = { ...row, status: row.status === 'published' && isScheduled(row.pub_date) ? 'scheduled' : row.status };
   const key = post.pub_date ?? post.created_at?.split('T')[0];
   if (!key || key < startDate || key > endDate) continue;
   if (!byDate[key]) byDate[key] = [];

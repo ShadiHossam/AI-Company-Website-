@@ -4,6 +4,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { getSupabaseAdmin } from "../lib/supabase";
 import { isArabicOnlyPost } from "../lib/post-lang";
 import { BLOG_CATEGORIES, categoryBySlug, categoryGroup, categoryLabel } from "../lib/blogCategories";
+import { todayInDubai } from '../lib/scheduledPosts';
 import PageHero from '../components/PageHero.astro';
 import { postPath } from '../lib/postPaths';
 
@@ -30,6 +31,7 @@ try {
     .from('blog_posts')
     .select('id, title, slug, description, category, pub_date, author_name, og_image')
     .eq('status', 'published')
+    .lte('pub_date', todayInDubai())
     .is('deleted_at', null)
     .order('pub_date', { ascending: false });
 

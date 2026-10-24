@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../lib/supabase';
+import { todayInDubai, lastModified } from '../lib/scheduledPosts';
 import { getCollection } from 'astro:content';
 import { isArabicOnlyPost } from '../lib/post-lang';
 import { postPath, postSection, type PostSection } from '../lib/postPaths';
@@ -20,6 +21,7 @@ export const GET: APIRoute = async () => {
       .from('blog_posts')
       .select('slug, title, pub_date, updated_at, ar_title')
       .eq('status', 'published')
+      .lte('pub_date', todayInDubai())
       .eq('noindex', false)
       .is('deleted_at', null)
       .order('pub_date', { ascending: false });
@@ -35,7 +37,7 @@ export const GET: APIRoute = async () => {
         }
         const en = `${BASE}${postPath(post.slug, 'en')}`;
         const ar = `${BASE}${postPath(post.slug, 'ar')}`;
-        const lastmod = (post.updated_at ?? post.pub_date ?? new Date().toISOString())
+        const lastmod = (lastModified(post.updated_at, post.pub_date) ?? new Date()).toISOString()
           .replace(/(\.\d+)?Z$/, '+00:00');
 
         // An Arabic-only post has no English version, so /ar/blog/<slug> is its
