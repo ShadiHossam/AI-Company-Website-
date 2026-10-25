@@ -25,6 +25,15 @@ describe('GET /api/admin/config', () => {
     expect(res.status).toBe(401);
   });
 
+  it('returns 403 for a non-super_admin role', async () => {
+    const ctx = {
+      locals: makeLocals({ role: 'editor' }),
+      request: new Request('https://lenooai.com/api/admin/config'),
+    };
+    const res = await GET(ctx as any);
+    expect(res.status).toBe(403);
+  });
+
   it('returns all site_config rows', async () => {
     const rows = [{ key: 'site.name', value: 'Lenoo AI', section: 'branding' }];
     makeSupabase({ data: rows, error: null });

@@ -12,6 +12,11 @@ export const GET: APIRoute = async ({ request, locals }) => {
   if (!locals.user) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
+  // Same bar as PATCH: the table holds the role map, notify contacts and the
+  // maintenance allow-list, which a "settings" editor has no need to read raw.
+  if (locals.user.role !== 'super_admin') {
+    return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
+  }
 
   const url = new URL(request.url);
   const section = url.searchParams.get('section');
