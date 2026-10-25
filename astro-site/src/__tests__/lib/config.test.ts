@@ -6,7 +6,7 @@ vi.mock('../../lib/supabase', () => ({
 }));
 
 import { getSupabaseAdmin } from '../../lib/supabase';
-import { getSiteConfig, getSiteConfigSection, updateSiteConfig } from '../../lib/config';
+import { getSiteConfig, getSiteConfigSection, updateSiteConfig, __resetSiteConfigCacheForTest } from '../../lib/config';
 
 function makeSupabase(result: Record<string, unknown>) {
   const chain = makeChain(result);
@@ -16,7 +16,10 @@ function makeSupabase(result: Record<string, unknown>) {
 }
 
 describe('getSiteConfig', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    __resetSiteConfigCacheForTest();
+  });
 
   it('returns a key-value map from rows', async () => {
     makeSupabase({
@@ -41,6 +44,26 @@ describe('getSiteConfig', () => {
     makeSupabase({ data: null, error: null });
     const config = await getSiteConfig();
     expect(config).toEqual({});
+  });
+
+  it('serves repeat reads from the cache', async () => {
+    const { supabase } = makeSupabase({ data: [{ key: 'a', value: '1' }], error: null });
+    await getSiteConfig();
+    await getSiteConfig();
+    expect(supabase.from).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps serving the last good config when a later read fails', async () => {
+    vi.useFakeTimers();
+    try {
+      makeSupabase({ data: [{ key: 'a', value: '1' }], error: null });
+      await getSiteConfig();
+      vi.advanceTimersByTime(61_000);
+      makeSupabase({ data: null, error: { message: 'DB error' } });
+      expect(await getSiteConfig()).toEqual({ a: '1' });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
@@ -78,5 +101,10 @@ describe('updateSiteConfig', () => {
     await updateSiteConfig(updates);
 
     expect(chain['upsert']).toHaveBeenCalledWith(updates, { onConflict: 'key' });
+  });
+
+  it('throws when the upsert fails', async () => {
+    makeSupabase({ data: null, error: { message: 'denied' } });
+    await expect(updateSiteConfig([{ key: 'a', value: 'b' }])).rejects.toThrow('denied');
   });
 });

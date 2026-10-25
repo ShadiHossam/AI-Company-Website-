@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../../../lib/supabase';
 import { TRASH_ENTITIES } from './index';
+import { logActivity } from '../../../../lib/activityLog';
 
 export const prerender = false;
 
@@ -26,7 +27,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
     return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 
-  await supabase.from('activity_log').insert({
+  await logActivity({
     action: `${body.entity_type}.restored`,
     entity_type: body.entity_type,
     entity_id: body.id,

@@ -41,22 +41,38 @@ function salt(dir: string): string {
   const f = path.join(dir, '.salt');
   try { saltCache = fs.readFileSync(f, 'utf8').trim(); } catch { /* first run */ }
   if (!saltCache) {
+    try { fs.mkdirSync(dir, { recursive: true, mode: 0o700 }); } catch { /* exists or read-only */ }
     saltCache = crypto.randomBytes(16).toString('hex');
     try { fs.writeFileSync(f, saltCache, { mode: 0o600 }); } catch { /* read-only disk */ }
   }
   return saltCache;
 }
 
+// The directory is only created on the salt's first run (inside salt()), not on
+// every beacon: a synchronous mkdir per request blocked the event loop.
 export function hashIp(ip: string): string {
   const dir = dataDir();
-  try { fs.mkdirSync(dir, { recursive: true, mode: 0o700 }); } catch { /* exists or read-only */ }
   return crypto.createHash('sha256').update(salt(dir) + ip).digest('hex').slice(0, 12);
 }
 
+// Hard cap per day file, so a flood of beacons can't fill the disk. Counted in
+// memory (resets on restart, which only ever loosens it for one day).
+const DAILY_BYTES_CAP = 100 * 1024 * 1024;
+let bytesDay = '';
+let bytesToday = 0;
+let dirReady = false;
+
 export async function appendLine(line: string): Promise<void> {
+  const day = new Date().toISOString().slice(0, 10);
+  if (day !== bytesDay) { bytesDay = day; bytesToday = 0; }
+  if (bytesToday + line.length > DAILY_BYTES_CAP) return;
+  bytesToday += line.length + 1;
   const dir = dataDir();
-  await fs.promises.mkdir(dir, { recursive: true, mode: 0o700 });
-  await fs.promises.appendFile(path.join(dir, new Date().toISOString().slice(0, 10) + '.ndjson'), line + '\n');
+  if (!dirReady) {
+    await fs.promises.mkdir(dir, { recursive: true, mode: 0o700 });
+    dirReady = true;
+  }
+  await fs.promises.appendFile(path.join(dir, day + '.ndjson'), line + '\n');
 }
 
 // ---------- dates (Dubai) ----------

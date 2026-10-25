@@ -15,6 +15,9 @@ export const GET: APIRoute = async () => {
   const enSections = new Set<PostSection>();
   const arSections = new Set<PostSection>();
 
+  // A failed read used to fall through to the content collection only and cache
+  // that shrunken sitemap for an hour, telling Google most posts had vanished.
+  let dbFailed = false;
   try {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
@@ -26,6 +29,7 @@ export const GET: APIRoute = async () => {
       .is('deleted_at', null)
       .order('pub_date', { ascending: false });
 
+    if (error || !data) dbFailed = true;
     if (!error && data) {
       for (const post of data) {
         seenSlugs.add(post.slug);
@@ -74,7 +78,13 @@ export const GET: APIRoute = async () => {
       }
     }
   } catch {
-    // DB unreachable — fall through to content-collection posts below
+    dbFailed = true;
+  }
+  if (dbFailed) {
+    return new Response('Temporarily unavailable', {
+    status: 503,
+    headers: { 'Retry-After': '120', 'Cache-Control': 'no-store' },
+  });
   }
 
   const sections = new Set([...enSections, ...arSections]);

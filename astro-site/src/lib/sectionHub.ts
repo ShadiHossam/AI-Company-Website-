@@ -28,13 +28,14 @@ export interface SectionCard {
 
 /**
  * Published posts of a section in one language, newest first. Empty when the
- * section has nothing live yet or the database is unreachable; the hub page
- * answers 404 in that case rather than serving an empty index.
+ * section has nothing live yet (the hub page answers 404), and null when the
+ * database is unreachable (the hub answers 503, so crawlers retry instead of
+ * dropping a live hub as a 404).
  */
-export async function loadSectionCards(section: PostSection, lang: 'en' | 'ar'): Promise<SectionCard[]> {
+export async function loadSectionCards(section: PostSection, lang: 'en' | 'ar'): Promise<SectionCard[] | null> {
   const ar = lang === 'ar';
   try {
-    const { data } = await getSupabaseAdmin()
+    const { data, error } = await getSupabaseAdmin()
       .from('blog_posts')
       .select('slug, title, description, ar_title, ar_description, category, pub_date, og_image, og_image_alt')
       .like('slug', `${section}/%`)
@@ -42,6 +43,10 @@ export async function loadSectionCards(section: PostSection, lang: 'en' | 'ar'):
       .lte('pub_date', todayInDubai())
       .is('deleted_at', null)
       .order('pub_date', { ascending: false });
+    if (error) {
+      console.error('[sectionHub] read failed:', error.message);
+      return null;
+    }
 
     return ((data ?? []) as SectionPostRow[])
       .filter((r) => (ar ? !!r.ar_title : !isArabicOnlyPost(r)))
@@ -54,7 +59,8 @@ export async function loadSectionCards(section: PostSection, lang: 'en' | 'ar'):
         image: r.og_image && r.og_image !== '/assets/og-blog.jpg' ? r.og_image : undefined,
         imageAlt: r.og_image_alt ?? (ar ? r.ar_title : r.title) ?? '',
       }));
-  } catch {
-    return [];
+  } catch (err) {
+    console.error('[sectionHub] read failed:', err);
+    return null;
   }
 }

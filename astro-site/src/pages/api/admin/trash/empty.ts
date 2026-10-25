@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../../../lib/supabase';
 import { TRASH_ENTITIES } from './index';
+import { logActivity } from '../../../../lib/activityLog';
 
 export const prerender = false;
 
@@ -20,7 +21,7 @@ export const POST: APIRoute = async ({ locals }) => {
     purged += count ?? 0;
   }
 
-  await supabase.from('activity_log').insert({
+  await logActivity({
     action: 'trash.emptied',
     entity_type: 'trash',
     entity_id: null,

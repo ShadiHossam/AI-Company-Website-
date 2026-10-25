@@ -5,9 +5,18 @@ import { loadSectionCards } from '../../../lib/sectionHub';
 
 Astro.response.headers.set('Cache-Control', 's-maxage=900, stale-while-revalidate=3600');
 
-const cards = await loadSectionCards('abu-dhabi', 'ar');
+const [cards, twin] = await Promise.all([
+  loadSectionCards('abu-dhabi', 'ar'),
+  loadSectionCards('abu-dhabi', 'en'),
+]);
+if (cards === null) {
+  return new Response('Temporarily unavailable', {
+    status: 503,
+    headers: { 'Retry-After': '120', 'Cache-Control': 'no-store' },
+  });
+}
 if (cards.length === 0) return Astro.rewrite('/404');
-const hasTwin = (await loadSectionCards('abu-dhabi', 'en')).length > 0;
+const hasTwin = (twin ?? []).length > 0;
 ---
 
 <SectionHub

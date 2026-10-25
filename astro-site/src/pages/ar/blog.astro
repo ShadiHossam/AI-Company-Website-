@@ -2,8 +2,7 @@
 export const prerender = false;
 import { postPath } from '../../lib/postPaths';
 import ArBaseLayout from '../../layouts/ArBaseLayout.astro';
-import { getSupabaseAdmin } from '../../lib/supabase';
-import { todayInDubai } from '../../lib/scheduledPosts';
+import { getPublishedPostList } from '../../lib/blogList';
 import { BLOG_CATEGORIES, categoryBySlug, categoryGroup, categoryLabel } from '../../lib/blogCategories';
 import PageHero from '../../components/PageHero.astro';
 
@@ -22,21 +21,8 @@ interface DbPost {
 
 let posts: DbPost[] = [];
 
-try {
-  const supabase = getSupabaseAdmin();
-  const { data } = await supabase
-    .from('blog_posts')
-    .select('id, ar_title, ar_description, slug, category, pub_date, author_name, og_image')
-    .eq('status', 'published')
-    .lte('pub_date', todayInDubai())
-    .is('deleted_at', null)
-    .not('ar_title', 'is', null)
-    .order('pub_date', { ascending: false });
-
-  if (data) posts = data as DbPost[];
-} catch {
-  posts = [];
-}
+// Shared, cached with /blog; only rows with an Arabic version are listed here.
+posts = ((await getPublishedPostList()) ?? []).filter(p => p.ar_title) as DbPost[];
 
 // Category filter: ?category=<group slug>, same groups as the English blog.
 const categoryParam = (Astro.url.searchParams.get('category') ?? '').trim();

@@ -247,6 +247,16 @@ describe('POST /api/admin/media/upload', () => {
     expect((await res.json()).error).toBe('File exceeds 10 MB limit');
   });
 
+  it('returns 400 when the bytes are not an image, whatever the claimed type', async () => {
+    const html = new TextEncoder().encode('<html><script>alert(1)</script>');
+    const ctx = {
+      locals: makeLocals(),
+      request: makeUploadRequest(html, 'photo.jpg', 'image/jpeg'),
+    };
+    const res = await UPLOAD(ctx as any);
+    expect(res.status).toBe(400);
+  });
+
   it('returns 201 on successful upload', async () => {
     const created = { id: 'new-id', filename: 'photo.jpg', public_url: 'https://cdn/photo.jpg' };
     (getSupabaseAdmin as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -262,7 +272,7 @@ describe('POST /api/admin/media/upload', () => {
 
     const ctx = {
       locals: makeLocals(),
-      request: makeUploadRequest(new Uint8Array([137, 80, 78]), 'photo.jpg', 'image/jpeg', 'A photo'),
+      request: makeUploadRequest(new Uint8Array([0xff, 0xd8, 0xff, 0xe0]), 'photo.jpg', 'image/jpeg', 'A photo'),
     };
     const res = await UPLOAD(ctx as any);
     expect(res.status).toBe(201);
@@ -286,7 +296,7 @@ describe('POST /api/admin/media/upload', () => {
 
     const ctx = {
       locals: makeLocals(),
-      request: makeUploadRequest(new Uint8Array([137, 80]), 'photo.jpg', 'image/jpeg'),
+      request: makeUploadRequest(new Uint8Array([0xff, 0xd8, 0xff, 0xe0]), 'photo.jpg', 'image/jpeg'),
     };
     const res = await UPLOAD(ctx as any);
     expect(res.status).toBe(500);
@@ -308,7 +318,7 @@ describe('POST /api/admin/media/upload', () => {
 
     const ctx = {
       locals: makeLocals(),
-      request: makeUploadRequest(new Uint8Array([1]), 'photo.jpg', 'image/jpeg'),
+      request: makeUploadRequest(new Uint8Array([0xff, 0xd8, 0xff, 0xe0]), 'photo.jpg', 'image/jpeg'),
     };
     const res = await UPLOAD(ctx as any);
     expect(res.status).toBe(500);

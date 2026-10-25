@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../../../../lib/supabase';
+import { logActivity } from '../../../../../lib/activityLog';
 
 export const prerender = false;
 
@@ -53,7 +54,7 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
 
     if (error) throw error;
 
-    await supabase.from('activity_log').insert({
+    await logActivity({
       admin_email: locals.user.email,
       action: 'case_study.updated',
       entity_type: 'case_study',
@@ -75,7 +76,7 @@ export const DELETE: APIRoute = async ({ locals, params, request }) => {
     const { error } = await supabase.from('case_studies').update({ deleted_at: new Date().toISOString() }).eq('id', params.id!);
     if (error) throw error;
 
-    await supabase.from('activity_log').insert({
+    await logActivity({
       admin_email: locals.user.email,
       action: 'case_study.deleted',
       entity_type: 'case_study',

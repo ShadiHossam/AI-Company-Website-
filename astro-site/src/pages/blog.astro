@@ -1,10 +1,9 @@
 ---
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { getSupabaseAdmin } from "../lib/supabase";
+import { getPublishedPostList } from "../lib/blogList";
 import { isArabicOnlyPost } from "../lib/post-lang";
 import { BLOG_CATEGORIES, categoryBySlug, categoryGroup, categoryLabel } from "../lib/blogCategories";
-import { todayInDubai } from '../lib/scheduledPosts';
 import PageHero from '../components/PageHero.astro';
 import { postPath } from '../lib/postPaths';
 
@@ -25,25 +24,13 @@ interface DbPost {
 let dbPosts: DbPost[] = [];
 let dbError = false;
 
-try {
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from('blog_posts')
-    .select('id, title, slug, description, category, pub_date, author_name, og_image')
-    .eq('status', 'published')
-    .lte('pub_date', todayInDubai())
-    .is('deleted_at', null)
-    .order('pub_date', { ascending: false });
-
-  if (!error && data) {
-    // Arabic-only posts live at /ar/blog/<slug> and are listed on /ar/blog.
-    // They were previously shown here too, filling the English index with
-    // Arabic headlines that linked to URLs that now 301 to the Arabic side.
-    dbPosts = (data as DbPost[]).filter(post => !isArabicOnlyPost(post));
-  } else {
-    dbError = true;
-  }
-} catch {
+const rows = await getPublishedPostList();
+if (rows) {
+  // Arabic-only posts live at /ar/blog/<slug> and are listed on /ar/blog.
+  // They were previously shown here too, filling the English index with
+  // Arabic headlines that linked to URLs that now 301 to the Arabic side.
+  dbPosts = rows.filter(post => !isArabicOnlyPost(post));
+} else {
   dbError = true;
 }
 

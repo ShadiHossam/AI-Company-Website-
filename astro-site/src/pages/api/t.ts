@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { appendLine, hashIp } from '../../lib/analytics-store';
+import { getClientIp, createRateLimiter } from '../../lib/request-safety';
 
 export const prerender = false;
 
@@ -12,6 +13,10 @@ export const prerender = false;
 const MAX = 32768;
 const BOT_UA = /bot|crawl|spider|slurp|lighthouse|headless|pagespeed|preview|curl|wget|python|httpclient/i;
 const OWN_HOST = /(^|\.)(lenooai\.com|usine\.site)$/;
+
+// A real visitor sends a handful of beacons per page view; 120 per IP per 10
+// minutes leaves plenty of room while stopping a script from flooding the log.
+const allowBeacon = createRateLimiter(120, 10 * 60 * 1000);
 
 const done = () => new Response(null, { status: 204, headers: { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' } });
 
@@ -46,8 +51,10 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   if (k !== 'optout' && (typeof d.vid !== 'string' || !/^s_[a-z0-9]{8,24}$/.test(d.vid))) return done();
 
   // Server-side fields. The raw IP is never stored, only a salted hash.
-  let ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '';
-  if (!ip) { try { ip = clientAddress; } catch { /* adapter without it */ } }
+  let address: string | undefined;
+  try { address = clientAddress; } catch { /* adapter without it */ }
+  const ip = getClientIp(request, address);
+  if (!allowBeacon(ip)) return done();
   d.ts = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
   try { d.ip = hashIp(ip); } catch { d.ip = ''; }
   d.ua = ua;

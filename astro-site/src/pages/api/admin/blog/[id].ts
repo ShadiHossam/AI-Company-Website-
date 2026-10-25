@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../../../lib/supabase';
 import { sanitizeRichText } from '../../../../lib/sanitize';
 import { isScheduled, todayInDubai } from '../../../../lib/scheduledPosts';
+import { logActivity } from '../../../../lib/activityLog';
 
 export const prerender = false;
 
@@ -129,7 +130,7 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
       .limit(1)
       .single();
 
-    await supabase.from('blog_post_versions').insert({
+    const { error: versionError } = await supabase.from('blog_post_versions').insert({
       post_id: id,
       version_num: (maxVer?.version_num ?? 0) + 1,
       title: existing.title,
@@ -145,6 +146,14 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
       meta_title: existing.meta_title,
       meta_description: existing.meta_description,
     });
+    // Without the snapshot the edit would be unrecoverable, so don't make it.
+    if (versionError) {
+      console.error('[blog] version snapshot failed:', versionError.message);
+      return new Response(JSON.stringify({ error: 'Could not save version history; post not updated' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
   }
 
   const { data, error } = await supabase
@@ -162,19 +171,32 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
   }
 
   // Sync tags if tag_ids provided
+  // Add the new set first, then remove the rest: deleting first meant a failed
+  // insert silently wiped every tag on the post.
   if (Array.isArray(body.tag_ids)) {
-    const tagIds = body.tag_ids as string[];
-    await supabase.from('blog_post_tags').delete().eq('post_id', id!);
+    const tagIds = (body.tag_ids as unknown[]).filter((t): t is string => typeof t === 'string');
     if (tagIds.length > 0) {
-      await supabase.from('blog_post_tags').insert(
-        tagIds.map(tag_id => ({ post_id: id!, tag_id }))
+      const { error: tagError } = await supabase.from('blog_post_tags').upsert(
+        tagIds.map(tag_id => ({ post_id: id!, tag_id })),
+        { onConflict: 'post_id,tag_id', ignoreDuplicates: true },
       );
+      if (tagError) {
+        console.error('[blog] tag save failed:', tagError.message);
+        return new Response(JSON.stringify({ error: 'Post saved, but tags could not be updated' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
     }
+    let removeQuery = supabase.from('blog_post_tags').delete().eq('post_id', id!);
+    if (tagIds.length > 0) removeQuery = removeQuery.not('tag_id', 'in', `(${tagIds.join(',')})`);
+    const { error: removeError } = await removeQuery;
+    if (removeError) console.error('[blog] removing old tags failed:', removeError.message);
   }
 
   // Write activity log
   const action = isPublishing ? 'blog.published' : 'blog.updated';
-  await supabase.from('activity_log').insert({
+  await logActivity({
     action,
     entity_type: 'blog_post',
     entity_id: id,
@@ -225,7 +247,7 @@ export const DELETE: APIRoute = async ({ locals, params, request }) => {
     });
   }
 
-  await supabase.from('activity_log').insert({
+  await logActivity({
     action: 'blog.deleted',
     entity_type: 'blog_post',
     entity_id: id,

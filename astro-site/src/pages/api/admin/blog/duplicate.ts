@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../../../lib/supabase';
+import { logActivity } from '../../../../lib/activityLog';
 
 export const prerender = false;
 
@@ -90,7 +91,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
     });
   }
 
-  await supabase.from('activity_log').insert({
+  await logActivity({
     action: 'blog.duplicated',
     entity_type: 'blog_post',
     entity_id: data.id,

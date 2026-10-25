@@ -77,10 +77,13 @@ async function getRedirectFor(pathname: string): Promise<{ to_path: string; stat
   if (!redirectsMap || now >= redirectsExp) {
     try {
       const supabase = getSupabaseAdmin();
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('redirects')
         .select('from_path, to_path, status_code')
         .eq('active', true);
+      // Supabase returns errors rather than throwing; throw so the catch below
+      // keeps the old map and retries in 5s instead of caching an empty one for 60s.
+      if (error) throw new Error(error.message);
       redirectsMap = new Map((data ?? []).map((r: { from_path: string; to_path: string; status_code: number }) => [r.from_path, { to_path: r.to_path, status_code: r.status_code }]));
       redirectsExp = now + REDIRECTS_TTL;
     } catch {

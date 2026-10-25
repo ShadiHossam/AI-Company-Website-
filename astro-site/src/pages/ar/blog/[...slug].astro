@@ -3,15 +3,15 @@ import { authorPhoto } from '../../../lib/authors';
 export const prerender = false;
 import ArBaseLayout from '../../../layouts/ArBaseLayout.astro';
 import { getSupabaseAdmin } from '../../../lib/supabase';
+import { getLiveBlogPaths } from '../../../lib/liveBlogPaths';
 import { todayInDubai, updatedAfterPublish } from '../../../lib/scheduledPosts';
 import { marked } from 'marked';
 import { sanitizeRichText } from '../../../lib/sanitize';
 import { isArabicOnlyPost } from '../../../lib/post-lang';
-import { pruneUnpublishedLinks, buildLiveBlogPaths, localiseBlogLinks, stripTrailingSlashes, pruneMissingPageLinks } from '../../../lib/deadLinks';
+import { pruneUnpublishedLinks, localiseBlogLinks, stripTrailingSlashes, pruneMissingPageLinks } from '../../../lib/deadLinks';
 import { routeExists } from '../../../lib/routes';
 import { withBrand } from '../../../lib/titles';
 import { categoryGroup, categoryLabel } from '../../../lib/blogCategories';
-import { getCollectionBlogPaths } from '../../../lib/collectionSlugs';
 import { postPath, postSection, SECTION_META } from '../../../lib/postPaths';
 
 const { slug } = Astro.params;
@@ -70,7 +70,16 @@ const { data: post, error } = await supabase
 // that stays a redirect. A slug that matches no published row at all is simply
 // missing, and used to bounce to /blog/<slug>, which then bounced again — two
 // hops to reach a soft 404. It now answers 404 directly.
-if (error || !post) {
+if (error && error.code !== 'PGRST116') {
+  // A database outage, not a missing post: 503 so crawlers retry instead of
+  // dropping a real URL as a 404.
+  console.error('[ar/blog] post read failed:', error.message);
+  return new Response('Temporarily unavailable', {
+    status: 503,
+    headers: { 'Retry-After': '120', 'Cache-Control': 'no-store' },
+  });
+}
+if (!post) {
   return await Astro.rewrite('/404');
 }
 if (!post.ar_title) {
@@ -84,16 +93,18 @@ const enPath = isArabicOnlyPost(post) ? null : postPath(slug!, 'en');
 
 // Same treatment as the English route: article bodies link posts that are
 // still queued for publishing, and those links would otherwise resolve to a
-// soft 404.
-const { data: publishedRows } = await supabase
+// soft 404. The live paths and the related posts are fetched in parallel.
+const relatedQuery = supabase
   .from('blog_posts')
-  .select('slug, title, ar_title')
+  .select('ar_title, title, slug, category')
   .eq('status', 'published')
   .lte('pub_date', todayInDubai())
-  .is('deleted_at', null);
-const livePaths = buildLiveBlogPaths(publishedRows ?? [], isArabicOnlyPost);
-// Collection-backed posts are live too, and are not in blog_posts.
-for (const path of await getCollectionBlogPaths()) livePaths.add(path);
+  .is('deleted_at', null)
+  .eq('category', post.category)
+  .neq('slug', slug!)
+  .not('ar_title', 'is', null)
+  .limit(3);
+const [livePaths, { data: related }] = await Promise.all([getLiveBlogPaths(), relatedQuery]);
 
 // Localise first, then prune: a link moved to the reader's own language still
 // has to be checked against what is actually published.
@@ -112,17 +123,6 @@ const pubDate = post.pub_date ? new Date(post.pub_date) : new Date();
 const updatedDate = updatedAfterPublish(post.updated_at, post.pub_date);
 const displayDate = updatedDate ?? pubDate;
 const dateStr = displayDate.toLocaleDateString('ar-AE', { day: 'numeric', month: 'long', year: 'numeric' });
-
-const { data: related } = await supabase
-  .from('blog_posts')
-  .select('ar_title, title, slug, category')
-  .eq('status', 'published')
-  .lte('pub_date', todayInDubai())
-  .is('deleted_at', null)
-  .eq('category', post.category)
-  .neq('slug', slug!)
-  .not('ar_title', 'is', null)
-  .limit(3);
 
 const relatedPosts = (related ?? []) as RelatedPost[];
 

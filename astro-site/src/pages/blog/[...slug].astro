@@ -6,9 +6,9 @@ import ArticleLayout from '../../layouts/ArticleLayout.astro';
 import { marked } from 'marked';
 import { sanitizeRichText } from '../../lib/sanitize';
 import { isArabicOnlyPost } from '../../lib/post-lang';
-import { pruneUnpublishedLinks, buildLiveBlogPaths, localiseBlogLinks, stripTrailingSlashes, pruneMissingPageLinks } from '../../lib/deadLinks';
+import { pruneUnpublishedLinks, localiseBlogLinks, stripTrailingSlashes, pruneMissingPageLinks } from '../../lib/deadLinks';
+import { getLiveBlogPaths } from '../../lib/liveBlogPaths';
 import { routeExists } from '../../lib/routes';
-import { getCollectionBlogPaths } from '../../lib/collectionSlugs';
 import { postPath, postSection } from '../../lib/postPaths';
 
 const { slug } = Astro.params;
@@ -80,6 +80,17 @@ function notFound(): Promise<Response> {
   return Astro.rewrite('/404');
 }
 
+// Set when Supabase errored for a reason other than "no such row" (PGRST116).
+// A real post must not answer 404 during a brief outage: Google would start
+// dropping it. 503 + Retry-After tells crawlers to come back instead.
+let dbUnavailable = false;
+function unavailable(): Response {
+  return new Response('Temporarily unavailable', {
+    status: 503,
+    headers: { 'Retry-After': '120', 'Cache-Control': 'no-store' },
+  });
+}
+
 // 1. Try Supabase first
 try {
   const supabase = getSupabaseAdmin();
@@ -92,25 +103,31 @@ try {
     .is('deleted_at', null)
     .single();
 
+  if (error && error.code !== 'PGRST116') dbUnavailable = true;
   if (!error && data && isArabicOnlyPost(data)) {
     arabicOnly = true;
   } else if (!error && data) {
     dbPost = data as DbPost;
 
+    // Related posts: same category, different slug, max 3. The status filter is
+    // load-bearing: without it a scheduled/draft post could be surfaced as a
+    // "related" link before it is published. Fetched in parallel with the live
+    // paths rather than one after another.
+    const relatedQuery = supabase
+      .from('blog_posts')
+      .select('title, slug, category, og_image, og_image_alt')
+      .eq('status', 'published')
+      .lte('pub_date', todayInDubai())
+      .is('deleted_at', null)
+      .eq('category', dbPost.category)
+      .neq('slug', slug!)
+      .limit(3);
+    const [livePaths, { data: related }] = await Promise.all([getLiveBlogPaths(), relatedQuery]);
+
     // Article bodies cross-link posts that are still in the publishing queue.
     // Left alone those render as real links to URLs that do not exist, which
     // cost crawl budget and leak link equity into soft 404s, so anything not
     // actually published is rendered as plain text instead.
-    const { data: publishedRows } = await supabase
-      .from('blog_posts')
-      .select('slug, title, ar_title')
-      .eq('status', 'published')
-      .lte('pub_date', todayInDubai())
-      .is('deleted_at', null);
-    const livePaths = buildLiveBlogPaths(publishedRows ?? [], isArabicOnlyPost);
-    // Collection-backed posts are live too, and are not in blog_posts.
-    for (const path of await getCollectionBlogPaths()) livePaths.add(path);
-
     // Localise first, then prune: a link moved to the reader's own language
     // still has to be checked against what is actually published.
     bodyHtml = pruneUnpublishedLinks(
@@ -123,20 +140,6 @@ try {
     );
     pubDate = dbPost.pub_date ? new Date(dbPost.pub_date) : new Date();
     updatedDate = updatedAfterPublish(dbPost.updated_at, dbPost.pub_date);
-
-    // Fetch related posts (same category, different slug, max 3).
-    // The status filter below is load-bearing: without it, a scheduled/draft
-    // post in the same category could be surfaced as a "related" link before
-    // it's actually published, producing a broken link for visitors.
-    const { data: related } = await supabase
-      .from('blog_posts')
-      .select('title, slug, category, og_image, og_image_alt')
-      .eq('status', 'published')
-      .lte('pub_date', todayInDubai())
-      .is('deleted_at', null)
-      .eq('category', dbPost.category)
-      .neq('slug', slug!)
-      .limit(3);
 
     // blog_posts has no cover_image column (selecting it fails the whole query),
     // so use og_image and skip the generic social card, which keeps the gradient.
@@ -153,6 +156,7 @@ try {
   }
 } catch {
   // fall through to content collection
+  dbUnavailable = true;
 }
 
 // This post exists only in Arabic — the English columns hold the same Arabic
@@ -200,10 +204,10 @@ if (!dbPost) {
         .slice(0, 3)
         .map(p => ({ title: p.data.title, slug: p.id, category: p.data.category, image: p.data.coverImage }));
     } else {
-      return await notFound();
+      return dbUnavailable ? unavailable() : await notFound();
     }
   } catch {
-    return await notFound();
+    return dbUnavailable ? unavailable() : await notFound();
   }
 }
 ---

@@ -10,6 +10,16 @@ const CSRF = (req: Request) => {
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 
+function sniffImageType(b: Uint8Array): string | null {
+  const ascii = (from: number, to: number) => String.fromCharCode(...b.slice(from, to));
+  if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return 'image/jpeg';
+  if (b[0] === 0x89 && ascii(1, 4) === 'PNG') return 'image/png';
+  if (ascii(0, 4) === 'GIF8') return 'image/gif';
+  if (ascii(0, 4) === 'RIFF' && ascii(8, 12) === 'WEBP') return 'image/webp';
+  if (ascii(4, 8) === 'ftyp' && ['avif', 'avis'].includes(ascii(8, 12))) return 'image/avif';
+  return null;
+}
+
 export const POST: APIRoute = async ({ locals, request }) => {
   if (!locals.user) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -68,13 +78,23 @@ export const POST: APIRoute = async ({ locals, request }) => {
 
   const arrayBuffer = await file.arrayBuffer();
 
+  // The browser-reported type is just a claim; check the file's leading bytes
+  // and store it under the type it really is (or refuse it).
+  const contentType = sniffImageType(new Uint8Array(arrayBuffer.slice(0, 16)));
+  if (!contentType) {
+    return new Response(JSON.stringify({ error: 'File is not a JPEG, PNG, GIF, WebP or AVIF image' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   const supabase = getSupabaseAdmin();
 
   // Upload to Supabase Storage
   let { error: uploadError } = await supabase.storage
     .from('media')
     .upload(filename, arrayBuffer, {
-      contentType: file.type,
+      contentType,
       upsert: false,
     });
 
@@ -84,7 +104,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
       await supabase.storage.createBucket('media', { public: true });
       const retry = await supabase.storage
         .from('media')
-        .upload(filename, arrayBuffer, { contentType: file.type, upsert: false });
+        .upload(filename, arrayBuffer, { contentType, upsert: false });
       uploadError = retry.error;
     } catch {
       // bucket creation failed, keep original upload error

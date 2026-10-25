@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../../../lib/supabase';
+import { logActivity } from '../../../../lib/activityLog';
 
 export const prerender = false;
 
@@ -57,7 +58,7 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
 
   // Write audit log entry
   if (before && updates.status && updates.status !== before.status) {
-    await supabase.from('activity_log').insert({
+    await logActivity({
       admin_email:  locals.user.email,
       action:       'lead.status_changed',
       entity_type:  'lead',
@@ -66,7 +67,7 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
       after_value:  { status: updates.status },
     });
   } else if (updates.internal_notes !== undefined) {
-    await supabase.from('activity_log').insert({
+    await logActivity({
       admin_email:  locals.user.email,
       action:       'lead.notes_updated',
       entity_type:  'lead',

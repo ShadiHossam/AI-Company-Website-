@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../../../lib/supabase';
 import { sanitizeRichText } from '../../../../lib/sanitize';
+import { logActivity } from '../../../../lib/activityLog';
 
 export const prerender = false;
 
@@ -140,13 +141,14 @@ export const POST: APIRoute = async ({ locals, request }) => {
       .limit(1)
       .single();
 
-    await supabase.from('blog_post_versions').insert({
+    const { error: versionError } = await supabase.from('blog_post_versions').insert({
       post_id: body.post_id,
       version_num: (maxVer?.version_num ?? 0) + 1,
       title: current.title,
       slug: current.slug,
       description: current.description,
       body_markdown: current.body_markdown,
+      body_html: current.body_html,
       category: current.category,
       og_image: current.og_image,
       status: current.status,
@@ -155,6 +157,14 @@ export const POST: APIRoute = async ({ locals, request }) => {
       meta_title: current.meta_title,
       meta_description: current.meta_description,
     });
+    // Without the snapshot, restoring would overwrite the current text for good.
+    if (versionError) {
+      console.error('[blog/history] version snapshot failed:', versionError.message);
+      return new Response(JSON.stringify({ error: 'Could not save version history; nothing restored' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
   }
 
   const { data: updated, error: updateErr } = await supabase
@@ -164,6 +174,8 @@ export const POST: APIRoute = async ({ locals, request }) => {
       slug: version.slug,
       description: version.description,
       body_markdown: version.body_markdown,
+      // Older snapshots have no body_html; keep the current one rather than blank it.
+      ...(version.body_html ? { body_html: version.body_html } : {}),
       category: version.category,
       og_image: version.og_image,
       status: version.status,
@@ -184,7 +196,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
     });
   }
 
-  await supabase.from('activity_log').insert({
+  await logActivity({
     action: 'blog.restored',
     entity_type: 'blog_post',
     entity_id: body.post_id,

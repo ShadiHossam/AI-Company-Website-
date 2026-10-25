@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../../../../lib/supabase';
 import { sanitizeRichText } from '../../../../lib/sanitize';
 import { isScheduled, todayInDubai } from '../../../../lib/scheduledPosts';
+import { logActivity } from '../../../../lib/activityLog';
 
 export const prerender = false;
 
@@ -133,7 +134,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
 
   // Write activity log if published
   if (status === 'published') {
-    await supabase.from('activity_log').insert({
+    await logActivity({
       action: 'blog.published',
       entity_type: 'blog_post',
       entity_id: data.id,
