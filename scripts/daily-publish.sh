@@ -70,6 +70,8 @@ ssh -i "$SSH_KEY" "$REMOTE" bash -s <<'EOF'
 set -e
 source /home/zash7309/nodevenv/apps/ai-company-website/astro-site/22/bin/activate
 cd /home/zash7309/apps/ai-company-website/astro-site
+# The secrets file must not outlive this block, even when the build fails (set -e).
+trap 'rm -f /home/zash7309/apps/ai-company-website/astro-site/.env.deploy.tmp' EXIT
 git fetch origin --quiet
 git checkout master --quiet
 git pull origin master --quiet
@@ -102,6 +104,8 @@ ssh -i "$SSH_KEY" "$REMOTE" bash -s <<'EOF'
 set -e
 source /home/zash7309/nodevenv/apps/lenooai-com/repo/astro-site/22/bin/activate
 cd /home/zash7309/apps/lenooai-com/repo/astro-site
+# The secrets file must not outlive this block, even when the build fails (set -e).
+trap 'rm -f /home/zash7309/apps/lenooai-com/repo/astro-site/.env.deploy.tmp' EXIT
 git fetch origin --quiet
 git checkout master --quiet
 git pull origin master --quiet

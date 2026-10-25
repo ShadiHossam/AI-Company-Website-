@@ -10,12 +10,20 @@ set -uo pipefail
 target="$1"
 attempts=4
 
+path=/api/deploy/publish
+body="{\"target\":\"$target\"}"
+
 for ((i = 0; i < attempts; i++)); do
-  url="https://lenooai.com/api/deploy/publish"
+  url="https://lenooai.com$path"
+  # Signed per attempt (see astro-site/src/lib/webhookAuth.ts): the server
+  # rejects requests older than 5 minutes and any signature it has seen.
+  ts=$(date +%s)
+  sig=$(printf '%s' "$ts.POST.$path.$body" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" -hex | sed 's/^.* //')
   code=$(curl -s -o body.txt -w "%{http_code}" --max-time 30 -X POST "$url" \
-    -H "Authorization: Bearer $WEBHOOK_SECRET" \
+    -H "X-Timestamp: $ts" \
+    -H "X-Signature: $sig" \
     -H "Content-Type: application/json" \
-    -d "{\"target\":\"$target\"}") || code="curl-exit-$?"
+    -d "$body") || code="curl-exit-$?"
   title=$(grep -o '<title>[^<]*' body.txt 2>/dev/null | head -1 | cut -c8-)
   echo "$target attempt $((i + 1)): $url -> $code ${title:-$(head -c 200 body.txt 2>/dev/null)}"
   [ "$code" = "202" ] && exit 0

@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { spawn } from 'node:child_process';
-import { timingSafeEqual } from 'node:crypto';
+import { verifyWebhook } from '../../../lib/webhookAuth';
 
 export const prerender = false;
 
@@ -24,13 +24,6 @@ const SCRIPTS: Record<string, string> = {
   ar: '/home/zash7309/publish-repo-scripts/daily-publish-ar.sh',
 };
 
-function secretsMatch(provided: string, expected: string): boolean {
-  const a = Buffer.from(provided);
-  const b = Buffer.from(expected);
-  if (a.length !== b.length) return false;
-  return timingSafeEqual(a, b);
-}
-
 export const POST: APIRoute = async ({ request }) => {
   // Only meaningful on the o2switch Node deployment — the scripts this triggers don't
   // exist on Vercel, and Vercel's serverless functions can't run a detached child process
@@ -42,11 +35,10 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-  const expected = import.meta.env.DEPLOY_WEBHOOK_SECRET;
-  const auth = request.headers.get('authorization') ?? '';
-  const provided = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-
-  if (!expected || !provided || !secretsMatch(provided, expected)) {
+  // Signed with a timestamp (see lib/webhookAuth.ts) rather than a static bearer
+  // token, so a captured request can't be replayed later.
+  const rawBody = await request.text();
+  if (!verifyWebhook(request, rawBody, import.meta.env.DEPLOY_WEBHOOK_SECRET)) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
@@ -55,7 +47,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   let target: string | undefined;
   try {
-    const body = await request.json();
+    const body = JSON.parse(rawBody);
     target = body?.target;
   } catch {
     return new Response(JSON.stringify({ error: 'Invalid JSON body, expected {"target":"en"|"ar"}' }), {

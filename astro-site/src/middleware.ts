@@ -1,4 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
+import { timingSafeEqual } from 'node:crypto';
 import { verifyJWT, extractRole } from './lib/jwt';
 import { getClientIp } from './lib/request-safety';
 import { isTrustedOrigin } from './lib/trusted-origin';
@@ -229,8 +230,26 @@ export function __resetCachesForTest() {
   roleCache.clear();
 }
 
+// Origin lock (opt-in). The prod server also answers directly on its IP, which
+// skips Cloudflare's WAF and rate limits. When ORIGIN_AUTH_SECRET is set at build
+// time, every request must carry it in X-Origin-Auth, which a Cloudflare Transform
+// Rule adds at the edge; direct hits get a bare 403. Leave it unset on staging
+// (not behind Cloudflare) and until the Transform Rule exists, or prod goes dark.
+const originAuthSecret = import.meta.env.ORIGIN_AUTH_SECRET ?? '';
+
+function originAuthOk(request: Request): boolean {
+  if (!originAuthSecret) return true;
+  const a = Buffer.from(request.headers.get('x-origin-auth') ?? '');
+  const b = Buffer.from(originAuthSecret);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
+
+  if (!originAuthOk(context.request)) {
+    return new Response('Forbidden', { status: 403 });
+  }
 
   // Skip static assets (still gets security headers — Vercel's edge rule covers these too)
   if (STATIC_PREFIXES.some(p => pathname.startsWith(p))) {

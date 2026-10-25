@@ -1,0 +1,40 @@
+# Type check and unit tests on every push and PR to master, so a regression is
+# caught before it reaches the o2switch build (which deploys whatever is on master).
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: astro-site
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: astro-site/package-lock.json
+
+      - run: npm ci
+
+      # Generates .astro/types.d.ts (astro:content etc.), which tsc needs.
+      - run: npx astro sync
+
+      - run: npx tsc --noEmit -p .
+
+      - run: npx vitest run --coverage.enabled=false

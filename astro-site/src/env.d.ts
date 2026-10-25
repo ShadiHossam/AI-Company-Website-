@@ -11,6 +11,9 @@ interface ImportMetaEnv {
   readonly RESEND_API_KEY: string;
   readonly SITE_URL: string;
   readonly MAINTENANCE_MODE: string;
+  readonly DEPLOY_WEBHOOK_SECRET?: string;
+  /** Set on prod only, together with the Cloudflare Transform Rule that sends X-Origin-Auth. */
+  readonly ORIGIN_AUTH_SECRET?: string;
 }
 
 interface ImportMeta {

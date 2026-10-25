@@ -52,10 +52,13 @@ jobs:
       - name: Probe webhook reachability
         if: github.event.inputs.target == 'probe'
         run: |
+          body='{"target":"probe"}'
           for url in https://lenooai.com; do
+            ts=$(date +%s)
+            sig=$(printf '%s' "$ts.POST./api/deploy/publish.$body" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" -hex | sed 's/^.* //')
             code=$(curl -s -o body.txt -w "%{http_code}" --max-time 20 -X POST "$url/api/deploy/publish" \
-              -H "Authorization: Bearer $WEBHOOK_SECRET" -H "Content-Type: application/json" \
-              -d '{"target":"probe"}') || code="curl-exit-$?"
+              -H "X-Timestamp: $ts" -H "X-Signature: $sig" -H "Content-Type: application/json" \
+              -d "$body") || code="curl-exit-$?"
             echo "$url -> $code | title: $(grep -o '<title>[^<]*' body.txt | head -1 | cut -c8-) | $(sed 's/<[^>]*>/ /g' body.txt | tr -s ' \n' ' ' | grep -oiE '(o2switch|tiger|protect|captcha|firewall|blocked|bot)[^.]{0,120}' | head -3 | tr '\n' ' ')"
           done
 
