@@ -1,5 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
-import { timingSafeEqual } from 'node:crypto';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { verifyJWT, extractRole } from './lib/jwt';
 import { getClientIp } from './lib/request-safety';
 import { isTrustedOrigin } from './lib/trusted-origin';
@@ -35,13 +35,21 @@ const isStaging = import.meta.env.IS_STAGING === 'true';
 // Calendly is allowlisted unconditionally (not gated on a site_config check like the
 // others) because the inline booking widget is now load-bearing UI in Modal/ArModal and
 // both contact pages, not an optional marketing pixel.
-const CSP = [
-  "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.clarity.ms https://assets.calendly.com",
+// script-src has no 'unsafe-inline': every inline <script> Astro renders is
+// allowed by its sha256 hash, computed per HTML response in withScriptHashes()
+// below, and inline on* attributes are replaced by data-action (src/scripts/actions.ts).
+// Hashes rather than nonces because Cloudflare caches the HTML: a hash stays valid
+// for every visitor who gets the cached copy, a nonce would not.
+// Clarity's loader on www.clarity.ms pulls the real script from scripts.clarity.ms
+// (missing until 2026-10-25, so Clarity never actually ran) and beacons to
+// *.clarity.ms and c.bing.com.
+const SCRIPT_SRC = "'self' https://www.googletagmanager.com https://*.clarity.ms https://assets.calendly.com";
+
+const CSP_REST = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://assets.calendly.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: blob: https:",
-  "connect-src 'self' https://*.supabase.co https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://www.clarity.ms https://calendly.com",
+  "connect-src 'self' https://*.supabase.co https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.clarity.ms https://c.bing.com https://calendly.com",
   // 'self' is required for the sandboxed snippet-preview iframe (admin/settings/snippets) —
   // safe because that iframe uses sandbox="allow-scripts" with no allow-same-origin, so
   // embedded content still can't touch this page's DOM, cookies, or storage.
@@ -53,7 +61,36 @@ const CSP = [
   // but would break an o2switch-hosted domain while it's still serving plain HTTP with
   // no trusted cert (AutoSSL pending), so it's left out there.
   ...(isNodeAdapter ? [] : ['upgrade-insecure-requests']),
-].join('; ');
+];
+
+function buildCsp(scriptHashes: string[] = []): string {
+  return [
+    "default-src 'self'",
+    `script-src ${[SCRIPT_SRC, ...scriptHashes.map((h) => `'sha256-${h}'`)].join(' ')}`,
+    ...CSP_REST,
+  ].join('; ');
+}
+const CSP = buildCsp();
+
+// Executable inline scripts only: JSON-LD and other data blocks never run, so
+// CSP doesn't apply to them.
+const INLINE_SCRIPT = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
+const EXECUTABLE_TYPE = /^(|module|text\/javascript|application\/javascript)$/i;
+
+async function withScriptHashes(response: Response): Promise<Response> {
+  if (!(response.headers.get('content-type') ?? '').includes('text/html') || !response.body) return response;
+  const html = await response.text();
+  const hashes = new Set<string>();
+  for (const [, attrs, body] of html.matchAll(INLINE_SCRIPT)) {
+    if (/\bsrc\s*=/i.test(attrs) || !body) continue;
+    const type = /\btype\s*=\s*["']?([^"'\s>]*)/i.exec(attrs)?.[1] ?? '';
+    if (!EXECUTABLE_TYPE.test(type)) continue;
+    hashes.add(createHash('sha256').update(body, 'utf8').digest('base64'));
+  }
+  const out = new Response(html, response);
+  out.headers.set('Content-Security-Policy', buildCsp([...hashes]));
+  return out;
+}
 
 function applySecurityHeaders(response: Response): void {
   response.headers.set('X-Content-Type-Options', 'nosniff');
@@ -293,7 +330,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // Admin page auth + role check
   if (pathname.startsWith('/admin')) {
     if (ADMIN_PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + '?'))) {
-      return next();
+      // The login page used to skip the security headers entirely.
+      const loginResponse = await next();
+      applySecurityHeaders(loginResponse);
+      return withScriptHashes(loginResponse);
     }
 
     const token = context.cookies.get('sb-access-token')?.value;
@@ -371,5 +411,5 @@ export const onRequest = defineMiddleware(async (context, next) => {
     response.headers.set('Cache-Control', 's-maxage=300, stale-while-revalidate=3600');
   }
 
-  return response;
+  return withScriptHashes(response);
 });

@@ -180,7 +180,7 @@ const kanbanColumns = [
                     class="form-select"
                     style="padding:2px 6px; font-size:0.75rem; background:transparent;"
                     data-lead-id={lead.id}
-                    onchange="updateLeadStatus(this)"
+                    data-change="updateLeadStatus:this"
                   >
                     {Object.entries(statusLabels).map(([k, v]) => (
                       <option value={k} selected={lead.status === k}>{v}</option>
@@ -220,7 +220,7 @@ const kanbanColumns = [
         const colLeads = kanbanLeads.filter(l => l.status === col.key);
         const totalAED = colLeads.reduce((s, l) => s + ((l.estimated_value_aed as number) ?? 0), 0);
         return (
-          <div class="kanban-col" data-status={col.key} ondragover="kanbanDragOver(event)" ondrop="kanbanDrop(event)">
+          <div class="kanban-col" data-status={col.key}>
             <div class="kanban-col-header">
               <span class={`badge ${col.colorClass}`}>{col.label}</span>
               <div style="display:flex; gap:6px; align-items:center;">
@@ -235,7 +235,6 @@ const kanbanColumns = [
                   draggable="true"
                   data-lead-id={String(lead.id)}
                   data-status={String(lead.status)}
-                  ondragstart="kanbanDragStart(event)"
                 >
                   <a href={`/admin/leads/${lead.id}`} style="font-weight:600; color:var(--text-primary); text-decoration:none; display:block; margin-bottom:4px;">{String(lead.full_name)}</a>
                   <div class="text-xs text-muted">{String(lead.company_name)}</div>
@@ -361,5 +360,13 @@ const kanbanColumns = [
   });
 
   // Make functions global for inline handlers
-  Object.assign(window, { updateLeadStatus, kanbanDragStart, kanbanDragOver, kanbanDrop });
+  Object.assign(window, { updateLeadStatus });
+  // Wired here rather than with inline ondrag* attributes, which the CSP blocks.
+  document.querySelectorAll<HTMLElement>('.kanban-col').forEach((col) => {
+    col.addEventListener('dragover', kanbanDragOver);
+    col.addEventListener('drop', kanbanDrop);
+  });
+  document.querySelectorAll<HTMLElement>('.kanban-col [draggable="true"]').forEach((card) => {
+    card.addEventListener('dragstart', kanbanDragStart);
+  });
 </script>

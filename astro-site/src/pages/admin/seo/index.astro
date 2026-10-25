@@ -404,7 +404,19 @@ const optimizedCount = allPages.filter(slug => {
       const updatePreview = () => {
         const url = ogInput.value.trim();
         if (url) {
-          previewWrap.innerHTML = `<img src="${url}" alt="OG preview" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--text-muted);font-size:0.65rem;opacity:0.5;\\'>Invalid URL</div>'" />`;
+          // Built with DOM calls, not innerHTML: the URL is typed by the user, and
+          // the CSP no longer allows an inline onerror attribute.
+          const img = document.createElement('img');
+          img.alt = 'OG preview';
+          img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+          img.addEventListener('error', () => {
+            const msg = document.createElement('div');
+            msg.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--text-muted);font-size:0.65rem;opacity:0.5;';
+            msg.textContent = 'Invalid URL';
+            previewWrap.replaceChildren(msg);
+          });
+          img.src = url;
+          previewWrap.replaceChildren(img);
         } else {
           previewWrap.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-muted);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:24px;height:24px;opacity:0.4;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span style="font-size:0.65rem;opacity:0.5;">No image</span></div>`;
         }

@@ -310,3 +310,25 @@ describe('API admin auth guard', () => {
     expect(next).toHaveBeenCalledOnce();
   });
 });
+
+describe('CSP script hashes', () => {
+  it('allows exactly the inline scripts on the page, never unsafe-inline', async () => {
+    noRedirects();
+    const { createHash } = await import('node:crypto');
+    const inline = 'console.log(1)';
+    const html = `<html><body><script>${inline}</script><script src="/a.js"></script>`
+      + `<script type="application/ld+json">{"a":1}</script></body></html>`;
+    const ctx = makeCtx({ pathname: '/' });
+    const next = vi.fn().mockResolvedValue(new Response(html, { headers: { 'content-type': 'text/html' } }));
+    const res = (await onRequest(ctx, next)) as Response;
+
+    const csp = res.headers.get('Content-Security-Policy') ?? '';
+    const scriptSrc = csp.split('; ').find((d) => d.startsWith('script-src')) ?? '';
+    const expected = createHash('sha256').update(inline).digest('base64');
+    expect(scriptSrc).toContain(`'sha256-${expected}'`);
+    expect(scriptSrc).not.toContain('unsafe-inline');
+    // Only the one executable inline script is hashed (not the JSON-LD block).
+    expect(scriptSrc.match(/'sha256-/g)).toHaveLength(1);
+    expect(await res.text()).toBe(html);
+  });
+});
