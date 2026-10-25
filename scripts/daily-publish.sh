@@ -111,6 +111,8 @@ git checkout master --quiet
 git pull origin master --quiet
 npm install --include=dev --silent
 set -a; source .env.deploy.tmp; set +a
+# Prod-only build env (ORIGIN_AUTH_SECRET for the Cloudflare origin lock); never on staging.
+[ -f /home/zash7309/.env.prod-only ] && { set -a; source /home/zash7309/.env.prod-only; set +a; }
 DEPLOY_TARGET=o2switch IS_STAGING=false SITE_URL=https://lenooai.com NODE_ENV=production npx astro build
 rm -f .env.deploy.tmp
 /usr/sbin/cloudlinux-selector restart --json --interpreter nodejs --domain lenooai.com --app-root apps/lenooai-com/repo/astro-site
