@@ -42,14 +42,15 @@ const isStaging = import.meta.env.IS_STAGING === 'true';
 // for every visitor who gets the cached copy, a nonce would not.
 // Clarity's loader on www.clarity.ms pulls the real script from scripts.clarity.ms
 // (missing until 2026-10-25, so Clarity never actually ran) and beacons to
-// *.clarity.ms and c.bing.com.
-const SCRIPT_SRC = "'self' https://www.googletagmanager.com https://*.clarity.ms https://assets.calendly.com";
+// *.clarity.ms and c.bing.com. Cloudflare injects its Web Analytics beacon from
+// static.cloudflareinsights.com, which reports to cloudflareinsights.com.
+const SCRIPT_SRC = "'self' https://www.googletagmanager.com https://*.clarity.ms https://assets.calendly.com https://static.cloudflareinsights.com";
 
 const CSP_REST = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://assets.calendly.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: blob: https:",
-  "connect-src 'self' https://*.supabase.co https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.clarity.ms https://c.bing.com https://calendly.com",
+  "connect-src 'self' https://*.supabase.co https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.clarity.ms https://c.bing.com https://cloudflareinsights.com https://calendly.com",
   // 'self' is required for the sandboxed snippet-preview iframe (admin/settings/snippets) —
   // safe because that iframe uses sandbox="allow-scripts" with no allow-same-origin, so
   // embedded content still can't touch this page's DOM, cookies, or storage.
