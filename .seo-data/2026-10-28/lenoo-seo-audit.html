@@ -1,0 +1,206 @@
+<title>Lenoo AI SEO Audit</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column, a scorecard grid up top, then severity-tagged findings and a 30/60/90 plan */
+:root{
+  --bg:#f6f8f8; --surface:#ffffff; --fg:#14211f; --muted:#5b6b68; --line:#dbe3e1;
+  --accent:#0e7c86; --accent-soft:#e1f1f2;
+  --crit:#b42318; --crit-bg:#fde8e6; --high:#b54708; --high-bg:#fdf0e1;
+  --med:#8a6d00; --med-bg:#fbf5d9; --low:#47606b; --low-bg:#e8eef0; --good:#1e7a46; --good-bg:#e3f4ea;
+  --f-display:"Fraunces",Georgia,serif; --f-body:"IBM Plex Sans",system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1716; --surface:#16211f; --fg:#e4ecea; --muted:#9aaaa7; --line:#2a3836;
+  --accent:#4cc4cc; --accent-soft:#16393b;
+  --crit:#ff8a7e; --crit-bg:#3d1714; --high:#ffb36b; --high-bg:#3a2510; --med:#e8cf6a; --med-bg:#332c0d; --low:#a9bfc7; --low-bg:#22302f; --good:#6fd39b; --good-bg:#14301f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1716; --surface:#16211f; --fg:#e4ecea; --muted:#9aaaa7; --line:#2a3836;
+  --accent:#4cc4cc; --accent-soft:#16393b;
+  --crit:#ff8a7e; --crit-bg:#3d1714; --high:#ffb36b; --high-bg:#3a2510; --med:#e8cf6a; --med-bg:#332c0d; --low:#a9bfc7; --low-bg:#22302f; --good:#6fd39b; --good-bg:#14301f; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:16px/1.6 var(--f-body)}
+.wrap{max-width:900px;margin:0 auto;padding-block:40px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:40px}
+h1,h2{font-family:var(--f-display);font-weight:600;text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:clamp(28px,5vw,40px)} h2{font-size:24px} h3{font-size:17px;margin:0;line-height:1.35;text-wrap:balance}
+p{margin:0} .muted{color:var(--muted)}
+.eyebrow{font:500 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+header{display:grid;gap:12px}
+.meta{font:13px var(--f-mono);color:var(--muted)}
+section{display:grid;gap:16px}
+.lede{font-size:17px;max-width:68ch}
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.cell{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:grid;gap:6px;min-width:0}
+.cell .k{font-size:14px;font-weight:600}
+.cell .v{font-size:14px;color:var(--muted)}
+.pill{display:inline-block;font:600 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:99px;justify-self:start}
+.p-crit{color:var(--crit);background:var(--crit-bg)} .p-high{color:var(--high);background:var(--high-bg)}
+.p-med{color:var(--med);background:var(--med-bg)} .p-low{color:var(--low);background:var(--low-bg)} .p-good{color:var(--good);background:var(--good-bg)}
+.finding{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:grid;gap:10px;min-width:0}
+.finding .top{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.finding dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 14px;margin:0;font-size:15px}
+.finding dt{font:500 12px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding-top:3px}
+.finding dd{margin:0;min-width:0}
+@media (max-width:560px){.finding dl{grid-template-columns:1fr}.finding dt{padding-top:6px}}
+code,.mono{font-family:var(--f-mono);font-size:.88em;overflow-wrap:anywhere}
+ul{margin:0;padding-left:20px;display:grid;gap:6px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font:500 12px var(--f-mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+td.num{text-align:right}
+.plan{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.plan .cell ul{font-size:14px}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:0 8px 8px 0;font-size:15px}
+a{color:var(--accent)}
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">lenooai.com · technical, content, authority</span>
+  <h1>Lenoo AI SEO Audit</h1>
+  <p class="meta">28 Oct 2026 · live crawl of all 652 sitemap URLs · Lighthouse lab runs · Supabase blog_posts · GSC exports (Performance to 20 Oct, Indexing to 16 Oct)</p>
+</header>
+
+<section>
+  <h2>Summary</h2>
+  <p class="lede">The technical base is in good shape: every page returns 200, canonicals and hreflang are clean, and schema is on every page. What holds the site back is authority and internal linking, not crawl errors. Search shows no brand presence for "Lenoo AI", and the 409 blog posts send almost no links to the service pages that are supposed to win commercial UAE searches. The largest new risk is the publishing queue: 368 of the 686 scheduled English posts follow one template repeated across industries, which is the pattern Google's scaled-content policy targets.</p>
+  <p class="lede">From GSC: weekly clicks fell from 20 to 6 between early September and mid October while impressions held near 800 a week. Average position slipped from 12.3 to 23.8. In the UAE the site sits at position 34 with 0.8% CTR.</p>
+</section>
+
+<section>
+  <h2>Scorecard</h2>
+  <div class="score">
+    <div class="cell"><span class="pill p-good">Healthy</span><span class="k">Crawl and indexing</span><span class="v">652/652 return 200, self-canonicals, no noindex leaks, real 404s, www/http/slash 301s</span></div>
+    <div class="cell"><span class="pill p-good">Healthy</span><span class="k">On-page basics</span><span class="v">0 duplicate titles or descriptions, one H1 per page, median 2,441 words</span></div>
+    <div class="cell"><span class="pill p-good">Healthy</span><span class="k">Structured data</span><span class="v">Organization 649, Breadcrumb 648, BlogPosting 409, FAQPage 237, Service 223, no parse errors</span></div>
+    <div class="cell"><span class="pill p-good">Healthy</span><span class="k">International</span><span class="v">334 EN + 318 AR pages, hreflang pairs 100% reciprocal</span></div>
+    <div class="cell"><span class="pill p-med">Medium</span><span class="k">Server speed</span><span class="v">Cold median TTFB 1.49 s (max 5.2 s), cached 0.5 s; 604 of 652 were cache MISS</span></div>
+    <div class="cell"><span class="pill p-high">High</span><span class="k">Mobile performance</span><span class="v">Lab mobile score 45 to 58, LCP 3.2 to 3.9 s; desktop 85 to 95</span></div>
+    <div class="cell"><span class="pill p-high">High</span><span class="k">Internal linking</span><span class="v">Key service pages get 3 to 7 internal links and none from the blog</span></div>
+    <div class="cell"><span class="pill p-high">High</span><span class="k">Content pipeline</span><span class="v">368 of 686 queued posts are templated industry variants</span></div>
+    <div class="cell"><span class="pill p-crit">Critical</span><span class="k">Authority</span><span class="v">No brand results, no Google Business Profile or LinkedIn in sameAs, no directory listings found</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Findings that block growth</h2>
+
+  <article class="finding">
+    <div class="top"><span class="pill p-crit">Critical</span><h3>The site has almost no authority in the UAE</h3></div>
+    <dl>
+      <dt>Evidence</dt><dd>A web search for "Lenoo AI" Dubai returns nothing about the company. The homepage Organization schema has no <code>sameAs</code>. UAE average position is 34; "custom chatbot development uae" ranks around 74 and "ai automation agency" around 85. Competitors that do rank (iMPLEMENTAi, n8nera, QuantumFind, Soluvide, Altus Tech) are on LinkedIn, DesignRush, GoodFirms, Clutch and the Botpress experts directory.</dd>
+      <dt>Why it matters</dt><dd>On-page work is already above the level of most competitors. Without outside signals, Google has no reason to rank a new domain for commercial terms.</dd>
+      <dt>Fix</dt><dd>Create a Google Business Profile for the Business Bay office and a LinkedIn company page, then add both to <code>sameAs</code>. List the company on DesignRush, GoodFirms, Clutch and Botpress experts with the same name, address and phone (+971 50 195 1590). Then work on links from UAE business media and chambers. I can write the profile copy and outreach list.</dd>
+    </dl>
+  </article>
+
+  <article class="finding">
+    <div class="top"><span class="pill p-high">High</span><h3>Blog posts don't link to the pages that sell</h3></div>
+    <dl>
+      <dt>Evidence</dt><dd>Of 117 English service and industry pages, the median has 7 internal links pointing at it. <code>/services/ai-automation/dubai</code>, <code>/services/ai-automation/abu-dhabi</code>, <code>/services/ai-agents/development</code> and <code>/services/ai-automation/business</code> have 3 each and 0 from any blog post. <code>/services/ai-chatbot-development</code> has 7. 62 sitemap pages have only 1 or 2 internal links.</dd>
+      <dt>Fix</dt><dd>Add 1 to 3 contextual links from each relevant post to its matching service page, with descriptive anchors (for example a WhatsApp post links to the WhatsApp automation service). A re-runnable script in the style of <code>scripts/link-citations</code> can do this across Supabase. Replace the five "Learn More" links on the homepage with descriptive text.</dd>
+    </dl>
+  </article>
+
+  <article class="finding">
+    <div class="top"><span class="pill p-high">High</span><h3>The publishing queue carries scaled-content risk</h3></div>
+    <dl>
+      <dt>Evidence</dt><dd>686 EN posts are queued, one a day until 13 Sep 2028. 368 are in the "Industry Verticals" category. Whole families repeat one topic across 10 to 14 industries: what-to-automate-first (14), ai-automation-cost (14), ai-automation-mistakes (14), chatbot-vs-voice-agent (14), automated-reporting (13). 67 queued titles closely match a live post, for example <code>ai-agency-ajman</code> vs <code>ai-agency-dubai</code>. The median queued body is 11.0k characters vs 13.6k for live posts. Only 13 Arabic posts are queued.</dd>
+      <dt>Why it matters</dt><dd>Google's spam policies name scaled content made mainly to rank as abuse, and the helpful-content signal applies site-wide. A slow drip does not change how the pages look once they're all live.</dd>
+      <dt>Fix</dt><dd>Merge each template family into one strong guide with industry sections, keep a variant only where the industry needs different content, and drop the near-duplicates. Move the posts that support service pages and the commercial UAE topics to the front of the queue.</dd>
+    </dl>
+  </article>
+
+  <article class="finding">
+    <div class="top"><span class="pill p-high">High</span><h3>Page-one articles that get no clicks</h3></div>
+    <dl>
+      <dt>Evidence</dt><dd>From GSC, 3 months: <code>/blog/system-prompt-security</code> 293 impressions at position 5.6, 0 clicks. <code>/blog/whatsapp-ai-agent</code> 93 at 6.9, <code>/blog/voice-platform-comparison</code> 74 at 6.4, <code>/blog/saudi-dialects</code> 58 at 6.6, <code>/blog/tdra-telemarketing-rules</code> 54 at 6.5, all 0 clicks. Close to the top of page one: <code>/industries/hospitality</code> (13.9), <code>/industries/insurance</code> (15.4), <code>/services/arabic-ai/chatbots</code> (18.7).</dd>
+      <dt>Fix</dt><dd>Rewrite the titles and descriptions to answer the searched question directly, and put a two-sentence answer at the top of each article. Add internal links into the near-page-one pages from the strongest related posts.</dd>
+    </dl>
+  </article>
+
+  <article class="finding">
+    <div class="top"><span class="pill p-high">High</span><h3>Mobile pages are slow in lab tests</h3></div>
+    <dl>
+      <dt>Evidence</dt><dd>Lighthouse mobile: hospitality 45 (LCP 3.9 s, TBT 1.7 s), chatbot development 49 (LCP 3.7 s, TBT 2.1 s), system-prompt-security 58 (LCP 3.2 s). Desktop scores are 85 to 95. Most main-thread time goes to style and layout (2.7 s) and rendering (1.3 s), not to JavaScript; DOM size is small (518 to 607 nodes). The homepage mobile run failed twice with "no first paint", although a screenshot renders normally. Hero images are hotlinked from Unsplash and Pexels, which sets third-party cookies (best-practices score 78).</dd>
+      <dt>Caveat</dt><dd>These are lab runs on a laptop. The PageSpeed API quota was used up, so there's no field data yet. Confirm with the GSC Core Web Vitals report.</dd>
+      <dt>Fix</dt><dd>Find the CSS cost (large blur or backdrop-filter layers, animated gradients, the reading progress bar), host hero images yourself in AVIF or WebP with fixed sizes, and preload the LCP image.</dd>
+    </dl>
+  </article>
+
+  <article class="finding">
+    <div class="top"><span class="pill p-med">Medium</span><h3>Googlebot mostly gets uncached pages</h3></div>
+    <dl>
+      <dt>Evidence</dt><dd>On a full crawl, 604 of 652 pages were a cache MISS and 47 had EXPIRED. Cold median TTFB was 1.49 s, p90 1.97 s and max 5.19 s (<code>/ar/services/ai-agents/use-cases</code>). A second request is a HIT at about 0.5 s. Edge cache lifetime is 30 minutes for posts and 60 minutes for pages, so long-tail pages expire before Googlebot returns. A load test of 40 parallel uncached requests all returned 200 (average 1.6 s), so there's no outage risk today.</dd>
+      <dt>Fix</dt><dd>Add a Cloudflare cache rule with a longer edge lifetime (about a day) for public HTML, with a purge on publish and on admin edits. Alternatively, prerender the static marketing pages.</dd>
+    </dl>
+  </article>
+</section>
+
+<section>
+  <h2>Smaller issues</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Severity</th><th>Issue</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pill p-med">Medium</span></td><td>Sitemap lastmod not reliable</td><td>399 URLs share lastmod 2026-10-08 (the bulk copy edit)</td></tr>
+      <tr><td><span class="pill p-med">Medium</span></td><td>Cannibalisation not resolved</td><td>real estate x3, healthcare x2, finance x4, Abu Dhabi x3, n8n x2</td></tr>
+      <tr><td><span class="pill p-low">Low</span></td><td>Long Arabic titles and descriptions</td><td>7 AR titles over 65 characters, 16 AR descriptions over 165</td></tr>
+      <tr><td><span class="pill p-low">Low</span></td><td>Generic link text</td><td>5 "Learn More" links on the homepage (Lighthouse SEO 92)</td></tr>
+      <tr><td><span class="pill p-low">Low</span></td><td>Images without alt</td><td>6 images on /, /ar and 3 marketing pages</td></tr>
+      <tr><td><span class="pill p-low">Low</span></td><td>Heading level skips</td><td>445 pages jump a heading level (for example H2 to H4)</td></tr>
+      <tr><td><span class="pill p-low">Low</span></td><td>Data leftovers</td><td>2 AR titles still have the preposition error, 5 meta titles over 60 characters</td></tr>
+      <tr><td><span class="pill p-low">Low</span></td><td>Staging SSL</td><td>Staging uses a self-signed certificate (an ops issue only; it is still noindex and Disallow)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Risks that could pull the site down</h2>
+  <ul>
+    <li><strong>Templated posts going live daily:</strong> the main ranking risk over the next year (see above).</li>
+    <li><strong>One origin server:</strong> o2switch has returned 500s and 503s before, and short edge caching sends most crawler traffic to it.</li>
+    <li><strong>Hotlinked images:</strong> if Pexels or Unsplash change their hotlink rules, hero and article images break site-wide.</li>
+    <li><strong>Staging leak:</strong> guarded today (noindex header, meta and Disallow). Keep checking after each deploy.</li>
+  </ul>
+  <p class="muted">Checked and fine: the scheduled posts stay hidden until their date (canary returns 404 and is not in the sitemap); the fake case study is gone (<code>/case-studies</code> returns 404); contact details on every page match info@lenooai.com and +971 50 195 1590; SSL is valid to 11 Dec 2026 with HSTS, Brotli and HTTP/2.</p>
+</section>
+
+<section>
+  <h2>Action plan</h2>
+  <div class="plan">
+    <div class="cell"><span class="pill p-crit">Days 1 to 30</span><ul>
+      <li>Thin and merge the templated queue, and reorder it</li>
+      <li>Blog-to-service contextual links script</li>
+      <li>CTR rewrites on the 5 zero-click articles</li>
+      <li>Google Business Profile, LinkedIn page, sameAs</li>
+      <li>Cloudflare cache rule plus purge on publish</li>
+    </ul></div>
+    <div class="cell"><span class="pill p-high">Days 31 to 60</span><ul>
+      <li>Mobile performance pass and self-hosted hero images</li>
+      <li>DesignRush, GoodFirms, Clutch and Botpress listings</li>
+      <li>Resolve the cannibalisation clusters</li>
+      <li>Fix sitemap lastmod and queue more Arabic posts</li>
+    </ul></div>
+    <div class="cell"><span class="pill p-med">Days 61 to 90</span><ul>
+      <li>Outreach to UAE media and partners for links</li>
+      <li>Deepen the commercial pages that rank 35 to 90</li>
+      <li>Compare GSC against the previous 28 days and adjust</li>
+    </ul></div>
+  </div>
+</section>
+
+<section>
+  <h2>Still needs data</h2>
+  <div class="note">These would turn estimates into measurements:
+    <ul>
+      <li><strong>Core Web Vitals:</strong> the GSC report, mobile and desktop.</li>
+      <li><strong>Settings, Crawl stats:</strong> response time and host status.</li>
+      <li><strong>Links report:</strong> top linking sites.</li>
+      <li><strong>Performance:</strong> filtered to the UAE, plus the 28-day comparison.</li>
+      <li><strong>Backlinks and competitor data:</strong> Ubersuggest exports, or authorise the Ahrefs connector.</li>
+    </ul>
+  </div>
+</section>
+</div>
