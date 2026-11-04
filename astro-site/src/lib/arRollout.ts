@@ -11,7 +11,7 @@
  * 'YYYY-MM-DD'. While it is null nothing in RELEASE_ORDER is published, which
  * keeps an early deploy from releasing the whole batch at once.
  */
-export const RELEASE_START: string | null = null;
+export const RELEASE_START: string | null = '2026-11-05';
 
 /** Publication order: the page at index n goes live n days after RELEASE_START. */
 export const RELEASE_ORDER: readonly string[] = [
