@@ -1,19 +1,23 @@
 name: IndexNow submit
 
 # Tells Bing (and the other IndexNow engines) about new or changed lenooai.com
-# URLs instead of waiting for them to be crawled. Runs 90 minutes after
-# daily-publish.yml, which fires its build detached and takes a few minutes, so
-# the day's new pages are live by the time this reads the sitemap.
+# URLs instead of waiting for them to be crawled.
 #
-# New URLs are found by comparing the sitemap with the URL list this workflow
-# saved on its previous run (kept in the Actions cache), plus any URL whose
-# lastmod is within 48h. If the cache was evicted, that run falls back to the
-# lastmod check alone and saves a fresh list. Use the "all" mode to resubmit
+# Runs every 30 minutes rather than once after daily-publish.yml, because pages
+# go live in more than one way: the daily publish, posts published from the
+# admin, and scheduled posts that appear by themselves at midnight Dubai time.
+# Polling the live sitemap catches all of them. The sitemap is edge-cached for
+# up to an hour, so a new page is submitted within about 90 minutes.
+#
+# The workflow saves each URL's lastmod in the Actions cache. A URL is sent only
+# when it is new or its lastmod changed since the previous run, so frequent runs
+# do not resubmit the same pages. If the cache was evicted, that run falls back
+# to lastmod within 48h and saves a fresh list. Use the "all" mode to resubmit
 # every URL in the sitemap.
 
 on:
   schedule:
-    - cron: "47 8 * * *"
+    - cron: "7,37 * * * *"
   workflow_dispatch:
     inputs:
       mode:

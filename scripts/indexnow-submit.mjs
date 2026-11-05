@@ -7,7 +7,7 @@
 // are ever sent: the staging mirror must never be submitted anywhere.
 //
 // Usage:
-//   node scripts/indexnow-submit.mjs --state=.indexnow-state.json  # new since last run + lastmod in 48h
+//   node scripts/indexnow-submit.mjs --state=.indexnow-state.json  # new or lastmod changed since last run
 //   node scripts/indexnow-submit.mjs --since-hours=6               # custom lastmod window
 //   node scripts/indexnow-submit.mjs --all                         # every URL in the sitemap
 //   node scripts/indexnow-submit.mjs --dry-run                     # list, don't submit or save state
@@ -100,8 +100,13 @@ async function main() {
   }
 
   const entries = await collectEntries();
-  const previous = statePath && existsSync(statePath)
-    ? new Set(JSON.parse(readFileSync(statePath, 'utf8')))
+  // State maps each URL to the lastmod seen on the previous run, so a run every
+  // few minutes resubmits a URL only when its lastmod actually moves. An older
+  // state file (a plain URL array) has no lastmods; for that one run, changed
+  // URLs fall back to the --since-hours window.
+  const saved = statePath && existsSync(statePath) ? JSON.parse(readFileSync(statePath, 'utf8')) : null;
+  const previous = saved
+    ? new Map(Array.isArray(saved) ? saved.map(loc => [loc, undefined]) : Object.entries(saved))
     : null;
   if (statePath && !previous) console.log(`No previous state at ${statePath}; selecting by lastmod only this run.`);
 
@@ -109,14 +114,19 @@ async function main() {
   const added = new Set();
   const changed = new Set();
   for (const { loc, lastmod } of entries) {
-    if (previous && !previous.has(loc)) added.add(loc);
-    else if (lastmod && Date.parse(lastmod) >= cutoff) changed.add(loc);
+    if (previous && !previous.has(loc)) { added.add(loc); continue; }
+    const before = previous?.get(loc);
+    if (before !== undefined) {
+      if (lastmod && lastmod !== before) changed.add(loc);
+    } else if (lastmod && Date.parse(lastmod) >= cutoff) {
+      changed.add(loc);
+    }
   }
 
   const urls = all ? [...new Set(entries.map(e => e.loc))] : [...added, ...changed];
   console.log(all
     ? `${urls.length} URLs selected (all)`
-    : `${urls.length} URLs selected (${added.size} new since last run, ${changed.size} with lastmod within ${sinceHours}h)`);
+    : `${urls.length} URLs selected (${added.size} new since last run, ${changed.size} with a changed lastmod)`);
 
   if (dryRun) {
     urls.forEach(u => console.log(`  ${u}`));
@@ -127,8 +137,10 @@ async function main() {
 
   // Saved only after a successful submit, so a failed run retries the same URLs next time.
   if (statePath) {
-    writeFileSync(statePath, JSON.stringify([...new Set(entries.map(e => e.loc))].sort(), null, 2));
-    console.log(`Saved ${entries.length} URLs to ${statePath}`);
+    const state = {};
+    for (const { loc, lastmod } of [...entries].sort((a, b) => a.loc.localeCompare(b.loc))) state[loc] = lastmod ?? null;
+    writeFileSync(statePath, JSON.stringify(state, null, 2));
+    console.log(`Saved ${Object.keys(state).length} URLs to ${statePath}`);
   }
 }
 
