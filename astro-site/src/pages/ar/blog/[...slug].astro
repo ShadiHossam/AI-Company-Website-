@@ -3,7 +3,7 @@ import { authorPhoto } from '../../../lib/authors';
 export const prerender = false;
 import ArBaseLayout from '../../../layouts/ArBaseLayout.astro';
 import { getSupabaseAdmin } from '../../../lib/supabase';
-import { getLiveBlogPaths } from '../../../lib/liveBlogPaths';
+import { getLiveBlogIndex } from '../../../lib/liveBlogPaths';
 import { todayInDubai, updatedAfterPublish } from '../../../lib/scheduledPosts';
 import { marked } from 'marked';
 import { sanitizeRichText } from '../../../lib/sanitize';
@@ -34,6 +34,7 @@ interface DbPost {
   id: string;
   title: string;
   slug: string;
+  lang: string | null;
   ar_title: string | null;
   ar_description: string | null;
   ar_body_markdown: string | null;
@@ -59,7 +60,7 @@ interface RelatedPost {
 const supabase = getSupabaseAdmin();
 const { data: post, error } = await supabase
   .from('blog_posts')
-  .select('id, title, slug, ar_title, ar_description, ar_body_markdown, ar_meta_title, ar_meta_description, category, pub_date, updated_at, author_name, og_image, og_image_alt, og_image_title, noindex')
+  .select('id, title, slug, lang, ar_title, ar_description, ar_body_markdown, ar_meta_title, ar_meta_description, category, pub_date, updated_at, author_name, og_image, og_image_alt, og_image_title, noindex')
   .eq('slug', slug!)
   .eq('status', 'published')
   .lte('pub_date', todayInDubai())
@@ -82,14 +83,11 @@ if (error && error.code !== 'PGRST116') {
 if (!post) {
   return await Astro.rewrite('/404');
 }
+// An English-only post: this Arabic URL never existed, so the redirect is
+// permanent rather than temporary.
 if (!post.ar_title) {
-  return Astro.redirect(postPath(slug!, 'en'), 302);
+  return Astro.redirect(postPath(slug!, 'en'), 301);
 }
-
-// An Arabic-only post has no English counterpart: /blog/<slug> 301s back here.
-// Advertising an English alternate would point hreflang at a redirect and make
-// the cluster invalid, so the page declares itself as the only version.
-const enPath = isArabicOnlyPost(post) ? null : postPath(slug!, 'en');
 
 // Same treatment as the English route: article bodies link posts that are
 // still queued for publishing, and those links would otherwise resolve to a
@@ -104,7 +102,15 @@ const relatedQuery = supabase
   .neq('slug', slug!)
   .not('ar_title', 'is', null)
   .limit(3);
-const [livePaths, { data: related }] = await Promise.all([getLiveBlogPaths(), relatedQuery]);
+
+const [{ paths: livePaths, twins }, { data: related }] = await Promise.all([getLiveBlogIndex(), relatedQuery]);
+
+// An Arabic-only post has no English version under its own slug: /blog/<slug>
+// 301s back here, and advertising it would point hreflang at a redirect and
+// make the cluster invalid. It can still have an English twin, a separately
+// written post on the same topic linked by twin_slug; otherwise the page
+// declares itself as the only version.
+const enPath = isArabicOnlyPost(post) ? twins.get(selfPath) ?? null : postPath(slug!, 'en');
 
 // Localise first, then prune: a link moved to the reader's own language still
 // has to be checked against what is actually published.
@@ -114,6 +120,7 @@ const bodyHtml = post.ar_body_markdown
         pruneMissingPageLinks(stripTrailingSlashes(sanitizeRichText(await marked(post.ar_body_markdown))), routeExists),
         'ar',
         (path) => livePaths.has(path),
+        (path) => twins.get(path),
       ),
       (path) => livePaths.has(path),
     )

@@ -78,8 +78,8 @@ export function pruneUnpublishedLinks(
  * Neither redirect is a page, so neither counts as live here.
  */
 export function buildLiveBlogPaths(
-  rows: Array<{ slug: string; title?: string | null; ar_title?: string | null }>,
-  isArabicOnly: (row: { title?: string | null }) => boolean,
+  rows: Array<{ slug: string; lang?: string | null; title?: string | null; ar_title?: string | null }>,
+  isArabicOnly: (row: { lang?: string | null; title?: string | null }) => boolean,
 ): Set<string> {
   const live = new Set<string>();
   for (const row of rows) {
@@ -98,24 +98,33 @@ export function buildLiveBlogPaths(
  * the Arabic site clicking one landed on English, and the link told Google that
  * the Arabic section points into the English one.
  *
- * A link is only moved when the same-language version is actually live. Where
- * an article exists in one language only, the cross-language link is left
- * alone: it is the sole version, and a link to it beats no link at all.
+ * A link is only moved when the same-language version is actually live. The
+ * same-language version is the same slug under the other prefix, or failing
+ * that the post's language twin (a separately written post on the same topic,
+ * linked by `twin_slug`; see postTwins.ts). Where an article exists in one
+ * language only, the cross-language link is left alone: it is the sole
+ * version, and a link to it beats no link at all.
+ *
+ * Own-domain absolute links (`https://lenooai.com/blog/...`) are handled too:
+ * most Arabic bodies were written with them.
  *
  * @param html    Rendered, already-sanitised article body.
  * @param lang    Which side of the site is rendering.
  * @param isLive  Answers whether a blog path is published and directly servable.
+ * @param twinOf  Optional: the other-language twin path of a post path.
  */
 export function localiseBlogLinks(
   html: string,
   lang: 'en' | 'ar',
   isLive: (path: string) => boolean,
+  twinOf?: (path: string) => string | undefined,
 ): string {
   if (!html) return html;
 
   // Captures `blog/<slug>` or `<section>/<slug>`, the part both languages share.
-  const from = new RegExp(`^\\/${lang === 'ar' ? '' : 'ar\\/'}(${POST_ROOT}\\/[^/?#]+)\\/?$`);
+  const from = new RegExp(`^(?:https:\\/\\/lenooai\\.com)?\\/${lang === 'ar' ? '' : 'ar\\/'}(${POST_ROOT}\\/[^/?#]+)\\/?$`);
   const to = (rest: string) => (lang === 'ar' ? `/ar/${rest}` : `/${rest}`);
+  const inReaderLang = (path: string) => path.startsWith('/ar/') === (lang === 'ar');
 
   return html.replace(ANCHOR, (whole, attrs: string) => {
     const m = HREF.exec(attrs);
@@ -125,10 +134,14 @@ export function localiseBlogLinks(
     const hit = from.exec(href.split(/[?#]/)[0]);
     if (!hit) return whole;
 
-    const target = to(hit[1]);
-    if (!isLive(target)) return whole;
+    const sameSlug = to(hit[1]);
+    if (isLive(sameSlug)) return whole.replace(HREF, `href="${sameSlug}"`);
 
-    return whole.replace(HREF, `href="${target}"`);
+    const linked = `/${lang === 'ar' ? '' : 'ar/'}${hit[1]}`;
+    const twin = twinOf?.(linked);
+    if (twin && inReaderLang(twin) && isLive(twin)) return whole.replace(HREF, `href="${twin}"`);
+
+    return whole;
   });
 }
 

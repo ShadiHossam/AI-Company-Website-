@@ -7,7 +7,7 @@ import { marked } from 'marked';
 import { sanitizeRichText } from '../../lib/sanitize';
 import { isArabicOnlyPost } from '../../lib/post-lang';
 import { pruneUnpublishedLinks, localiseBlogLinks, stripTrailingSlashes, pruneMissingPageLinks } from '../../lib/deadLinks';
-import { getLiveBlogPaths } from '../../lib/liveBlogPaths';
+import { getLiveBlogIndex } from '../../lib/liveBlogPaths';
 import { routeExists } from '../../lib/routes';
 import { postPath, postSection } from '../../lib/postPaths';
 
@@ -63,6 +63,10 @@ let bodyHtml = '';
 let pubDate = new Date();
 let updatedDate: Date | undefined;
 let relatedPosts: RelatedPost[] = [];
+// The Arabic version of this page: the same slug's AR columns, or a separately
+// written Arabic post linked as its twin. null means there is none, which stops
+// BaseLayout from guessing one from the route table.
+let arPath: string | null = null;
 
 // Set when the row turns out to be an Arabic-only article. The redirect is
 // issued after the try/catch rather than inside it so the DB fallback path
@@ -120,9 +124,10 @@ try {
       .lte('pub_date', todayInDubai())
       .is('deleted_at', null)
       .eq('category', dbPost.category)
+      .eq('lang', 'en')
       .neq('slug', slug!)
       .limit(3);
-    const [livePaths, { data: related }] = await Promise.all([getLiveBlogPaths(), relatedQuery]);
+    const [{ paths: livePaths, twins }, { data: related }] = await Promise.all([getLiveBlogIndex(), relatedQuery]);
 
     // Article bodies cross-link posts that are still in the publishing queue.
     // Left alone those render as real links to URLs that do not exist, which
@@ -135,15 +140,18 @@ try {
         pruneMissingPageLinks(stripTrailingSlashes(sanitizeRichText(await marked(dbPost.body_markdown ?? ''))), routeExists),
         'en',
         (path) => livePaths.has(path),
+        (path) => twins.get(path),
       ),
       (path) => livePaths.has(path),
     );
+    arPath = dbPost.ar_title ? postPath(dbPost.slug, 'ar') : twins.get(postPath(dbPost.slug, 'en')) ?? null;
     pubDate = dbPost.pub_date ? new Date(dbPost.pub_date) : new Date();
     updatedDate = updatedAfterPublish(dbPost.updated_at, dbPost.pub_date);
 
     // blog_posts has no cover_image column (selecting it fails the whole query),
     // so use og_image and skip the generic social card, which keeps the gradient.
-    relatedPosts = (related ?? []).map((r) => {
+    type RelatedRow = { title: string; slug: string; category: string; og_image: string | null; og_image_alt: string | null };
+    relatedPosts = ((related ?? []) as RelatedRow[]).map((r) => {
       const og = r.og_image && r.og_image !== '/assets/og-blog.jpg' ? r.og_image : undefined;
       return {
         title: r.title,
@@ -228,7 +236,7 @@ if (!dbPost) {
     authorName={dbPost.author_name ?? undefined}
     keyPoints={dbPost.key_points ?? []}
     relatedPosts={relatedPosts}
-    arPath={dbPost.ar_title ? postPath(dbPost.slug, 'ar') : undefined}
+    arPath={arPath}
     noindex={dbPost.noindex ?? false}
   >
     <Fragment set:html={bodyHtml} />

@@ -4,6 +4,7 @@ import { todayInDubai, lastModified } from '../lib/scheduledPosts';
 import { getCollection } from 'astro:content';
 import { isArabicOnlyPost } from '../lib/post-lang';
 import { postPath, postSection, type PostSection } from '../lib/postPaths';
+import { buildTwinMap } from '../lib/postTwins';
 
 const BASE = 'https://lenooai.com';
 
@@ -22,7 +23,7 @@ export const GET: APIRoute = async () => {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from('blog_posts')
-      .select('slug, title, pub_date, updated_at, ar_title')
+      .select('slug, lang, title, pub_date, updated_at, ar_title, twin_slug')
       .eq('status', 'published')
       .lte('pub_date', todayInDubai())
       .eq('noindex', false)
@@ -31,6 +32,14 @@ export const GET: APIRoute = async () => {
 
     if (error || !data) dbFailed = true;
     if (!error && data) {
+      // Separately written EN/AR posts on the same topic, linked by twin_slug.
+      // Built from these rows, so a twin that is scheduled or noindex is absent
+      // and never advertised.
+      const twins = buildTwinMap(data, isArabicOnlyPost);
+      const twinAlternates = (enUrl: string, arUrl: string) => `
+    <xhtml:link rel="alternate" hreflang="en-ae" href="${enUrl}"/>
+    <xhtml:link rel="alternate" hreflang="ar-ae" href="${arUrl}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${enUrl}"/>`;
       for (const post of data) {
         seenSlugs.add(post.slug);
         const section = postSection(post.slug);
@@ -50,15 +59,19 @@ export const GET: APIRoute = async () => {
         // x-default version. /blog/<slug> now 301s here, so it stays out of the
         // sitemap entirely.
         if (isArabicOnlyPost(post)) {
+          const enTwin = twins.get(postPath(post.slug, 'ar'));
           urlBlocks.push(`  <url>
     <loc>${ar}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <xhtml:link rel="alternate" hreflang="ar-ae" href="${ar}"/>
+    <lastmod>${lastmod}</lastmod>${enTwin ? twinAlternates(`${BASE}${enTwin}`, ar) : `
+    <xhtml:link rel="alternate" hreflang="ar-ae" href="${ar}"/>`}
   </url>`);
           continue;
         }
 
-        const hreflang = post.ar_title
+        const arTwin = post.ar_title ? undefined : twins.get(postPath(post.slug, 'en'));
+        const hreflang = arTwin
+          ? twinAlternates(en, `${BASE}${arTwin}`)
+          : post.ar_title
           ? `
     <xhtml:link rel="alternate" hreflang="en-ae" href="${en}"/>
     <xhtml:link rel="alternate" hreflang="ar-ae" href="${ar}"/>

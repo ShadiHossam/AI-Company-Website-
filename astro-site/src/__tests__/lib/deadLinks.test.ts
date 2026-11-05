@@ -130,6 +130,43 @@ describe('localiseBlogLinks', () => {
     expect(localiseBlogLinks(html, 'ar', live(['/ar/services/ai-agents']))).toBe(html);
   });
 
+  it('moves an absolute own-domain link to the reader language', () => {
+    const html = '<a href="https://lenooai.com/blog/how-rag-works">كيف</a>';
+    expect(localiseBlogLinks(html, 'ar', live(['/ar/blog/how-rag-works']))).toBe(
+      '<a href="/ar/blog/how-rag-works">كيف</a>',
+    );
+  });
+
+  const twins = new Map([
+    ['/blog/ai-lead-qualification-for-law-firms', '/ar/blog/lead-qualification-law-firms'],
+    ['/ar/blog/lead-qualification-law-firms', '/blog/ai-lead-qualification-for-law-firms'],
+  ]);
+  const twinOf = (p: string) => twins.get(p);
+
+  it('moves an English link to its Arabic twin on the Arabic side', () => {
+    const html = '<a href="https://lenooai.com/blog/ai-lead-qualification-for-law-firms">x</a>';
+    expect(localiseBlogLinks(html, 'ar', live(['/ar/blog/lead-qualification-law-firms']), twinOf)).toBe(
+      '<a href="/ar/blog/lead-qualification-law-firms">x</a>',
+    );
+  });
+
+  it('moves an Arabic link to its English twin on the English side', () => {
+    const html = '<a href="/ar/blog/lead-qualification-law-firms">x</a>';
+    expect(localiseBlogLinks(html, 'en', live(['/blog/ai-lead-qualification-for-law-firms']), twinOf)).toBe(
+      '<a href="/blog/ai-lead-qualification-for-law-firms">x</a>',
+    );
+  });
+
+  it('leaves a link alone when the twin is not live', () => {
+    const html = '<a href="/blog/ai-lead-qualification-for-law-firms">x</a>';
+    expect(localiseBlogLinks(html, 'ar', live([]), twinOf)).toBe(html);
+  });
+
+  it('leaves a link alone when there is no twin', () => {
+    const html = '<a href="/blog/no-twin">x</a>';
+    expect(localiseBlogLinks(html, 'ar', live(['/ar/blog/lead-qualification-law-firms']), twinOf)).toBe(html);
+  });
+
   it('composes with the pruner: localise, then check liveness', () => {
     const livePaths = ['/ar/blog/twin'];
     const html = '<a href="/blog/twin">a</a><a href="/blog/queued">b</a>';
