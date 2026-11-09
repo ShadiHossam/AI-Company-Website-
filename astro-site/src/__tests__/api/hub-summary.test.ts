@@ -48,6 +48,15 @@ describe('GET /api/hub/summary', () => {
     expect((await call({ authorization: 'Bearer short' })).status).toBe(404);
   });
 
+  it('accepts the key the hub wrote to .hub-key (SHA-256), with no env var', async () => {
+    delete process.env.HUB_API_KEY;
+    const fileKey = 'f'.repeat(64);
+    fs.writeFileSync(path.join(dir, '.hub-key'), require('node:crypto').createHash('sha256').update(fileKey).digest('hex') + '\n');
+    savedLeads([]);
+    expect((await call({ authorization: 'Bearer ' + fileKey })).status).toBe(200);
+    expect((await call({ authorization: 'Bearer ' + KEY })).status).toBe(401);
+  });
+
   it('rejects a missing or wrong key', async () => {
     expect((await call()).status).toBe(401);
     expect((await call({ authorization: 'Bearer ' + 'x'.repeat(40) })).status).toBe(401);
