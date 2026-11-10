@@ -1,4 +1,4 @@
-// Data for the "All sites" hub in the New Golden Office admin, which pulls
+// Data for the All Sites Hub (https://hub.usine.site), which pulls
 // every website's visits and leads into one dashboard (GET /api/hub/summary).
 //
 // Format (v1), shared with the other sites' endpoints:

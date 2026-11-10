@@ -9,7 +9,7 @@ import { getClientIp, createRateLimiter } from '../../../lib/request-safety';
 
 export const prerender = false;
 
-// Read-only feed for the "All sites" hub in the New Golden Office admin.
+// Read-only feed for the All Sites Hub (https://hub.usine.site).
 //   GET /api/hub/summary?from=YYYY-MM-DD&to=YYYY-MM-DD
 //   Authorization: Bearer <HUB_API_KEY>   (or X-Hub-Key: <HUB_API_KEY>)
 // The key is set either by the hub itself (Manage sites → Connect writes its
