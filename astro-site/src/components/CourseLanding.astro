@@ -1,0 +1,440 @@
+---
+// Paid-traffic landing page for a course, variant A of the Lenoo vs Shadi A/B
+// test ("the company"). The offer (curriculum, price, FAQ, form, CTA) comes from
+// src/data/course-offer.ts, which is identical in the shadi-hossam-website repo.
+// Only the VOICE block, the hero side panel and the proof strip are specific
+// to this site.
+//
+// noindex and kept out of the route table (scripts/generate-routes.mjs skips
+// /lp/): these pages exist for ad traffic.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { COMPANY } from '../config/company';
+import { CTA_LABEL, CTA_NOTE, OFFER_INCLUDED, OFFERS, isTba, type OfferSlug } from '../data/course-offer';
+
+interface Props {
+  slug: OfferSlug;
+}
+
+const { slug } = Astro.props;
+const offer = OFFERS[slug];
+const VARIANT = 'lenoo';
+
+const VOICE: Record<OfferSlug, { h1: string; sub: string; about: string[]; metaTitle: string; metaDescription: string }> = {
+  ai: {
+    h1: 'Get AI doing real work in your business in 6 weeks',
+    sub: 'A live course from Lenoo AI, the Dubai agency that builds AI agents and automations for UAE companies. You learn the workflows we set up for clients, then build your own.',
+    about: [
+      'Lenoo AI designs and builds AI systems for companies across the UAE: WhatsApp agents, chatbots, internal tools and marketing automation. This course comes straight out of that client work.',
+      'Sessions are run by the Lenoo team and led by founder Shadi Hossam. You get the playbooks we use on paid projects, organized into a program with a deliverable every week and a certificate at the end.',
+    ],
+    metaTitle: 'AI Course for Marketing & Business | Lenoo AI Dubai',
+    metaDescription:
+      'A 6-week live AI course from Lenoo AI in Dubai. Learn the prompts, tools and automations we build for UAE companies, online or in person.',
+  },
+  marketing: {
+    h1: 'Learn growth marketing as one system, from strategy to analytics',
+    sub: 'An 8-week live course from Lenoo AI in Dubai. Strategy, SEO, AI search, paid ads and analytics in one structured program, with a real deliverable every week.',
+    about: [
+      'Lenoo AI builds AI-assisted marketing for UAE companies: content, ads, SEO and the automation that connects them. This course packages that work into a structured program.',
+      'Sessions are run by the Lenoo team and led by founder Shadi Hossam, who has led strategy, SEO, paid media and content on 250+ projects. You finish with a growth plan for a real business and a certificate from Lenoo AI.',
+    ],
+    metaTitle: 'Growth Marketing Course | Lenoo AI Dubai',
+    metaDescription:
+      'An 8-week live growth marketing course from Lenoo AI: strategy, SEO and GEO, Meta, Google and TikTok ads, funnels and GA4. Online or in Dubai.',
+  },
+};
+const voice = VOICE[slug];
+
+const facts = [
+  { label: 'Length', value: `${offer.duration} · ${offer.sessions}` },
+  { label: 'Format', value: offer.format },
+  { label: 'Level', value: offer.level },
+  { label: 'Next cohort', value: isTba(offer.nextCohort) ? 'Opening soon' : offer.nextCohort },
+];
+const priceText = isTba(offer.price) ? 'Announced to reserved seats first' : offer.price;
+const proof = [
+  { value: 'Dubai', label: 'AI agency in Business Bay' },
+  { value: 'Client work', label: 'Every workflow comes from real projects' },
+  { value: 'Certificate', label: 'Issued by Lenoo AI on completion' },
+];
+const pillars = [
+  { title: 'Built from client projects', text: 'What you learn is what we deliver to paying clients, not a textbook version of it.' },
+  { title: 'Structured, week by week', text: 'A fixed curriculum with one deliverable per week, so you always know where you are.' },
+  { title: 'Business Bay or online', text: 'Join in person at our Dubai office or live online. Every session is recorded.' },
+];
+
+---
+
+<BaseLayout
+  title={voice.metaTitle}
+  description={voice.metaDescription}
+  canonicalPath={`/lp/${slug}-course`}
+  arPath={null}
+  ogImage="/assets/og-ai-training.jpg"
+  noindex
+  bare
+>
+  <header class="lp-top">
+    <div class="lp-wrap lp-top-row">
+      <a href="/" class="lp-brand" aria-label="Lenoo AI home">{COMPANY.name}</a>
+      <a href="#reserve" data-cta="header" class="lp-btn lp-btn--small">{CTA_LABEL}</a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="lp-hero">
+    <div class="lp-wrap lp-hero-grid">
+      <div>
+        <p class="lp-eyebrow">A Lenoo AI course · Business Bay, Dubai and online</p>
+        <h1>{voice.h1}</h1>
+        <p class="lp-sub">{voice.sub}</p>
+        <div class="lp-cta-row">
+          <a href="#reserve" data-cta="hero" class="lp-btn">{CTA_LABEL}</a>
+          <a href="#curriculum" class="lp-link">See the curriculum</a>
+        </div>
+        <p class="lp-note">{CTA_NOTE}</p>
+      </div>
+      <aside class="lp-panel" aria-label="Program at a glance">
+        <p class="lp-panel-title">{offer.title}: program at a glance</p>
+        <ol>
+          {offer.modules.map((m) => (
+            <li><span>{m.label}</span>{m.title}</li>
+          ))}
+        </ol>
+        <p class="lp-panel-foot">Certificate of completion from Lenoo AI</p>
+      </aside>
+    </div>
+    <dl class="lp-wrap lp-facts">
+      {facts.map((f) => (
+        <div><dt>{f.label}</dt><dd>{f.value}</dd></div>
+      ))}
+    </dl>
+  </section>
+
+  <!-- Proof, right under the hero -->
+  <section class="lp-proof">
+    <dl class="lp-wrap lp-proof-grid">
+      {proof.map((p) => (
+        <div><dt>{p.value}</dt><dd>{p.label}</dd></div>
+      ))}
+    </dl>
+  </section>
+
+  <!-- Problem -->
+  <section class="lp-sec">
+    <div class="lp-wrap">
+      <h2>Sound familiar?</h2>
+      <div class="lp-grid3">
+        {offer.pains.map((p) => (
+          <div class="lp-card"><h3>{p.title}</h3><p>{p.text}</p></div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Outcomes -->
+  <section class="lp-sec lp-dark">
+    <div class="lp-wrap">
+      <h2>In {offer.duration}, you'll be able to</h2>
+      <ul class="lp-checks">
+        {offer.outcomes.map((o) => <li>{o}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <!-- Curriculum -->
+  <section id="curriculum" class="lp-sec">
+    <div class="lp-wrap lp-narrow">
+      <h2>What we cover, week by week</h2>
+      <p class="lp-lead">Every week ends with something you can use in your business the next day.</p>
+      <ol class="lp-modules">
+        {offer.modules.map((m) => (
+          <li class="lp-card">
+            <p class="lp-label">{m.label}</p>
+            <h3>{m.title}</h3>
+            <ul>{m.lessons.map((l) => <li>{l}</li>)}</ul>
+            <p class="lp-chip">You leave with: {m.deliverable}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- Fit -->
+  <section class="lp-sec lp-soft">
+    <div class="lp-wrap lp-grid2">
+      <div class="lp-card">
+        <h2>This is for you if</h2>
+        <ul class="lp-list">{offer.whoFor.map((w) => <li>✓ {w}</li>)}</ul>
+      </div>
+      <div class="lp-card">
+        <h2>It's not for you if</h2>
+        <ul class="lp-list">{offer.notFor.map((w) => <li>✕ {w}</li>)}</ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Messenger: the company -->
+  <section class="lp-sec">
+    <div class="lp-wrap">
+      <h2>Taught by the team that does the work</h2>
+      <div class="lp-about">
+        {voice.about.map((p) => <p>{p}</p>)}
+      </div>
+      <div class="lp-grid3">
+        {pillars.map((p) => (
+          <div class="lp-card"><h3>{p.title}</h3><p>{p.text}</p></div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Offer -->
+  <section class="lp-sec lp-dark">
+    <div class="lp-wrap lp-narrow">
+      <h2>What you get</h2>
+      <ul class="lp-included">
+        {OFFER_INCLUDED.map((i) => (
+          <li><strong>{i.title}</strong><span>{i.text}</span></li>
+        ))}
+      </ul>
+      <div class="lp-price">
+        <div>
+          <p class="lp-label">Price</p>
+          <p class="lp-price-val">{priceText}</p>
+        </div>
+        <a href="#reserve" data-cta="offer" class="lp-btn">{CTA_LABEL}</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="lp-sec">
+    <div class="lp-wrap lp-narrow">
+      <h2>Questions</h2>
+      <div class="lp-faq">
+        {offer.faq.map((f, i) => (
+          <details class="lp-card" open={i === 0}>
+            <summary>{f.question}</summary>
+            <p>{f.answer}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Form -->
+  <section id="reserve" class="lp-sec lp-soft">
+    <div class="lp-wrap lp-form-wrap">
+      <h2>Reserve your seat</h2>
+      <p class="lp-lead">{offer.title} · {offer.duration}. {CTA_NOTE}</p>
+      <form id="lp-form" class="lp-form" novalidate>
+        <label>Full name<input name="name" type="text" autocomplete="name" required maxlength="100" /></label>
+        <label>Email<input name="email" type="email" autocomplete="email" required /></label>
+        <label>WhatsApp number<input name="phone" type="tel" dir="ltr" autocomplete="tel" required placeholder="+971 50 123 4567" /></label>
+        <input type="text" name="website" tabindex="-1" autocomplete="off" class="lp-hp" aria-hidden="true" />
+        <p data-error class="lp-error" role="alert" hidden></p>
+        <button type="submit" class="lp-btn">{CTA_LABEL}</button>
+        <div data-success class="lp-success" hidden>
+          <strong>Your seat is reserved.</strong>
+          <span>We'll message you on WhatsApp with the dates and price.</span>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <footer class="lp-foot">© {new Date().getFullYear()} {COMPANY.name} · {COMPANY.address}</footer>
+
+  <div id="lp-sticky" class="lp-sticky">
+    <a href="#reserve" data-cta="sticky" class="lp-btn">{CTA_LABEL}</a>
+  </div>
+</BaseLayout>
+
+<script define:vars={{ VARIANT, course: offer.formValue, courseTitle: offer.title, slug }}>
+  const track = (name, params = {}) => {
+    const p = { page_path: location.pathname, lp_variant: VARIANT, course, ...params };
+    window.gtag?.('event', name, p);
+    if (name === 'generate_lead') window.fbq?.('track', 'Lead', { content_name: `course_${course}` });
+  };
+
+  document.querySelectorAll('[data-cta]').forEach((a) =>
+    a.addEventListener('click', () => track('lp_cta_click', { cta: a.dataset.cta })),
+  );
+
+  const sticky = document.getElementById('lp-sticky');
+  const reserve = document.getElementById('reserve');
+  if (sticky && reserve && 'IntersectionObserver' in window) {
+    new IntersectionObserver(([e]) => sticky.classList.toggle('lp-sticky--off', e.isIntersecting)).observe(reserve);
+  }
+
+  const form = document.getElementById('lp-form');
+  const errorEl = form.querySelector('[data-error]');
+  const successEl = form.querySelector('[data-success]');
+  const button = form.querySelector('button[type=submit]');
+  const label = button.textContent;
+  let started = false;
+  form.addEventListener('focusin', () => {
+    if (!started) track('lp_form_start');
+    started = true;
+  });
+
+  const fail = (msg) => {
+    errorEl.textContent = msg;
+    errorEl.hidden = false;
+  };
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorEl.hidden = true;
+    const data = new FormData(form);
+    const name = String(data.get('name') || '').trim();
+    const email = String(data.get('email') || '').trim();
+    const phone = String(data.get('phone') || '').trim();
+    const digits = phone.replace(/\D/g, '');
+    if (!name) return fail('Please enter your name.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('Please enter a valid email.');
+    if (digits.length < 7 || digits.length > 15) return fail('Please enter a valid WhatsApp number.');
+
+    const qs = new URLSearchParams(location.search);
+    const utm = (k) => qs.get(k) || sessionStorage.getItem(k) || '';
+    const payload = {
+      full_name: name,
+      // submit-lead requires a company; course leads are individuals unless they say otherwise.
+      company_name: 'Course applicant',
+      work_email: email,
+      whatsapp: phone.startsWith('+') ? '+' + digits : digits,
+      source: 'course_lp',
+      page_source: `lp-${slug}-course`,
+      notes: `Course: ${courseTitle}. Landing page variant: ${VARIANT}. utm_content=${utm('utm_content')}`,
+      utm_source: utm('utm_source'),
+      utm_medium: utm('utm_medium'),
+      utm_campaign: utm('utm_campaign'),
+      website: String(data.get('website') || ''),
+    };
+
+    // First-party tracker keeps a copy even if the CRM write fails.
+    document.dispatchEvent(new CustomEvent('ln:lead', { detail: {
+      form: payload.page_source,
+      data: { name, email, phone: payload.whatsapp, company: payload.company_name },
+    } }));
+
+    button.disabled = true;
+    button.textContent = 'Sending...';
+    try {
+      const res = await fetch('/api/submit-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      track('generate_lead', { method: 'course_lp' });
+      [...form.children].forEach((el) => { if (el !== successEl) el.hidden = true; });
+      successEl.hidden = false;
+    } catch {
+      fail('Something went wrong. Please try again or message us on WhatsApp.');
+      button.disabled = false;
+      button.textContent = label;
+    }
+  });
+</script>
+
+<style>
+  .lp-wrap { max-width: 72rem; margin: 0 auto; padding: 0 20px; }
+  .lp-narrow { max-width: 54rem; }
+  .lp-top { position: absolute; inset: 0 0 auto; z-index: 20; }
+  .lp-top-row { display: flex; align-items: center; justify-content: space-between; padding-top: 20px; padding-bottom: 20px; }
+  .lp-brand { font-family: var(--display); font-weight: 800; font-size: 1.15rem; color: #fff; text-decoration: none; }
+
+  .lp-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--grad-cta); color: #fff; border: 0; border-radius: 999px;
+    padding: 15px 28px; font: 700 1rem var(--ui); text-decoration: none; cursor: pointer;
+    box-shadow: 0 6px 20px rgba(0, 104, 117, 0.3); transition: transform .2s var(--ease);
+  }
+  .lp-btn:hover { transform: translateY(-1px); }
+  .lp-btn:disabled { opacity: .6; }
+  .lp-btn--small { padding: 9px 18px; font-size: .875rem; box-shadow: none; }
+  .lp-link { color: rgba(255,255,255,.8); font: 600 .9rem var(--ui); text-underline-offset: 4px; }
+
+  .lp-hero { background: var(--grad-hero); color: #fff; padding: 120px 0 56px; }
+  .lp-hero-grid { display: grid; gap: 40px; align-items: center; }
+  .lp-eyebrow { color: var(--cyan); font: 600 .8rem var(--ui); letter-spacing: .08em; text-transform: uppercase; }
+  .lp-hero h1 { font-family: var(--display); font-size: clamp(2rem, 4.6vw, 3.2rem); line-height: 1.1; margin: 16px 0 0; color: #fff; }
+  .lp-sub { color: rgba(255,255,255,.75); font-size: 1.1rem; line-height: 1.7; margin-top: 18px; max-width: 36rem; }
+  .lp-cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; margin-top: 28px; }
+  .lp-note { color: rgba(255,255,255,.55); font-size: .875rem; margin-top: 12px; }
+  .lp-panel { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); border-radius: var(--radius-lg); padding: 24px; }
+  .lp-panel-title { font-weight: 700; color: #fff; margin: 0 0 14px; }
+  .lp-panel ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .lp-panel li { display: flex; gap: 12px; color: rgba(255,255,255,.85); font-size: .92rem; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.08); }
+  .lp-panel li span { color: var(--cyan); min-width: 5.5rem; font-size: .8rem; font-weight: 600; padding-top: 2px; }
+  .lp-panel-foot { margin: 14px 0 0; font-size: .85rem; color: rgba(255,255,255,.6); }
+  .lp-facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 44px; }
+  .lp-facts div { border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); border-radius: var(--radius-md); padding: 12px 16px; }
+  .lp-facts dt { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,.5); }
+  .lp-facts dd { margin: 4px 0 0; font-weight: 700; font-size: .9rem; }
+
+  .lp-proof { background: #fff; border-bottom: 1px solid var(--border); }
+  .lp-proof-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding-top: 28px; padding-bottom: 28px; text-align: center; }
+  .lp-proof dt { font-family: var(--display); font-weight: 800; font-size: clamp(1.1rem, 2.6vw, 1.7rem); color: var(--navy); }
+  .lp-proof dd { margin: 4px 0 0; font-size: .82rem; color: var(--muted); }
+
+  .lp-sec { padding: 64px 0; background: #fff; }
+  .lp-soft { background: var(--bg-soft); }
+  .lp-dark { background: var(--navy); color: #fff; }
+  .lp-sec h2 { font-family: var(--display); font-size: clamp(1.6rem, 3vw, 2.1rem); margin: 0; color: var(--ink); }
+  .lp-dark h2 { color: #fff; }
+  .lp-lead { color: var(--muted); margin-top: 8px; }
+  .lp-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 22px; }
+  .lp-card h3 { margin: 0; font-size: 1.08rem; color: var(--ink); }
+  .lp-card p { margin: 8px 0 0; color: var(--muted); font-size: .93rem; line-height: 1.65; }
+  .lp-grid3 { display: grid; gap: 16px; margin-top: 28px; }
+  .lp-grid2 { display: grid; gap: 20px; }
+  .lp-grid2 h2 { font-size: 1.4rem; }
+  .lp-list { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 8px; color: var(--muted); }
+  .lp-checks { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 12px; }
+  .lp-checks li { background: rgba(255,255,255,.06); border-radius: var(--radius-md); padding: 14px 16px 14px 44px; position: relative; color: rgba(255,255,255,.88); }
+  .lp-checks li::before { content: '✓'; position: absolute; left: 18px; color: var(--cyan); }
+  .lp-modules { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 12px; }
+  .lp-modules ul { margin: 12px 0 0; padding-left: 18px; color: var(--muted); font-size: .92rem; display: grid; gap: 4px; }
+  .lp-label { margin: 0; font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--teal); font-weight: 600; }
+  .lp-dark .lp-label { color: rgba(255,255,255,.5); }
+  .lp-chip { display: inline-block; background: var(--bg-soft); border-radius: 999px; padding: 4px 12px; font-size: .78rem !important; color: var(--ink) !important; margin-top: 14px !important; }
+  .lp-about { max-width: 46rem; }
+  .lp-about p { color: var(--muted); line-height: 1.75; margin: 14px 0 0; }
+  .lp-included { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 12px; }
+  .lp-included li { background: rgba(255,255,255,.06); border-radius: var(--radius-md); padding: 16px; display: grid; gap: 4px; }
+  .lp-included span { color: rgba(255,255,255,.65); font-size: .9rem; }
+  .lp-price { margin-top: 28px; border: 1px solid rgba(255,255,255,.16); border-radius: var(--radius-md); padding: 22px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; }
+  .lp-price-val { margin: 2px 0 0; font-weight: 800; font-size: 1.2rem; }
+  .lp-faq { display: grid; gap: 12px; margin-top: 24px; }
+  .lp-faq summary { cursor: pointer; font-weight: 700; color: var(--ink); list-style: none; }
+
+  .lp-form-wrap { max-width: 36rem; }
+  .lp-form { margin-top: 24px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; display: grid; gap: 16px; box-shadow: var(--shadow-card); }
+  .lp-form label { display: grid; gap: 6px; font-weight: 700; font-size: .875rem; color: var(--ink); }
+  .lp-form input { font: 400 1rem var(--ui); padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--ink); background: #fff; }
+  .lp-form input:focus { outline: 2px solid rgba(0,104,117,.35); border-color: var(--teal); }
+  .lp-hp { position: absolute; left: -9999px; }
+  .lp-error { background: #fef2f2; color: #b91c1c; border-radius: var(--radius-sm); padding: 10px 14px; margin: 0; font-size: .9rem; }
+  .lp-success { text-align: center; display: grid; gap: 4px; padding: 12px 0; color: var(--muted); }
+  .lp-success[hidden], .lp-error[hidden] { display: none; }
+  .lp-success strong { color: var(--ink); font-size: 1.1rem; }
+
+  .lp-foot { background: var(--navy-deep); color: rgba(255,255,255,.5); text-align: center; font-size: .8rem; padding: 28px 20px 96px; }
+  .lp-sticky { position: fixed; inset: auto 0 0; z-index: 40; padding: 12px 16px; background: rgba(255,255,255,.95); border-top: 1px solid var(--border); backdrop-filter: blur(8px); }
+  .lp-sticky .lp-btn { width: 100%; }
+  .lp-sticky--off { display: none; }
+
+  @media (min-width: 768px) {
+    .lp-hero { padding: 150px 0 80px; }
+    .lp-hero-grid { grid-template-columns: 1.3fr 1fr; }
+    .lp-facts { grid-template-columns: repeat(4, 1fr); }
+    .lp-sec { padding: 88px 0; }
+    .lp-grid3 { grid-template-columns: repeat(3, 1fr); }
+    .lp-grid2 { grid-template-columns: 1fr 1fr; }
+    .lp-checks, .lp-included { grid-template-columns: 1fr 1fr; }
+    .lp-sticky { display: none; }
+    .lp-foot { padding-bottom: 28px; }
+  }
+</style>

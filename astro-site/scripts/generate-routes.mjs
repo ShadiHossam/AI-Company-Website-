@@ -43,7 +43,8 @@ export function collectRoutes() {
     .map((file) => '/' + relative(PAGES, file).split('\\').join('/'))
     .filter((r) => !r.includes('['))
     .map((r) => r.replace(/\.astro$/, ''))
-    .filter((r) => !r.startsWith('/admin/') && !r.startsWith('/api/'))
+    // /lp/ holds noindex paid-traffic landing pages (the course A/B test).
+    .filter((r) => !r.startsWith('/admin/') && !r.startsWith('/api/') && !r.startsWith('/lp/'))
     .map((r) => (r.endsWith('/index') ? r.slice(0, -6) : r))
     .map((r) => (r === '' ? '/' : r))
     .filter((r) => !EXCLUDE.has(r) && !DB_BACKED.has(r))
