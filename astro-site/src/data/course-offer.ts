@@ -1,16 +1,19 @@
-// A/B TEST CONTROL: the course offer.
+// A/B TEST CONTROL: the course offer (Arabic).
 //
 // This file is identical in both repos:
-//   shadi-hossam-website  src/data/course-offer.ts   (variant B: Shadi, the mentor)
-//   AI-Company-Website-   astro-site/src/data/course-offer.ts (variant A: Lenoo AI, the company)
+//   shadi-hossam-website  src/data/course-offer.ts              (variant B: Shadi, the mentor)
+//   AI-Company-Website-   astro-site/src/data/course-offer.ts   (variant A: Lenoo AI, the company)
 //
-// The landing pages at /lp/ai-course and /lp/marketing-course (Lenoo) and
-// /en/uae/lp/ai-course and /en/uae/lp/marketing-course (Shadi) differ only in
-// who is selling the course: the hero, the proof strip and the "who teaches
-// this" section. Everything in this file (price, dates, curriculum, outcomes,
-// what's included, FAQ, form fields, CTA label) must stay the same on both
-// sides, or the test stops measuring the messenger. Change it here, then copy
-// the file to the other repo.
+// The landing pages at /ar/lp/ai-course and /ar/lp/marketing-course (Lenoo)
+// and /ar/uae/lp/ai-course and /ar/uae/lp/marketing-course (Shadi) differ only
+// in who is selling the course: the hero, the proof strip and the "who teaches
+// this" section. Everything in this file (price, dates, curriculum, how the
+// sessions run, outcomes, what's included, FAQ, form fields, CTA label) must
+// stay the same on both sides, or the test stops measuring the messenger.
+// Change it here, then copy the file to the other repo.
+//
+// Copy is in clear standard Arabic for a UAE and Gulf audience. Both variants
+// use the same Arabic, so the dialect is not a difference between them.
 //
 // PLACEHOLDERS: price and nextCohort are "TBA" until confirmed. While they are
 // TBA the pages sell a free seat reservation instead of a purchase.
@@ -29,6 +32,7 @@ export interface CourseOffer {
   title: string;
   /** Value the booking backends expect for this course. */
   formValue: string;
+  /** Short duration used in headings, e.g. "6 أسابيع". */
   duration: string;
   sessions: string;
   format: string;
@@ -43,281 +47,334 @@ export interface CourseOffer {
   faq: { question: string; answer: string }[];
 }
 
-export const CTA_LABEL = "Reserve my seat";
-export const CTA_NOTE = "Free to reserve. You get the dates and price before they go public.";
+export const CTA_LABEL = "احجز مقعدك";
+export const CTA_NOTE = "الحجز مجاني، وتصلك المواعيد والسعر قبل الإعلان عنها.";
+
+/** Shown in both heroes. The courses are practical, and both variants say so the same way. */
+export const PRACTICAL_TAG = "كورس عملي بالكامل: تطبّق على مشروعك في كل جلسة";
+
+/** Every page's shared UI text, so neither variant words the same thing differently. */
+export const UI = {
+  seeCurriculum: "شاهد المنهج",
+  painsTitle: "هل هذا يشبه وضعك؟",
+  outcomesTitle: (duration: string) => `خلال ${duration} ستتمكن من`,
+  curriculumTitle: "ماذا نطبّق، أسبوعاً بأسبوع",
+  curriculumLead: "كل أسبوع ينتهي بشيء تستخدمه في عملك من اليوم التالي.",
+  youLeaveWith: "تخرج بـ:",
+  whoForTitle: "هذا الكورس مناسب لـ",
+  notForTitle: "غير مناسب لـ",
+  includedTitle: "ماذا تحصل عليه",
+  priceLabel: "السعر",
+  faqTitle: "أسئلة شائعة",
+  formTitle: "احجز مقعدك",
+  name: "الاسم الكامل",
+  email: "البريد الإلكتروني",
+  phone: "رقم الواتساب",
+  sending: "جارٍ الإرسال...",
+  successTitle: "تم حجز مقعدك.",
+  successText: "سنراسلك على الواتساب بالمواعيد والسعر.",
+  errName: "يرجى كتابة اسمك.",
+  errEmail: "يرجى كتابة بريد إلكتروني صحيح.",
+  errPhone: "يرجى كتابة رقم واتساب صحيح.",
+  errGeneric: "حدث خطأ. حاول مرة أخرى أو راسلنا على الواتساب.",
+  factLength: "المدة",
+  factFormat: "الطريقة",
+  factLevel: "المستوى",
+  factCohort: "الدفعة القادمة",
+  cohortSoon: "تُفتح قريباً",
+  priceTba: "يُعلن لمن حجز مقعده أولاً",
+};
+
+/** How every session runs. This is the "practical, not theory" promise, shown on both pages. */
+export const SESSION_FLOW = {
+  title: "كل جلسة تطبيق عملي، وليست محاضرة",
+  lead: "لا شرائح نظرية ولا محاضرات طويلة. كل جلسة تسير بنفس الطريقة:",
+  steps: [
+    { title: "نعرض الأداة على مثال حقيقي", text: "شرح قصير ومباشر على الشاشة، على حالة من عمل حقيقي." },
+    { title: "تطبّق على مشروعك أثناء الجلسة", text: "تعمل على مشروعك أنت: علامتك التجارية، عملاؤك، إعلاناتك، ونحن معك مباشرة." },
+    { title: "تخرج بنتيجة جاهزة للاستخدام", text: "كل جلسة تنتهي بشيء تستخدمه في عملك من اليوم التالي." },
+  ],
+};
 
 export const OFFER_INCLUDED = [
-  { title: "Two live sessions a week", text: "Ask questions and get answers on the spot." },
-  { title: "Every session recorded", text: "Miss one or rewatch it whenever you want." },
-  { title: "Templates and playbooks", text: "Prompt libraries, checklists and templates you keep." },
-  { title: "Private cohort group", text: "A WhatsApp group to share wins and get unstuck." },
-  { title: "Feedback on your project", text: "Personal feedback on your final project, applied to your own business." },
-  { title: "Certificate of completion", text: "Something to add to your LinkedIn profile." },
+  { title: "جلستان مباشرتان أسبوعياً", text: "اسأل واحصل على الإجابة فوراً، وطبّق أمامنا." },
+  { title: "كل جلسة مسجّلة", text: "فاتتك جلسة؟ شاهدها في أي وقت." },
+  { title: "قوالب وأدلة عمل", text: "مكتبات أوامر وقوائم تحقق وقوالب تبقى معك." },
+  { title: "مجموعة خاصة للدفعة", text: "مجموعة واتساب لمشاركة النتائج وحل المشكلات." },
+  { title: "ملاحظات على مشروعك", text: "ملاحظات شخصية على مشروعك النهائي، مطبّقة على عملك." },
+  { title: "شهادة إتمام", text: "تضيفها إلى ملفك على LinkedIn." },
 ];
 
 const RESERVE_FAQ = {
-  question: "When does it start and how much is it?",
+  question: "متى يبدأ الكورس وكم سعره؟",
   answer:
-    "Dates and price go to people who reserved a seat first, before they are published. Reserving is free and doesn't commit you to anything. If the timing or price doesn't work for you, you just don't enroll.",
+    "نرسل المواعيد والسعر لمن حجز مقعده أولاً، قبل نشرها. الحجز مجاني ولا يُلزمك بشيء، وإذا لم يناسبك الموعد أو السعر فلا تسجّل.",
+};
+
+const PRACTICAL_FAQ = {
+  question: "هل الكورس نظري؟",
+  answer:
+    "لا. كل جلسة تطبيق عملي على مشروعك أنت. نشرح الأداة باختصار، ثم تطبّق معنا مباشرة، وتخرج بنتيجة تستخدمها في عملك.",
 };
 
 const LIVE_FAQ = {
-  question: "What if I can't make a live session?",
-  answer: "Every session is recorded and shared the same day, so you can catch up and still ask your questions in the group.",
+  question: "ماذا لو لم أستطع حضور جلسة مباشرة؟",
+  answer: "كل جلسة تُسجَّل وتُرسَل في نفس اليوم، فتلحق بها وتطرح أسئلتك في مجموعة الدفعة.",
+};
+
+const TEAM_FAQ = {
+  question: "هل تستطيع شركتي حجز الكورس لكل الفريق؟",
+  answer: "نعم. نقدّم نسخاً خاصة للفرق، مبنية على مجالكم وأدواتكم. اذكر ذلك عند الحجز وسنتواصل معك.",
 };
 
 export const OFFERS: Record<OfferSlug, CourseOffer> = {
   ai: {
     slug: "ai",
-    title: "AI for Marketing & Business",
+    title: "الذكاء الاصطناعي للتسويق والأعمال",
     formValue: "ai",
-    duration: "6 weeks",
-    sessions: "12 live sessions",
-    format: "Live online + in person in Dubai",
-    level: "Beginner to intermediate",
+    duration: "6 أسابيع",
+    sessions: "12 جلسة مباشرة",
+    format: "أونلاين مباشر + حضوري في دبي",
+    level: "من المبتدئ إلى المتوسط",
     price: "TBA",
     nextCohort: "TBA",
     pains: [
       {
-        title: "The output sounds like everyone else's",
-        text: "You've tried ChatGPT. What comes back is generic, so you rewrite most of it and wonder why you bothered.",
+        title: "النتائج تشبه ما يكتبه الجميع",
+        text: "جرّبت ChatGPT، لكن ما يخرج منه عام، فتعيد كتابة معظمه وتتساءل ما الفائدة.",
       },
       {
-        title: "No system, so you still do it by hand",
-        text: "You know AI could save you hours a week. Without a repeatable way to use it, the work stays manual.",
+        title: "لا يوجد نظام، فيبقى العمل يدوياً",
+        text: "تعرف أن الذكاء الاصطناعي يوفّر عليك ساعات كل أسبوع، لكن بدون طريقة ثابتة يبقى العمل يدوياً.",
       },
       {
-        title: "Too many tools, no way to choose",
-        text: "There's a new AI tool every week. You can't tell which ones are worth your time or your money.",
+        title: "أدوات كثيرة ولا تعرف ماذا تختار",
+        text: "كل أسبوع أداة جديدة، ولا تعرف أيها يستحق وقتك ومالك.",
       },
     ],
     outcomes: [
-      "Write prompts that get usable output on the first or second try",
-      "Build a prompt library for your brand voice, offers and audience",
-      "Produce a month of social content and ad variations in one afternoon",
-      "Connect Claude to tools like Google Drive, Instagram and your CRM",
-      "Automate repetitive tasks with no-code AI workflows",
-      "Know which AI tools are worth paying for and which to skip",
+      "تكتب أوامر (Prompts) تعطيك نتيجة صالحة للاستخدام من أول أو ثاني محاولة",
+      "تبني مكتبة أوامر لأسلوب علامتك التجارية وعروضك وجمهورك",
+      "تُنتج محتوى شهر كامل ونسخاً إعلانية متعددة خلال بضع ساعات",
+      "تربط Claude بأدوات مثل Google Drive وInstagram ونظام إدارة العملاء",
+      "تؤتمت المهام المتكررة بدون برمجة",
+      "تعرف أي أدوات الذكاء الاصطناعي تستحق الدفع وأيها تتجاهل",
     ],
     modules: [
       {
-        label: "Week 1",
-        title: "AI foundations that matter",
+        label: "الأسبوع 1",
+        title: "تجهيز أدواتك على مشروعك",
         lessons: [
-          "How large language models work, in plain language",
-          "ChatGPT vs Claude vs Gemini: what each is best at",
-          "Setting up your workspace, projects and custom instructions",
+          "إعداد ChatGPT وClaude بتعليمات خاصة بعملك",
+          "متى تستخدم ChatGPT أو Claude أو Gemini، بأمثلة من عمل حقيقي",
+          "إنشاء مشاريع (Projects) جاهزة لمهامك اليومية",
         ],
-        deliverable: "Your AI workspace, set up and ready",
+        deliverable: "مساحة عمل مُعدّة وجاهزة لمشروعك",
       },
       {
-        label: "Week 2",
-        title: "Prompting systems",
+        label: "الأسبوع 2",
+        title: "كتابة الأوامر بطريقة تعطي نتائج ثابتة",
         lessons: [
-          "The prompt structure behind consistent results",
-          "Feeding AI your brand voice, offers and customer research",
-          "Building a reusable prompt library for your team",
+          "هيكل الأمر الذي يعطي نتائج ثابتة، تطبّقه على مهامك",
+          "تزويد الذكاء الاصطناعي بأسلوبك وعروضك ومعلومات عملائك",
+          "بناء مكتبة أوامر يستخدمها فريقك",
         ],
-        deliverable: "A prompt library tuned to your brand voice",
+        deliverable: "مكتبة أوامر مضبوطة على أسلوب علامتك",
       },
       {
-        label: "Week 3",
-        title: "AI for content and social media",
+        label: "الأسبوع 3",
+        title: "الذكاء الاصطناعي للمحتوى والسوشيال ميديا",
         lessons: [
-          "Content calendars, hooks and scripts in minutes",
-          "Turning one idea into ten formats",
-          "Auditing your social accounts with AI",
+          "تقويم محتوى وأفكار افتتاحية وسكريبتات في دقائق",
+          "تحويل فكرة واحدة إلى عشرة أشكال من المحتوى",
+          "مراجعة حساباتك على السوشيال ميديا بالذكاء الاصطناعي",
         ],
-        deliverable: "A 30-day content calendar with hooks and scripts",
+        deliverable: "تقويم محتوى لـ 30 يوماً مع الأفكار والسكريبتات",
       },
       {
-        label: "Week 4",
-        title: "AI for ads and creative",
+        label: "الأسبوع 4",
+        title: "الذكاء الاصطناعي للإعلانات والتصاميم",
         lessons: [
-          "Ad copy variations for Meta, Google and TikTok",
-          "AI image and video tools for ad creative",
-          "Testing more creative angles, faster",
+          "نسخ إعلانية متعددة لـ Meta وGoogle وTikTok",
+          "أدوات الصور والفيديو بالذكاء الاصطناعي لإعلاناتك",
+          "اختبار زوايا إعلانية أكثر وبسرعة أكبر",
         ],
-        deliverable: "A pack of ad variations ready to test",
+        deliverable: "مجموعة إعلانات جاهزة للاختبار",
       },
       {
-        label: "Week 5",
-        title: "Automation and AI agents",
+        label: "الأسبوع 5",
+        title: "الأتمتة ووكلاء الذكاء الاصطناعي (AI Agents)",
         lessons: [
-          "Connecting AI to the tools you already use",
-          "No-code automations for leads, reports and follow-ups",
-          "What AI agents can do for a small team today",
+          "ربط الذكاء الاصطناعي بالأدوات التي تستخدمها اليوم",
+          "أتمتة بدون برمجة للعملاء المحتملين والتقارير والمتابعة",
+          "ما يستطيع وكلاء الذكاء الاصطناعي فعله لفريق صغير اليوم",
         ],
-        deliverable: "A working automation that saves you hours every week",
+        deliverable: "أتمتة تعمل وتوفّر عليك ساعات كل أسبوع",
       },
       {
-        label: "Week 6",
-        title: "Research, data and your AI playbook",
+        label: "الأسبوع 6",
+        title: "البحث والبيانات ودليلك العملي",
         lessons: [
-          "Competitor and market research with AI",
-          "Turning spreadsheets and reports into decisions",
-          "Final project: your AI playbook for your business",
+          "تحليل المنافسين والسوق بالذكاء الاصطناعي",
+          "تحويل الجداول والتقارير إلى قرارات",
+          "المشروع النهائي: دليل الذكاء الاصطناعي الخاص بعملك",
         ],
-        deliverable: "Your own AI playbook, reviewed with feedback",
+        deliverable: "دليلك الخاص للذكاء الاصطناعي، مع ملاحظات عليه",
       },
     ],
     whoFor: [
-      "Marketers who want to ship more content and campaigns without hiring",
-      "Founders and business owners who don't know where to start with AI",
-      "Agency teams who want repeatable AI workflows for client work",
-      "Anyone who has tried ChatGPT and got generic results",
+      "المسوّقين الذين يريدون إنتاج محتوى وحملات أكثر بدون توظيف",
+      "أصحاب المشاريع والمؤسسين الذين لا يعرفون من أين يبدأون مع الذكاء الاصطناعي",
+      "فرق الوكالات التي تريد طرق عمل ثابتة بالذكاء الاصطناعي لعملائها",
+      "كل من جرّب ChatGPT وحصل على نتائج عامة",
     ],
     notFor: [
-      "Developers looking for a coding or machine learning course",
-      "People who want theory and won't practice between sessions",
+      "المبرمجين الذين يبحثون عن كورس برمجة أو تعلّم آلة",
+      "من يبحث عن محاضرات نظرية ولا يريد التطبيق",
     ],
     faq: [
       RESERVE_FAQ,
+      PRACTICAL_FAQ,
       {
-        question: "Do I need a technical background?",
-        answer: "No. If you can use email and a browser, you can take this course. Everything is shown step by step.",
+        question: "هل أحتاج خلفية تقنية؟",
+        answer: "لا. إذا كنت تستخدم البريد الإلكتروني والمتصفح، تستطيع حضور الكورس. كل شيء يُطبَّق خطوة بخطوة.",
       },
       {
-        question: "Which AI tools do I need to pay for?",
-        answer: "Free versions of ChatGPT and Claude are enough to start. We cover when a paid plan is worth it, so you only pay for what you use.",
+        question: "هل أحتاج اشتراكات مدفوعة في الأدوات؟",
+        answer: "النسخ المجانية من ChatGPT وClaude تكفي للبداية. نوضح متى يستحق الاشتراك المدفوع، فلا تدفع إلا على ما تستخدمه.",
       },
       LIVE_FAQ,
-      {
-        question: "Can my company book this for the whole team?",
-        answer: "Yes. Private team versions are available, built around your industry and tools. Mention it in the form and we'll follow up.",
-      },
+      TEAM_FAQ,
     ],
   },
   marketing: {
     slug: "marketing",
-    title: "Growth Marketing",
+    title: "التسويق ونمو الأعمال",
     formValue: "marketing",
-    duration: "8 weeks",
-    sessions: "16 live sessions",
-    format: "Live online + in person in Dubai",
-    level: "Beginner to intermediate",
+    duration: "8 أسابيع",
+    sessions: "16 جلسة مباشرة",
+    format: "أونلاين مباشر + حضوري في دبي",
+    level: "من المبتدئ إلى المتوسط",
     price: "TBA",
     nextCohort: "TBA",
     pains: [
       {
-        title: "You spend on ads and can't say what's working",
-        text: "Money goes out every month. Leads come in, sometimes. Nobody can tell you which part is paying for itself.",
+        title: "تصرف على الإعلانات ولا تعرف ما الذي ينجح",
+        text: "المال يخرج كل شهر، والعملاء المحتملون يأتون أحياناً، ولا أحد يستطيع أن يقول لك أي جزء يغطي تكلفته.",
       },
       {
-        title: "You learned marketing in pieces",
-        text: "A video on Meta ads, a thread on SEO, a course on content. None of it connects into a plan you can run.",
+        title: "تعلّمت التسويق على شكل قطع متفرقة",
+        text: "فيديو عن إعلانات Meta، ومقال عن السيو، وكورس عن المحتوى. لا شيء منها يجتمع في خطة تستطيع تنفيذها.",
       },
       {
-        title: "Search changed and your playbook didn't",
-        text: "People now ask ChatGPT and Google's AI answers before they click anything. Most marketing plans still ignore that.",
+        title: "البحث تغيّر وخطتك لم تتغيّر",
+        text: "الناس يسألون ChatGPT وإجابات Google الذكية قبل أن يضغطوا على أي رابط، ومعظم خطط التسويق ما زالت تتجاهل ذلك.",
       },
     ],
     outcomes: [
-      "Build a marketing strategy and channel plan from scratch",
-      "Do keyword research and on-page SEO, and get cited in AI search (GEO)",
-      "Launch and optimize campaigns on Meta, Google and TikTok",
-      "Plan content that brings leads, not just likes",
-      "Find and fix the leaks in your funnel and landing pages",
-      "Set up GA4 tracking and read the numbers that matter",
+      "تبني استراتيجية تسويق وخطة قنوات من الصفر",
+      "تبحث عن الكلمات المفتاحية وتطبّق السيو على صفحاتك، وتظهر في إجابات الذكاء الاصطناعي (GEO)",
+      "تطلق حملات على Meta وGoogle وTikTok وتحسّن نتائجها",
+      "تخطط لمحتوى يجلب عملاء، لا إعجابات فقط",
+      "تكتشف نقاط الضعف في مسار البيع وصفحات الهبوط وتصلحها",
+      "تُعدّ تتبّع GA4 وتقرأ الأرقام المهمة",
     ],
     modules: [
       {
-        label: "Week 1",
-        title: "Strategy and positioning",
+        label: "الأسبوع 1",
+        title: "الاستراتيجية والتموضع",
         lessons: [
-          "Audience research and customer personas",
-          "Positioning and offers that convert",
-          "Choosing channels and setting a budget",
+          "دراسة جمهورك وبناء شخصيات العملاء",
+          "تموضع وعروض تحقق مبيعات",
+          "اختيار القنوات وتحديد الميزانية",
         ],
-        deliverable: "A one-page marketing strategy for your business",
+        deliverable: "استراتيجية تسويق من صفحة واحدة لمشروعك",
       },
       {
-        label: "Week 2",
-        title: "SEO and GEO",
+        label: "الأسبوع 2",
+        title: "السيو والظهور في الذكاء الاصطناعي (SEO وGEO)",
         lessons: [
-          "Keyword research for real search demand",
-          "On-page SEO and technical basics",
-          "Getting your brand cited by ChatGPT, Gemini and AI Overviews",
+          "البحث عن كلمات مفتاحية عليها طلب حقيقي",
+          "السيو داخل الصفحة والأساسيات التقنية",
+          "كيف تجعل ChatGPT وGemini وAI Overviews يذكرون علامتك",
         ],
-        deliverable: "A keyword map and an on-page SEO checklist",
+        deliverable: "خريطة كلمات مفتاحية وقائمة تحقق للسيو",
       },
       {
-        label: "Weeks 3 & 4",
-        title: "Paid advertising",
+        label: "الأسبوعان 3 و4",
+        title: "الإعلانات المدفوعة",
         lessons: [
-          "Meta ads: campaign structure, audiences and pixels",
-          "Google Search and Performance Max campaigns",
-          "TikTok ads and creator-style content",
-          "Budgets, bidding, scaling winners and cutting losers",
+          "إعلانات Meta: هيكل الحملة والجماهير والبكسل",
+          "حملات Google Search وPerformance Max",
+          "إعلانات TikTok ومحتوى بأسلوب صنّاع المحتوى",
+          "الميزانيات والمزايدة، وتوسيع الإعلان الرابح وإيقاف الخاسر",
         ],
-        deliverable: "A live ad campaign, set up the right way",
+        deliverable: "حملة إعلانية حقيقية تعمل، مُعدّة بالطريقة الصحيحة",
       },
       {
-        label: "Week 5",
-        title: "Content and social media",
+        label: "الأسبوع 5",
+        title: "المحتوى والسوشيال ميديا",
         lessons: [
-          "A content strategy tied to business goals",
-          "Hooks, formats and posting rhythm",
-          "Turning followers into leads",
+          "استراتيجية محتوى مرتبطة بأهداف العمل",
+          "الافتتاحيات والأشكال ووتيرة النشر",
+          "تحويل المتابعين إلى عملاء",
         ],
-        deliverable: "A content plan tied to your sales goals",
+        deliverable: "خطة محتوى مرتبطة بأهداف المبيعات",
       },
       {
-        label: "Week 6",
-        title: "Funnels and conversion",
+        label: "الأسبوع 6",
+        title: "مسار البيع والتحويل",
         lessons: [
-          "Landing pages that convert",
-          "Lead magnets, email and WhatsApp follow-up",
-          "Simple A/B testing",
+          "صفحات هبوط تحقق تحويلات",
+          "جذب العملاء المحتملين والمتابعة بالإيميل والواتساب",
+          "اختبارات A/B بسيطة",
         ],
-        deliverable: "A landing page and follow-up flow",
+        deliverable: "صفحة هبوط ومسار متابعة",
       },
       {
-        label: "Week 7",
-        title: "Growth experiments and AI",
+        label: "الأسبوع 7",
+        title: "تجارب النمو والذكاء الاصطناعي",
         lessons: [
-          "Growth loops and quick experiments",
-          "Using AI to speed up research, copy and creative",
-          "Picking the experiments worth running",
+          "حلقات النمو والتجارب السريعة",
+          "استخدام الذكاء الاصطناعي لتسريع البحث والكتابة والتصميم",
+          "اختيار التجارب التي تستحق التنفيذ",
         ],
-        deliverable: "A backlog of growth experiments to run",
+        deliverable: "قائمة تجارب نمو جاهزة للتنفيذ",
       },
       {
-        label: "Week 8",
-        title: "Analytics and reporting",
+        label: "الأسبوع 8",
+        title: "التحليلات والتقارير",
         lessons: [
-          "GA4, conversions and UTM tracking",
-          "The metrics that matter, and the ones that don't",
-          "Final project: a full growth plan for a real business",
+          "GA4 والتحويلات وتتبّع UTM",
+          "الأرقام المهمة، والأرقام التي لا تهم",
+          "المشروع النهائي: خطة نمو كاملة لمشروع حقيقي",
         ],
-        deliverable: "A GA4 dashboard and a 90-day growth plan",
+        deliverable: "لوحة GA4 وخطة نمو لـ 90 يوماً",
       },
     ],
     whoFor: [
-      "Junior marketers who want a complete, structured skill set",
-      "Business owners who want to run or properly manage their own marketing",
-      "Social, design or sales specialists moving into a full marketing role",
-      "Anyone spending on ads without knowing what's working",
+      "المسوّقين في بداية طريقهم الذين يريدون مهارات كاملة ومنظّمة",
+      "أصحاب المشاريع الذين يريدون إدارة تسويقهم بأنفسهم أو متابعته بشكل صحيح",
+      "المتخصصين في السوشيال ميديا أو التصميم أو المبيعات الذين ينتقلون إلى دور تسويق كامل",
+      "كل من يصرف على الإعلانات ولا يعرف ما الذي ينجح",
     ],
     notFor: [
-      "Senior marketers who already run multi-channel budgets every day",
-      "People looking for a shortcut that skips the practical work",
+      "المسوّقين أصحاب الخبرة الذين يديرون ميزانيات متعددة القنوات يومياً",
+      "من يبحث عن محاضرات نظرية أو طريق مختصر بدون تطبيق",
     ],
     faq: [
       RESERVE_FAQ,
+      PRACTICAL_FAQ,
       {
-        question: "Do I need marketing experience?",
-        answer: "No. The course starts from the foundations and builds up, with practical work every week.",
+        question: "هل أحتاج خبرة في التسويق؟",
+        answer: "لا. نبدأ من الأساسيات ونبني عليها، مع تطبيق عملي على مشروعك كل أسبوع.",
       },
       {
-        question: "Will I need an ad budget?",
-        answer: "Not to take the course. For the paid media weeks a small test budget helps, and we show you how to start with very little.",
+        question: "هل أحتاج ميزانية إعلانات؟",
+        answer: "ليس لحضور الكورس. في أسابيع الإعلانات تساعدك ميزانية تجربة صغيرة، ونوضح لك كيف تبدأ بأقل مبلغ.",
       },
       LIVE_FAQ,
-      {
-        question: "Can my company book this for the whole team?",
-        answer: "Yes. Private team versions are available, built around your industry and goals. Mention it in the form and we'll follow up.",
-      },
+      TEAM_FAQ,
     ],
   },
 };

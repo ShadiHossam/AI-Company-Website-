@@ -1,15 +1,14 @@
 ---
-// Paid-traffic landing page for a course, variant A of the Lenoo vs Shadi A/B
-// test ("the company"). The offer (curriculum, price, FAQ, form, CTA) comes from
-// src/data/course-offer.ts, which is identical in the shadi-hossam-website repo.
-// Only the VOICE block, the hero side panel and the proof strip are specific
-// to this site.
+// Paid-traffic landing page for a course (Arabic), variant A of the Lenoo vs
+// Shadi A/B test ("the company"). The offer (curriculum, session format,
+// price, FAQ, form, CTA, UI text) comes from src/data/course-offer.ts, which is
+// identical in the shadi-hossam-website repo. Only the VOICE block, the hero
+// side panel, the proof strip and the pillars are specific to this site.
 //
 // noindex and kept out of the route table (scripts/generate-routes.mjs skips
-// /lp/): these pages exist for ad traffic.
-import BaseLayout from '../layouts/BaseLayout.astro';
-import { COMPANY } from '../config/company';
-import { CTA_LABEL, CTA_NOTE, OFFER_INCLUDED, OFFERS, isTba, type OfferSlug } from '../data/course-offer';
+// /ar/lp/): these pages exist for ad traffic.
+import ArBaseLayout from '../layouts/ArBaseLayout.astro';
+import { CTA_LABEL, CTA_NOTE, OFFER_INCLUDED, OFFERS, PRACTICAL_TAG, SESSION_FLOW, UI, isTba, type OfferSlug } from '../data/course-offer';
 
 interface Props {
   slug: OfferSlug;
@@ -18,65 +17,66 @@ interface Props {
 const { slug } = Astro.props;
 const offer = OFFERS[slug];
 const VARIANT = 'lenoo';
+const BRAND = 'Lenoo AI';
 
 const VOICE: Record<OfferSlug, { h1: string; sub: string; about: string[]; metaTitle: string; metaDescription: string }> = {
   ai: {
-    h1: 'Get AI doing real work in your business in 6 weeks',
-    sub: 'A live course from Lenoo AI, the Dubai agency that builds AI agents and automations for UAE companies. You learn the workflows we set up for clients, then build your own.',
+    h1: 'اجعل الذكاء الاصطناعي ينجز عملاً حقيقياً في مشروعك خلال 6 أسابيع',
+    sub: 'كورس عملي مباشر من Lenoo AI، الوكالة في دبي التي تبني وكلاء الذكاء الاصطناعي والأتمتة لشركات في الإمارات. تتعلّم طرق العمل التي نطبّقها لعملائنا، وتبني نسختك منها على مشروعك في كل جلسة.',
     about: [
-      'Lenoo AI designs and builds AI systems for companies across the UAE: WhatsApp agents, chatbots, internal tools and marketing automation. This course comes straight out of that client work.',
-      'Sessions are run by the Lenoo team and led by founder Shadi Hossam. You get the playbooks we use on paid projects, organized into a program with a deliverable every week and a certificate at the end.',
+      'تصمّم Lenoo AI وتبني أنظمة ذكاء اصطناعي لشركات في الإمارات: وكلاء واتساب، وروبوتات محادثة، وأدوات داخلية، وأتمتة للتسويق. هذا الكورس مأخوذ مباشرة من هذا العمل مع العملاء.',
+      'يقدّم الجلسات فريق Lenoo بقيادة المؤسس شادي حسام. تحصل على نفس أدلة العمل التي نستخدمها في مشاريع العملاء، منظّمة في برنامج فيه مُخرَج عملي كل أسبوع وشهادة في النهاية.',
     ],
-    metaTitle: 'AI Course for Marketing & Business | Lenoo AI Dubai',
+    metaTitle: 'كورس الذكاء الاصطناعي العملي للتسويق والأعمال | Lenoo AI دبي',
     metaDescription:
-      'A 6-week live AI course from Lenoo AI in Dubai. Learn the prompts, tools and automations we build for UAE companies, online or in person.',
+      'كورس عملي مباشر لمدة 6 أسابيع من Lenoo AI في دبي. طبّق على مشروعك الأوامر والأدوات والأتمتة التي نبنيها لشركات في الإمارات، أونلاين أو حضورياً.',
   },
   marketing: {
-    h1: 'Learn growth marketing as one system, from strategy to analytics',
-    sub: 'An 8-week live course from Lenoo AI in Dubai. Strategy, SEO, AI search, paid ads and analytics in one structured program, with a real deliverable every week.',
+    h1: 'تعلّم التسويق كنظام واحد، من الاستراتيجية حتى التحليلات',
+    sub: 'كورس عملي مباشر لمدة 8 أسابيع من Lenoo AI في دبي. الاستراتيجية والسيو والظهور في الذكاء الاصطناعي والإعلانات والتحليلات في برنامج منظّم، مع مُخرَج عملي على مشروعك كل أسبوع.',
     about: [
-      'Lenoo AI builds AI-assisted marketing for UAE companies: content, ads, SEO and the automation that connects them. This course packages that work into a structured program.',
-      'Sessions are run by the Lenoo team and led by founder Shadi Hossam, who has led strategy, SEO, paid media and content on 250+ projects. You finish with a growth plan for a real business and a certificate from Lenoo AI.',
+      'تبني Lenoo AI تسويقاً مدعوماً بالذكاء الاصطناعي لشركات في الإمارات: محتوى وإعلانات وسيو والأتمتة التي تربط بينها. هذا الكورس يجمع هذا العمل في برنامج منظّم.',
+      'يقدّم الجلسات فريق Lenoo بقيادة المؤسس شادي حسام، الذي قاد الاستراتيجية والسيو والإعلانات والمحتوى في أكثر من 250 مشروعاً. تنهي الكورس بخطة نمو لمشروع حقيقي وشهادة من Lenoo AI.',
     ],
-    metaTitle: 'Growth Marketing Course | Lenoo AI Dubai',
+    metaTitle: 'كورس التسويق العملي ونمو الأعمال | Lenoo AI دبي',
     metaDescription:
-      'An 8-week live growth marketing course from Lenoo AI: strategy, SEO and GEO, Meta, Google and TikTok ads, funnels and GA4. Online or in Dubai.',
+      'كورس تسويق عملي مباشر لمدة 8 أسابيع من Lenoo AI: استراتيجية، سيو وGEO، إعلانات Meta وGoogle وTikTok، مسارات البيع وGA4. أونلاين أو في دبي.',
   },
 };
 const voice = VOICE[slug];
 
 const facts = [
-  { label: 'Length', value: `${offer.duration} · ${offer.sessions}` },
-  { label: 'Format', value: offer.format },
-  { label: 'Level', value: offer.level },
-  { label: 'Next cohort', value: isTba(offer.nextCohort) ? 'Opening soon' : offer.nextCohort },
+  { label: UI.factLength, value: `${offer.duration} · ${offer.sessions}` },
+  { label: UI.factFormat, value: offer.format },
+  { label: UI.factLevel, value: offer.level },
+  { label: UI.factCohort, value: isTba(offer.nextCohort) ? UI.cohortSoon : offer.nextCohort },
 ];
-const priceText = isTba(offer.price) ? 'Announced to reserved seats first' : offer.price;
+const priceText = isTba(offer.price) ? UI.priceTba : offer.price;
 const proof = [
-  { value: 'Dubai', label: 'AI agency in Business Bay' },
-  { value: 'Client work', label: 'Every workflow comes from real projects' },
-  { value: 'Certificate', label: 'Issued by Lenoo AI on completion' },
+  { value: 'دبي', label: 'وكالة ذكاء اصطناعي في الخليج التجاري' },
+  { value: 'عمل حقيقي', label: 'كل طريقة عمل مأخوذة من مشاريع عملاء' },
+  { value: 'شهادة', label: 'من Lenoo AI عند إتمام الكورس' },
 ];
 const pillars = [
-  { title: 'Built from client projects', text: 'What you learn is what we deliver to paying clients, not a textbook version of it.' },
-  { title: 'Structured, week by week', text: 'A fixed curriculum with one deliverable per week, so you always know where you are.' },
-  { title: 'Business Bay or online', text: 'Join in person at our Dubai office or live online. Every session is recorded.' },
+  { title: 'مبني على مشاريع العملاء', text: 'ما تتعلّمه هو ما ننفّذه لعملائنا، وليس نسخة نظرية منه.' },
+  { title: 'منظّم أسبوعاً بأسبوع', text: 'منهج ثابت مع مُخرَج عملي كل أسبوع، فتعرف دائماً أين وصلت.' },
+  { title: 'في الخليج التجاري أو أونلاين', text: 'احضر في مكتبنا في دبي أو مباشرة أونلاين. كل جلسة مسجّلة.' },
 ];
-
+const errors = { name: UI.errName, email: UI.errEmail, phone: UI.errPhone, generic: UI.errGeneric, sending: UI.sending };
 ---
 
-<BaseLayout
+<ArBaseLayout
   title={voice.metaTitle}
   description={voice.metaDescription}
-  canonicalPath={`/lp/${slug}-course`}
-  arPath={null}
+  canonicalPath={`/ar/lp/${slug}-course`}
+  enPath={null}
   ogImage="/assets/og-ai-training.jpg"
   noindex
   bare
 >
   <header class="lp-top">
     <div class="lp-wrap lp-top-row">
-      <a href="/" class="lp-brand" aria-label="Lenoo AI home">{COMPANY.name}</a>
+      <a href="/ar" class="lp-brand" dir="ltr">{BRAND}</a>
       <a href="#reserve" data-cta="header" class="lp-btn lp-btn--small">{CTA_LABEL}</a>
     </div>
   </header>
@@ -85,23 +85,24 @@ const pillars = [
   <section class="lp-hero">
     <div class="lp-wrap lp-hero-grid">
       <div>
-        <p class="lp-eyebrow">A Lenoo AI course · Business Bay, Dubai and online</p>
+        <p class="lp-eyebrow">كورس من Lenoo AI · الخليج التجاري، دبي وأونلاين</p>
         <h1>{voice.h1}</h1>
         <p class="lp-sub">{voice.sub}</p>
+        <p class="lp-tag">{PRACTICAL_TAG}</p>
         <div class="lp-cta-row">
           <a href="#reserve" data-cta="hero" class="lp-btn">{CTA_LABEL}</a>
-          <a href="#curriculum" class="lp-link">See the curriculum</a>
+          <a href="#curriculum" class="lp-link">{UI.seeCurriculum}</a>
         </div>
         <p class="lp-note">{CTA_NOTE}</p>
       </div>
-      <aside class="lp-panel" aria-label="Program at a glance">
-        <p class="lp-panel-title">{offer.title}: program at a glance</p>
+      <aside class="lp-panel" aria-label="البرنامج باختصار">
+        <p class="lp-panel-title">{offer.title}: البرنامج باختصار</p>
         <ol>
           {offer.modules.map((m) => (
             <li><span>{m.label}</span>{m.title}</li>
           ))}
         </ol>
-        <p class="lp-panel-foot">Certificate of completion from Lenoo AI</p>
+        <p class="lp-panel-foot">شهادة إتمام من Lenoo AI</p>
       </aside>
     </div>
     <dl class="lp-wrap lp-facts">
@@ -123,7 +124,7 @@ const pillars = [
   <!-- Problem -->
   <section class="lp-sec">
     <div class="lp-wrap">
-      <h2>Sound familiar?</h2>
+      <h2>{UI.painsTitle}</h2>
       <div class="lp-grid3">
         {offer.pains.map((p) => (
           <div class="lp-card"><h3>{p.title}</h3><p>{p.text}</p></div>
@@ -132,10 +133,27 @@ const pillars = [
     </div>
   </section>
 
+  <!-- Practical, not theory: how every session runs -->
+  <section class="lp-sec lp-soft">
+    <div class="lp-wrap">
+      <h2>{SESSION_FLOW.title}</h2>
+      <p class="lp-lead">{SESSION_FLOW.lead}</p>
+      <ol class="lp-grid3 lp-steps">
+        {SESSION_FLOW.steps.map((s, i) => (
+          <li class="lp-card">
+            <span class="lp-step-num">{i + 1}</span>
+            <h3>{s.title}</h3>
+            <p>{s.text}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
   <!-- Outcomes -->
   <section class="lp-sec lp-dark">
     <div class="lp-wrap">
-      <h2>In {offer.duration}, you'll be able to</h2>
+      <h2>{UI.outcomesTitle(offer.duration)}</h2>
       <ul class="lp-checks">
         {offer.outcomes.map((o) => <li>{o}</li>)}
       </ul>
@@ -145,15 +163,15 @@ const pillars = [
   <!-- Curriculum -->
   <section id="curriculum" class="lp-sec">
     <div class="lp-wrap lp-narrow">
-      <h2>What we cover, week by week</h2>
-      <p class="lp-lead">Every week ends with something you can use in your business the next day.</p>
+      <h2>{UI.curriculumTitle}</h2>
+      <p class="lp-lead">{UI.curriculumLead}</p>
       <ol class="lp-modules">
         {offer.modules.map((m) => (
           <li class="lp-card">
             <p class="lp-label">{m.label}</p>
             <h3>{m.title}</h3>
             <ul>{m.lessons.map((l) => <li>{l}</li>)}</ul>
-            <p class="lp-chip">You leave with: {m.deliverable}</p>
+            <p class="lp-chip">{UI.youLeaveWith} {m.deliverable}</p>
           </li>
         ))}
       </ol>
@@ -164,11 +182,11 @@ const pillars = [
   <section class="lp-sec lp-soft">
     <div class="lp-wrap lp-grid2">
       <div class="lp-card">
-        <h2>This is for you if</h2>
+        <h2>{UI.whoForTitle}</h2>
         <ul class="lp-list">{offer.whoFor.map((w) => <li>✓ {w}</li>)}</ul>
       </div>
       <div class="lp-card">
-        <h2>It's not for you if</h2>
+        <h2>{UI.notForTitle}</h2>
         <ul class="lp-list">{offer.notFor.map((w) => <li>✕ {w}</li>)}</ul>
       </div>
     </div>
@@ -177,7 +195,7 @@ const pillars = [
   <!-- Messenger: the company -->
   <section class="lp-sec">
     <div class="lp-wrap">
-      <h2>Taught by the team that does the work</h2>
+      <h2>يقدّمه الفريق الذي ينفّذ هذا العمل يومياً</h2>
       <div class="lp-about">
         {voice.about.map((p) => <p>{p}</p>)}
       </div>
@@ -192,7 +210,7 @@ const pillars = [
   <!-- Offer -->
   <section class="lp-sec lp-dark">
     <div class="lp-wrap lp-narrow">
-      <h2>What you get</h2>
+      <h2>{UI.includedTitle}</h2>
       <ul class="lp-included">
         {OFFER_INCLUDED.map((i) => (
           <li><strong>{i.title}</strong><span>{i.text}</span></li>
@@ -200,7 +218,7 @@ const pillars = [
       </ul>
       <div class="lp-price">
         <div>
-          <p class="lp-label">Price</p>
+          <p class="lp-label">{UI.priceLabel}</p>
           <p class="lp-price-val">{priceText}</p>
         </div>
         <a href="#reserve" data-cta="offer" class="lp-btn">{CTA_LABEL}</a>
@@ -211,10 +229,10 @@ const pillars = [
   <!-- FAQ -->
   <section class="lp-sec">
     <div class="lp-wrap lp-narrow">
-      <h2>Questions</h2>
+      <h2>{UI.faqTitle}</h2>
       <div class="lp-faq">
         {offer.faq.map((f, i) => (
-          <details class="lp-card" open={i === 0}>
+          <details class="lp-card" open={i < 2}>
             <summary>{f.question}</summary>
             <p>{f.answer}</p>
           </details>
@@ -226,33 +244,33 @@ const pillars = [
   <!-- Form -->
   <section id="reserve" class="lp-sec lp-soft">
     <div class="lp-wrap lp-form-wrap">
-      <h2>Reserve your seat</h2>
+      <h2>{UI.formTitle}</h2>
       <p class="lp-lead">{offer.title} · {offer.duration}. {CTA_NOTE}</p>
-      <form id="lp-form" class="lp-form" novalidate>
-        <label>Full name<input name="name" type="text" autocomplete="name" required maxlength="100" /></label>
-        <label>Email<input name="email" type="email" autocomplete="email" required /></label>
-        <label>WhatsApp number<input name="phone" type="tel" dir="ltr" autocomplete="tel" required placeholder="+971 50 123 4567" /></label>
+      <form id="lp-form" class="lp-form" novalidate data-errors={JSON.stringify(errors)}>
+        <label>{UI.name}<input name="name" type="text" autocomplete="name" required maxlength="100" /></label>
+        <label>{UI.email}<input name="email" type="email" dir="ltr" autocomplete="email" required /></label>
+        <label>{UI.phone}<input name="phone" type="tel" dir="ltr" autocomplete="tel" required placeholder="+971 50 123 4567" /></label>
         <input type="text" name="website" tabindex="-1" autocomplete="off" class="lp-hp" aria-hidden="true" />
         <p data-error class="lp-error" role="alert" hidden></p>
         <button type="submit" class="lp-btn">{CTA_LABEL}</button>
         <div data-success class="lp-success" hidden>
-          <strong>Your seat is reserved.</strong>
-          <span>We'll message you on WhatsApp with the dates and price.</span>
+          <strong>{UI.successTitle}</strong>
+          <span>{UI.successText}</span>
         </div>
       </form>
     </div>
   </section>
 
-  <footer class="lp-foot">© {new Date().getFullYear()} {COMPANY.name} · {COMPANY.address}</footer>
+  <footer class="lp-foot">© {new Date().getFullYear()} {BRAND} · الخليج التجاري، دبي، الإمارات</footer>
 
   <div id="lp-sticky" class="lp-sticky">
     <a href="#reserve" data-cta="sticky" class="lp-btn">{CTA_LABEL}</a>
   </div>
-</BaseLayout>
+</ArBaseLayout>
 
 <script define:vars={{ VARIANT, course: offer.formValue, courseTitle: offer.title, slug }}>
   const track = (name, params = {}) => {
-    const p = { page_path: location.pathname, lp_variant: VARIANT, course, ...params };
+    const p = { page_path: location.pathname, lp_variant: VARIANT, course, lp_lang: 'ar', ...params };
     window.gtag?.('event', name, p);
     if (name === 'generate_lead') window.fbq?.('track', 'Lead', { content_name: `course_${course}` });
   };
@@ -268,6 +286,7 @@ const pillars = [
   }
 
   const form = document.getElementById('lp-form');
+  const msgs = JSON.parse(form.dataset.errors || '{}');
   const errorEl = form.querySelector('[data-error]');
   const successEl = form.querySelector('[data-success]');
   const button = form.querySelector('button[type=submit]');
@@ -291,9 +310,9 @@ const pillars = [
     const email = String(data.get('email') || '').trim();
     const phone = String(data.get('phone') || '').trim();
     const digits = phone.replace(/\D/g, '');
-    if (!name) return fail('Please enter your name.');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('Please enter a valid email.');
-    if (digits.length < 7 || digits.length > 15) return fail('Please enter a valid WhatsApp number.');
+    if (!name) return fail(msgs.name);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail(msgs.email);
+    if (digits.length < 7 || digits.length > 15) return fail(msgs.phone);
 
     const qs = new URLSearchParams(location.search);
     const utm = (k) => qs.get(k) || sessionStorage.getItem(k) || '';
@@ -304,8 +323,8 @@ const pillars = [
       work_email: email,
       whatsapp: phone.startsWith('+') ? '+' + digits : digits,
       source: 'course_lp',
-      page_source: `lp-${slug}-course`,
-      notes: `Course: ${courseTitle}. Landing page variant: ${VARIANT}. utm_content=${utm('utm_content')}`,
+      page_source: `lp-ar-${slug}-course`,
+      notes: `Course: ${courseTitle}. Landing page variant: ${VARIANT} (ar). utm_content=${utm('utm_content')}`,
       utm_source: utm('utm_source'),
       utm_medium: utm('utm_medium'),
       utm_campaign: utm('utm_campaign'),
@@ -319,7 +338,7 @@ const pillars = [
     } }));
 
     button.disabled = true;
-    button.textContent = 'Sending...';
+    button.textContent = msgs.sending;
     try {
       const res = await fetch('/api/submit-lead', {
         method: 'POST',
@@ -331,7 +350,7 @@ const pillars = [
       [...form.children].forEach((el) => { if (el !== successEl) el.hidden = true; });
       successEl.hidden = false;
     } catch {
-      fail('Something went wrong. Please try again or message us on WhatsApp.');
+      fail(msgs.generic);
       button.disabled = false;
       button.textContent = label;
     }
@@ -339,83 +358,91 @@ const pillars = [
 </script>
 
 <style>
+  /* Arabic page: every text element uses the site's Arabic face. */
+  .lp-top, .lp-hero, .lp-proof, .lp-sec, .lp-foot, .lp-sticky { --lp-font: 'IBM Plex Sans Arabic', var(--ui); font-family: var(--lp-font); }
   .lp-wrap { max-width: 72rem; margin: 0 auto; padding: 0 20px; }
   .lp-narrow { max-width: 54rem; }
   .lp-top { position: absolute; inset: 0 0 auto; z-index: 20; }
   .lp-top-row { display: flex; align-items: center; justify-content: space-between; padding-top: 20px; padding-bottom: 20px; }
-  .lp-brand { font-family: var(--display); font-weight: 800; font-size: 1.15rem; color: #fff; text-decoration: none; }
+  .lp-brand { font: 800 1.15rem var(--display); color: #fff; text-decoration: none; }
 
   .lp-btn {
     display: inline-flex; align-items: center; justify-content: center;
     background: var(--grad-cta); color: #fff; border: 0; border-radius: 999px;
-    padding: 15px 28px; font: 700 1rem var(--ui); text-decoration: none; cursor: pointer;
+    padding: 15px 28px; font: 700 1rem var(--lp-font); text-decoration: none; cursor: pointer;
     box-shadow: 0 6px 20px rgba(0, 104, 117, 0.3); transition: transform .2s var(--ease);
   }
   .lp-btn:hover { transform: translateY(-1px); }
   .lp-btn:disabled { opacity: .6; }
   .lp-btn--small { padding: 9px 18px; font-size: .875rem; box-shadow: none; }
-  .lp-link { color: rgba(255,255,255,.8); font: 600 .9rem var(--ui); text-underline-offset: 4px; }
+  .lp-link { color: rgba(255,255,255,.8); font: 600 .9rem var(--lp-font); text-underline-offset: 6px; }
 
   .lp-hero { background: var(--grad-hero); color: #fff; padding: 120px 0 56px; }
   .lp-hero-grid { display: grid; gap: 40px; align-items: center; }
-  .lp-eyebrow { color: var(--cyan); font: 600 .8rem var(--ui); letter-spacing: .08em; text-transform: uppercase; }
-  .lp-hero h1 { font-family: var(--display); font-size: clamp(2rem, 4.6vw, 3.2rem); line-height: 1.1; margin: 16px 0 0; color: #fff; }
-  .lp-sub { color: rgba(255,255,255,.75); font-size: 1.1rem; line-height: 1.7; margin-top: 18px; max-width: 36rem; }
-  .lp-cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; margin-top: 28px; }
+  .lp-eyebrow { color: var(--cyan); font-weight: 600; font-size: .9rem; }
+  .lp-hero h1 { font: 700 clamp(1.9rem, 4.2vw, 3rem) / 1.35 var(--lp-font); margin: 14px 0 0; color: #fff; text-wrap: balance; }
+  .lp-sub { color: rgba(255,255,255,.78); font-size: 1.1rem; line-height: 1.9; margin-top: 18px; max-width: 38rem; }
+  .lp-tag { display: inline-block; margin-top: 18px; padding: 6px 16px; border-radius: 999px; background: rgba(0,227,253,.1); border: 1px solid rgba(0,227,253,.3); color: #a8f2ff; font-weight: 600; font-size: .9rem; }
+  .lp-cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; margin-top: 24px; }
   .lp-note { color: rgba(255,255,255,.55); font-size: .875rem; margin-top: 12px; }
   .lp-panel { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); border-radius: var(--radius-lg); padding: 24px; }
   .lp-panel-title { font-weight: 700; color: #fff; margin: 0 0 14px; }
-  .lp-panel ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .lp-panel ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
   .lp-panel li { display: flex; gap: 12px; color: rgba(255,255,255,.85); font-size: .92rem; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.08); }
-  .lp-panel li span { color: var(--cyan); min-width: 5.5rem; font-size: .8rem; font-weight: 600; padding-top: 2px; }
+  .lp-panel li span { color: var(--cyan); min-width: 6.5rem; font-size: .8rem; font-weight: 600; padding-top: 2px; }
   .lp-panel-foot { margin: 14px 0 0; font-size: .85rem; color: rgba(255,255,255,.6); }
   .lp-facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 44px; }
   .lp-facts div { border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); border-radius: var(--radius-md); padding: 12px 16px; }
-  .lp-facts dt { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,.5); }
+  .lp-facts dt { font-size: .78rem; color: rgba(255,255,255,.55); }
   .lp-facts dd { margin: 4px 0 0; font-weight: 700; font-size: .9rem; }
 
   .lp-proof { background: #fff; border-bottom: 1px solid var(--border); }
   .lp-proof-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding-top: 28px; padding-bottom: 28px; text-align: center; }
-  .lp-proof dt { font-family: var(--display); font-weight: 800; font-size: clamp(1.1rem, 2.6vw, 1.7rem); color: var(--navy); }
+  .lp-proof dt { font-weight: 700; font-size: clamp(1.1rem, 2.6vw, 1.7rem); color: var(--navy); }
   .lp-proof dd { margin: 4px 0 0; font-size: .82rem; color: var(--muted); }
 
   .lp-sec { padding: 64px 0; background: #fff; }
   .lp-soft { background: var(--bg-soft); }
   .lp-dark { background: var(--navy); color: #fff; }
-  .lp-sec h2 { font-family: var(--display); font-size: clamp(1.6rem, 3vw, 2.1rem); margin: 0; color: var(--ink); }
+  .lp-sec h2 { font: 700 clamp(1.6rem, 3vw, 2.1rem) / 1.4 var(--lp-font); margin: 0; color: var(--ink); text-wrap: balance; }
   .lp-dark h2 { color: #fff; }
-  .lp-lead { color: var(--muted); margin-top: 8px; }
+  .lp-lead { color: var(--muted); margin-top: 8px; line-height: 1.8; }
   .lp-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 22px; }
-  .lp-card h3 { margin: 0; font-size: 1.08rem; color: var(--ink); }
-  .lp-card p { margin: 8px 0 0; color: var(--muted); font-size: .93rem; line-height: 1.65; }
+  .lp-card h3 { margin: 0; font: 700 1.08rem / 1.5 var(--lp-font); color: var(--ink); }
+  .lp-card p { margin: 8px 0 0; color: var(--muted); font-size: .95rem; line-height: 1.85; }
   .lp-grid3 { display: grid; gap: 16px; margin-top: 28px; }
+  .lp-steps { list-style: none; padding: 0; }
+  .lp-step-num { display: inline-flex; width: 36px; height: 36px; border-radius: 999px; align-items: center; justify-content: center; background: var(--grad-cta); color: #fff; font-weight: 700; margin-bottom: 14px; }
   .lp-grid2 { display: grid; gap: 20px; }
   .lp-grid2 h2 { font-size: 1.4rem; }
-  .lp-list { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 8px; color: var(--muted); }
+  .lp-list { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 8px; color: var(--muted); line-height: 1.8; }
   .lp-checks { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 12px; }
-  .lp-checks li { background: rgba(255,255,255,.06); border-radius: var(--radius-md); padding: 14px 16px 14px 44px; position: relative; color: rgba(255,255,255,.88); }
-  .lp-checks li::before { content: '✓'; position: absolute; left: 18px; color: var(--cyan); }
+  .lp-checks li { background: rgba(255,255,255,.06); border-radius: var(--radius-md); padding-block: 14px; padding-inline: 44px 16px; position: relative; color: rgba(255,255,255,.88); line-height: 1.8; }
+  .lp-checks li::before { content: '✓'; position: absolute; inset-inline-start: 18px; top: 14px; color: var(--cyan); }
   .lp-modules { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 12px; }
-  .lp-modules ul { margin: 12px 0 0; padding-left: 18px; color: var(--muted); font-size: .92rem; display: grid; gap: 4px; }
-  .lp-label { margin: 0; font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--teal); font-weight: 600; }
-  .lp-dark .lp-label { color: rgba(255,255,255,.5); }
-  .lp-chip { display: inline-block; background: var(--bg-soft); border-radius: 999px; padding: 4px 12px; font-size: .78rem !important; color: var(--ink) !important; margin-top: 14px !important; }
+  .lp-modules ul { margin: 12px 0 0; padding-inline-start: 18px; color: var(--muted); font-size: .93rem; display: grid; gap: 4px; line-height: 1.8; }
+  .lp-label { margin: 0; font-size: .8rem; color: var(--teal); font-weight: 600; }
+  .lp-dark .lp-label { color: rgba(255,255,255,.55); }
+  .lp-chip { display: inline-block; background: var(--bg-soft); border-radius: 999px; padding: 4px 12px; font-size: .8rem !important; color: var(--ink) !important; margin-top: 14px !important; }
   .lp-about { max-width: 46rem; }
-  .lp-about p { color: var(--muted); line-height: 1.75; margin: 14px 0 0; }
+  .lp-about p { color: var(--muted); line-height: 1.95; margin: 14px 0 0; }
   .lp-included { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 12px; }
   .lp-included li { background: rgba(255,255,255,.06); border-radius: var(--radius-md); padding: 16px; display: grid; gap: 4px; }
-  .lp-included span { color: rgba(255,255,255,.65); font-size: .9rem; }
+  .lp-included span { color: rgba(255,255,255,.68); font-size: .9rem; }
   .lp-price { margin-top: 28px; border: 1px solid rgba(255,255,255,.16); border-radius: var(--radius-md); padding: 22px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; }
-  .lp-price-val { margin: 2px 0 0; font-weight: 800; font-size: 1.2rem; }
+  .lp-price-val { margin: 2px 0 0; font-weight: 700; font-size: 1.2rem; }
   .lp-faq { display: grid; gap: 12px; margin-top: 24px; }
   .lp-faq summary { cursor: pointer; font-weight: 700; color: var(--ink); list-style: none; }
 
   .lp-form-wrap { max-width: 36rem; }
   .lp-form { margin-top: 24px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; display: grid; gap: 16px; box-shadow: var(--shadow-card); }
-  .lp-form label { display: grid; gap: 6px; font-weight: 700; font-size: .875rem; color: var(--ink); }
-  .lp-form input { font: 400 1rem var(--ui); padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--ink); background: #fff; }
+  @media (max-width: 480px) { .lp-form { padding: 20px; } }
+  .lp-form > * { min-width: 0; }
+  .lp-form label { display: grid; gap: 6px; font-weight: 700; font-size: .9rem; color: var(--ink); }
+  .lp-form input { width: 100%; min-width: 0; box-sizing: border-box; font: 400 1rem var(--lp-font); padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--ink); background: #fff; text-align: right; }
   .lp-form input:focus { outline: 2px solid rgba(0,104,117,.35); border-color: var(--teal); }
-  .lp-hp { position: absolute; left: -9999px; }
+  /* Off-screen offsets scroll an RTL page sideways, so the honeypot is clipped in place instead. */
+  .lp-form .lp-hp { position: absolute; width: 1px; height: 1px; padding: 0; border: 0; overflow: hidden; clip-path: inset(50%); opacity: 0; pointer-events: none; }
   .lp-error { background: #fef2f2; color: #b91c1c; border-radius: var(--radius-sm); padding: 10px 14px; margin: 0; font-size: .9rem; }
   .lp-success { text-align: center; display: grid; gap: 4px; padding: 12px 0; color: var(--muted); }
   .lp-success[hidden], .lp-error[hidden] { display: none; }

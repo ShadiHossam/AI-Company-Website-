@@ -5,16 +5,20 @@ One variable: **who sells the course**.
 
 | | Variant A: Lenoo (the company) | Variant B: Shadi (the mentor) |
 |---|---|---|
-| AI course | lenooai.com/lp/ai-course | shadihossam.com/en/uae/lp/ai-course/ |
-| Marketing course | lenooai.com/lp/marketing-course | shadihossam.com/en/uae/lp/marketing-course/ |
+| AI course | lenooai.com/ar/lp/ai-course | shadihossam.com/ar/uae/lp/ai-course/ |
+| Marketing course | lenooai.com/ar/lp/marketing-course | shadihossam.com/ar/uae/lp/marketing-course/ |
 | Voice | "we", agency, structured program | "I", first person, a person you can ask |
 | Hero visual | Program-at-a-glance panel | Shadi's portrait |
 | Proof under hero | Dubai agency, client work, certificate | 250+ projects, 25+ sites, founder |
 | "Who teaches" | Taught by the team that does the work | Why I'm teaching this |
 
+The pages are in Arabic (clear standard Arabic, same text on both sides) and
+sell the courses as fully practical: a shared "every session is hands-on"
+section, a practical tag in both heroes and a "Is the course theoretical?" FAQ.
+
 Everything else is the control and lives in `course-offer.ts`, which must be
 byte-identical in both repos: price, dates, curriculum, outcomes, what's
-included, FAQ, CTA label ("Reserve my seat"), form fields (name, email, WhatsApp),
+included, FAQ, CTA label ("احجز مقعدك"), how each session runs, form fields (name, email, WhatsApp),
 section order. Check with `cmp` before launching.
 
 ## How to run it

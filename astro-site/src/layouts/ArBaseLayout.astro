@@ -41,6 +41,11 @@ interface Props {
   popup?: boolean;
   /** Blog posts pass their category for article-aware popup copy. */
   popupContext?: PopupContext;
+  /**
+   * Landing-page mode: no navbar, footer or WhatsApp bubble, so paid traffic
+   * has one thing to do. Tracking scripts still load. Turns the popup off too.
+   */
+  bare?: boolean;
 }
 
 const {
@@ -56,9 +61,11 @@ const {
   preloadImageSrcset,
   prevPath,
   nextPath,
-  popup = true,
+  popup: popupProp = true,
+  bare = false,
   popupContext,
 } = Astro.props;
+const popup = popupProp && !bare;
 const popupCopy = popup ? resolvePopupCopy(Astro.url.pathname, 'ar', popupContext) : null;
 
 const canonicalURL = `https://${COMPANY.domain}${canonicalPath}`;
@@ -119,13 +126,13 @@ const effectiveNoindex = noindex || isStaging;
 <body class="rtl">
 
 <a href="#main-content" class="skip-link">تخطي إلى المحتوى الرئيسي</a>
-<ArNavbar enPath={enPath} />
+{!bare && <ArNavbar enPath={enPath} />}
 <main id="main-content">
 <slot />
 </main>
-<ArFooter />
+{!bare && <ArFooter />}
 <ArModal />
-<WhatsAppButton lang="ar" />
+{!bare && <WhatsAppButton lang="ar" />}
 {popupCopy && <ContactPopup copy={popupCopy} lang="ar" />}
 <!-- First-party visit tracker (src/tracking/ln-track.js, built by scripts/build-tracking.mjs) -->
 <script is:inline defer src={`/js/ln-track.js?v=${trackJsVersion}`}></script>
