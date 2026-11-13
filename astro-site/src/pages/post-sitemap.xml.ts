@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { getSupabaseAdmin } from '../lib/supabase';
 import { getCollection } from 'astro:content';
 
-const BASE = 'https://lenooai.com';
+const BASE = 'https://lenooai.com/en/ae';
 
 export const GET: APIRoute = async () => {
   const seenSlugs = new Set<string>();

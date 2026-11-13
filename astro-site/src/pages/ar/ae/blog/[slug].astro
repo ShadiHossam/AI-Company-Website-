@@ -42,7 +42,7 @@ const { data: post, error } = await supabase
   .single();
 
 if (error || !post || !post.ar_title) {
-  return Astro.redirect(`/blog/${slug}`, 302);
+  return Astro.redirect(`/en/ae/blog/${slug}`, 302);
 }
 
 const bodyHtml = post.ar_body_markdown ? sanitizeRichText(await marked(post.ar_body_markdown)) : '';
@@ -74,17 +74,17 @@ const ldJson = [
     datePublished: pubDate.toISOString(),
     dateModified: (updatedDate ?? pubDate).toISOString(),
     author: { '@type': 'Person', name: post.author_name ?? 'Lenoo AI' },
-    publisher: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com' },
-    mainEntityOfPage: { '@type': 'WebPage', '@id': `https://lenooai.com/ar/blog/${slug}` },
+    publisher: { '@type': 'Organization', name: 'Lenoo AI', url: 'https://lenooai.com/en/ae' },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `https://lenooai.com/ar/ae/blog/${slug}` },
     ...(post.og_image ? { image: post.og_image.startsWith('http') ? post.og_image : `https://lenooai.com${post.og_image}` } : {}),
   },
   {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar' },
-      { '@type': 'ListItem', position: 2, name: 'المدونة', item: 'https://lenooai.com/ar/blog' },
-      { '@type': 'ListItem', position: 3, name: post.ar_title, item: `https://lenooai.com/ar/blog/${slug}` },
+      { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: 'https://lenooai.com/ar/ae' },
+      { '@type': 'ListItem', position: 2, name: 'المدونة', item: 'https://lenooai.com/ar/ae/blog' },
+      { '@type': 'ListItem', position: 3, name: post.ar_title, item: `https://lenooai.com/ar/ae/blog/${slug}` },
     ],
   },
 ];
@@ -93,8 +93,8 @@ const ldJson = [
 <ArBaseLayout
   title={`${post.ar_meta_title ?? post.ar_title} | مدونة Lenoo AI`}
   description={post.ar_meta_description ?? post.ar_description ?? ''}
-  canonicalPath={`/ar/blog/${slug}`}
-  enPath={`/blog/${slug}`}
+  canonicalPath={`/ar/ae/blog/${slug}`}
+  enPath={`/en/ae/blog/${slug}`}
   ogImage={post.og_image ?? '/assets/og-blog.jpg'}
   ogType="article"
   ldJson={ldJson}
@@ -107,9 +107,9 @@ const ldJson = [
     <div class={post.og_image && post.og_image !== '/assets/og-blog.jpg' ? 'hero-grid' : 'hero-grid hero-grid--solo'}>
       <div class="hero-text">
         <nav style="display:flex;align-items:center;gap:8px;font-size:0.875rem;color:#72787e;margin-bottom:1.5rem;flex-wrap:wrap;" aria-label="مسار التنقل">
-          <a href="/ar" style="color:#006875;font-weight:600;">الرئيسية</a>
+          <a href="/ar/ae" style="color:#006875;font-weight:600;">الرئيسية</a>
           <span aria-hidden="true">/</span>
-          <a href="/ar/blog" style="color:#006875;font-weight:600;">المدونة</a>
+          <a href="/ar/ae/blog" style="color:#006875;font-weight:600;">المدونة</a>
           <span aria-hidden="true">/</span>
           <span style="color:#42474e;">{post.ar_title}</span>
         </nav>
@@ -130,7 +130,7 @@ const ldJson = [
           </button>
         </div>
         <div style="margin-top:1rem;">
-          <a href={`/blog/${slug}`} style="font-size:0.875rem;color:#006875;font-weight:600;" lang="en">Read in English →</a>
+          <a href={`/en/ae/blog/${slug}`} style="font-size:0.875rem;color:#006875;font-weight:600;" lang="en">Read in English →</a>
         </div>
       </div>
 
@@ -153,7 +153,7 @@ const ldJson = [
           <div class="card" style="position:sticky;top:calc(var(--topbar-h,80px) + 1.5rem);">
             <div style="font-size:0.8125rem;font-weight:700;color:#42474e;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:1rem;">مقالات ذات صلة</div>
             {relatedPosts.map(r => (
-              <a href={`/ar/blog/${r.slug}`} style="display:block;padding:0.75rem 0;border-bottom:1px solid rgba(0,37,59,0.08);text-decoration:none;">
+              <a href={`/ar/ae/blog/${r.slug}`} style="display:block;padding:0.75rem 0;border-bottom:1px solid rgba(0,37,59,0.08);text-decoration:none;">
                 <div style="font-size:0.875rem;font-weight:700;color:#00253b;line-height:1.4;margin-bottom:4px;">{r.ar_title ?? r.title}</div>
                 <div style="font-size:0.75rem;color:#72787e;">{r.category}</div>
               </a>
