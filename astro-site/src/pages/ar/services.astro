@@ -1,123 +1,55 @@
 ---
 export const prerender = false;
 import ArBaseLayout from '../../layouts/ArBaseLayout.astro';
+import FaqAccordion from '../../components/FaqAccordion.astro';
 
-const ldJson = [
+const servicesFaqs = [
+  { question: "بأي خدمة يجب أن نبدأ؟", answer: "بالنسبة لمعظم الشركات، نوصي بجلسة استراتيجية سريعة للذكاء الاصطناعي. تُخطط سير عملك، وتُرتّب الفرص حسب العائد على الاستثمار، وتخبرك بالضبط بأي خدمة تبدأ. إذا كنت تعرف بالفعل ما تحتاجه، فمكالمة استكشافية تكفي لنحدد نطاق المشروع مباشرة." },
+  { question: "هل يمكننا دمج عدة خدمات في مشروع واحد؟", answer: "نعم، معظم المشاريع تفعل ذلك. قد يشمل التعاون النموذجي جلسة استراتيجية، وبناء مخصص، وتدريب الفريق ليُستخدم الأداة فعلياً. نُحدد نطاق المشاريع المدمجة كحزمة واحدة بجدول زمني واحد." },
+  { question: "هل تعملون مع شركات خارج الإمارات؟", answer: "نعم. مقرنا في دبي ونخدم شركات الإمارات أولاً، لكننا نُقدّم الاستراتيجية والبناء والتدريب عن بُعد لعملاء في الشرق الأوسط وأوروبا وخارجها." },
+  { question: "كيف يتم تحديد الأسعار عبر الخدمات؟", answer: "يتم تحديد نطاق كل خدمة بشكل فردي حسب التعقيد والنطاق. جلسات الاستراتيجية وبرامج التدريب لها أسعار أكثر توحيداً؛ أما البناء والأتمتة وعمليات الدمج فيُقدَّم لها عرض سعر بعد مكالمة استكشافية بمجرد فهمنا احتياجاتك." },
+  { question: "ما الذي يغطيه ضمان الاسترداد 100% فعلياً؟", answer: "إذا لم تكن راضياً تماماً عما نُسلّمه، فلن تدفع. بدون شروط، بدون نزاعات. ينطبق على كل خدمة في هذه الصفحة." },
+];
+
+const servicesFaqLdJson = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: servicesFaqs.map((f) => ({
+    "@type": "Question",
+    name: f.question,
+    acceptedAnswer: { "@type": "Answer", text: f.answer },
+  })),
+};
+
+const servicesLdJson = [
   {
     "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "خدمات الذكاء الاصطناعي للشركات في الإمارات | Aegis AI",
-    "url": "https://lenooai.com/ar/services",
-    "inLanguage": "ar",
-    "isPartOf": { "@type": "WebSite", "url": "https://lenooai.com" }
+    "@type": "CollectionPage",
+    name: "خدمات الذكاء الاصطناعي من Aegis AI",
+    url: "https://lenooai.com/ar/services",
+    description: "تطوير ذكاء اصطناعي مخصص، أتمتة، وكلاء ذكاء اصطناعي، أدوات داخلية، تدريب الفرق، واستشارات استراتيجية للشركات في الإمارات وخارجها.",
+    publisher: { "@type": "Organization", name: "Aegis AI", url: "https://lenooai.com" },
+    hasPart: [
+      { "@type": "Service", name: "تطوير ذكاء اصطناعي مخصص", url: "https://lenooai.com/ar/services/custom-ai-development" },
+      { "@type": "Service", name: "وكلاء الذكاء الاصطناعي", url: "https://lenooai.com/ar/services/ai-agents" },
+      { "@type": "Service", name: "أتمتة الذكاء الاصطناعي", url: "https://lenooai.com/ar/services/ai-automation" },
+      { "@type": "Service", name: "التدريب على الذكاء الاصطناعي وورش العمل", url: "https://lenooai.com/ar/services/ai-training" },
+      { "@type": "Service", name: "استشارات استراتيجية للذكاء الاصطناعي", url: "https://lenooai.com/ar/services/ai-strategy" },
+      { "@type": "Service", name: "دمج الذكاء الاصطناعي", url: "https://lenooai.com/ar/services/ai-integration" },
+      { "@type": "Service", name: "أدوات ذكاء اصطناعي داخلية", url: "https://lenooai.com/ar/services/internal-ai-tools" },
+      { "@type": "Service", name: "تطوير نماذج ذكاء اصطناعي مخصصة", url: "https://lenooai.com/ar/services/custom-gpt-development" },
+      { "@type": "Service", name: "فايب كودينج", url: "https://lenooai.com/ar/services/vibe-coding" },
+    ],
   },
   {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://lenooai.com/ar" },
-      { "@type": "ListItem", "position": 2, "name": "الخدمات", "item": "https://lenooai.com/ar/services" }
-    ]
-  }
-];
-
-const services = [
-  {
-    slug: "custom-ai-development",
-    icon: "monitor_heart",
-    title: "تطوير ذكاء اصطناعي مخصص",
-    desc: "بصفتنا وكالة ذكاء اصطناعي في دبي، نبني أنظمة مصممة خصيصاً لعملياتك: روبوتات محادثة، أتمتة سير العمل، لوحات تحليلية، وأدوات تنبؤية مدمجة مع أنظمتك الحالية.",
-    badge: "الأكثر طلباً",
-    cat: "build"
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "الرئيسية", item: "https://lenooai.com/ar" },
+      { "@type": "ListItem", position: 2, name: "الخدمات", item: "https://lenooai.com/ar/services" },
+    ],
   },
-  {
-    slug: "ai-agents",
-    icon: "smart_toy",
-    title: "وكلاء الذكاء الاصطناعي",
-    desc: "ذكاء اصطناعي لا يجيب فحسب، بل يتصرف. نبني وكلاء مستقلين يُفكرون في المهام متعددة الخطوات ويُنفذونها دون إشراف مستمر.",
-    badge: "",
-    cat: "automate"
-  },
-  {
-    slug: "ai-automation",
-    icon: "autorenew",
-    title: "أتمتة بالذكاء الاصطناعي",
-    desc: "نُحوّل العمليات اليدوية المتكررة إلى سير عمل آلية ذكية، من المراسلات البريدية إلى تحديث البيانات والتقارير الدورية.",
-    badge: "",
-    cat: "automate"
-  },
-  {
-    slug: "ai-training",
-    icon: "school",
-    title: "تدريب على الذكاء الاصطناعي",
-    desc: "ورش عمل عملية بالعربي والإنجليزي تُمكّن فريقك من استخدام الذكاء الاصطناعي بثقة في عمله اليومي.",
-    badge: "",
-    cat: "consult"
-  },
-  {
-    slug: "ai-strategy",
-    icon: "bar_chart",
-    title: "استشارات استراتيجية للذكاء الاصطناعي",
-    desc: "خارطة طريق واضحة: نحدد الفرص الأعلى عائداً في شركتك ونضع خطة تنفيذ عملية لـ ١٢ شهراً.",
-    badge: "",
-    cat: "consult"
-  },
-  {
-    slug: "ai-integration",
-    icon: "integration_instructions",
-    title: "دمج الذكاء الاصطناعي في عملياتك",
-    desc: "نربط أدوات الذكاء الاصطناعي الموجودة بأنظمتك الحالية (CRM، ERP، أدوات التواصل) دون إعادة بناء كل شيء من الصفر.",
-    badge: "",
-    cat: "automate"
-  },
-  {
-    slug: "internal-ai-tools",
-    icon: "build",
-    title: "أدوات ذكاء اصطناعي داخلية",
-    desc: "نبني أدوات مخصصة لفريقك الداخلي: مساعدات معرفة، قواعد بيانات ذكية، وأتمتة خاصة بعملياتك الداخلية.",
-    badge: "",
-    cat: "build"
-  },
-  {
-    slug: "custom-gpt-development",
-    icon: "psychology",
-    title: "تطوير نماذج لغوية مخصصة",
-    desc: "نبني نماذج لغوية مُضبّطة على بيانات شركتك ومُدمجة في أنظمتك، للرد على عملائك أو دعم فريقك.",
-    badge: "",
-    cat: "build"
-  },
-  {
-    slug: "vibe-coding",
-    icon: "code",
-    title: "فايب كودينج",
-    desc: "نبني تطبيقات ويب وأدوات داخلية كاملة بالذكاء الاصطناعي، بسرعة أعلى وتكلفة أقل من التطوير التقليدي.",
-    badge: "",
-    cat: "build"
-  },
-  {
-    slug: "claude-agent-builds",
-    icon: "psychology",
-    title: "بناء وكلاء ذكاء اصطناعي جاهزين للإنتاج",
-    desc: "أذكى الوكلاء المستقلين، مبنيون للاعتمادية: اتباع دقيق للتعليمات، وتفكير بسياق طويل، واستخدام دقيق للأدوات، مصممون خصيصاً لسير عمل الأعمال المعقد.",
-    badge: "",
-    cat: "build"
-  },
-  {
-    slug: "prompt-engineering",
-    icon: "tune",
-    title: "هندسة وتحسين الأوامر",
-    desc: "ذكاؤك الاصطناعي بجودة الأوامر التي خلفه فقط. ندقق ونهندس ونحسّن الأوامر لأي نموذج ذكاء اصطناعي، لخفض وقت التعديل وتكاليف الاستخدام بشكل ملموس.",
-    badge: "",
-    cat: "consult"
-  },
-  {
-    slug: "ai-model-finetuning",
-    icon: "model_training",
-    title: "تدريب نماذج الذكاء الاصطناعي المخصص",
-    desc: "توقف عن استخدام ذكاء اصطناعي عام. ندرّب النماذج الأساسية على بيانات شركتك الخاصة، ليعرف ذكاؤك الاصطناعي عملك ويقدّم نتائج ثابتة على أي نطاق.",
-    badge: "",
-    cat: "build"
-  }
+  servicesFaqLdJson,
 ];
 ---
 
@@ -126,186 +58,443 @@ const services = [
   description="Aegis AI وكالة ذكاء اصطناعي في دبي، تقدّم 12 خدمة للشركات في الإمارات: تطوير مخصص، أتمتة، وكلاء ذكاء اصطناعي، أدوات داخلية، تدريب الفرق، واستشارات استراتيجية."
   canonicalPath="/ar/services"
   enPath="/services"
-  ldJson={ldJson}
+  ogImage="/assets/og-services.jpg"
+  ldJson={servicesLdJson}
 >
 
-<header class="page-hero">
-  <div class="container">
+<header class="hero-section">
+  <div class="container" style="text-align:center;">
     <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,227,253,0.12);border:1px solid rgba(0,227,253,0.28);border-radius:100px;padding:6px 16px;color:#a8f2ff;font-size:0.875rem;font-weight:600;margin-bottom:1.5rem;" aria-label="مسار التنقل"><a href="/ar" style="color:inherit;text-decoration:none;opacity:0.65;">الرئيسية</a><span style="opacity:0.4;padding:0 4px;"> / </span>الخدمات</div>
-    <div class="badge badge-cyan" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:16px;direction:ltr;" aria-hidden="true">electric_bolt</span>
-      خدماتنا
-    </div>
-    <h1>خدمات الذكاء الاصطناعي<br><span class="gradient-text">للشركات في دبي</span></h1>
-    <p style="color:rgba(255,255,255,0.72);font-size:1.125rem;max-width:600px;margin:1.5rem auto 2.5rem;line-height:1.8;">
-      من بناء الأنظمة إلى تدريب الفرق، نحن شريكك الكامل في رحلة الذكاء الاصطناعي. ضمان استرداد ١٠٠٪ على جميع خدماتنا.
+    <h1>ثماني خدمات. مهمة واحدة.</h1>
+    <p style="color:rgba(255,255,255,0.72); font-size:1.125rem; max-width:600px; margin:1.5rem auto 2.5rem;">
+      نحن لا نكتفي ببناء أدوات ذكاء اصطناعي. نجعل عملك جاهزاً فعلياً للذكاء الاصطناعي. من الاستراتيجية إلى البناء إلى تمكين الفريق، نُغطي الرحلة الكاملة.
     </p>
-    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
       <button onclick="openModal(this)" data-source="ar_services_hero" class="btn-primary">احجز استشارة مجانية</button>
+      <a href="#services-list" class="btn-outline">استعرض الخدمات ↓</a>
     </div>
   </div>
 </header>
 
-<!-- IMAGE BANNER -->
-<div style="width:100%; height:240px; overflow:hidden; position:relative;">
-  <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1400&q=80&auto=format&fit=crop" alt="خدمات الذكاء الاصطناعي للشركات في دبي" loading="eager" fetchpriority="high" width="1400" height="240" style="width:100%; height:100%; object-fit:cover; object-position:center;" />
-  <div style="position:absolute; inset:0; background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.40));"></div>
-</div>
-
-<section class="section">
+<!-- CORE SERVICES -->
+<section id="services-list" class="section">
   <div class="container">
-    <div class="svc-tabs" id="svc-tabs" role="tablist" aria-label="تصفية الخدمات حسب النوع">
-      <button class="svc-tab active" data-cat="all" type="button">كل الخدمات</button>
-      <button class="svc-tab" data-cat="build" type="button">بناء الأنظمة</button>
-      <button class="svc-tab" data-cat="automate" type="button">الوكلاء والأتمتة</button>
-      <button class="svc-tab" data-cat="consult" type="button">التدريب والاستشارات</button>
-    </div>
-    <div class="svc-grid" id="svc-grid">
-      {services.map(svc => (
-        <a href={`/ar/services/${svc.slug}`} class="svc-card" data-cat={svc.cat}>
-          <div class="svc-card-icon">
-            <span class="material-symbols-outlined" style="direction:ltr;" aria-hidden="true">{svc.icon}</span>
-          </div>
-          {svc.badge && <div class="svc-badge">{svc.badge}</div>}
-          <h3>{svc.title}</h3>
-          <p>{svc.desc}</p>
-          <div class="svc-link">
-            تعرف على التفاصيل
-            <span class="material-symbols-outlined" style="font-size:16px;direction:ltr;transform:scaleX(-1);" aria-hidden="true">arrow_forward</span>
-          </div>
-        </a>
-      ))}
-    </div>
-  </div>
-</section>
 
-<!-- Featured services: build vs agents -->
-<section class="section" style="background:#f0f3ff;">
-  <div class="container">
-    <div style="text-align:center;margin-bottom:3rem;">
-      <h2>أكثر خدمتين تبدأ بهما الشركات</h2>
-      <p style="color:#42474e;max-width:560px;margin:1rem auto 0;line-height:1.8;">إن لم تكن متأكداً من أين تبدأ، هاتان الخدمتان تغطيان أغلب احتياجات الشركات في الإمارات.</p>
-    </div>
-    <div class="svc-split">
-      <div class="svc-split-img">
-        <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=80&auto=format&fit=crop" alt="واجهة روبوت محادثة وأتمتة ذكاء اصطناعي مخصصة لشركة في دبي" loading="lazy" width="800" height="480" />
+    <!-- Service 1 — Custom AI Development -->
+    <div class="service-split">
+      <div class="service-img-wrap">
+        <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=80&auto=format&fit=crop" alt="تطوير ذكاء اصطناعي مخصص: واجهة روبوت محادثة وأتمتة" loading="lazy" />
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.35));"></div>
+        <div class="service-img-caption">★ ضمان رضا 100%</div>
       </div>
       <div>
-        <div class="badge badge-cyan" style="margin-bottom:1rem;">الأكثر طلباً</div>
-        <h3 style="margin-bottom:0.75rem;">تطوير ذكاء اصطناعي مخصص</h3>
-        <p style="color:#42474e;line-height:1.8;margin-bottom:1.25rem;">لا حل جاهز يناسب كل شركة. نبني نظاماً يعرف عملك تحديداً: روبوت محادثة، لوحة تحليلية، أو أداة تنبؤية، مربوطة بأنظمتك الحالية من اليوم الأول.</p>
-        <a href="/ar/services/custom-ai-development" class="btn-outline-sky">اقرأ التفاصيل</a>
+        <div class="service-eyebrow" style="background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.28); color:#004f58;">
+          <span class="material-symbols-outlined" aria-hidden="true" style="font-size:14px;">code</span>
+          تطوير ذكاء اصطناعي مخصص
+        </div>
+        <h2 style="font-size:clamp(1.5rem,3vw,2.25rem); font-weight:800; color:#00253b; letter-spacing:-0.03em; margin-bottom:1rem;">ذكاء اصطناعي يُبنى حول سير عملك، لا العكس</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.8; margin-bottom:1.5rem;">الذكاء الاصطناعي الجاهز لا يناسب عملك. بصفتنا وكالة ذكاء اصطناعي مقرها دبي، نبني أنظمة ذكاء اصطناعي تُنجز بالضبط ما يحتاجه فريقك: روبوتات محادثة، خطوط أتمتة، لوحات تحليلية، وأدوات تنبؤية، مدمجة مع برمجياتك الحالية.</p>
+        <div style="margin-bottom:1.75rem;">
+          <div class="check-item"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; flex-shrink:0; margin-top:2px;">check</span><span>روبوتات محادثة ومساعدون ذكيون للتعامل مع العملاء المحتملين والدعم</span></div>
+          <div class="check-item"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; flex-shrink:0; margin-top:2px;">check</span><span>خطوط أتمتة تُلغي المهام اليدوية</span></div>
+          <div class="check-item"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; flex-shrink:0; margin-top:2px;">check</span><span>لوحات تحليلية وأدوات تنبؤية بالذكاء الاصطناعي</span></div>
+          <div class="check-item"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; flex-shrink:0; margin-top:2px;">check</span><span>مدمجة مع أنظمتك البرمجية الحالية</span></div>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <a href="/ar/services/custom-ai-development" class="btn-primary" style="font-size:0.9375rem;">اقرأ المزيد</a>
+          <button onclick="openModal(this)" data-source="ar_services_custom_ai" class="btn-outline-sky" style="font-size:0.9375rem;">احصل على عرض سعر</button>
+        </div>
       </div>
     </div>
-    <div class="svc-split svc-split-reverse">
-      <div class="svc-split-img" style="order:2;">
-        <img src="https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=800&q=80&auto=format&fit=crop" alt="فريق يبني وكلاء ذكاء اصطناعي مستقلين في مكتب بدبي" loading="lazy" width="800" height="480" />
+
+    <!-- Service 2 — AI Training & Workshops -->
+    <div class="service-split">
+      <div class="service-img-wrap reverse" style="order:2;">
+        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80&auto=format&fit=crop" alt="ورشة تدريب على الذكاء الاصطناعي لفريق عمل" loading="lazy" />
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.35));"></div>
+        <div class="service-img-caption">حسب الدور الوظيفي · حضوري أو عن بُعد · تسليم عالمي</div>
       </div>
       <div style="order:1;">
-        <div class="badge badge-cyan" style="margin-bottom:1rem;">وكلاء مستقلون</div>
-        <h3 style="margin-bottom:0.75rem;">وكلاء الذكاء الاصطناعي</h3>
-        <p style="color:#42474e;line-height:1.8;margin-bottom:1.25rem;">وكيل يُنجز، لا يجيب فقط. يقرأ البريد، يحدّث CRM، يرد على واتساب، ويُصعّد للفريق فقط عندما يحتاج الأمر قراراً بشرياً.</p>
-        <a href="/ar/services/ai-agents" class="btn-outline-sky">اقرأ التفاصيل</a>
+        <div class="service-eyebrow" style="background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.28); color:#004f58;">
+          <span class="material-symbols-outlined" aria-hidden="true" style="font-size:14px;">group</span>
+          التدريب على الذكاء الاصطناعي وورش العمل
+        </div>
+        <h2 style="font-size:clamp(1.5rem,3vw,2.25rem); font-weight:800; color:#00253b; letter-spacing:-0.03em; margin-bottom:1rem;">فريقك يحتاج لاستخدام الذكاء الاصطناعي. نتأكد من أنه يفعل.</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.8; margin-bottom:1.5rem;">بناء الذكاء الاصطناعي نصف المعركة فقط. نُدرّب موظفيك على استخدامه بثقة، عبر ورش عمل عملية مصممة حسب قطاعك وسير العمل المحدد الذي يتبعه فريقك.</p>
+        <div style="margin-bottom:1.75rem;">
+          <div class="check-item"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; flex-shrink:0; margin-top:2px;">check</span><span>ورش عمل مخصصة لكل عضو في فريقك حسب دوره</span></div>
+          <div class="check-item"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; flex-shrink:0; margin-top:2px;">check</span><span>تسليم حضوري أو عن بُعد، في أي مكان في العالم</span></div>
+          <div class="check-item"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; flex-shrink:0; margin-top:2px;">check</span><span>مواد تدريبية مخصصة لقطاعك</span></div>
+          <div class="check-item"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; flex-shrink:0; margin-top:2px;">check</span><span>دعم متابعة بعد ورشة العمل مشمول</span></div>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <a href="/ar/services/ai-training" class="btn-primary" style="font-size:0.9375rem;">اقرأ المزيد</a>
+          <button onclick="openModal(this)" data-source="ar_services_training" class="btn-outline-sky" style="font-size:0.9375rem;">احجز ورشة عمل</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Service 3 — AI Strategy -->
+    <div class="service-split">
+      <div class="service-img-wrap">
+        <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80&auto=format&fit=crop" alt="جلسة استشارات استراتيجية للذكاء الاصطناعي" loading="lazy" />
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,19,32,0.45) 0%,transparent 55%),linear-gradient(135deg,rgba(0,104,117,0.20),rgba(0,37,59,0.35));"></div>
+        <div class="service-img-caption">نهج يركّز على العائد أولاً · خارطة طريق لـ 12 شهراً مشمولة</div>
+      </div>
+      <div>
+        <div class="service-eyebrow" style="background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.28); color:#004f58;">
+          <span class="material-symbols-outlined" aria-hidden="true" style="font-size:14px;">bar_chart</span>
+          استشارات استراتيجية للذكاء الاصطناعي
+        </div>
+        <h2 style="font-size:clamp(1.5rem,3vw,2.25rem); font-weight:800; color:#00253b; letter-spacing:-0.03em; margin-bottom:1rem;">اعرف بالضبط أي ذكاء اصطناعي تبنيه قبل أن تُنفق درهماً واحداً</h2>
+        <p style="color:#42474e; font-size:1.0625rem; line-height:1.8; margin-bottom:1.5rem;">نُخطط سير عملك، ونحدد فرص الذكاء الاصطناعي الأعلى عائداً، ونُسلّمك خطة تنفيذ واضحة لـ 12 شهراً. بدون تخمين. بدون هدر في الميزانية. مجرد مسار واضح للأمام.</p>
+        <div style="margin-bottom:1.75rem;">
+          <div class="check-item"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; flex-shrink:0; margin-top:2px;">check</span><span>تدقيق كامل لسير العمل لاكتشاف فرص الذكاء الاصطناعي</span></div>
+          <div class="check-item"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; flex-shrink:0; margin-top:2px;">check</span><span>توقعات العائد على الاستثمار لكل حالة استخدام</span></div>
+          <div class="check-item"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; flex-shrink:0; margin-top:2px;">check</span><span>خارطة طريق لتنفيذ الذكاء الاصطناعي لمدة 12 شهراً</span></div>
+          <div class="check-item"><span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:20px; flex-shrink:0; margin-top:2px;">check</span><span>توصيات بالموردين والأدوات المناسبة لأنظمتك</span></div>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <a href="/ar/services/ai-strategy" class="btn-primary" style="font-size:0.9375rem;">اقرأ المزيد</a>
+          <button onclick="openModal(this)" data-source="ar_services_strategy" class="btn-outline-sky" style="font-size:0.9375rem;">احصل على جلسة استراتيجية</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- DUBAI BANNER -->
+<div style="width:100%; height:300px; overflow:hidden; position:relative;">
+  <div style="width:100%; height:100%; background:#00192a; display:flex; align-items:center; justify-content:center; position:relative;">
+    <div style="position:absolute; inset:0; background-image:radial-gradient(circle, rgba(0,227,253,0.07) 1px, transparent 1px); background-size:24px 24px;"></div>
+    <div class="glass-dark dubai-stat-grid" style="position:relative; z-index:1; text-align:center; max-width:800px; margin:0 2rem; border-radius:20px; padding:2.25rem 2.5rem;">
+      <div>
+        <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">دبي</p>
+        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">مقرنا في الإمارات، نعمل مع عملاء حول العالم</p>
+      </div>
+      <div>
+        <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">9</p>
+        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">خدمات تغطي الاستراتيجية والبناء وتمكين الفريق</p>
+      </div>
+      <div>
+        <p style="color:#00e3fd; font-size:2.25rem; font-weight:800; line-height:1;">100%</p>
+        <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; margin-top:0.375rem;">ضمان الرضا على كل مشروع نعمل عليه</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MORE SERVICES GRID -->
+<section class="section" style="background:#f0f3ff;">
+  <div class="container">
+    <div class="section-header">
+      <h2>طرق أخرى نساعدك بها على التفوق بالذكاء الاصطناعي</h2>
+      <p style="color:#42474e; font-size:1.0625rem; max-width:560px; margin:0 auto;">من الوكلاء المستقلين إلى فايب كودينج إلى عمليات الدمج العميقة، نُغطي كل طبقة من رحلتك مع الذكاء الاصطناعي.</p>
+    </div>
+    <div class="service-filter" data-service-filter role="tablist" aria-label="تصفية الخدمات حسب الفئة">
+      <button type="button" class="filter-btn active" role="tab" aria-selected="true" data-filter="all">كل الخدمات</button>
+      <button type="button" class="filter-btn" role="tab" aria-selected="false" data-filter="automation-agents">الأتمتة والوكلاء</button>
+      <button type="button" class="filter-btn" role="tab" aria-selected="false" data-filter="build">البناء والإنشاء</button>
+      <button type="button" class="filter-btn" role="tab" aria-selected="false" data-filter="integrate">الدمج والتحسين</button>
+    </div>
+    <div class="more-services-grid" data-service-grid>
+
+      <!-- AI Automation -->
+      <div class="service-card" data-cat="automation-agents">
+        <div class="service-card-icon">
+          <span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:26px;">settings_suggest</span>
+        </div>
+        <div class="service-card-body">
+          <h3>أتمتة الذكاء الاصطناعي</h3>
+          <p>توقف عن فعلها يدوياً. نبني خطوط أتمتة ذكية تُلغي العمل المتكرر في المبيعات والعمليات والإدارة، دون تغيير أدواتك الحالية.</p>
+          <ul class="service-card-list">
+            <li>معالجة البريد الإلكتروني والمستندات</li>
+            <li>سير عمل موافقات متعدد الخطوات</li>
+            <li>مزامنة البيانات عبر أنظمتك</li>
+            <li>توجيه العملاء المحتملين وأتمتة المتابعة</li>
+          </ul>
+        </div>
+        <div class="service-card-footer">
+          <a href="/ar/services/ai-automation" class="btn-primary" style="font-size:0.875rem;">اقرأ المزيد</a>
+          <button onclick="openModal(this)" data-source="ar_services_automation" class="btn-outline-sky" style="font-size:0.875rem;">احصل على عرض سعر</button>
+        </div>
+      </div>
+
+      <!-- AI Agents -->
+      <div class="service-card" data-cat="automation-agents">
+        <div class="service-card-icon">
+          <span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:26px;">smart_toy</span>
+        </div>
+        <div class="service-card-body">
+          <h3>وكلاء الذكاء الاصطناعي والأنظمة الوكيلة</h3>
+          <p>ذكاء اصطناعي يعمل جنباً إلى جنب مع فريقك. نبني وكلاء مستقلين يتولون المهام المتكررة وعالية الحجم، ليتفرغ فريقك للقرارات التي تحتاج حكماً بشرياً.</p>
+          <ul class="service-card-list">
+            <li>وكلاء المبيعات والتواصل</li>
+            <li>وكلاء البحث والتحليل</li>
+            <li>وكلاء العمليات والجدولة</li>
+            <li>وكلاء خدمة العملاء</li>
+          </ul>
+        </div>
+        <div class="service-card-footer">
+          <a href="/ar/services/ai-agents" class="btn-primary" style="font-size:0.875rem;">اقرأ المزيد</a>
+          <button onclick="openModal(this)" data-source="ar_services_agents" class="btn-outline-sky" style="font-size:0.875rem;">احصل على عرض سعر</button>
+        </div>
+      </div>
+
+      <!-- Internal AI Tools -->
+      <div class="service-card" data-cat="build">
+        <div class="service-card-icon">
+          <span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:26px;">dashboard</span>
+        </div>
+        <div class="service-card-body">
+          <h3>أدوات ذكاء اصطناعي داخلية</h3>
+          <p>أدوات الذكاء الاصطناعي العامة لا تعرف عملك. نبني مساعدين ذكيين داخليين، وقواعد معرفة، ولوحات تحليلية مدرَّبة على بياناتك وإجراءاتك وسير عملك الخاص.</p>
+          <ul class="service-card-list">
+            <li>ذكاء اصطناعي لقاعدة معرفة الشركة</li>
+            <li>روبوت محادثة للعمليات الداخلية</li>
+            <li>لوحات تحليلية مخصصة</li>
+            <li>بحث في المستندات مدعوم بالذكاء الاصطناعي</li>
+          </ul>
+        </div>
+        <div class="service-card-footer">
+          <a href="/ar/services/internal-ai-tools" class="btn-primary" style="font-size:0.875rem;">اقرأ المزيد</a>
+          <button onclick="openModal(this)" data-source="ar_services_internal" class="btn-outline-sky" style="font-size:0.875rem;">احصل على عرض سعر</button>
+        </div>
+      </div>
+
+      <!-- Vibe Coding -->
+      <div class="service-card" data-cat="build">
+        <div class="service-card-icon">
+          <span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:26px;">terminal</span>
+        </div>
+        <div class="service-card-body">
+          <h3>فايب كودينج</h3>
+          <p>أطلق برمجياتك أسرع بتطوير مُسرَّع بالذكاء الاصطناعي. نبني منتجك باستخدام ممارسات برمجة تعتمد الذكاء الاصطناعي أولاً دون المساس بالجودة.</p>
+          <ul class="service-card-list">
+            <li>تطوير منتجات بمساعدة الذكاء الاصطناعي</li>
+            <li>نماذج أولية سريعة ومنتجات أولية قابلة للتطبيق</li>
+            <li>تحديث الأكواد القديمة</li>
+            <li>مجموعات اختبار مُولَّدة بالذكاء الاصطناعي</li>
+          </ul>
+        </div>
+        <div class="service-card-footer">
+          <a href="/ar/services/vibe-coding" class="btn-primary" style="font-size:0.875rem;">اقرأ المزيد</a>
+          <button onclick="openModal(this)" data-source="ar_services_vibe" class="btn-outline-sky" style="font-size:0.875rem;">احصل على عرض سعر</button>
+        </div>
+      </div>
+
+      <!-- AI Integration -->
+      <div class="service-card" data-cat="integrate">
+        <div class="service-card-icon">
+          <span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:26px;">hub</span>
+        </div>
+        <div class="service-card-body">
+          <h3>خدمات دمج الذكاء الاصطناعي</h3>
+          <p>لست بحاجة لاستبدال برمجياتك الحالية. أنت بحاجة لجعلها أذكى. نضيف طبقة ذكاء اصطناعي إلى نظام CRM وERP وأدواتك لتعمل بكفاءة أعلى بنفس الفريق.</p>
+          <ul class="service-card-list">
+            <li>إثراء أنظمة CRM وERP بالذكاء الاصطناعي</li>
+            <li>اتصالات ذكاء اصطناعي عبر واجهات برمجية</li>
+            <li>ذكاء اصطناعي لمنصات التواصل</li>
+            <li>ذكاء في خطوط تدفق البيانات</li>
+          </ul>
+        </div>
+        <div class="service-card-footer">
+          <a href="/ar/services/ai-integration" class="btn-primary" style="font-size:0.875rem;">اقرأ المزيد</a>
+          <button onclick="openModal(this)" data-source="ar_services_integration" class="btn-outline-sky" style="font-size:0.875rem;">احصل على عرض سعر</button>
+        </div>
+      </div>
+
+      <!-- Custom GPT Development -->
+      <div class="service-card" data-cat="build">
+        <div class="service-card-icon">
+          <span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:26px;">chat</span>
+        </div>
+        <div class="service-card-body">
+          <h3>تطوير نماذج ذكاء اصطناعي مخصصة</h3>
+          <p>عملك، ذكاؤك الاصطناعي. نبني نماذج لغوية مخصصة مدرَّبة على منتجاتك ووثائقك وسير عملك، ليكون لدى فريقك مساعد يعرف عملك فعلياً.</p>
+          <ul class="service-card-list">
+            <li>مساعدون ذكيون لدعم العملاء والمبيعات</li>
+            <li>مساعدون للمعرفة الداخلية</li>
+            <li>أدوات ذكاء اصطناعي لمحتوى العلامة التجارية</li>
+            <li>نماذج متصلة بواجهات برمجية وبيانات حية</li>
+          </ul>
+        </div>
+        <div class="service-card-footer">
+          <a href="/ar/services/custom-gpt-development" class="btn-primary" style="font-size:0.875rem;">اقرأ المزيد</a>
+          <button onclick="openModal(this)" data-source="ar_services_custom_gpt" class="btn-outline-sky" style="font-size:0.875rem;">احصل على عرض سعر</button>
+        </div>
+      </div>
+
+      <!-- Claude Agent Builds -->
+      <div class="service-card" data-cat="automation-agents">
+        <div class="service-card-icon">
+          <span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:26px;">psychology</span>
+        </div>
+        <div class="service-card-body">
+          <h3>بناء وكلاء ذكاء اصطناعي مستقلين</h3>
+          <p>أكفأ الوكلاء المستقلين، مبنيون للاعتمادية. اتباع دقيق للتعليمات، وتفكير بسياق طويل، واستخدام دقيق للأدوات، مصممون خصيصاً لسير عمل الأعمال المعقد.</p>
+          <ul class="service-card-list">
+            <li>وكلاء البحث والتحليل</li>
+            <li>وكلاء معالجة البريد الإلكتروني والمستندات</li>
+            <li>وكلاء المبيعات واستكشاف العملاء المحتملين</li>
+            <li>أنظمة متعددة الوكلاء</li>
+          </ul>
+        </div>
+        <div class="service-card-footer">
+          <a href="/ar/services/claude-agent-builds" class="btn-primary" style="font-size:0.875rem;">اقرأ المزيد</a>
+          <button onclick="openModal(this)" data-source="ar_services_claude_agents" class="btn-outline-sky" style="font-size:0.875rem;">احصل على عرض سعر</button>
+        </div>
+      </div>
+
+      <!-- Prompt Engineering -->
+      <div class="service-card" data-cat="integrate">
+        <div class="service-card-icon">
+          <span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:26px;">tune</span>
+        </div>
+        <div class="service-card-body">
+          <h3>هندسة وتحسين الأوامر</h3>
+          <p>ذكاؤك الاصطناعي بجودة الأوامر التي خلفه فقط. ندقق ونهندس ونحسّن الأوامر لأي نموذج ذكاء اصطناعي، لنخفض وقت التعديل وتكاليف الاستخدام بشكل ملموس.</p>
+          <ul class="service-card-list">
+            <li>تدقيق الأوامر وإعادة كتابتها</li>
+            <li>تصميم أوامر النظام لمنتجات الذكاء الاصطناعي</li>
+            <li>إنشاء مكتبة أوامر</li>
+            <li>اختبار A/B وتحسين مستمر</li>
+          </ul>
+        </div>
+        <div class="service-card-footer">
+          <a href="/ar/services/prompt-engineering" class="btn-primary" style="font-size:0.875rem;">اقرأ المزيد</a>
+          <button onclick="openModal(this)" data-source="ar_services_prompt_eng" class="btn-outline-sky" style="font-size:0.875rem;">احصل على عرض سعر</button>
+        </div>
+      </div>
+
+      <!-- AI Model Fine-Tuning -->
+      <div class="service-card" data-cat="build">
+        <div class="service-card-icon">
+          <span class="material-symbols-outlined" aria-hidden="true" style="color:#006875; font-size:26px;">model_training</span>
+        </div>
+        <div class="service-card-body">
+          <h3>تدريب نماذج الذكاء الاصطناعي المخصص</h3>
+          <p>توقف عن استخدام ذكاء اصطناعي عام. ندرّب النماذج الأساسية على بياناتك الخاصة، ليعرف ذكاؤك الاصطناعي عملك ويقدّم نتائج ثابتة على أي نطاق.</p>
+          <ul class="service-card-list">
+            <li>تدريب على صوت ونبرة العلامة التجارية</li>
+            <li>نماذج تصنيف المستندات</li>
+            <li>تدريب مخصص حسب مجال القطاع</li>
+            <li>نماذج استخراج بيانات منظمة</li>
+          </ul>
+        </div>
+        <div class="service-card-footer">
+          <a href="/ar/services/ai-model-finetuning" class="btn-primary" style="font-size:0.875rem;">اقرأ المزيد</a>
+          <button onclick="openModal(this)" data-source="ar_services_finetuning" class="btn-outline-sky" style="font-size:0.875rem;">احصل على عرض سعر</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- STILL DECIDING -->
+<section class="section" style="padding-bottom:0;">
+  <div class="container">
+    <div class="deciding-strip">
+      <div class="deciding-img-wrap"></div>
+      <div>
+        <h3 style="font-size:1.375rem; font-weight:800; color:#00253b; margin-bottom:0.75rem;">ما زلت غير متأكد أي خدمة تناسبك؟</h3>
+        <p style="color:#42474e; font-size:1rem; line-height:1.75; margin-bottom:1.5rem;">معظم عملائنا لا يصلون وهم متأكدون تماماً من الخدمة التي يحتاجونها، وهذا أمر طبيعي. احجز مكالمة مجانية وسنخبرك مباشرة، بدون عرض مبيعات، فقط إجابة صريحة عمّا سيُحرّك عملك فعلياً إلى الأمام.</p>
+        <button onclick="openModal(this)" data-source="ar_services_deciding" class="btn-primary" style="font-size:0.9375rem;">احجز استشارة مجانية</button>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Guarantee CTA -->
-<section class="section" style="background:#e7eeff;padding:4rem 0;text-align:center;">
-  <div class="container">
-    <div class="guarantee-badge" style="margin-bottom:1.5rem;">
-      <span class="material-symbols-outlined" style="font-size:18px;direction:ltr;" aria-hidden="true">shield</span>
-      ضمان الاسترداد الكامل: الوحيد في الإمارات
+<!-- FAQ -->
+<section class="section" style="background:#f9f9ff;" aria-labelledby="faq-heading">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <h2 id="faq-heading">الأسئلة الشائعة</h2>
     </div>
-    <h2 style="margin-bottom:1rem;">جميع خدماتنا مشمولة بضمان الاسترداد ١٠٠٪</h2>
-    <p style="color:#42474e;max-width:560px;margin:0 auto 2rem;line-height:1.8;">إذا لم تكن راضياً عما نبنيه، نردّ كل درهم دون أسئلة ودون تأخير. نحن نتحمل المخاطرة كاملة.</p>
-    <button onclick="openModal(this)" data-source="ar_services_cta" class="btn-primary">ابدأ بدون مخاطرة</button>
+    <FaqAccordion items={servicesFaqs} />
+  </div>
+</section>
+
+<!-- GUARANTEE STRIP -->
+<section class="section" style="background:#e7eeff;">
+  <div class="container">
+    <div style="background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.20); border-radius:24px; padding:4rem 3rem; text-align:center; max-width:680px; margin:0 auto;">
+      <span class="material-symbols-outlined" aria-hidden="true" style="font-size:48px; color:#d97706; display:block; margin-bottom:1.25rem;">shield</span>
+      <h2 style="font-size:1.75rem; font-weight:800; color:#00253b; margin-bottom:1rem;">كل خدمة مشمولة بضماننا 100%</h2>
+      <p style="color:#42474e; font-size:1.0625rem; line-height:1.8; max-width:480px; margin:0 auto 2rem;">إذا لم تكن راضياً تماماً عما نُسلّمه، فلن تدفع أي شيء على الإطلاق. بدون شروط. بدون نزاعات. مجرد استرداد كامل.</p>
+      <button onclick="openModal(this)" data-source="ar_services_guarantee" class="btn-primary" style="font-size:1.0625rem; padding:0.9375rem 2.5rem;">ابدأ بدون مخاطرة اليوم</button>
+    </div>
   </div>
 </section>
 
 </ArBaseLayout>
 
-<script define:vars={{ pageId: 'ar-services' }}>
-  (function () {
-    const wrap = document.getElementById('svc-tabs');
-    const grid = document.getElementById('svc-grid');
-    if (!wrap || !grid) return;
-    const buttons = wrap.querySelectorAll('.svc-tab');
-    const cards = grid.querySelectorAll('.svc-card[data-cat]');
-    buttons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        buttons.forEach((b) => b.classList.remove('active'));
-        btn.classList.add('active');
-        const cat = btn.getAttribute('data-cat');
-        cards.forEach((card) => {
-          card.style.display = cat === 'all' || card.getAttribute('data-cat') === cat ? '' : 'none';
-        });
+<script>
+document.querySelectorAll('[data-service-filter]').forEach((filterBar) => {
+  const grid = document.querySelector('[data-service-grid]');
+  if (!grid) return;
+  filterBar.querySelectorAll('.filter-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      filterBar.querySelectorAll('.filter-btn').forEach((b) => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      const cat = (btn as HTMLElement).dataset.filter;
+      grid.querySelectorAll('.service-card').forEach((card) => {
+        const el = card as HTMLElement;
+        el.classList.toggle('filtered-out', cat !== 'all' && el.dataset.cat !== cat);
       });
     });
-  })();
+  });
+});
 </script>
 
 <style>
-  .svc-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-  }
-  .svc-card {
-    background: #fff;
-    border: 1px solid #E2E8F0;
-    border-radius: 20px;
-    padding: 2rem;
-    text-decoration: none;
-    color: inherit;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    transition: transform .2s, box-shadow .2s, border-color .2s;
-    position: relative;
-  }
-  .svc-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 16px 48px rgba(0,59,92,0.10);
-    border-color: rgba(0,104,117,0.3);
-  }
-  .svc-card-icon {
-    width: 52px; height: 52px; border-radius: 14px;
-    background: rgba(0,227,253,0.12); display: flex;
-    align-items: center; justify-content: center; color: #006875;
-  }
-  .svc-badge {
-    position: absolute; top: 1.25rem; left: 1.25rem;
-    background: rgba(0,104,117,0.12); color: #004f58;
-    font-size: 0.7rem; font-weight: 700; padding: 3px 10px;
-    border-radius: 100px; text-transform: uppercase; letter-spacing: 0.05em;
-  }
-  .svc-card h3 { font-size: 1.0625rem; font-weight: 700; color: #00253b; margin: 0; }
-  .svc-card p { font-size: 0.875rem; color: #42474e; line-height: 1.7; margin: 0; flex: 1; }
-  .svc-link {
-    display: flex; align-items: center; gap: 4px;
-    font-size: 0.875rem; font-weight: 600; color: #006875; margin-top: 0.5rem;
-  }
-  .svc-tabs { display: flex; flex-wrap: wrap; gap: 0.625rem; justify-content: center; margin-bottom: 2.5rem; }
-  .svc-tab {
-    font-size: 0.875rem; font-weight: 600; padding: 0.5rem 1.25rem;
-    border-radius: 100px; border: 1px solid rgba(0,37,59,0.14);
-    background: #fff; color: #42474e; cursor: pointer;
-    transition: all .2s var(--ease); font-family: inherit;
-  }
-  .svc-tab:hover { border-color: rgba(0,104,117,0.4); color: #006875; }
-  .svc-tab.active { background: #00253b; border-color: #00253b; color: #fff; }
+.service-split { display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; margin-bottom:6rem; }
+    .service-img-wrap { border-radius:20px; overflow:hidden; position:relative; min-height:320px; }
+    .service-img-wrap img { width:100%; height:100%; object-fit:cover; min-height:320px; }
+    .service-img-caption { position:absolute; bottom:1.25rem; inset-inline-start:1.25rem; background:rgba(0,37,59,0.82); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:0.625rem 1rem; font-size:0.75rem; color:rgba(255,255,255,0.85); }
+    .service-eyebrow { display:none; }
+    .check-item { display:flex; align-items:flex-start; gap:10px; margin-bottom:0.75rem; }
+    .check-item span { color:#42474e; font-size:0.9375rem; line-height:1.5; }
 
-  .svc-split { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; margin-bottom: 4rem; }
-  .svc-split:last-child { margin-bottom: 0; }
-  .svc-split-img { border-radius: 20px; overflow: hidden; height: 320px; }
-  .svc-split-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    /* More services grid */
+    .more-services-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .service-card {
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+      border:1px solid rgba(255,255,255,0.6); border-radius:20px; padding:2rem;
+      display:flex; flex-direction:column; gap:1.25rem;
+      box-shadow: 0 8px 32px rgba(0,37,59,0.05);
+      transition:box-shadow .3s var(--ease), transform .3s var(--ease), border-color .3s;
+    }
+    .service-card:hover { box-shadow:0 20px 48px rgba(0,37,59,0.12); transform:translateY(-5px); border-color:rgba(0,227,253,0.45); }
+    .service-card-icon { width:52px; height:52px; border-radius:14px; background:rgba(0,227,253,0.12); border:1px solid rgba(0,227,253,0.24); display:flex; align-items:center; justify-content:center; transition:transform .3s var(--ease); }
+    .service-card:hover .service-card-icon { transform:scale(1.08) rotate(-4deg); }
+    .service-card-body { flex:1; }
+    .service-card-body h3 { font-size:1.0625rem; font-weight:700; color:#00253b; margin-bottom:0.625rem; }
+    .service-card-body p { color:#42474e; font-size:0.875rem; line-height:1.7; margin-bottom:1rem; }
+    .service-card-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.4rem; }
+    .service-card-list li { color:#42474e; font-size:0.8125rem; padding-inline-start:1.1rem; position:relative; }
+    .service-card-list li::before { content:"←"; position:absolute; inset-inline-start:0; color:#006875; font-size:0.75rem; }
+    .service-card-footer { display:flex; gap:10px; flex-wrap:wrap; }
 
-  @media (max-width: 900px) { .svc-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 768px) {
-    .svc-split { grid-template-columns: 1fr; gap: 1.5rem; }
-    .svc-split-img { height: 220px; order: -1 !important; }
-  }
-  @media (max-width: 580px)  { .svc-grid { grid-template-columns: 1fr; } }
+    @media(max-width:900px) { .more-services-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:768px) { .service-split { grid-template-columns:1fr; gap:2rem; } .service-split .reverse { order:-1; } }
+    @media(max-width:600px) { .more-services-grid { grid-template-columns:1fr; } }
+
+    .dubai-stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2.5rem; }
+    @media(max-width:700px) { .dubai-stat-grid { grid-template-columns:1fr; gap:1.5rem; } }
+
+    .deciding-strip { display:grid; grid-template-columns:0.9fr 1.1fr; gap:3rem; align-items:center; background:#e7eeff; border-radius:24px; padding:2.5rem; }
+    .deciding-img-wrap { border-radius:16px; overflow:hidden; min-height:220px; background:linear-gradient(135deg,#006875,#00253b); }
+    @media(max-width:768px) { .deciding-strip { grid-template-columns:1fr; padding:1.75rem; } }
+
+    .service-filter { display:flex; gap:0.625rem; flex-wrap:wrap; justify-content:center; margin-bottom:2.5rem; }
+    .filter-btn { background:#fff; border:1px solid rgba(0,37,59,0.12); border-radius:100px; padding:0.625rem 1.25rem; font-size:0.875rem; font-weight:600; color:#42474e; cursor:pointer; font-family:inherit; transition:background .2s, color .2s, border-color .2s; }
+    .filter-btn:hover { color:#006875; border-color:rgba(0,104,117,0.35); }
+    .filter-btn:focus-visible { outline:2px solid #006875; outline-offset:2px; }
+    .filter-btn.active { background:#00253b; color:#fff; border-color:#00253b; }
+    .service-card.filtered-out { display:none; }
 </style>
