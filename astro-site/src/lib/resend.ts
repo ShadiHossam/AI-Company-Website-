@@ -249,7 +249,7 @@ export function leadAutoReplyEmail(
   const tel = (companyPhone ?? '').replace(/[^\d+]/g, '');
   const steps = [
     ['We review your request', 'A consultant reads what you sent before contacting you.'],
-    ['We contact you within 24 hours', 'On WhatsApp or email, to confirm a time that suits you.'],
+    ['Pick a time', 'If you booked on the calendar, your invite comes from Calendly. If not, we contact you within 24 hours to set one up.'],
     ['We meet', 'You walk us through the work your team repeats every week. We tell you what can be automated and what it would cost.'],
   ].map(([title, rest], i, all) => `
     <tr>
@@ -287,7 +287,7 @@ export function leadAutoReplyEmail(
   return {
     subject: `We've received your consultation request`,
     html: shell({
-      preheader: `Thanks for reaching out. We'll contact you within 24 hours to confirm a time.`,
+      preheader: `Thanks for reaching out. Here's what happens next.`,
       hero: {
         eyebrow: 'Request received',
         title: `Thanks, ${esc(firstName(lead.full_name))}.`,
